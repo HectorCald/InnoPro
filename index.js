@@ -76,6 +76,29 @@ app.get('/dashboard', requireAuth, (req, res) => {
 app.get('/obtener-nombre', requireAuth, (req, res) => {
     res.json({ nombre: req.session.nombre });
 });
+// Agregar después de los otros endpoints
+app.get('/obtener-registros', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A:L'
+        });
+
+        const rows = response.data.values || [];
+        // Filtrar registros por el nombre del usuario en sesión
+        const registrosUsuario = rows.filter(row => row[8] === req.session.nombre);
+
+        res.json({ success: true, registros: registrosUsuario });
+    } catch (error) {
+        console.error('Error al obtener registros:', error);
+        res.status(500).json({ success: false, error: 'Error al obtener registros' });
+    }
+});
+
+
+
+
 app.post('/verificar-pin', async (req, res) => {
     try {
         const { pin } = req.body;
@@ -144,6 +167,73 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: error.message || 'Error al guardar el registro'
+        });
+    }
+});
+
+
+
+
+// Agregar después de los otros endpoints
+app.delete('/eliminar-registro', requireAuth, async (req, res) => {
+    try {
+        const { fecha, producto } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener información del spreadsheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        // Encontrar específicamente la hoja "Produccion"
+        const produccionSheet = spreadsheet.data.sheets.find(
+            sheet => sheet.properties.title === 'Produccion'
+        );
+
+        if (!produccionSheet) {
+            throw new Error('No se encontró la hoja de Produccion');
+        }
+
+        // Obtener registros solo de la hoja de Produccion
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A:L'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === producto && 
+            row[8] === req.session.nombre
+        ) + 1;
+
+        if (rowIndex <= 0) {
+            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
+        }
+
+        // Eliminar usando el ID específico de la hoja de Produccion
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: produccionSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex - 1,
+                            endIndex: rowIndex
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error detallado al eliminar registro:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el registro: ' + (error.message || 'Error desconocido')
         });
     }
 });
