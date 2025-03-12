@@ -64,11 +64,7 @@ function requireAuth(req, res, next) {
     }
 }
 app.get('/', (req, res) => {
-    if (req.session.authenticated) {
-        res.redirect('/dashboard');
-    } else {
         res.render('login');
-    }
 });
 app.get('/dashboard', requireAuth, (req, res) => {
     res.render('dashboard');  // Ya no necesitamos pasar el nombre aquí
