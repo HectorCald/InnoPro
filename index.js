@@ -81,7 +81,7 @@ app.get('/obtener-registros', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             range: 'Produccion!A:L'
         });
 
@@ -152,7 +152,7 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
         console.log('Valores a insertar:', values); // Debug log
 
         const result = await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             range: 'Produccion!A:L',
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
@@ -182,7 +182,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
         
         // Obtener información del spreadsheet
         const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
         });
         
         // Encontrar específicamente la hoja "Produccion"
