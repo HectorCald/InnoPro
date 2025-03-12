@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+<div class="pin-container">
+    <h1>Damabrava</h1>
+    <h2>Ingrese su PIN</h2>
+    <div class="pin-input-container">
+        <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
+        <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
+        <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
+        <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
+    </div>
+    <div class="error-message"></div>
+    
+    <div class="numeric-keyboard">
+        <button class="num-key">1</button>
+        <button class="num-key">2</button>
+        <button class="num-key">3</button>
+        <button class="num-key">4</button>
+        <button class="num-key">5</button>
+        <button class="num-key">6</button>
+        <button class="num-key">7</button>
+        <button class="num-key">8</button>
+        <button class="num-key">9</button>
+        <button class="num-key clear">C</button>
+        <button class="num-key">0</button>
+        <button class="num-key delete">⌫</button>
+    </div>
+</div>
+<%- include('partials/footer') %>

@@ -1,0 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+.bienvenida {
+    text-align: center;
+    color: white;
+    padding: 2rem;
+    font-size: 0.5rem;
+    letter-spacing: 2px;
+    background: linear-gradient(45deg, #1a1a1a, #212121);
+    margin: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 5em;
+    gap: 2em;
+    background-color: #212121;
+    min-height: calc(100vh - 200px);
+    width: 100%;
+    height: 89vh;
+    z-index: 1;
+    position: relative;
+}
+
+.dashboard-btn {
+    width: 300px;
+    height: 200px;
+    border-radius: 1.5em;
+    background: #212121;
+    border: 2px solid #3d4145;
+    color: white;
+    font-size: 1.1em;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3),
+        -5px -5px 15px rgba(255, 255, 255, 0.02);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    cursor: pointer;
+    padding: 2rem;
+}
+
+.dashboard-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 7px 7px 20px rgba(0, 0, 0, 0.4),
+        -7px -7px 20px rgba(255, 255, 255, 0.03);
+    border-color: #3498db;
+}
+
+.dashboard-btn:active {
+    transform: translateY(2px);
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.4),
+        -3px -3px 10px rgba(255, 255, 255, 0.02);
+}
+
+.dashboard-btn i {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.dashboard-btn span {
+    text-align: center;
+    font-weight: 500;
+    letter-spacing: 1px;
+    font-family: 'Poppins', sans-serif;
+}
+
+@media (max-width: 768px) {
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        align-content: top;
+        padding: 1em;
+        gap: 1em;
+        background-color: #212121;
+        height: 87vh;
+        width: 100%;
+        margin: 0;
+    }
+
+    .dashboard-btn {
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: row;
+        justify-content: left;
+        padding: 1em;
+    }
+
+    .bienvenida {
+        font-size: 1.5rem;
+        padding: 1.5rem;
+    }
+}
+
+
+
+
+
+
+.logout-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+.logout-btn i {
+    font-size: 1.2rem;
+}
+
+
+
+
+
+
+
+.form1 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    background-color: rgba(53, 53, 53, 0.95);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    overflow-y: auto;
+    padding-block: 1em;
+}
+.form1 .title{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2em;
+    width: 100%;
+    height: auto;
+}
+.form1 .title button{
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 1.5rem;
+}
+.form1 form{
+    width: 100%;
+    padding-inline: 3em;
+}
+.form1 input{
+    border-radius: 1em;
+    width: 100%;
+    padding: 1em;
+}
+.form1 select{
+    border-radius: 1em;
+    width: 100%;
+    padding: 1em;
+}
+.form1 form button{
+    width: 100%;
+    padding: 1em;
+    border-radius: 1em;
+    background: #dc3545;
+    color: white;
+    border: none;
+    margin-top: 1em;
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+    align-items: center;
+}
+
+
+

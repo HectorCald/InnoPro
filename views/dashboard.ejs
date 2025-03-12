@@ -1,0 +1,54 @@
+<%- include('partials/header') %>
+<h1 class="bienvenida">Inicio de sesión exitoso</h1>
+<button class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i>
+    <span>Cerrar Sesión</span>
+</button>
+<div class="container">
+    <button class="dashboard-btn registrarProducto" onclick="mostrar('.form1')">
+        <i class="fas fa-file-alt"></i>
+        <span>Formulario de registro</span>
+    </button>
+    <button class="dashboard-btn consultarProducto">
+        <i class="fas fa-chart-line"></i>
+        <span>Mis cuentas</span>
+    </button>
+</div>
+<div class="form1">
+    <div class="title">
+        <h1>Registro</h1>
+        <button onclick="mostrar('.form1')"><i class="fas fa-times"></i></button>
+    </div>
+        <form action="">
+        <p>Producto *</p>
+        <input type="text" name="producto" placeholder="Nombre del producto" required>
+        
+        <p>Lote *</p>
+        <input type="number" name="lote" placeholder="Número de lote" required>
+        
+        <p>Gramaje (gr) *</p>
+        <input type="number" name="gramaje" placeholder="Peso en gramos" required>
+        
+        <p>Selección/Cernido *</p>
+        <select name="seleccion" required>
+            <option value="">Seleccione una opción</option>
+            <option value="Cernido">Cernido</option>
+            <option value="Seleccionado">Seleccionado</option>
+        </select>
+        
+        <p>Microondas (segundos) *</p>
+        <input type="number" name="microondas" placeholder="Tiempo en segundos" required>
+        
+        <p>Envases Terminados *</p>
+        <input type="number" name="envasesTerminados" placeholder="Cantidad de envases" required>
+        
+        <p>Fecha de Vencimiento *</p>
+        <input type="month" name="fechaVencimiento" required>
+        
+        <button class="enviarRegistro">
+            <i class="fas fa-user-plus"></i>
+            Registrar
+        </button>
+    </form>
+</div>
+<%- include('partials/footer') %>

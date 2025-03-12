@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+/* ESTILOS DE LOS CUADRANTES DE PIN Y CONTAINER GENERAL */
+*{
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    font-family:'Poppins', sans-serif;
+}
+.pin-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 2rem;
+    background-color: #212121 ;
+    height: 100vh;
+    width: 100%;
+}
+.pin-container h1, .pin-container h2{
+    color: white;
+    font-size: 1.5rem;
+}
+
+.pin-input-container {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.pin-input {
+    width: 50px;
+    height: 60px;
+    font-size: 1.5rem;
+    text-align: center;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pin-input:focus {
+    border-color: #40ff00;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+.pin-input.filled {
+    background-color: #ffffff;
+    border-color: #40ff00;
+}
+
+.error-message {
+    color: #dc3545;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    min-height: 20px;
+}
+
+@media (max-width: 400px) {
+    .pin-input {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .pin-input-container {
+        gap: 0.8rem;
+    }
+    .error-message {
+        color: #dc3545;
+        margin-top: 1rem;
+        font-size: 1rem;
+        min-height: 20px;
+        text-align: center;
+    }
+}
+/* ESTILOS DEL TECLADO NUMERICO */
+
+.numeric-keyboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 300px;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+.num-key {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 15px;
+    font-size: 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.num-key:hover {
+    background: #444;
+}
+
+.num-key:active {
+    transform: scale(0.95);
+}
+
+.num-key.clear {
+    background: #dc3545;
+}
+
+.num-key.delete {
+    background: #ffc107;
+    color: #333;
+}
+
+@media (max-width: 400px) {
+    .numeric-keyboard {
+        max-width: 280px;
+        gap: 8px;
+    }
+
+    .num-key {
+        font-size: 1.8rem;
+        padding: 10px;
+    }
+}
