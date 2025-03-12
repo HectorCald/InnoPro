@@ -213,7 +213,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
 
         // Eliminar usando el ID específico de la hoja de Produccion
         await sheets.spreadsheets.batchUpdate({
-            spreadsheetId: process.env.SPREADSHEET_ID,
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             resource: {
                 requests: [{
                     deleteDimension: {
