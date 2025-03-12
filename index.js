@@ -69,7 +69,7 @@ app.get('/', (req, res) => {
 app.get('/dashboard', requireAuth, (req, res) => {
     res.render('dashboard');  // Ya no necesitamos pasar el nombre aquí
 });
-app.get('/obtener-nombre', requireAuth, (req, res) => {
+app.get('/obtener-nombre', (req, res) => {
     res.json({ nombre: req.session.nombre });
 });
 // Agregar después de los otros endpoints
