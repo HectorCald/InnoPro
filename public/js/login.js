@@ -105,4 +105,9 @@ class LoginPin {
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginPin = new LoginPin();
+    bienvenida();
+    manejarCierreSesion();
+    inicializarFormulario();
+    const btnConsulta = document.querySelector('.consultarProducto');
+    btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
 });
