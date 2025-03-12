@@ -6,21 +6,43 @@ document.addEventListener('DOMContentLoaded', () => {
     btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
 });
 
+// Modificar la función bienvenida
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-nombre');
-        const data = await response.json();
-        
-        if (data.nombre) {
-            const bienvenida = document.querySelector('.bienvenida');
-            if (bienvenida) {
-                bienvenida.innerHTML = '<i class="fas fa-microchip"></i> DB Tec.';
-            }
+        if (!response.ok) {
+            window.location.href = '/';
+            return false;
         }
+        
+        const data = await response.json();
+        if (!data.nombre) {
+            window.location.href = '/';
+            return false;
+        }
+
+        const bienvenida = document.querySelector('.bienvenida');
+        if (bienvenida) {
+            bienvenida.innerHTML = '<i class="fas fa-microchip"></i> DB Tec.';
+        }
+        return true;
     } catch (error) {
         console.error('Error al obtener el nombre:', error);
+        window.location.href = '/';
+        return false;
     }
 }
+
+// Modificar el event listener DOMContentLoaded
+document.addEventListener('DOMContentLoaded', async () => {
+    const bienvenidaExitosa = await bienvenida();
+    if (!bienvenidaExitosa) return;
+    
+    manejarCierreSesion();
+    inicializarFormulario();
+    const btnConsulta = document.querySelector('.consultarProducto');
+    btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+});
 function manejarCierreSesion() {
     const btnLogout = document.querySelector('.logout-btn');
     btnLogout.addEventListener('click', async () => {

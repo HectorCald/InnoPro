@@ -57,10 +57,14 @@ app.use(session({
     saveUninitialized: false
 }));
 function requireAuth(req, res, next) {
-    if (req.session.authenticated) {
+    if (req.session.authenticated && req.session.nombre) {
         next();
     } else {
-        res.redirect('/');
+        if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+            res.status(401).json({ error: 'No autorizado' });
+        } else {
+            res.redirect('/');
+        }
     }
 }
 app.get('/', (req, res) => {
