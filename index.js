@@ -53,8 +53,8 @@ app.set('views', join(__dirname, 'views'));
 
 app.use(session({
     secret: 'tu_clave_secreta',
-    resave: false,
-    saveUninitialized: false
+    resave: true,
+    saveUninitialized: true
 }));
 function requireAuth(req, res, next) {
     if (req.session.authenticated) {
