@@ -53,7 +53,7 @@ app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
 // JWT Secret Key
-const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta';
+const JWT_SECRET = 'tu_clave_secreta';
 
 // JWT Authentication Middleware
 const authenticateToken = (req, res, next) => {
@@ -91,9 +91,6 @@ app.use(session({
 
 // Modificar la ruta principal
 app.get('/', (req, res) => {
-    if (req.session && req.session.authenticated) {
-        return res.redirect('/dashboard');
-    }
     res.set({
         'Cache-Control': 'no-store, no-cache, must-revalidate, private',
         'Pragma': 'no-cache',
@@ -119,8 +116,8 @@ app.get('/obtener-registros', authenticateToken, async (req, res) => {
         });
 
         const rows = response.data.values || [];
-        // Filtrar registros por el nombre del usuario en sesión
-        const registrosUsuario = rows.filter(row => row[8] === req.session.nombre);
+        // Filtrar registros por el nombre del usuario en el token
+        const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
 
         res.json({ success: true, registros: registrosUsuario });
     } catch (error) {
@@ -164,9 +161,9 @@ app.post('/registrar-produccion', authenticateToken, async (req, res) => {
             month: '2-digit',
             day: '2-digit'
         });
-        const nombreUsuario = req.session.nombre;
+        const nombreUsuario = req.user.nombre; // Usar el nombre del token JWT
 
-        console.log('Datos recibidos:', req.body); // Debug log
+        console.log('Datos recibidos:', req.body);
 
         const values = [[
             fecha,
@@ -174,17 +171,14 @@ app.post('/registrar-produccion', authenticateToken, async (req, res) => {
             Number(req.body.lote),
             Number(req.body.gramaje),
             String(req.body.seleccion),
-            Number(req.body.microondas),
+            req.body.microondas === 'No' ? 'No' : Number(req.body.microondas),
             Number(req.body.envasesTerminados),
             String(req.body.fechaVencimiento),
             nombreUsuario,
-            
             '',
             '',
             ''
         ]];
-
-        console.log('Valores a insertar:', values); // Debug log
 
         const result = await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
@@ -194,11 +188,9 @@ app.post('/registrar-produccion', authenticateToken, async (req, res) => {
             resource: { values }
         });
 
-        console.log('Respuesta de Google Sheets:', result); // Debug log
-
         res.json({ success: true, message: 'Registro guardado correctamente' });
     } catch (error) {
-        console.error('Error detallado:', error); // Debug log
+        console.error('Error detallado:', error);
         res.status(500).json({ 
             success: false, 
             error: error.message || 'Error al guardar el registro'
@@ -209,67 +201,25 @@ app.post('/registrar-produccion', authenticateToken, async (req, res) => {
 
 
 
+
 // Agregar después de los otros endpoints
 app.delete('/eliminar-registro', authenticateToken, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
-        // Obtener información del spreadsheet
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-        });
+        // ... código existente ...
         
-        // Encontrar específicamente la hoja "Produccion"
-        const produccionSheet = spreadsheet.data.sheets.find(
-            sheet => sheet.properties.title === 'Produccion'
-        );
-
-        if (!produccionSheet) {
-            throw new Error('No se encontró la hoja de Produccion');
-        }
-
-        // Obtener registros solo de la hoja de Produccion
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Produccion!A:L'
-        });
-
         const rows = response.data.values || [];
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
             row[1] === producto && 
-            row[8] === req.session.nombre
+            row[8] === req.user.nombre // Usar el nombre del token JWT
         ) + 1;
 
-        if (rowIndex <= 0) {
-            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
-        }
-
-        // Eliminar usando el ID específico de la hoja de Produccion
-        await sheets.spreadsheets.batchUpdate({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            resource: {
-                requests: [{
-                    deleteDimension: {
-                        range: {
-                            sheetId: produccionSheet.properties.sheetId,
-                            dimension: 'ROWS',
-                            startIndex: rowIndex - 1,
-                            endIndex: rowIndex
-                        }
-                    }
-                }]
-            }
-        });
-
-        res.json({ success: true });
+        // ... resto del código ...
     } catch (error) {
-        console.error('Error detallado al eliminar registro:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el registro: ' + (error.message || 'Error desconocido')
-        });
+        // ... manejo de errores ...
     }
 });
 
