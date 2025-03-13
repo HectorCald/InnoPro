@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
-    inicializarFormulario();
     const btnConsulta = document.querySelector('.consultarProducto');
     btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
 });
@@ -19,6 +18,7 @@ async function bienvenida() {
     } catch (error) {
         console.error('Error al obtener el nombre:', error);
     }
+    inicializarFormulario();
 }
 function manejarCierreSesion() {
     const btnLogout = document.querySelector('.logout-btn');
