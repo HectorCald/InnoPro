@@ -44,15 +44,16 @@ function inicializarBotones() {
     const btnConsultar = document.querySelector('.consultarRegistros');
 
     if (btnVerificar) {
-        btnVerificar.addEventListener('click', async () => {
+        btnVerificar.addEventListener('click', () => {
             mostrar('.registros-view');
-            await cargarRegistros();
+            cargarRegistros();
         });
     }
 
     if (btnConsultar) {
         btnConsultar.addEventListener('click', () => {
-            // Implementar funcionalidad de consulta
+            mostrar('.consulta-view');
+            console.log('Botón consultar clickeado'); // Para debugging
         });
     }
 }
@@ -386,4 +387,100 @@ function inicializarBotones() {
             document.querySelector('.modal-edicion').style.display = 'none';
         });
     }
+}
+
+async function buscarRegistros() {
+    try {
+        const fecha = document.getElementById('filtroFecha').value;
+        const lote = document.getElementById('filtroLote').value;
+        const producto = document.getElementById('filtroProducto').value;
+
+        console.log('Filtros:', { fecha, lote, producto }); // Para debugging
+
+        const response = await fetch('/obtener-todos-registros');
+        const data = await response.json();
+
+        if (data.success) {
+            // Excluir la primera fila (encabezados) y filtrar registros
+            const registrosFiltrados = data.registros.slice(1).filter(registro => {
+                // Verificar que el registro existe y tiene los campos necesarios
+                if (!registro || registro.length < 3) return false;
+
+                // Convertir la fecha del registro al formato YYYY-MM-DD para comparar
+                const [dia, mes, anio] = registro[0].split('/');
+                const fechaRegistro = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+
+                const cumpleFecha = !fecha || fechaRegistro === fecha;
+                const cumpleProducto = !producto || 
+                    registro[1].toLowerCase().includes(producto.toLowerCase());
+                const cumpleLote = !lote || 
+                    String(registro[2]).toLowerCase().includes(String(lote).toLowerCase());
+
+                console.log('Comparación:', {
+                    fechaRegistro,
+                    fechaBuscada: fecha,
+                    cumpleFecha,
+                    cumpleProducto,
+                    cumpleLote
+                }); // Para debugging
+
+                return cumpleFecha && cumpleProducto && cumpleLote;
+            });
+
+            console.log('Registros filtrados:', registrosFiltrados); // Para debugging
+            mostrarResultadosBusqueda(registrosFiltrados);
+        } else {
+            mostrarNotificacion('Error al obtener registros', 'error');
+        }
+    } catch (error) {
+        console.error('Error en la búsqueda:', error);
+        mostrarNotificacion('Error al buscar registros', 'error');
+    }
+}
+
+function mostrarResultadosBusqueda(registros) {
+    const container = document.querySelector('.resultados-container');
+    container.innerHTML = '';
+
+    if (!registros || registros.length === 0) {
+        container.innerHTML = '<p class="no-resultados">No se encontraron registros</p>';
+        return;
+    }
+
+    registros.forEach(registro => {
+        const card = document.createElement('div');
+        card.className = 'registro-card';
+        card.innerHTML = `
+            <div class="registro-header">
+                <div class="registro-info">
+                    ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
+                    <span class="registro-producto">${registro[1]}</span>
+                </div>
+                <span class="registro-fecha">${registro[0]}</span>
+            </div>
+            <div class="registro-detalles">
+                <p><span>Lote:</span> ${registro[2] || '-'}</p>
+                <p><span>Gramaje:</span> ${registro[3] || '-'}</p>
+                <p><span>Selección:</span> ${registro[4] || '-'}</p>
+                <p><span>Microondas:</span> ${registro[5] || '-'}</p>
+                <p><span>Envases:</span> ${registro[6] || '-'}</p>
+                <p><span>Vencimiento:</span> ${registro[7] || '-'}</p>
+                <p><span>Operario:</span> ${registro[8] || '-'}</p>
+                ${registro[10] ? `
+                    <p><span>Verificación:</span> ${registro[10]}</p>
+                    <p><span>Cantidad Real:</span> ${registro[9] || '-'}</p>
+                    <p><span>Observaciones:</span> ${registro[11] || '-'}</p>
+                ` : ''}
+            </div>
+        `;
+
+        // Añadir evento para expandir/colapsar detalles
+        const header = card.querySelector('.registro-header');
+        const detalles = card.querySelector('.registro-detalles');
+        header.addEventListener('click', () => {
+            detalles.classList.toggle('active');
+        });
+
+        container.appendChild(card);
+    });
 }

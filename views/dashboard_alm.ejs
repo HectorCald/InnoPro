@@ -11,9 +11,13 @@
             <i class="fas fa-clipboard-check"></i>
             <span>Verificar Registros</span>
         </button>
-        <button class="dashboard-btn consultarRegistros">
+        <button class="dashboard-btn consultarRegistros" onclick="(mostrar('.consulta-view'))">
             <i class="fas fa-chart-line"></i>
             <span>Consultar Registros</span>
+        </button>
+        <button class="dashboard-btn configuraciones">
+            <i class="fas fa-cog"></i>
+            <span>Configuraciones</span>
         </button>
     </div>
 
@@ -27,6 +31,31 @@
         </div>
         <div class="registros-container">
             <!-- Los registros se cargarán dinámicamente aquí -->
+        </div>
+    </div>
+    <div class="consulta-view">
+        <div class="title">
+            <h1>Consulta de Registros</h1>
+            <button onclick="mostrar('.consulta-view')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="filtros-container">
+            <div class="filtro">
+                <input type="date" id="filtroFecha" placeholder="Fecha">
+            </div>
+            <div class="filtro">
+                <input type="text" id="filtroLote" placeholder="Número de Lote">
+            </div>
+            <div class="filtro">
+                <input type="text" id="filtroProducto" placeholder="Producto">
+            </div>
+            <button class="btn-buscar" onclick="buscarRegistros()">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+        </div>
+        <div class="resultados-container">
+            <!-- Los resultados se cargarán aquí -->
         </div>
     </div>
 
@@ -55,6 +84,8 @@
             </form>
         </div>
     </div>
+    <!-- Después de la vista de registros -->
+
     <div class="anuncio">
         <div class="anuncio-contenido">
             <i class="fas fa-exclamation-triangle"></i>
