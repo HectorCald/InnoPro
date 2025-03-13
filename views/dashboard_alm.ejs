@@ -51,7 +51,10 @@
             </div>
             <div class="filtro">
                 <p>Nombre del producto</p>
-                <input type="text" id="filtroProducto" placeholder="Producto">
+                <input type="text" name="producto" id="producto-input" list="productos-list" placeholder="Nombre del producto" autocomplete="off" required>
+                <datalist id="productos-list">
+                <!-- Las opciones se cargarán dinámicamente -->
+                </datalist>
             </div>
             <button class="btn-buscar" onclick="buscarRegistros()">
                 <i class="fas fa-search"></i> Buscar

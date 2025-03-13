@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     manejarCierreSesion();
     inicializarBotones();
     inicializarModalUsuario();
+    cargarProductos();
 });
 
 /* ==================== FUNCIONES DE AUTENTICACIÓN Y SESIÓN ==================== */
@@ -673,3 +674,25 @@ function eliminarUsuario(pin, nombre) {
     };
 }
 
+
+
+
+async function cargarProductos() {
+    try {
+        const response = await fetch('/obtener-productos');
+        const data = await response.json();
+        
+        if (data.success) {
+            const datalist = document.getElementById('productos-list');
+            datalist.innerHTML = ''; // Limpiar opciones existentes
+            
+            data.productos.forEach(producto => {
+                const option = document.createElement('option');
+                option.value = producto;
+                datalist.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
+    }
+}
