@@ -1,16 +1,26 @@
+<!-- ==================== HEADER ==================== -->
 <%- include('partials/header') %>
+
+<!-- ==================== CONTENEDOR PRINCIPAL DE LOGIN ==================== -->
 <div class="pin-container">
+    <!-- Encabezado -->
     <h1>Damabrava</h1>
     <h2>Ingrese su PIN</h2>
+
+    <!-- ==================== CAMPOS DE ENTRADA PIN ==================== -->
     <div class="pin-input-container">
         <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
         <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
         <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
         <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
     </div>
+
+    <!-- ==================== MENSAJE DE ERROR ==================== -->
     <div class="error-message"></div>
     
+    <!-- ==================== TECLADO NUMÉRICO ==================== -->
     <div class="numeric-keyboard">
+        <!-- Números -->
         <button class="num-key">1</button>
         <button class="num-key">2</button>
         <button class="num-key">3</button>
@@ -20,9 +30,12 @@
         <button class="num-key">7</button>
         <button class="num-key">8</button>
         <button class="num-key">9</button>
+        <!-- Teclas especiales -->
         <button class="num-key clear">C</button>
         <button class="num-key">0</button>
         <button class="num-key delete">⌫</button>
     </div>
 </div>
+
+<!-- ==================== FOOTER ==================== -->
 <%- include('partials/footer') %>

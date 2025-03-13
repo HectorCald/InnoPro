@@ -1,3 +1,4 @@
+/* ==================== IMPORTACIONES Y CONFIGURACIÓN INICIAL ==================== */
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -9,13 +10,13 @@ import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 dotenv.config();
 
+/* ==================== CONFIGURACIÓN DE EXPRESS ==================== */
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Google Sheets Configuration
+/* ==================== CONFIGURACIÓN DE GOOGLE SHEETS ==================== */
 const auth = new google.auth.GoogleAuth({
     credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || 'damabrava@producciondb.iam.gserviceaccount.com',
@@ -27,45 +28,22 @@ const auth = new google.auth.GoogleAuth({
     ]
 });
 
-async function verificarPin(pin) {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2:B'  // Especificamos la hoja 'Usuarios'
-        });
-
-        const rows = response.data.values || [];
-        const usuario = rows.find(row => row[0] === pin);
-        
-        return usuario ? { valido: true, nombre: usuario[1] } : { valido: false };
-    } catch (error) {
-        console.error('Error accessing spreadsheet:', error);
-        throw error;
-    }
-}
-
-// Middlewares
+/* ==================== MIDDLEWARES Y CONFIGURACIÓN DE APP ==================== */
 app.use(cors());
 app.use(express.json());
-app.use(cookieParser()); // Agregar cookie-parser
+app.use(cookieParser());
 app.use(express.static(join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
-// ... existing code ...
-
-
+/* ==================== CONFIGURACIÓN DE AUTENTICACIÓN ==================== */
 const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';
 
-// Modificar el middleware requireAuth para usar JWT
 function requireAuth(req, res, next) {
     const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
-    
     if (!token) {
         return res.status(401).json({ error: 'No autorizado' });
     }
-
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded;
@@ -75,62 +53,48 @@ function requireAuth(req, res, next) {
     }
 }
 
-// Modificar la ruta principal
-app.get('/', (req, res) => {
-    res.render('login');
-});
-
-
-// Actualizar la ruta del dashboard
-app.get('/dashboard', (req, res) => {
-    res.render('dashboard');
-});
-app.get('/obtener-nombre', requireAuth, (req, res) => {
-    res.json({ nombre: req.user.nombre });
-});
-// Agregar después de los otros endpoints
-app.get('/obtener-registros', requireAuth, async (req, res) => {
+/* ==================== FUNCIONES DE UTILIDAD ==================== */
+async function verificarPin(pin) {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A:L'
+            range: 'Usuarios!A2:B'
         });
-
         const rows = response.data.values || [];
-        // Filtrar registros por el nombre del usuario en el token JWT
-        const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
-
-        res.json({ success: true, registros: registrosUsuario });
+        const usuario = rows.find(row => row[0] === pin);
+        return usuario ? { valido: true, nombre: usuario[1] } : { valido: false };
     } catch (error) {
-        console.error('Error al obtener registros:', error);
-        res.status(500).json({ success: false, error: 'Error al obtener registros' });
+        console.error('Error accessing spreadsheet:', error);
+        throw error;
     }
+}
+
+/* ==================== RUTAS DE VISTAS ==================== */
+app.get('/', (req, res) => {
+    res.render('login');
 });
 
+app.get('/dashboard', (req, res) => {
+    res.render('dashboard');
+});
 
-
-
+/* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
 app.post('/verificar-pin', async (req, res) => {
     try {
         const { pin } = req.body;
         const resultado = await verificarPin(pin);
-        
         if (resultado.valido) {
-            // Crear token JWT
             const token = jwt.sign(
                 { nombre: resultado.nombre },
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
-            
-            // Configurar cookie
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 maxAge: 24 * 60 * 60 * 1000
             });
-            
             res.json({ ...resultado, token });
         } else {
             res.json(resultado);
@@ -145,6 +109,28 @@ app.post('/cerrar-sesion', (req, res) => {
     res.clearCookie('token');
     res.json({ mensaje: 'Sesión cerrada correctamente' });
 });
+
+/* ==================== RUTAS DE API - DATOS ==================== */
+app.get('/obtener-nombre', requireAuth, (req, res) => {
+    res.json({ nombre: req.user.nombre });
+});
+
+app.get('/obtener-registros', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Produccion!A:L'
+        });
+        const rows = response.data.values || [];
+        const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
+        res.json({ success: true, registros: registrosUsuario });
+    } catch (error) {
+        console.error('Error al obtener registros:', error);
+        res.status(500).json({ success: false, error: 'Error al obtener registros' });
+    }
+});
+
 app.post('/registrar-produccion', requireAuth, async (req, res) => {
     try {
         const nombreUsuario = req.user.nombre;
@@ -154,9 +140,6 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
             month: '2-digit',
             day: '2-digit'
         });
-
-        console.log('Datos recibidos:', req.body); // Debug log
-
         const values = [[
             fecha,
             String(req.body.producto),
@@ -167,14 +150,10 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
             Number(req.body.envasesTerminados),
             String(req.body.fechaVencimiento),
             nombreUsuario,
-            
             '',
             '',
             ''
         ]];
-
-        console.log('Valores a insertar:', values); // Debug log
-
         const result = await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             range: 'Produccion!A:L',
@@ -182,12 +161,9 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
             insertDataOption: 'INSERT_ROWS',
             resource: { values }
         });
-
-        console.log('Respuesta de Google Sheets:', result); // Debug log
-
         res.json({ success: true, message: 'Registro guardado correctamente' });
     } catch (error) {
-        console.error('Error detallado:', error); // Debug log
+        console.error('Error detallado:', error);
         res.status(500).json({ 
             success: false, 
             error: error.message || 'Error al guardar el registro'
@@ -195,50 +171,32 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
     }
 });
 
-
-
-
-// Agregar después de los otros endpoints
-// Agregar después de los otros endpoints
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Obtener información del spreadsheet
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
         });
-        
-        // Encontrar específicamente la hoja "Produccion"
         const produccionSheet = spreadsheet.data.sheets.find(
             sheet => sheet.properties.title === 'Produccion'
         );
-
         if (!produccionSheet) {
             throw new Error('No se encontró la hoja de Produccion');
         }
-
-        // Obtener registros solo de la hoja de Produccion
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             range: 'Produccion!A:L'
         });
-
         const rows = response.data.values || [];
-        
-        // Ahora que tenemos rows, podemos buscar el índice
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
             row[1] === producto && 
             row[8] === req.user.nombre
         ) + 1;
-
         if (rowIndex <= 0) {
             return res.status(404).json({ success: false, error: 'Registro no encontrado' });
         }
-
-        // Eliminar usando el ID específico de la hoja de Produccion
         await sheets.spreadsheets.batchUpdate({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             resource: {
@@ -254,7 +212,6 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
                 }]
             }
         });
-
         res.json({ success: true });
     } catch (error) {
         console.error('Error detallado al eliminar registro:', error);
@@ -265,6 +222,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     }
 });
 
+/* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    console.log(`Servidor corriendo en el puerto ${port}`);
 });

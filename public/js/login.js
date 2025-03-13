@@ -1,8 +1,8 @@
+/* ==================== CLASE PRINCIPAL DE LOGIN ==================== */
 class LoginPin {
     constructor() {
-        // Verificar que estamos en la página de login
         if (!document.querySelector('.pin-container')) {
-            return; // No inicializar si no estamos en la página de login
+            return;
         }
 
         this.inputs = document.querySelectorAll('.pin-input');
@@ -13,8 +13,9 @@ class LoginPin {
         this.inicializar();
     }
 
+/* ==================== INICIALIZACIÓN Y EVENTOS ==================== */
     inicializar() {
-        if (!this.numericKeyboard) return; // Salir si no existe el teclado numérico
+        if (!this.numericKeyboard) return;
         
         this.numericKeyboard.addEventListener('click', (e) => {
             if (e.target.classList.contains('num-key')) {
@@ -23,6 +24,7 @@ class LoginPin {
         });
     }
 
+/* ==================== GESTIÓN DEL TECLADO NUMÉRICO ==================== */
     manejarTecladoNumerico(tecla) {
         const valor = tecla.textContent;
 
@@ -52,6 +54,7 @@ class LoginPin {
         }
     }
 
+/* ==================== MANIPULACIÓN DE INPUTS ==================== */
     borrarUltimoDigito() {
         if (this.currentIndex > 0) {
             this.currentIndex--;
@@ -72,41 +75,39 @@ class LoginPin {
         this.currentPin = '';
         this.currentIndex = 0;
     }
-    // ... existing code ...
 
-async validarPin(pin) {
-    try {
-        const response = await fetch('/verificar-pin', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ pin })
-        });
+/* ==================== VALIDACIÓN Y AUTENTICACIÓN ==================== */
+    async validarPin(pin) {
+        try {
+            const response = await fetch('/verificar-pin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pin })
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (data.valido) {
-            this.mostrarExito(data.nombre);
-        } else {
-            this.mostrarError();
+            if (data.valido) {
+                this.mostrarExito(data.nombre);
+            } else {
+                this.mostrarError();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.mostrarError('Error de conexión');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        this.mostrarError('Error de conexión');
     }
-}
 
-mostrarExito(nombre) {
-    this.errorMessage.style.color = '#28a745';
-    this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
-    setTimeout(() => {
-        window.location.replace('/dashboard'); // Usar replace en lugar de href
-    }, 1500);
-}
-
-// ... rest of the code ...
-
+/* ==================== GESTIÓN DE MENSAJES Y RESPUESTAS ==================== */
+    mostrarExito(nombre) {
+        this.errorMessage.style.color = '#28a745';
+        this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
+        setTimeout(() => {
+            window.location.replace('/dashboard');
+        }, 1500);
+    }
 
     mostrarError(mensaje = 'PIN incorrecto. Intente nuevamente.') {
         this.errorMessage.textContent = mensaje;
@@ -114,12 +115,11 @@ mostrarExito(nombre) {
     }
 }
 
+/* ==================== INICIALIZACIÓN DE LA APLICACIÓN ==================== */
 document.addEventListener('DOMContentLoaded', () => {
     const loginPin = new LoginPin();
     bienvenida();
     
-
-    // Agregar evento al botón de consulta
     const btnConsulta = document.querySelector('.consultarProducto');
     if (btnConsulta) {
         btnConsulta.addEventListener('click', () => mostrar('.cuentas'));

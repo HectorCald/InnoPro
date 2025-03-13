@@ -1,9 +1,12 @@
+<!-- ==================== HEADER Y NAVEGACIÓN ==================== -->
 <%- include('partials/header') %>
     <h1 class="bienvenida">...</h1>
     <button class="logout-btn" onclick="manejarCierreSesion()">
         <i class="fas fa-sign-out-alt"></i>
         <span>Cerrar Sesión</span>
     </button>
+
+<!-- ==================== CONTENEDOR PRINCIPAL Y BOTONES ==================== -->
     <div class="container">
         <button class="dashboard-btn registrarProducto" onclick="mostrar('.form1')">
             <i class="fas fa-file-alt"></i>
@@ -14,12 +17,15 @@
             <span>Mis cuentas</span>
         </button>
     </div>
+
+<!-- ==================== FORMULARIO DE REGISTRO ==================== -->
     <div class="form1">
         <div class="title">
             <h1>Registro</h1>
             <button onclick="mostrar('.form1')"><i class="fas fa-times"></i></button>
         </div>
         <form action="">
+            <!-- Campos del Producto -->
             <p>Producto *</p>
             <input type="text" name="producto" placeholder="Nombre del producto" required>
 
@@ -29,6 +35,7 @@
             <p>Gramaje (gr) *</p>
             <input type="number" name="gramaje" placeholder="Peso en gramos" required>
 
+            <!-- Campos de Proceso -->
             <p>Selección/Cernido *</p>
             <select name="seleccion" required>
                 <option value="">Seleccione una opción</option>
@@ -36,6 +43,7 @@
                 <option value="Seleccionado">Seleccionado</option>
             </select>
 
+            <!-- Sección de Microondas -->
             <p>Microondas *</p>
             <div class="microondas-container">
                 <div class="radio-group">
@@ -49,11 +57,14 @@
                 </div>
             </div>
 
+            <!-- Campos de Producción -->
             <p>Envases Terminados *</p>
             <input type="number" name="envasesTerminados" placeholder="Cantidad de envases" required>
 
             <p>Fecha de Vencimiento *</p>
             <input type="month" name="fechaVencimiento" required>
+
+            <!-- Botón de Envío -->
             <p class="nota"><i class="fas fa-exclamation-circle"></i> Verifica bien la informacion antes de registrar!</p>
             <button class="enviarRegistro">
                 <i class="fas fa-clipboard-check"></i>
@@ -61,6 +72,8 @@
             </button>
         </form>
     </div>
+
+<!-- ==================== SECCIÓN DE REGISTROS ==================== -->
     <div class="cuentas">
         <div class="title">
             <h1>Mis Registros</h1>
@@ -70,8 +83,12 @@
             <!-- Los registros se cargarán dinámicamente aquí -->
         </div>
     </div>
+
+<!-- ==================== COMPONENTES DE NOTIFICACIÓN ==================== -->
     <div class="notificador">
     </div>
+
+<!-- ==================== DIÁLOGO DE CONFIRMACIÓN ==================== -->
     <div class="anuncio">
         <div class="anuncio-contenido">
             <i class="fas fa-exclamation-triangle"></i>
@@ -84,4 +101,5 @@
         </div>
     </div>
 
+<!-- ==================== FOOTER ==================== -->
     <%- include('partials/footer') %>

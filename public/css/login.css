@@ -1,14 +1,19 @@
+/* ==================== FONTS ==================== */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-/* ESTILOS DE LOS CUADRANTES DE PIN Y CONTAINER GENERAL */
-*{
+
+/* ==================== GLOBAL STYLES ==================== */
+* {
     box-sizing: border-box;
     padding: 0;
     margin: 0;
     font-family:'Poppins', sans-serif;
 }
-button{
+
+button {
     touch-action: manipulation;
 }
+
+/* ==================== PIN CONTAINER & LAYOUT ==================== */
 .pin-container {
     display: flex;
     flex-direction: column;
@@ -16,16 +21,18 @@ button{
     justify-content: center;
     min-height: 80vh;
     padding: 1rem;
-    background-color: #212121 ;
+    background-color: #212121;
     height: 100vh;
     width: 100%;
     padding-block: 5em;
 }
-.pin-container h1, .pin-container h2{
+
+.pin-container h1, .pin-container h2 {
     color: white;
     font-size: 1.5rem;
 }
 
+/* ==================== PIN INPUT STYLES ==================== */
 .pin-input-container {
     display: flex;
     gap: 1rem;
@@ -63,29 +70,7 @@ button{
     min-height: 20px;
 }
 
-@media (max-width: 400px) {
-    .pin-input {
-        width: 60px;
-        height: 60px;
-        font-size: 2rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .pin-input-container {
-        gap: 0.8rem;
-    }
-    .error-message {
-        color: #dc3545;
-        margin-top: 1rem;
-        font-size: 1rem;
-        min-height: 20px;
-        text-align: center;
-    }
-}
-/* ESTILOS DEL TECLADO NUMERICO */
-
+/* ==================== NUMERIC KEYBOARD ==================== */
 .numeric-keyboard {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -127,7 +112,29 @@ button{
     color: #333;
 }
 
+/* ==================== RESPONSIVE STYLES ==================== */
 @media (max-width: 400px) {
+    .pin-input {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .pin-input-container {
+        gap: 0.8rem;
+    }
+
+    .error-message {
+        color: #dc3545;
+        margin-top: 1rem;
+        font-size: 1rem;
+        min-height: 20px;
+        text-align: center;
+    }
+
     .numeric-keyboard {
         max-width: 280px;
         gap: 8px;

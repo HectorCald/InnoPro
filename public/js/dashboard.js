@@ -1,3 +1,5 @@
+
+/* ==================== INICIALIZACIÓN DE LA APLICACIÓN ==================== */
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     manejarCierreSesion();
@@ -11,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+/* ==================== FUNCIONES DE AUTENTICACIÓN Y SESIÓN ==================== */
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-nombre');
@@ -26,6 +29,7 @@ async function bienvenida() {
         console.error('Error al obtener el nombre:', error);
     }
 }
+
 function manejarCierreSesion() {
     const btnLogout = document.querySelector('.logout-btn');
     btnLogout.addEventListener('click', async () => {
@@ -39,6 +43,8 @@ function manejarCierreSesion() {
         }
     });
 }
+
+/* ==================== GESTIÓN DE INTERFAZ Y NAVEGACIÓN ==================== */
 function mostrar(item) {
     var div = document.querySelector(item);
     const container = document.querySelector('.container');
@@ -82,6 +88,8 @@ function mostrar(item) {
     }
     resetearFormulario();
 }
+
+/* ==================== GESTIÓN DE FORMULARIOS ==================== */
 function inicializarFormulario() {
     const form = document.querySelector('.form1 form');
     
@@ -170,24 +178,7 @@ function resetearFormulario() {
     document.querySelector('.microondas-tiempo').style.display = 'none';
 }
 
-
-// Agregar después de las funciones existentes
-function mostrarDetalles(card) {
-    const detalles = card.querySelector('.registro-detalles');
-    const todosLosDetalles = document.querySelectorAll('.registro-detalles');
-    
-    // Cerrar otros detalles abiertos
-    todosLosDetalles.forEach(det => {
-        if (det !== detalles && det.classList.contains('active')) {
-            det.classList.remove('active');
-        }
-    });
-    
-    // Toggle detalles actuales
-    detalles.classList.toggle('active');
-}
-
-// Agregar después de las funciones existentes
+/* ==================== GESTIÓN DE REGISTROS Y DATOS ==================== */
 async function cargarRegistros() {
     try {
         const response = await fetch('/obtener-registros');
@@ -238,100 +229,22 @@ function crearTarjetaRegistro(registro) {
 
     return div;
 }
-// Función para eliminar un registro
-async function eliminarRegistro(fecha, producto) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/eliminar-registro', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ fecha, producto })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            mostrarNotificacion('Registro eliminado correctamente', 'success');
-            cargarRegistros(); // Recargar la lista de registros
-        } else {
-            throw new Error(result.error || 'Error al eliminar el registro');
+
+function mostrarDetalles(card) {
+    const detalles = card.querySelector('.registro-detalles');
+    const todosLosDetalles = document.querySelectorAll('.registro-detalles');
+    
+    // Cerrar otros detalles abiertos
+    todosLosDetalles.forEach(det => {
+        if (det !== detalles && det.classList.contains('active')) {
+            det.classList.remove('active');
         }
-    } catch (error) {
-        console.error('Error al eliminar registro:', error);
-        mostrarNotificacion('Error al eliminar el registro: ' + error.message, 'error');
-    }
-}
-
-// Modificar la función mostrar para cargar registros cuando se abre la vista de cuentas
-function mostrar(item) {
-    var div = document.querySelector(item);
-    if (item === '.cuentas') {
-        document.querySelector('.form1').style.display = 'none';
-        cargarRegistros(); // Cargar registros cuando se muestra la vista
-    } else if (item === '.form1') {
-        document.querySelector('.cuentas').style.display = 'none';
-    }
-    
-    if (div.style.display === 'none' || div.style.display === '') {
-        div.style.display = 'flex';
-    } else {
-        div.style.display = 'none';
-    }
-    resetearFormulario();
-}
-
-
-
-
-
-
-// Agregar al inicio del archivo, después de las importaciones
-function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {
-    const notificador = document.querySelector('.notificador');
-    const notificacion = document.createElement('div');
-    notificacion.className = `notificacion ${tipo}`;
-    
-    let icono;
-    switch(tipo) {
-        case 'success':
-            icono = 'fa-check-circle';
-            break;
-        case 'warning':
-            icono = 'fa-exclamation-triangle';
-            break;
-        case 'error':
-            icono = 'fa-times-circle';
-            break;
-    }
-    
-    notificacion.innerHTML = `
-        <i class="fas ${icono}"></i>
-        <span class="mensaje">${mensaje}</span>
-        <button class="cerrar"><i class="fas fa-times"></i></button>
-    `;
-    
-    notificador.appendChild(notificacion);
-    
-    // Manejar el cierre de la notificación
-    const cerrarBtn = notificacion.querySelector('.cerrar');
-    cerrarBtn.addEventListener('click', () => {
-        notificacion.style.animation = 'fadeOut 0.3s ease-out forwards';
-        setTimeout(() => notificacion.remove(), 300);
     });
     
-    // Auto-cerrar después de la duración especificada
-    setTimeout(() => {
-        if (notificacion.parentElement) {
-            notificacion.style.animation = 'fadeOut 0.3s ease-out forwards';
-            setTimeout(() => notificacion.remove(), 300);
-        }
-    }, duracion);
+    // Toggle detalles actuales
+    detalles.classList.toggle('active');
 }
 
-// Modificar la función eliminarRegistro
 async function eliminarRegistro(fecha, producto) {
     const anuncio = document.querySelector('.anuncio');
     const confirmarBtn = anuncio.querySelector('.confirmar');
@@ -386,12 +299,45 @@ async function eliminarRegistro(fecha, producto) {
     });
 }
 
-// Modificar la función de envío del formulario
-// Buscar el try-catch donde se maneja el registro y modificar:
-if (result.success) {
-    mostrarNotificacion('Registro guardado correctamente', 'success');
-    resetearFormulario();
-    mostrar('.form1');
-} else {
-    throw new Error(result.error || 'Error desconocido');
+/* ==================== SISTEMA DE NOTIFICACIONES ==================== */
+function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {
+    const notificador = document.querySelector('.notificador');
+    const notificacion = document.createElement('div');
+    notificacion.className = `notificacion ${tipo}`;
+    
+    let icono;
+    switch(tipo) {
+        case 'success':
+            icono = 'fa-check-circle';
+            break;
+        case 'warning':
+            icono = 'fa-exclamation-triangle';
+            break;
+        case 'error':
+            icono = 'fa-times-circle';
+            break;
+    }
+    
+    notificacion.innerHTML = `
+        <i class="fas ${icono}"></i>
+        <span class="mensaje">${mensaje}</span>
+        <button class="cerrar"><i class="fas fa-times"></i></button>
+    `;
+    
+    notificador.appendChild(notificacion);
+    
+    // Manejar el cierre de la notificación
+    const cerrarBtn = notificacion.querySelector('.cerrar');
+    cerrarBtn.addEventListener('click', () => {
+        notificacion.style.animation = 'fadeOut 0.3s ease-out forwards';
+        setTimeout(() => notificacion.remove(), 300);
+    });
+    
+    // Auto-cerrar después de la duración especificada
+    setTimeout(() => {
+        if (notificacion.parentElement) {
+            notificacion.style.animation = 'fadeOut 0.3s ease-out forwards';
+            setTimeout(() => notificacion.remove(), 300);
+        }
+    }, duracion);
 }
