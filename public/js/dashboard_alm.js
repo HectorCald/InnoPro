@@ -447,7 +447,7 @@ async function buscarRegistros() {
     try {
         const fecha = document.getElementById('filtroFecha').value;
         const lote = document.getElementById('filtroLote').value;
-        const producto = document.getElementById('filtroProducto').value;
+        const producto = document.getElementById('producto-input').value; // Cambiado de 'filtroProducto' a 'producto-input'
 
         console.log('Filtros:', { fecha, lote, producto }); // Para debugging
 
