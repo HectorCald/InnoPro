@@ -119,7 +119,7 @@ app.get('/obtener-registros', requireAuth, async (req, res) => {
 
 
 
-pp.post('/verificar-pin', async (req, res) => {
+app.post('/verificar-pin', async (req, res) => {
     try {
         const { pin } = req.body;
         const resultado = await verificarPin(pin);
