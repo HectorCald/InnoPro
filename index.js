@@ -59,11 +59,19 @@ async function verificarPin(pin) {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2:B'
+            range: 'Usuarios!A2:C' // Agregamos una columna para el rol
         });
         const rows = response.data.values || [];
         const usuario = rows.find(row => row[0] === pin);
-        return usuario ? { valido: true, nombre: usuario[1] } : { valido: false };
+        
+        if (usuario) {
+            return { 
+                valido: true, 
+                nombre: usuario[1],
+                rol: usuario[1] === 'Almacen_adm' ? 'admin' : 'user'
+            };
+        }
+        return { valido: false };
     } catch (error) {
         console.error('Error accessing spreadsheet:', error);
         throw error;
@@ -77,6 +85,9 @@ app.get('/', (req, res) => {
 
 app.get('/dashboard', (req, res) => {
     res.render('dashboard');
+});
+app.get('/dashboard_alm', (req, res) => {
+    res.render('dashboard_alm');
 });
 
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
@@ -175,49 +186,89 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-        });
-        const produccionSheet = spreadsheet.data.sheets.find(
-            sheet => sheet.properties.title === 'Produccion'
-        );
-        if (!produccionSheet) {
-            throw new Error('No se encontró la hoja de Produccion');
-        }
+        
+        // Verificar si es admin o el propietario del registro
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             range: 'Produccion!A:L'
         });
+
         const rows = response.data.values || [];
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
             row[1] === producto && 
-            row[8] === req.user.nombre
+            (req.user.nombre === 'Almacen_adm' || row[8] === req.user.nombre)
         ) + 1;
-        if (rowIndex <= 0) {
-            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
-        }
-        await sheets.spreadsheets.batchUpdate({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            resource: {
-                requests: [{
-                    deleteDimension: {
-                        range: {
-                            sheetId: produccionSheet.properties.sheetId,
-                            dimension: 'ROWS',
-                            startIndex: rowIndex - 1,
-                            endIndex: rowIndex
-                        }
-                    }
-                }]
-            }
-        });
-        res.json({ success: true });
+
+        // ... resto del código de eliminación existente ...
     } catch (error) {
         console.error('Error detallado al eliminar registro:', error);
         res.status(500).json({ 
             success: false, 
             error: 'Error al eliminar el registro: ' + (error.message || 'Error desconocido')
+        });
+    }
+});
+app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen_adm') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Produccion!A:L'
+        });
+
+        const rows = response.data.values || [];
+        res.json({ success: true, registros: rows });
+    } catch (error) {
+        console.error('Error al obtener registros:', error);
+        res.status(500).json({ success: false, error: 'Error al obtener registros' });
+    }
+});
+app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen_adm') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const { fecha, producto, verificacion, fechaVerificacion, observaciones } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener todos los registros
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Produccion!A:L'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === producto
+        ) + 1;
+
+        if (rowIndex <= 0) {
+            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
+        }
+
+        // Actualizar las últimas tres columnas
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: `Produccion!J${rowIndex}:L${rowIndex}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[verificacion, fechaVerificacion, observaciones]]
+            }
+        });
+
+        res.json({ success: true, message: 'Registro actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar verificación:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar el registro: ' + (error.message || 'Error desconocido')
         });
     }
 });

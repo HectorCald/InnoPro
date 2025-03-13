@@ -13,10 +13,10 @@ class LoginPin {
         this.inicializar();
     }
 
-/* ==================== INICIALIZACIÓN Y EVENTOS ==================== */
+    /* ==================== INICIALIZACIÓN Y EVENTOS ==================== */
     inicializar() {
         if (!this.numericKeyboard) return;
-        
+
         this.numericKeyboard.addEventListener('click', (e) => {
             if (e.target.classList.contains('num-key')) {
                 this.manejarTecladoNumerico(e.target);
@@ -24,7 +24,7 @@ class LoginPin {
         });
     }
 
-/* ==================== GESTIÓN DEL TECLADO NUMÉRICO ==================== */
+    /* ==================== GESTIÓN DEL TECLADO NUMÉRICO ==================== */
     manejarTecladoNumerico(tecla) {
         const valor = tecla.textContent;
 
@@ -41,11 +41,11 @@ class LoginPin {
         if (this.currentIndex < 4) {
             this.inputs[this.currentIndex].value = valor;
             this.inputs[this.currentIndex].classList.add('filled');
-            
+
             const pinArray = this.currentPin.split('');
             pinArray[this.currentIndex] = valor;
             this.currentPin = pinArray.join('');
-            
+
             this.currentIndex++;
 
             if (this.currentPin.length === 4) {
@@ -54,13 +54,13 @@ class LoginPin {
         }
     }
 
-/* ==================== MANIPULACIÓN DE INPUTS ==================== */
+    /* ==================== MANIPULACIÓN DE INPUTS ==================== */
     borrarUltimoDigito() {
         if (this.currentIndex > 0) {
             this.currentIndex--;
             this.inputs[this.currentIndex].value = '';
             this.inputs[this.currentIndex].classList.remove('filled');
-            
+
             const pinArray = this.currentPin.split('');
             pinArray[this.currentIndex] = '';
             this.currentPin = pinArray.join('');
@@ -76,7 +76,7 @@ class LoginPin {
         this.currentIndex = 0;
     }
 
-/* ==================== VALIDACIÓN Y AUTENTICACIÓN ==================== */
+    /* ==================== VALIDACIÓN Y AUTENTICACIÓN ==================== */
     async validarPin(pin) {
         try {
             const response = await fetch('/verificar-pin', {
@@ -91,6 +91,14 @@ class LoginPin {
 
             if (data.valido) {
                 this.mostrarExito(data.nombre);
+                // Redirigir según el rol
+                setTimeout(() => {
+                    if (data.rol === 'admin') {
+                        window.location.replace('/dashboard_alm');
+                    } else {
+                        window.location.replace('/dashboard');
+                    }
+                }, 1500);
             } else {
                 this.mostrarError();
             }
@@ -100,7 +108,7 @@ class LoginPin {
         }
     }
 
-/* ==================== GESTIÓN DE MENSAJES Y RESPUESTAS ==================== */
+    /* ==================== GESTIÓN DE MENSAJES Y RESPUESTAS ==================== */
     mostrarExito(nombre) {
         this.errorMessage.style.color = '#28a745';
         this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
@@ -119,7 +127,7 @@ class LoginPin {
 document.addEventListener('DOMContentLoaded', () => {
     const loginPin = new LoginPin();
     bienvenida();
-    
+
     const btnConsulta = document.querySelector('.consultarProducto');
     if (btnConsulta) {
         btnConsulta.addEventListener('click', () => mostrar('.cuentas'));

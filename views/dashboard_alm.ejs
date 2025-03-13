@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+    <link rel="stylesheet" href="./css/dashboard_alm.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <h1 class="bienvenida">...</h1>
+    <button class="logout-btn" onclick="manejarCierreSesion()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Cerrar Sesión</span>
+    </button>
+    <div class="container">
+        <button class="dashboard-btn verificarRegistros">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Verificar Registros</span>
+        </button>
+        <button class="dashboard-btn consultarRegistros">
+            <i class="fas fa-chart-line"></i>
+            <span>Consultar Registros</span>
+        </button>
+    </div>
+
+    <!-- Vista de Registros -->
+    <div class="registros-view">
+        <div class="title">
+            <h1>Verificación de Registros</h1>
+            <button onclick="mostrar('.registros-view')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="registros-container">
+            <!-- Los registros se cargarán dinámicamente aquí -->
+        </div>
+    </div>
+
+    <div class="notificador"></div>
+    <script src="./js/dashboard_alm.js"></script>
+    <%- include('partials/footer') %>
