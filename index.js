@@ -4,7 +4,8 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { google } from 'googleapis';
-import session from 'express-session';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,6 +48,7 @@ async function verificarPin(pin) {
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser()); // Agregar cookie-parser
 app.use(express.static(join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
@@ -54,58 +56,37 @@ app.set('views', join(__dirname, 'views'));
 // ... existing code ...
 
 
-// Actualizar la configuración de sesión
-app.use(session({
-    secret: 'tu_clave_secreta',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: false, // Cambiar a true si usas HTTPS
-        maxAge: 24 * 60 * 60 * 1000,
-        httpOnly: true
-    }
-}));
+const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';
 
-// Modificar el middleware requireAuth
+// Modificar el middleware requireAuth para usar JWT
 function requireAuth(req, res, next) {
-    if (!req.session || !req.session.authenticated) {
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
         return res.status(401).json({ error: 'No autorizado' });
     }
-    res.set({
-        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-        'Pragma': 'no-cache',
-        'Expires': '-1'
-    });
-    next();
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        return res.status(401).json({ error: 'Token inválido' });
+    }
 }
 
 // Modificar la ruta principal
 app.get('/', (req, res) => {
-    if (req.session && req.session.authenticated) {
-        return res.redirect('/dashboard');
-    }
-    res.set({
-        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-        'Pragma': 'no-cache',
-        'Expires': '-1'
-    });
     res.render('login');
 });
 
+
 // Actualizar la ruta del dashboard
 app.get('/dashboard', (req, res) => {
-    if (!req.session || !req.session.authenticated) {
-        return res.redirect('/');
-    }
-    res.set({
-        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-        'Pragma': 'no-cache',
-        'Expires': '-1'
-    });
     res.render('dashboard');
 });
-app.get('/obtener-nombre', (req, res) => {
-    res.json({ nombre: req.session.nombre });
+app.get('/obtener-nombre', requireAuth, (req, res) => {
+    res.json({ nombre: req.user.nombre });
 });
 // Agregar después de los otros endpoints
 app.get('/obtener-registros', requireAuth, async (req, res) => {
@@ -117,8 +98,8 @@ app.get('/obtener-registros', requireAuth, async (req, res) => {
         });
 
         const rows = response.data.values || [];
-        // Filtrar registros por el nombre del usuario en sesión
-        const registrosUsuario = rows.filter(row => row[8] === req.session.nombre);
+        // Filtrar registros por el nombre del usuario en el token JWT
+        const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
 
         res.json({ success: true, registros: registrosUsuario });
     } catch (error) {
@@ -136,15 +117,21 @@ app.post('/verificar-pin', async (req, res) => {
         const resultado = await verificarPin(pin);
         
         if (resultado.valido) {
-            req.session.authenticated = true;
-            req.session.nombre = resultado.nombre;
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Error al guardar la sesión:', err);
-                    return res.status(500).json({ error: 'Error al iniciar sesión' });
-                }
-                res.json(resultado);
+            // Crear token JWT
+            const token = jwt.sign(
+                { nombre: resultado.nombre },
+                JWT_SECRET,
+                { expiresIn: '24h' }
+            );
+            
+            // Configurar cookie
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 24 * 60 * 60 * 1000
             });
+            
+            res.json({ ...resultado, token });
         } else {
             res.json(resultado);
         }
@@ -155,22 +142,18 @@ app.post('/verificar-pin', async (req, res) => {
 });
 
 app.post('/cerrar-sesion', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).json({ error: 'Error al cerrar sesión' });
-        }
-        res.json({ mensaje: 'Sesión cerrada correctamente' });
-    });
+    res.clearCookie('token');
+    res.json({ mensaje: 'Sesión cerrada correctamente' });
 });
 app.post('/registrar-produccion', requireAuth, async (req, res) => {
     try {
+        const nombreUsuario = req.user.nombre;
         const sheets = google.sheets({ version: 'v4', auth });
         const fecha = new Date().toLocaleDateString('es-ES', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
         });
-        const nombreUsuario = req.session.nombre;
 
         console.log('Datos recibidos:', req.body); // Debug log
 
@@ -220,6 +203,11 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === producto && 
+            row[8] === req.user.nombre // Usar el nombre del token JWT
+        ) + 1;
         
         // Obtener información del spreadsheet
         const spreadsheet = await sheets.spreadsheets.get({
@@ -242,11 +230,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[1] === producto && 
-            row[8] === req.session.nombre
-        ) + 1;
+        
 
         if (rowIndex <= 0) {
             return res.status(404).json({ success: false, error: 'Registro no encontrado' });
