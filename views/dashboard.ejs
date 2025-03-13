@@ -28,8 +28,10 @@
         <form action="">
             <!-- Campos del Producto -->
             <p>Producto *</p>
-            <input type="text" name="producto" placeholder="Nombre del producto" required>
-
+            <input type="text" name="producto" id="producto-input" list="productos-list" placeholder="Nombre del producto" autocomplete="off" required>
+            <datalist id="productos-list">
+                <!-- Las opciones se cargarán dinámicamente -->
+            </datalist>
             <p>Lote *</p>
             <input type="number" name="lote" placeholder="Número de lote" required>
 

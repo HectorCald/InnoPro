@@ -217,6 +217,22 @@
     text-align: center;
     margin-top: 1em;
 }
+/* Estilos para el input con datalist */
+input[list] {
+    width: 100%;
+    padding: 0.8em;
+    border: 1px solid #3d4145;
+    border-radius: 0.5em;
+    background: #353535;
+    color: #fff;
+    margin-bottom: 1em;
+}
+
+input[list]:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
 
 /* ==================== MICROWAVE CONTROLS ==================== */
 .microondas-container {

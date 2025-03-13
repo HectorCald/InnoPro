@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     manejarCierreSesion();
     inicializarFormulario();
+    cargarProductos();
     const closeButtons = document.querySelectorAll('.title button');
     closeButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -45,6 +46,28 @@ function manejarCierreSesion() {
 }
 
 /* ==================== GESTIÓN DE INTERFAZ Y NAVEGACIÓN ==================== */
+// Agregar esta función para cargar los productos
+async function cargarProductos() {
+    try {
+        const response = await fetch('/obtener-productos');
+        const data = await response.json();
+        
+        if (data.success) {
+            const datalist = document.getElementById('productos-list');
+            datalist.innerHTML = ''; // Limpiar opciones existentes
+            
+            data.productos.forEach(producto => {
+                const option = document.createElement('option');
+                option.value = producto;
+                datalist.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
+    }
+}
+
+
 function mostrar(item) {
     var div = document.querySelector(item);
     const container = document.querySelector('.container');

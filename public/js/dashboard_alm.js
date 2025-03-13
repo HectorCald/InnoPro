@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     manejarCierreSesion();
     inicializarBotones();
+    inicializarModalUsuario();
 });
 
 /* ==================== FUNCIONES DE AUTENTICACIÓN Y SESIÓN ==================== */
@@ -30,7 +31,9 @@ function manejarCierreSesion() {
         try {
             const response = await fetch('/cerrar-sesion', { method: 'POST' });
             if (response.ok) {
+                mostrarNotificacion('Sesión cerrada correctamente', 'success', 3000);
                 window.location.href = '/';
+            
             }
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
@@ -57,6 +60,56 @@ function inicializarBotones() {
         });
     }
 }
+// Agregar después de inicializarBotones()
+function inicializarModalUsuario() {
+    const btnAgregar = document.querySelector('.btn-agregar-usuario');
+    const modal = document.querySelector('.modal-usuario');
+    const btnCerrar = modal.querySelector('.cerrar-modal');
+    const btnCancelar = modal.querySelector('.btn-cancelar');
+    const form = document.getElementById('form-usuario');
+
+    btnAgregar.addEventListener('click', () => {
+        modal.style.display = 'flex';
+    });
+
+    btnCerrar.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    btnCancelar.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const pin = document.getElementById('nuevo-pin').value;
+        const nombre = document.getElementById('nuevo-nombre').value;
+
+        try {
+            const response = await fetch('/crear-usuario', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pin, nombre })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Usuario creado correctamente', 'success');
+                modal.style.display = 'none';
+                form.reset();
+                cargarUsuarios(); // Recargar la lista de usuarios
+            } else {
+                mostrarNotificacion(data.error || 'Error al crear usuario', 'error');
+            }
+        } catch (error) {
+            mostrarNotificacion('Error al crear usuario', 'error');
+        }
+    });
+}
+
+// Modificar el DOMContentLoaded para incluir la inicialización del modal
 
 /* ==================== SISTEMA DE NOTIFICACIONES ==================== */
 function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {

@@ -141,6 +141,25 @@ app.get('/obtener-registros', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener registros' });
     }
 });
+// Agregar esta nueva ruta para obtener productos
+app.get('/obtener-productos', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Productos!A2:A' // Obtener solo la primera columna, excluyendo el título
+        });
+
+        const productos = response.data.values ? response.data.values.map(row => row[0]) : [];
+        res.json({ success: true, productos });
+    } catch (error) {
+        console.error('Error al obtener productos:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener lista de productos' 
+        });
+    }
+});
 
 app.post('/registrar-produccion', requireAuth, async (req, res) => {
     try {
@@ -178,6 +197,57 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: error.message || 'Error al guardar el registro'
+        });
+    }
+});
+app.post('/crear-usuario', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen_adm') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const { pin, nombre } = req.body;
+
+        // Validaciones
+        if (!pin || !nombre) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'PIN y nombre son requeridos' 
+            });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Verificar si el PIN ya existe
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Usuarios!A2:B'
+        });
+
+        const rows = response.data.values || [];
+        if (rows.some(row => row[0] === pin)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'El PIN ya existe' 
+            });
+        }
+
+        // Agregar nuevo usuario
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Usuarios!A2',
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[pin, nombre]]
+            }
+        });
+
+        res.json({ success: true, message: 'Usuario creado correctamente' });
+    } catch (error) {
+        console.error('Error al crear usuario:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al crear usuario: ' + (error.message || 'Error desconocido') 
         });
     }
 });
