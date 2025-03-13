@@ -2,20 +2,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch('/obtener-nombre', {
             method: 'GET',
+            credentials: 'include',
             headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            },
-            credentials: 'same-origin'
+                'Cache-Control': 'no-cache'
+            }
         });
 
         if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
+            window.location.href = '/';
+            return;
         }
 
         const data = await response.json();
         if (!data.nombre) {
-            throw new Error('No se encontró el nombre de usuario');
+            window.location.href = '/';
+            return;
         }
 
         // Si llegamos aquí, la sesión es válida
@@ -24,15 +25,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             bienvenida.innerHTML = '<i class="fas fa-microchip"></i> DB Tec.';
         }
 
-        // Inicializar eventos después de confirmar la sesión
         inicializarEventos();
     } catch (error) {
         console.error('Error:', error);
-        // En lugar de redireccionar, mostrar un mensaje
-        const bienvenida = document.querySelector('.bienvenida');
-        if (bienvenida) {
-            bienvenida.innerHTML = 'Error de sesión. Por favor, <a href="/">inicie sesión nuevamente</a>';
-        }
+        window.location.href = '/';
     }
 });
 

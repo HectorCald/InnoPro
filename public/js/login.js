@@ -79,10 +79,9 @@ async validarPin(pin) {
         const response = await fetch('/verificar-pin', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Cache-Control': 'no-cache'
+                'Content-Type': 'application/json'
             },
-            credentials: 'same-origin',
+            credentials: 'include',
             body: JSON.stringify({ pin })
         });
 
@@ -107,10 +106,9 @@ mostrarExito(nombre) {
     this.errorMessage.style.color = '#28a745';
     this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
     
-    // Esperar un momento antes de redirigir
     setTimeout(() => {
-        window.location.replace('/dashboard');
-    }, 500);
+        window.location.href = '/dashboard';
+    }, 1000);
 }
 
 

@@ -57,15 +57,13 @@ app.set('views', join(__dirname, 'views'));
 // Actualizar la configuración de sesión
 app.use(session({
     secret: 'tu_clave_secreta',
-    resave: true,
+    resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // Cambiar a true si usas HTTPS
         maxAge: 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        sameSite: 'strict'
-    },
-    rolling: true
+        httpOnly: true
+    }
 }));
 
 // Modificar el middleware requireAuth
@@ -99,11 +97,6 @@ app.get('/dashboard', (req, res) => {
     if (!req.session || !req.session.authenticated) {
         return res.redirect('/');
     }
-    res.set({
-        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-        'Pragma': 'no-cache',
-        'Expires': '-1'
-    });
     res.render('dashboard');
 });
 app.get('/obtener-nombre', (req, res) => {
@@ -140,15 +133,22 @@ app.post('/verificar-pin', async (req, res) => {
         if (resultado.valido) {
             req.session.authenticated = true;
             req.session.nombre = resultado.nombre;
-            await new Promise((resolve) => req.session.save(resolve));
+            req.session.save((err) => {
+                if (err) {
+                    console.error('Error al guardar la sesión:', err);
+                    return res.status(500).json({ error: 'Error al iniciar sesión' });
+                }
+                res.json(resultado);
+            });
+        } else {
+            res.json(resultado);
         }
-        
-        res.json(resultado);
     } catch (error) {
         console.error('Error al verificar PIN:', error);
         res.status(500).json({ error: 'Error al verificar el PIN' });
     }
 });
+
 app.post('/cerrar-sesion', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
