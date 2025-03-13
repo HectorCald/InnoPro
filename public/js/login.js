@@ -32,11 +32,11 @@ class LoginPin {
         if (this.currentIndex < 4) {
             this.inputs[this.currentIndex].value = valor;
             this.inputs[this.currentIndex].classList.add('filled');
-
+            
             const pinArray = this.currentPin.split('');
             pinArray[this.currentIndex] = valor;
             this.currentPin = pinArray.join('');
-
+            
             this.currentIndex++;
 
             if (this.currentPin.length === 4) {
@@ -50,7 +50,7 @@ class LoginPin {
             this.currentIndex--;
             this.inputs[this.currentIndex].value = '';
             this.inputs[this.currentIndex].classList.remove('filled');
-
+            
             const pinArray = this.currentPin.split('');
             pinArray[this.currentIndex] = '';
             this.currentPin = pinArray.join('');
@@ -67,38 +67,38 @@ class LoginPin {
     }
     // ... existing code ...
 
-    async validarPin(pin) {
-        try {
-            const response = await fetch('/verificar-pin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ pin })
-            });
+async validarPin(pin) {
+    try {
+        const response = await fetch('/verificar-pin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ pin })
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            if (data.valido) {
-                this.mostrarExito(data.nombre);
-            } else {
-                this.mostrarError();
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            this.mostrarError('Error de conexión');
+        if (data.valido) {
+            this.mostrarExito(data.nombre);
+        } else {
+            this.mostrarError();
         }
+    } catch (error) {
+        console.error('Error:', error);
+        this.mostrarError('Error de conexión');
     }
+}
 
-    mostrarExito(nombre) {
-        this.errorMessage.style.color = '#28a745';
-        this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
-        setTimeout(() => {
-            window.location.replace('/dashboard'); // Usar replace en lugar de href
-        }, 1500);
-    }
+mostrarExito(nombre) {
+    this.errorMessage.style.color = '#28a745';
+    this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
+    setTimeout(() => {
+        window.location.replace('/dashboard'); // Usar replace en lugar de href
+    }, 1500);
+}
 
-    // ... rest of the code ...
+// ... rest of the code ...
 
 
     mostrarError(mensaje = 'PIN incorrecto. Intente nuevamente.') {
@@ -107,9 +107,6 @@ class LoginPin {
     }
 }
 
-// ... existing code ...
-
-// Reemplazar por:
 document.addEventListener('DOMContentLoaded', () => {
-    new LoginPin();
+    const loginPin = new LoginPin();
 });

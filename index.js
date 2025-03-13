@@ -54,9 +54,6 @@ app.set('views', join(__dirname, 'views'));
 // ... existing code ...
 
 
-
-// ... existing code ...
-
 app.use(session({
     secret: 'tu_clave_secreta',
     resave: false,
@@ -67,7 +64,6 @@ app.use(session({
         httpOnly: true
     }
 }));
-
 // Modificar el middleware requireAuth
 function requireAuth(req, res, next) {
     if (req.session && req.session.authenticated) {
@@ -88,9 +84,9 @@ app.get('/', (req, res) => {
     }
 });
 
+// ... rest of the code ...
 app.get('/dashboard', requireAuth, (req, res) => {
-    res.set('Cache-Control', 'no-store');  // Prevenir caché
-    res.render('dashboard');
+    res.render('dashboard');  // Ya no necesitamos pasar el nombre aquí
 });
 app.get('/obtener-nombre', (req, res) => {
     res.json({ nombre: req.session.nombre });
