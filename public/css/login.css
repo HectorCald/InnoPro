@@ -6,6 +6,9 @@
     margin: 0;
     font-family:'Poppins', sans-serif;
 }
+button{
+    touch-action: manipulation;
+}
 .pin-container {
     display: flex;
     flex-direction: column;

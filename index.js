@@ -199,15 +199,11 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
 
 
 // Agregar después de los otros endpoints
+// Agregar después de los otros endpoints
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[1] === producto && 
-            row[8] === req.user.nombre // Usar el nombre del token JWT
-        ) + 1;
         
         // Obtener información del spreadsheet
         const spreadsheet = await sheets.spreadsheets.get({
@@ -225,12 +221,18 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
 
         // Obtener registros solo de la hoja de Produccion
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             range: 'Produccion!A:L'
         });
 
         const rows = response.data.values || [];
         
+        // Ahora que tenemos rows, podemos buscar el índice
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === producto && 
+            row[8] === req.user.nombre
+        ) + 1;
 
         if (rowIndex <= 0) {
             return res.status(404).json({ success: false, error: 'Registro no encontrado' });
