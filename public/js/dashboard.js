@@ -221,7 +221,32 @@ function crearTarjetaRegistro(registro) {
 
     return div;
 }
-
+// Función para eliminar un registro
+async function eliminarRegistro(fecha, producto) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/eliminar-registro', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ fecha, producto })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            mostrarNotificacion('Registro eliminado correctamente', 'success');
+            cargarRegistros(); // Recargar la lista de registros
+        } else {
+            throw new Error(result.error || 'Error al eliminar el registro');
+        }
+    } catch (error) {
+        console.error('Error al eliminar registro:', error);
+        mostrarNotificacion('Error al eliminar el registro: ' + error.message, 'error');
+    }
+}
 
 // Modificar la función mostrar para cargar registros cuando se abre la vista de cuentas
 function mostrar(item) {
