@@ -1,8 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Verificar si hay token, si no, redirigir al login
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/';
+        return;
+    }
+    
     bienvenida();
-    manejarCierreSesion();
-    inicializarFormulario();
+    
+    // Verificar si existe el botón de logout antes de agregar el event listener
+    const btnLogout = document.querySelector('.logout-btn');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', manejarCierreSesion);
+    } else {
+        console.warn('Botón de logout no encontrado');
+    }
+    
+    // Verificar si existe el formulario antes de inicializarlo
+    const form = document.querySelector('.form1 form');
+    if (form) {
+        inicializarFormulario();
+    } else {
+        console.warn('Formulario no encontrado');
+    }
 });
+
+// Resto del código permanece igual...
 
 function getAuthHeaders() {
     const token = localStorage.getItem('token');

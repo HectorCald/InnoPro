@@ -6,6 +6,7 @@ import { dirname, join } from 'path';
 import { google } from 'googleapis';
 import session from 'express-session';
 import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -48,12 +49,13 @@ async function verificarPin(pin) {
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser()); // Agregar cookie-parser
 app.use(express.static(join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
 // JWT Secret Key
-const JWT_SECRET = 'tu_clave_secreta';
+const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';
 
 // JWT Authentication Middleware
 const authenticateToken = (req, res, next) => {
@@ -72,6 +74,7 @@ const authenticateToken = (req, res, next) => {
         next();
     });
 };
+
 
 
 // Actualizar la configuración de sesión
@@ -208,18 +211,63 @@ app.delete('/eliminar-registro', authenticateToken, async (req, res) => {
         const { fecha, producto } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
-        // ... código existente ...
+        // Obtener información del spreadsheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+        });
         
+        // Encontrar específicamente la hoja "Produccion"
+        const produccionSheet = spreadsheet.data.sheets.find(
+            sheet => sheet.properties.title === 'Produccion'
+        );
+
+        if (!produccionSheet) {
+            return res.status(404).json({ success: false, error: 'No se encontró la hoja de Produccion' });
+        }
+
+        // Obtener registros
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Produccion!A:L'
+        });
+
         const rows = response.data.values || [];
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
             row[1] === producto && 
-            row[8] === req.user.nombre // Usar el nombre del token JWT
-        ) + 1;
+            row[8] === req.user.nombre
+        ) + 1; // +1 porque las filas en la API empiezan en 1, no en 0
 
-        // ... resto del código ...
+        if (rowIndex <= 0) {
+            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
+        }
+
+        // Eliminar la fila
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            resource: {
+                requests: [
+                    {
+                        deleteDimension: {
+                            range: {
+                                sheetId: produccionSheet.properties.sheetId,
+                                dimension: 'ROWS',
+                                startIndex: rowIndex,
+                                endIndex: rowIndex + 1
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+
+        res.json({ success: true, message: 'Registro eliminado correctamente' });
     } catch (error) {
-        // ... manejo de errores ...
+        console.error('Error al eliminar registro:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message || 'Error al eliminar el registro' 
+        });
     }
 });
 
