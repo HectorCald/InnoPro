@@ -2,6 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     manejarCierreSesion();
     inicializarFormulario();
+    const closeButtons = document.querySelectorAll('.title button');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const container = document.querySelector('.container');
+            container.classList.remove('no-touch');
+        });
+    });
 });
 
 async function bienvenida() {
@@ -34,6 +41,7 @@ function manejarCierreSesion() {
 }
 function mostrar(item) {
     var div = document.querySelector(item);
+    const container = document.querySelector('.container');
     const otherDiv = item === '.cuentas' ? 
         document.querySelector('.form1') : 
         document.querySelector('.cuentas');
@@ -41,8 +49,15 @@ function mostrar(item) {
     if (item === '.cuentas') {
         document.querySelector('.form1').style.display = 'none';
         cargarRegistros();
+        // Deshabilitar touch en el contenedor
+        container.classList.add('no-touch');
     } else if (item === '.form1') {
         document.querySelector('.cuentas').style.display = 'none';
+        // Deshabilitar touch en el contenedor
+        container.classList.add('no-touch');
+    } else {
+        // Si se está cerrando, habilitar touch en el contenedor
+        container.classList.remove('no-touch');
     }
     
     if (div.style.display === 'none' || div.style.display === '') {
@@ -62,6 +77,8 @@ function mostrar(item) {
         }
     } else {
         div.style.display = 'none';
+        // Habilitar touch en el contenedor cuando se cierra
+        container.classList.remove('no-touch');
     }
     resetearFormulario();
 }

@@ -27,6 +27,11 @@
     z-index: 1;
     position: relative;
 }
+.container.no-touch {
+    pointer-events: none;
+    filter: blur(3px);
+    transition: filter 0.3s ease;
+}
 
 .dashboard-btn {
     width: 300px;
@@ -430,6 +435,7 @@
     overflow-y: auto;
     opacity: 0;
     animation: fadeIn 0.3s ease-out forwards;
+    pointer-events: auto !important;
 }
 
 .form1 form, .cuentas .registros-container {
