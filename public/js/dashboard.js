@@ -10,42 +10,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (!response.ok) {
-            window.location.href = '/';
-            return;
+            if (response.status === 401) {
+                window.location.replace('/');
+                return;
+            }
+            throw new Error('Error en la respuesta del servidor');
         }
 
         const data = await response.json();
         if (!data.nombre) {
-            window.location.href = '/';
+            window.location.replace('/');
             return;
         }
 
         // Si llegamos aquí, la sesión es válida
-        bienvenida();
-        manejarCierreSesion();
-        
-        // Agregar evento al botón de registro
-        const btnRegistro = document.querySelector('.registrarProducto');
-        if (btnRegistro) {
-            btnRegistro.addEventListener('click', () => {
-                mostrar('.form1');
-                inicializarFormulario();
-            });
-        }
-
-        // Agregar evento al botón de consulta
-        const btnConsulta = document.querySelector('.consultarProducto');
-        if (btnConsulta) {
-            btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
-        }
+        await bienvenida();
+        inicializarEventos();
     } catch (error) {
         console.error('Error:', error);
-        window.location.href = '/';
+        window.location.replace('/');
     }
 });
 
 // ... resto del código se mantiene igual ...
+function inicializarEventos() {
+    manejarCierreSesion();
+    
+    // Agregar evento al botón de registro
+    const btnRegistro = document.querySelector('.registrarProducto');
+    if (btnRegistro) {
+        btnRegistro.addEventListener('click', () => {
+            mostrar('.form1');
+            inicializarFormulario();
+        });
+    }
 
+    // Agregar evento al botón de consulta
+    const btnConsulta = document.querySelector('.consultarProducto');
+    if (btnConsulta) {
+        btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+    }
+}
 async function bienvenida() {
     const response = await fetch('/obtener-nombre', {
         method: 'GET',

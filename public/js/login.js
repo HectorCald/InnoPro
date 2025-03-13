@@ -107,8 +107,8 @@ mostrarExito(nombre) {
     this.errorMessage.style.color = '#28a745';
     this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
     
-    // Redirigir inmediatamente
-    window.location.href = '/dashboard';
+    // Usar replace en lugar de href para evitar problemas con el historial
+    window.location.replace('/dashboard');
 }
 
 
