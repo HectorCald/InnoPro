@@ -1,29 +1,53 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     
+    const intentarBienvenida = async (intentos = 3) => {
+        for (let i = 0; i < intentos; i++) {
+            try {
+                await bienvenida();
+                break; // Si tiene éxito, salir del bucle
+            } catch (error) {
+                console.error(`Intento ${i + 1} fallido:`, error);
+                if (i === intentos - 1) {
+                    // Si es el último intento, redirigir al login
+                    window.location.href = '/';
+                } else {
+                    // Esperar antes del siguiente intento
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+        }
+    };
 
-    // Agregar evento al botón de consulta
-    const btnConsulta = document.querySelector('.consultarProducto');
-    if (btnConsulta) {
-        btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
-    }
+    intentarBienvenida();
+
 });
 
 // ... resto del código se mantiene igual ...
 
 async function bienvenida() {
-    try {
-        const response = await fetch('/obtener-nombre');
-        const data = await response.json();
-        
-        if (data.nombre) {
-            const bienvenida = document.querySelector('.bienvenida');
-            if (bienvenida) {
-                bienvenida.innerHTML = '<i class="fas fa-microchip"></i> DB Tec.';
-            }
-        }
-    } catch (error) {
-        console.error('Error al obtener el nombre:', error);
+    const response = await fetch('/obtener-nombre', {
+        method: 'GET',
+        headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        },
+        credentials: 'same-origin'
+    });
+
+    if (!response.ok) {
+        throw new Error('Error en la respuesta del servidor');
+    }
+
+    const data = await response.json();
+    
+    if (!data.nombre) {
+        throw new Error('No se encontró el nombre de usuario');
+    }
+
+    const bienvenida = document.querySelector('.bienvenida');
+    if (bienvenida) {
+        bienvenida.innerHTML = '<i class="fas fa-microchip"></i> DB Tec.';
     }
 }
 function manejarCierreSesion() {
