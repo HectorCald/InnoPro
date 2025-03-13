@@ -167,7 +167,7 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
         ]];
         const result = await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A:L',
+            range: 'Produccion!A2',
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
             resource: { values }
@@ -187,10 +187,10 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
         const { fecha, producto } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
-        // Verificar si es admin o el propietario del registro
+        // Get all records first from Produccion sheet only
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A:L'
+            range: 'Produccion!A:L'  // Específicamente de la hoja Produccion
         });
 
         const rows = response.data.values || [];
@@ -198,9 +198,50 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
             row[0] === fecha && 
             row[1] === producto && 
             (req.user.nombre === 'Almacen_adm' || row[8] === req.user.nombre)
-        ) + 1;
+        );
 
-        // ... resto del código de eliminación existente ...
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Registro no encontrado o no autorizado para eliminarlo' 
+            });
+        }
+
+        // Get the sheet ID specifically for Produccion sheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw'
+        });
+        
+        // Find the Produccion sheet ID
+        const produccionSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Produccion'
+        );
+
+        if (!produccionSheet) {
+            throw new Error('Hoja de Producción no encontrada');
+        }
+
+        // Delete only from Produccion sheet
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: produccionSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex,
+                            endIndex: rowIndex + 1
+                        }
+                    }
+                }]
+            }
+        });
+
+        // Wait for the operation to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        res.json({ success: true, message: 'Registro eliminado correctamente' });
     } catch (error) {
         console.error('Error detallado al eliminar registro:', error);
         res.status(500).json({ 

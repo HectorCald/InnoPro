@@ -300,90 +300,58 @@ fechasOrdenadas = Object.keys(registrosPorFecha).sort((a, b) => {
     const fechaB = new Date(añoB, mesB - 1, diaB);
     return fechaB - fechaA;
 });
-
-function editarRegistro(fecha, producto) {
-    const modal = document.querySelector('.modal-edicion');
-    const form = document.getElementById('form-edicion');
-
-    document.getElementById('edit-fecha').value = fecha;
-    document.getElementById('edit-producto').value = producto;
-
-    modal.style.display = 'flex';
-
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-
-        const verificacion = document.getElementById('edit-verificacion').value;
-        const fechaVerificacion = document.getElementById('edit-fecha-verificacion').value;
-        const observaciones = document.getElementById('edit-observaciones').value;
-
-        try {
-            const response = await fetch('/actualizar-verificacion', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    fecha,
-                    producto,
-                    verificacion,
-                    fechaVerificacion,
-                    observaciones
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                mostrarNotificacion('Registro actualizado correctamente');
-                modal.style.display = 'none';
-                cargarRegistros();
-            } else {
-                mostrarNotificacion(data.error || 'Error al actualizar', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al actualizar el registro', 'error');
-        }
-    };
-}
-
-function confirmarEliminacion(fecha, producto) {
+async function eliminarRegistro(fecha, producto) {
     const anuncio = document.querySelector('.anuncio');
-    anuncio.style.display = 'flex';
+    const confirmarBtn = anuncio.querySelector('.confirmar');
+    const cancelarBtn = anuncio.querySelector('.cancelar');
 
-    const btnConfirmar = anuncio.querySelector('.confirmar');
-    const btnCancelar = anuncio.querySelector('.cancelar');
-
-    btnConfirmar.onclick = async () => {
-        try {
-            const response = await fetch('/eliminar-registro', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ fecha, producto })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                mostrarNotificacion('Registro eliminado correctamente');
-                cargarRegistros();
-            } else {
-                mostrarNotificacion(data.error || 'Error al eliminar', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al eliminar el registro', 'error');
-        } finally {
+    return new Promise((resolve) => {
+        const cerrarAnuncio = () => {
             anuncio.style.display = 'none';
-        }
-    };
+            confirmarBtn.removeEventListener('click', handleConfirmar);
+            cancelarBtn.removeEventListener('click', handleCancelar);
+        };
 
-    btnCancelar.onclick = () => {
-        anuncio.style.display = 'none';
-    };
+        const handleConfirmar = async () => {
+            cerrarAnuncio();
+            try {
+                const response = await fetch('/eliminar-registro', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fecha, producto })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error en la respuesta del servidor');
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarNotificacion('Registro eliminado correctamente', 'success');
+                    await cargarRegistros();
+                } else {
+                    throw new Error(result.error || 'No se pudo eliminar el registro');
+                }
+            } catch (error) {
+                console.error('Error detallado:', error);
+                mostrarNotificacion(`Error al eliminar el registro: ${error.message}`, 'error');
+            }
+        };
+
+        const handleCancelar = () => {
+            cerrarAnuncio();
+            mostrarNotificacion('Operación cancelada', 'warning');
+        };
+
+        confirmarBtn.addEventListener('click', handleConfirmar);
+        cancelarBtn.addEventListener('click', handleCancelar);
+        
+        anuncio.style.display = 'flex';
+    });
 }
 
 /* ==================== FUNCIONES DE UTILIDAD ==================== */
