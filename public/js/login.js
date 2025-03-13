@@ -87,7 +87,6 @@ async validarPin(pin) {
         const data = await response.json();
 
         if (data.valido) {
-            localStorage.setItem('token', data.token);
             this.mostrarExito(data.nombre);
         } else {
             this.mostrarError();
@@ -99,23 +98,11 @@ async validarPin(pin) {
 }
 
 mostrarExito(nombre) {
-    // Almacenar el token antes de cualquier redirección
-    const token = localStorage.getItem('token');
-    if (!token) {
-        this.mostrarError('Error de autenticación');
-        return;
-    }
-
-    // Actualizar mensaje de éxito
     this.errorMessage.style.color = '#28a745';
     this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
-
-    // Usar setTimeout para asegurar que el mensaje se muestre antes de la redirección
     setTimeout(() => {
-        // Usar history.pushState para navegación sin recarga
-        history.pushState({}, '', '/dashboard');
-        window.dispatchEvent(new PopStateEvent('popstate'));
-    }, 1000);
+        window.location.replace('/dashboard'); // Usar replace en lugar de href
+    }, 1500);
 }
 
 // ... rest of the code ...

@@ -1,45 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Verificar si hay token, si no, redirigir al login
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/';
-        return;
-    }
-    
     bienvenida();
-    
-    // Verificar si existe el botón de logout antes de agregar el event listener
-    const btnLogout = document.querySelector('.logout-btn');
-    if (btnLogout) {
-        btnLogout.addEventListener('click', manejarCierreSesion);
-    } else {
-        console.warn('Botón de logout no encontrado');
-    }
-    
-    // Verificar si existe el formulario antes de inicializarlo
-    const form = document.querySelector('.form1 form');
-    if (form) {
-        inicializarFormulario();
-    } else {
-        console.warn('Formulario no encontrado');
-    }
+    manejarCierreSesion();
+    inicializarFormulario();
 });
-
-// Resto del código permanece igual...
-
-function getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    };
-}
 
 async function bienvenida() {
     try {
-        const response = await fetch('/obtener-nombre', {
-            headers: getAuthHeaders()
-        });
+        const response = await fetch('/obtener-nombre');
         const data = await response.json();
         
         if (data.nombre) {
@@ -56,12 +23,8 @@ function manejarCierreSesion() {
     const btnLogout = document.querySelector('.logout-btn');
     btnLogout.addEventListener('click', async () => {
         try {
-            const response = await fetch('/cerrar-sesion', { 
-                method: 'POST',
-                headers: getAuthHeaders()
-            });
+            const response = await fetch('/cerrar-sesion', { method: 'POST' });
             if (response.ok) {
-                localStorage.removeItem('token');
                 window.location.href = '/';
             }
         } catch (error) {
@@ -149,7 +112,9 @@ function inicializarFormulario() {
         try {
             const response = await fetch('/registrar-produccion', {
                 method: 'POST',
-                headers: getAuthHeaders(),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(data)
             });
 
@@ -208,9 +173,7 @@ function mostrarDetalles(card) {
 // Agregar después de las funciones existentes
 async function cargarRegistros() {
     try {
-        const response = await fetch('/obtener-registros', {
-            headers: getAuthHeaders()
-        });
+        const response = await fetch('/obtener-registros');
         const data = await response.json();
         
         if (data.success) {
@@ -344,7 +307,9 @@ async function eliminarRegistro(fecha, producto) {
             try {
                 const response = await fetch('/eliminar-registro', {
                     method: 'DELETE',
-                    headers: getAuthHeaders(),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ fecha, producto })
                 });
 

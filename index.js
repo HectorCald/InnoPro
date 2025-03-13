@@ -5,8 +5,6 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { google } from 'googleapis';
 import session from 'express-session';
-import jwt from 'jsonwebtoken';
-import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -49,32 +47,11 @@ async function verificarPin(pin) {
 // Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(cookieParser()); // Agregar cookie-parser
 app.use(express.static(join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
-// JWT Secret Key
-const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';
-
-// JWT Authentication Middleware
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: 'Invalid token' });
-        }
-        req.user = user;
-        next();
-    });
-};
-
+// ... existing code ...
 
 
 // Actualizar la configuración de sesión
@@ -90,10 +67,23 @@ app.use(session({
 }));
 
 // Modificar el middleware requireAuth
-
+function requireAuth(req, res, next) {
+    if (!req.session || !req.session.authenticated) {
+        return res.status(401).json({ error: 'No autorizado' });
+    }
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '-1'
+    });
+    next();
+}
 
 // Modificar la ruta principal
 app.get('/', (req, res) => {
+    if (req.session && req.session.authenticated) {
+        return res.redirect('/dashboard');
+    }
     res.set({
         'Cache-Control': 'no-store, no-cache, must-revalidate, private',
         'Pragma': 'no-cache',
@@ -104,13 +94,21 @@ app.get('/', (req, res) => {
 
 // Actualizar la ruta del dashboard
 app.get('/dashboard', (req, res) => {
+    if (!req.session || !req.session.authenticated) {
+        return res.redirect('/');
+    }
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '-1'
+    });
     res.render('dashboard');
 });
-app.get('/obtener-nombre', authenticateToken, (req, res) => {
-    res.json({ nombre: req.user.nombre });
+app.get('/obtener-nombre', (req, res) => {
+    res.json({ nombre: req.session.nombre });
 });
 // Agregar después de los otros endpoints
-app.get('/obtener-registros', authenticateToken, async (req, res) => {
+app.get('/obtener-registros', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
@@ -119,8 +117,8 @@ app.get('/obtener-registros', authenticateToken, async (req, res) => {
         });
 
         const rows = response.data.values || [];
-        // Filtrar registros por el nombre del usuario en el token
-        const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
+        // Filtrar registros por el nombre del usuario en sesión
+        const registrosUsuario = rows.filter(row => row[8] === req.session.nombre);
 
         res.json({ success: true, registros: registrosUsuario });
     } catch (error) {
@@ -138,12 +136,15 @@ app.post('/verificar-pin', async (req, res) => {
         const resultado = await verificarPin(pin);
         
         if (resultado.valido) {
-            const token = jwt.sign(
-                { nombre: resultado.nombre },
-                JWT_SECRET,
-                { expiresIn: '24h' }
-            );
-            res.json({ ...resultado, token });
+            req.session.authenticated = true;
+            req.session.nombre = resultado.nombre;
+            req.session.save((err) => {
+                if (err) {
+                    console.error('Error al guardar la sesión:', err);
+                    return res.status(500).json({ error: 'Error al iniciar sesión' });
+                }
+                res.json(resultado);
+            });
         } else {
             res.json(resultado);
         }
@@ -154,9 +155,14 @@ app.post('/verificar-pin', async (req, res) => {
 });
 
 app.post('/cerrar-sesion', (req, res) => {
-    res.json({ mensaje: 'Sesión cerrada correctamente' });
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al cerrar sesión' });
+        }
+        res.json({ mensaje: 'Sesión cerrada correctamente' });
+    });
 });
-app.post('/registrar-produccion', authenticateToken, async (req, res) => {
+app.post('/registrar-produccion', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const fecha = new Date().toLocaleDateString('es-ES', {
@@ -164,9 +170,9 @@ app.post('/registrar-produccion', authenticateToken, async (req, res) => {
             month: '2-digit',
             day: '2-digit'
         });
-        const nombreUsuario = req.user.nombre; // Usar el nombre del token JWT
+        const nombreUsuario = req.session.nombre;
 
-        console.log('Datos recibidos:', req.body);
+        console.log('Datos recibidos:', req.body); // Debug log
 
         const values = [[
             fecha,
@@ -174,14 +180,17 @@ app.post('/registrar-produccion', authenticateToken, async (req, res) => {
             Number(req.body.lote),
             Number(req.body.gramaje),
             String(req.body.seleccion),
-            req.body.microondas === 'No' ? 'No' : Number(req.body.microondas),
+            Number(req.body.microondas),
             Number(req.body.envasesTerminados),
             String(req.body.fechaVencimiento),
             nombreUsuario,
+            
             '',
             '',
             ''
         ]];
+
+        console.log('Valores a insertar:', values); // Debug log
 
         const result = await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
@@ -191,9 +200,11 @@ app.post('/registrar-produccion', authenticateToken, async (req, res) => {
             resource: { values }
         });
 
+        console.log('Respuesta de Google Sheets:', result); // Debug log
+
         res.json({ success: true, message: 'Registro guardado correctamente' });
     } catch (error) {
-        console.error('Error detallado:', error);
+        console.error('Error detallado:', error); // Debug log
         res.status(500).json({ 
             success: false, 
             error: error.message || 'Error al guardar el registro'
@@ -204,9 +215,8 @@ app.post('/registrar-produccion', authenticateToken, async (req, res) => {
 
 
 
-
 // Agregar después de los otros endpoints
-app.delete('/eliminar-registro', authenticateToken, async (req, res) => {
+app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
@@ -222,12 +232,12 @@ app.delete('/eliminar-registro', authenticateToken, async (req, res) => {
         );
 
         if (!produccionSheet) {
-            return res.status(404).json({ success: false, error: 'No se encontró la hoja de Produccion' });
+            throw new Error('No se encontró la hoja de Produccion');
         }
 
-        // Obtener registros
+        // Obtener registros solo de la hoja de Produccion
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Produccion!A:L'
         });
 
@@ -235,38 +245,36 @@ app.delete('/eliminar-registro', authenticateToken, async (req, res) => {
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
             row[1] === producto && 
-            row[8] === req.user.nombre
-        ) + 1; // +1 porque las filas en la API empiezan en 1, no en 0
+            row[8] === req.session.nombre
+        ) + 1;
 
         if (rowIndex <= 0) {
             return res.status(404).json({ success: false, error: 'Registro no encontrado' });
         }
 
-        // Eliminar la fila
+        // Eliminar usando el ID específico de la hoja de Produccion
         await sheets.spreadsheets.batchUpdate({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             resource: {
-                requests: [
-                    {
-                        deleteDimension: {
-                            range: {
-                                sheetId: produccionSheet.properties.sheetId,
-                                dimension: 'ROWS',
-                                startIndex: rowIndex,
-                                endIndex: rowIndex + 1
-                            }
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: produccionSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex - 1,
+                            endIndex: rowIndex
                         }
                     }
-                ]
+                }]
             }
         });
 
-        res.json({ success: true, message: 'Registro eliminado correctamente' });
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error al eliminar registro:', error);
+        console.error('Error detallado al eliminar registro:', error);
         res.status(500).json({ 
             success: false, 
-            error: error.message || 'Error al eliminar el registro' 
+            error: 'Error al eliminar el registro: ' + (error.message || 'Error desconocido')
         });
     }
 });
