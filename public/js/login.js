@@ -1,5 +1,10 @@
 class LoginPin {
     constructor() {
+        // Verificar que estamos en la página de login
+        if (!document.querySelector('.pin-container')) {
+            return; // No inicializar si no estamos en la página de login
+        }
+
         this.inputs = document.querySelectorAll('.pin-input');
         this.errorMessage = document.querySelector('.error-message');
         this.numericKeyboard = document.querySelector('.numeric-keyboard');
@@ -9,6 +14,8 @@ class LoginPin {
     }
 
     inicializar() {
+        if (!this.numericKeyboard) return; // Salir si no existe el teclado numérico
+        
         this.numericKeyboard.addEventListener('click', (e) => {
             if (e.target.classList.contains('num-key')) {
                 this.manejarTecladoNumerico(e.target);
@@ -108,5 +115,7 @@ mostrarExito(nombre) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const loginPin = new LoginPin();
+    if (document.querySelector('.pin-container')) {
+        new LoginPin();
+    }
 });
