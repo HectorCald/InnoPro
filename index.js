@@ -234,7 +234,15 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
             return res.status(403).json({ success: false, error: 'No autorizado' });
         }
 
-        const { fecha, producto, verificacion, fechaVerificacion, observaciones } = req.body;
+        const { fecha, producto, lote, operario, verificacion, fechaVerificacion, observaciones } = req.body;
+        
+        if (!fecha || !producto || !lote || !operario) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Faltan datos necesarios para la verificación' 
+            });
+        }
+
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Obtener todos los registros
@@ -244,16 +252,22 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
         });
 
         const rows = response.data.values || [];
+        // Buscar el registro específico usando todos los campos identificativos
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
-            row[1] === producto
+            row[1] === producto &&
+            String(row[2]) === String(lote) &&
+            row[8] === operario
         ) + 1;
 
         if (rowIndex <= 0) {
-            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Registro no encontrado' 
+            });
         }
 
-        // Actualizar las últimas tres columnas
+        // Actualizar las columnas J, K y L (verificación, fecha y observaciones)
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             range: `Produccion!J${rowIndex}:L${rowIndex}`,
