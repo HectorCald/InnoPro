@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
-    
-    const btnConsulta = document.querySelector('.consultarProducto');
-    btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+
+
 });
 
 async function bienvenida() {
