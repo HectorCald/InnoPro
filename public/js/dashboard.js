@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
+    
     const btnConsulta = document.querySelector('.consultarProducto');
     btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
 });
@@ -343,14 +344,4 @@ async function eliminarRegistro(fecha, producto) {
         
         anuncio.style.display = 'flex';
     });
-}
-
-// Modificar la función de envío del formulario
-// Buscar el try-catch donde se maneja el registro y modificar:
-if (result.success) {
-    mostrarNotificacion('Registro guardado correctamente', 'success');
-    resetearFormulario();
-    mostrar('.form1');
-} else {
-    throw new Error(result.error || 'Error desconocido');
 }
