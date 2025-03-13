@@ -54,44 +54,57 @@ app.set('views', join(__dirname, 'views'));
 // ... existing code ...
 
 
+// Actualizar la configuración de sesión
 app.use(session({
     secret: 'tu_clave_secreta',
     resave: true,
     saveUninitialized: false,
     cookie: {
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         maxAge: 24 * 60 * 60 * 1000,
-        httpOnly: true
-    }
+        httpOnly: true,
+        sameSite: 'strict'
+    },
+    rolling: true
 }));
 
 // Modificar el middleware requireAuth
 function requireAuth(req, res, next) {
-    if (req.session && req.session.authenticated) {
-        res.set({
-            'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-            'Pragma': 'no-cache',
-            'Expires': '-1'
-        });
-        next();
-    } else {
-        res.redirect('/');
+    if (!req.session || !req.session.authenticated) {
+        return res.status(401).json({ error: 'No autorizado' });
     }
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '-1'
+    });
+    next();
 }
 
 // Modificar la ruta principal
 app.get('/', (req, res) => {
-    res.set('Cache-Control', 'no-store');  // Prevenir caché
     if (req.session && req.session.authenticated) {
-        res.redirect('/dashboard');
-    } else {
-        res.render('login');
+        return res.redirect('/dashboard');
     }
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '-1'
+    });
+    res.render('login');
 });
 
-// ... rest of the code ...
-app.get('/dashboard', requireAuth, (req, res) => {
-    res.render('dashboard');  // Ya no necesitamos pasar el nombre aquí
+// Actualizar la ruta del dashboard
+app.get('/dashboard', (req, res) => {
+    if (!req.session || !req.session.authenticated) {
+        return res.redirect('/');
+    }
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '-1'
+    });
+    res.render('dashboard');
 });
 app.get('/obtener-nombre', (req, res) => {
     res.json({ nombre: req.session.nombre });

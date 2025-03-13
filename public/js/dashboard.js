@@ -10,25 +10,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (!response.ok) {
-            if (response.status === 401) {
-                window.location.replace('/');
-                return;
-            }
             throw new Error('Error en la respuesta del servidor');
         }
 
         const data = await response.json();
         if (!data.nombre) {
-            window.location.replace('/');
-            return;
+            throw new Error('No se encontró el nombre de usuario');
         }
 
         // Si llegamos aquí, la sesión es válida
-        await bienvenida();
+        const bienvenida = document.querySelector('.bienvenida');
+        if (bienvenida) {
+            bienvenida.innerHTML = '<i class="fas fa-microchip"></i> DB Tec.';
+        }
+
+        // Inicializar eventos después de confirmar la sesión
         inicializarEventos();
     } catch (error) {
         console.error('Error:', error);
-        window.location.replace('/');
+        // En lugar de redireccionar, mostrar un mensaje
+        const bienvenida = document.querySelector('.bienvenida');
+        if (bienvenida) {
+            bienvenida.innerHTML = 'Error de sesión. Por favor, <a href="/">inicie sesión nuevamente</a>';
+        }
     }
 });
 

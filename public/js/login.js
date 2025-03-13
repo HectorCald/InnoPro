@@ -107,8 +107,10 @@ mostrarExito(nombre) {
     this.errorMessage.style.color = '#28a745';
     this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
     
-    // Usar replace en lugar de href para evitar problemas con el historial
-    window.location.replace('/dashboard');
+    // Esperar un momento antes de redirigir
+    setTimeout(() => {
+        window.location.replace('/dashboard');
+    }, 500);
 }
 
 
