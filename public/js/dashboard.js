@@ -68,11 +68,16 @@ function mostrar(item) {
 }
 function inicializarFormulario() {
     const form = document.querySelector('.form1 form');
-    
+
+    if (!form) {
+        console.error("Error: No se encontró el formulario dentro de '.form1'.");
+        return; // Salir de la función si el formulario no existe
+    }
+
     // Agregar manejo de radio buttons para microondas
     const radioButtons = document.querySelectorAll('input[name="microondas-option"]');
     const tiempoMicroondas = document.querySelector('.microondas-tiempo');
-    
+
     radioButtons.forEach(radio => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'si') {
@@ -90,16 +95,14 @@ function inicializarFormulario() {
         e.preventDefault();
         const formData = new FormData(form);
         const data = {};
-        
-        // Procesar opción de microondas
-        const microOption = form.querySelector('input[name="microondas-option"]:checked').value;
-        if (microOption === 'no') {
+
+        const microOption = form.querySelector('input[name="microondas-option"]:checked');
+        if (microOption && microOption.value === 'no') {
             data.microondas = 'No';
         } else {
             data.microondas = formData.get('microondas');
         }
-        
-        // Process other fields
+
         formData.forEach((value, key) => {
             if (key !== 'microondas' && key !== 'microondas-option') {
                 if (['lote', 'gramaje', 'envasesTerminados'].includes(key)) {
@@ -120,9 +123,9 @@ function inicializarFormulario() {
             });
 
             const result = await response.json();
-            
+
             if (result.success) {
-                mostrarNotificacion('Registro guardado correctamente','success');
+                mostrarNotificacion('Registro guardado correctamente', 'success');
                 resetearFormulario();
                 mostrar('.form1');
             } else {
@@ -134,6 +137,7 @@ function inicializarFormulario() {
         }
     });
 }
+
 
 function resetearFormulario() {
     const inputs = document.querySelectorAll('.form1 form input:not([type="radio"])');
