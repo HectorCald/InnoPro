@@ -4,9 +4,19 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarFormulario();
 });
 
+function getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+}
+
 async function bienvenida() {
     try {
-        const response = await fetch('/obtener-nombre');
+        const response = await fetch('/obtener-nombre', {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         
         if (data.nombre) {
@@ -23,8 +33,12 @@ function manejarCierreSesion() {
     const btnLogout = document.querySelector('.logout-btn');
     btnLogout.addEventListener('click', async () => {
         try {
-            const response = await fetch('/cerrar-sesion', { method: 'POST' });
+            const response = await fetch('/cerrar-sesion', { 
+                method: 'POST',
+                headers: getAuthHeaders()
+            });
             if (response.ok) {
+                localStorage.removeItem('token');
                 window.location.href = '/';
             }
         } catch (error) {
@@ -112,9 +126,7 @@ function inicializarFormulario() {
         try {
             const response = await fetch('/registrar-produccion', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(data)
             });
 
@@ -173,7 +185,9 @@ function mostrarDetalles(card) {
 // Agregar después de las funciones existentes
 async function cargarRegistros() {
     try {
-        const response = await fetch('/obtener-registros');
+        const response = await fetch('/obtener-registros', {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -307,9 +321,7 @@ async function eliminarRegistro(fecha, producto) {
             try {
                 const response = await fetch('/eliminar-registro', {
                     method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ fecha, producto })
                 });
 

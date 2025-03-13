@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { google } from 'googleapis';
 import session from 'express-session';
+import jwt from 'jsonwebtoken';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,7 +52,26 @@ app.use(express.static(join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
-// ... existing code ...
+// JWT Secret Key
+const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta';
+
+// JWT Authentication Middleware
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ error: 'Invalid token' });
+        }
+        req.user = user;
+        next();
+    });
+};
 
 
 // Actualizar la configuración de sesión
@@ -67,17 +87,7 @@ app.use(session({
 }));
 
 // Modificar el middleware requireAuth
-function requireAuth(req, res, next) {
-    if (!req.session || !req.session.authenticated) {
-        return res.status(401).json({ error: 'No autorizado' });
-    }
-    res.set({
-        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-        'Pragma': 'no-cache',
-        'Expires': '-1'
-    });
-    next();
-}
+
 
 // Modificar la ruta principal
 app.get('/', (req, res) => {
@@ -94,21 +104,13 @@ app.get('/', (req, res) => {
 
 // Actualizar la ruta del dashboard
 app.get('/dashboard', (req, res) => {
-    if (!req.session || !req.session.authenticated) {
-        return res.redirect('/');
-    }
-    res.set({
-        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-        'Pragma': 'no-cache',
-        'Expires': '-1'
-    });
     res.render('dashboard');
 });
-app.get('/obtener-nombre', (req, res) => {
-    res.json({ nombre: req.session.nombre });
+app.get('/obtener-nombre', authenticateToken, (req, res) => {
+    res.json({ nombre: req.user.nombre });
 });
 // Agregar después de los otros endpoints
-app.get('/obtener-registros', requireAuth, async (req, res) => {
+app.get('/obtener-registros', authenticateToken, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
@@ -136,15 +138,12 @@ app.post('/verificar-pin', async (req, res) => {
         const resultado = await verificarPin(pin);
         
         if (resultado.valido) {
-            req.session.authenticated = true;
-            req.session.nombre = resultado.nombre;
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Error al guardar la sesión:', err);
-                    return res.status(500).json({ error: 'Error al iniciar sesión' });
-                }
-                res.json(resultado);
-            });
+            const token = jwt.sign(
+                { nombre: resultado.nombre },
+                JWT_SECRET,
+                { expiresIn: '24h' }
+            );
+            res.json({ ...resultado, token });
         } else {
             res.json(resultado);
         }
@@ -155,14 +154,9 @@ app.post('/verificar-pin', async (req, res) => {
 });
 
 app.post('/cerrar-sesion', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).json({ error: 'Error al cerrar sesión' });
-        }
-        res.json({ mensaje: 'Sesión cerrada correctamente' });
-    });
+    res.json({ mensaje: 'Sesión cerrada correctamente' });
 });
-app.post('/registrar-produccion', requireAuth, async (req, res) => {
+app.post('/registrar-produccion', authenticateToken, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const fecha = new Date().toLocaleDateString('es-ES', {
@@ -216,7 +210,7 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
 
 
 // Agregar después de los otros endpoints
-app.delete('/eliminar-registro', requireAuth, async (req, res) => {
+app.delete('/eliminar-registro', authenticateToken, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
