@@ -79,15 +79,10 @@ async validarPin(pin) {
         const response = await fetch('/verificar-pin', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            credentials: 'include',
             body: JSON.stringify({ pin })
         });
-
-        if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-        }
 
         const data = await response.json();
 
@@ -98,19 +93,17 @@ async validarPin(pin) {
         }
     } catch (error) {
         console.error('Error:', error);
-        this.mostrarError('Error de conexión. Por favor, intente nuevamente.');
+        this.mostrarError('Error de conexión');
     }
 }
 
 mostrarExito(nombre) {
     this.errorMessage.style.color = '#28a745';
     this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
-    
     setTimeout(() => {
-        window.location.href = '/dashboard';
-    }, 1000);
+        window.location.replace('/dashboard'); // Usar replace en lugar de href
+    }, 1500);
 }
-
 
 // ... rest of the code ...
 
@@ -122,7 +115,5 @@ mostrarExito(nombre) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.querySelector('.pin-container')) {
-        new LoginPin();
-    }
+    const loginPin = new LoginPin();
 });

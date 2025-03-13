@@ -97,6 +97,11 @@ app.get('/dashboard', (req, res) => {
     if (!req.session || !req.session.authenticated) {
         return res.redirect('/');
     }
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '-1'
+    });
     res.render('dashboard');
 });
 app.get('/obtener-nombre', (req, res) => {
