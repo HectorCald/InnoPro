@@ -181,6 +181,36 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
         });
     }
 });
+// Añadir esta nueva ruta
+app.get('/obtener-usuarios', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen_adm') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const usuarios = rows.map(row => ({
+            pin: row[0] || '',
+            nombre: row[1] || '',
+            rol: row[1] === 'Almacen_adm' ? 'Administrador' : 'Operador'
+        }));
+
+
+        res.json({ success: true, usuarios });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener usuarios: ' + (error.message || 'Error desconocido') 
+        });
+    }
+});
 
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
@@ -247,6 +277,70 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: 'Error al eliminar el registro: ' + (error.message || 'Error desconocido')
+        });
+    }
+});
+app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen_adm') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const { pin } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener todos los usuarios
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pin);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Usuario no encontrado' 
+            });
+        }
+
+        // Get the sheet ID for Usuarios sheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw'
+        });
+        
+        const usuariosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Usuarios'
+        );
+
+        if (!usuariosSheet) {
+            throw new Error('Hoja de Usuarios no encontrada');
+        }
+
+        // Delete the user row
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: usuariosSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1, // +1 because we skip header
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true, message: 'Usuario eliminado correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar usuario: ' + (error.message || 'Error desconocido') 
         });
     }
 });

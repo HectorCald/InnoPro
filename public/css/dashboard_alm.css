@@ -1012,6 +1012,172 @@ body {
         font-size: 1rem;
     }
 }
+/* Estilos para la vista de configuraciones */
+.configuraciones-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(53, 53, 53, 0.95);
+    z-index: 999;
+    display: none;
+    flex-direction: column;
+    color: white;
+    overflow-y: auto;
+}
+
+.tabs {
+    background-color: #2d2d2d;
+    padding: 1em 2em;
+    display: flex;
+    gap: 1em;
+    border-bottom: 1px solid #3d4145;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: #666;
+    padding: 0.5em 1em;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    color: #3498db;
+    border-bottom: 2px solid #3498db;
+}
+
+.tab-content {
+    padding: 2em;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Estilos para la tabla de usuarios */
+.usuarios-container {
+    background: #2d2d2d;
+    border-radius: 1em;
+    padding: 1em;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.usuarios-header {
+    padding: 1em;
+    border-bottom: 1px solid #3d4145;
+}
+
+.usuarios-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Cambiado a 4 columnas */
+    padding: 1em;
+}
+
+
+.header-cell {
+    font-weight: bold;
+    color: #3498db;
+}
+
+.table-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.usuario-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 1em;
+    background: #353535;
+    border-radius: 0.5em;
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+}
+
+.usuario-row:hover {
+    background: #404040;
+    transform: translateX(5px);
+}
+.acciones {
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    gap: 0.5em;
+    background: #2d2d2d;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.btn-editar,
+.btn-eliminar {
+    background: none;
+    border: none;
+    padding: 0.5em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 0.3em;
+}
+
+.btn-editar {
+    color: #3498db;
+}
+
+.btn-eliminar {
+    color: #e74c3c;
+}
+
+.btn-editar:hover {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.btn-eliminar:hover {
+    background: rgba(231, 76, 60, 0.1);
+}
+
+@media (max-width: 768px) {
+    .acciones {
+        position: static;
+        transform: none;
+        justify-content: center;
+        margin-top: 0.5em;
+        width: 100%;
+    }
+
+    .usuario-row {
+        padding: 1em;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cell {
+        margin-bottom: 0.5em;
+    }
+}
+
+
 
 /* Modal de Verificación */
 .modal-verificacion {

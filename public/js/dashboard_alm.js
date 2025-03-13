@@ -484,3 +484,139 @@ function mostrarResultadosBusqueda(registros) {
         container.appendChild(card);
     });
 }
+
+
+
+
+function cambiarTab(tabName) {
+    // Remover clase active de todos los tabs y botones
+    document.querySelectorAll('.tab-panel').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Activar el tab seleccionado
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+    document.querySelector(`[onclick="cambiarTab('${tabName}')"]`).classList.add('active');
+}
+
+async function cargarUsuarios() {
+    try {
+        const response = await fetch('/obtener-usuarios');
+        const data = await response.json();
+
+        if (data.success) {
+            const tableBody = document.querySelector('.table-body');
+            tableBody.innerHTML = '';
+
+            data.usuarios.forEach(usuario => {
+                const row = document.createElement('div');
+                row.className = 'usuario-row';
+                const rolClass = usuario.rol === 'Administrador' ? 'rol-admin' : 'rol-operador';
+                
+                row.innerHTML = `
+                    <div class="cell">${usuario.pin || '-'}</div>
+                    <div class="cell">${usuario.nombre || '-'}</div>
+                    <div class="cell ${rolClass}">${usuario.rol || '-'}</div>
+                    <div class="acciones" style="display: none;">
+                        <button class="btn-editar">
+                            <i class="fas fa-edit"></i>
+                            <span>Editar</span>
+                        </button>
+                        <button class="btn-eliminar">
+                            <i class="fas fa-trash"></i>
+                            <span>Eliminar</span>
+                        </button>
+                    </div>
+                `;
+
+                // Agregar evento de clic a la fila
+                row.addEventListener('click', function() {
+                    // Ocultar todas las acciones primero
+                    document.querySelectorAll('.acciones').forEach(acc => {
+                        acc.style.display = 'none';
+                    });
+                    // Mostrar las acciones de esta fila
+                    const acciones = this.querySelector('.acciones');
+                    acciones.style.display = 'flex';
+                });
+
+                // Agregar eventos a los botones
+                const btnEditar = row.querySelector('.btn-editar');
+                const btnEliminar = row.querySelector('.btn-eliminar');
+
+                btnEditar.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Evitar que se propague el clic a la fila
+                    editarUsuario(usuario.pin, usuario.nombre, usuario.rol);
+                });
+
+                btnEliminar.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Evitar que se propague el clic a la fila
+                    eliminarUsuario(usuario.pin, usuario.nombre);
+                });
+
+                tableBody.appendChild(row);
+            });
+
+            // Cerrar acciones al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.usuario-row')) {
+                    document.querySelectorAll('.acciones').forEach(acc => {
+                        acc.style.display = 'none';
+                    });
+                }
+            });
+        } else {
+            mostrarNotificacion('Error al cargar usuarios: ' + (data.error || 'Error desconocido'), 'error');
+        }
+    } catch (error) {
+        mostrarNotificacion('Error al cargar usuarios', 'error');
+    }
+}
+function editarUsuario(pin, nombre, rol) {
+    // Implementar lógica de edición
+    console.log('Editar usuario:', { pin, nombre, rol });
+    mostrarNotificacion('Función de edición en desarrollo', 'warning');
+}
+
+function eliminarUsuario(pin, nombre) {
+    const anuncio = document.querySelector('.anuncio');
+    const confirmarBtn = anuncio.querySelector('.confirmar');
+    const cancelarBtn = anuncio.querySelector('.cancelar');
+    const mensajeEl = anuncio.querySelector('p');
+
+    mensajeEl.textContent = `¿Estás seguro de eliminar al usuario ${nombre}?`;
+    anuncio.style.display = 'flex';
+
+    const handleConfirmar = async () => {
+        try {
+            const response = await fetch('/eliminar-usuario', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pin })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Usuario eliminado correctamente', 'success');
+                cargarUsuarios(); // Recargar la lista
+            } else {
+                throw new Error(data.error || 'Error al eliminar usuario');
+            }
+        } catch (error) {
+            mostrarNotificacion(error.message, 'error');
+        } finally {
+            anuncio.style.display = 'none';
+        }
+    };
+
+    confirmarBtn.onclick = handleConfirmar;
+    cancelarBtn.onclick = () => {
+        anuncio.style.display = 'none';
+    };
+}
+
