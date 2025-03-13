@@ -1,10 +1,56 @@
-document.addEventListener('DOMContentLoaded', () => {
-    bienvenida();
-    manejarCierreSesion();
-    inicializarFormulario();
-    const btnConsulta = document.querySelector('.consultarProducto');
-    btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Verificar sesión al cargar
+        const response = await fetch('/obtener-nombre');
+        if (!response.ok) {
+            window.location.replace('/');
+            return;
+        }
+        
+        const data = await response.json();
+        if (!data.nombre) {
+            window.location.replace('/');
+            return;
+        }
+
+        // Inicializar dashboard
+        bienvenida();
+        manejarCierreSesion();
+        inicializarFormulario();
+        const btnConsulta = document.querySelector('.consultarProducto');
+        if (btnConsulta) {
+            btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+        }
+    } catch (error) {
+        console.error('Error al verificar sesión:', error);
+        window.location.replace('/');
+    }
 });
+
+function manejarCierreSesion() {
+    const btnLogout = document.querySelector('.logout-btn');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/cerrar-sesion', { 
+                    method: 'POST',
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    window.location.replace('/');
+                } else {
+                    throw new Error('Error al cerrar sesión');
+                }
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                alert('Error al cerrar sesión');
+            }
+        });
+    }
+}
+
+// ... rest of the code ...
 
 async function bienvenida() {
     try {
@@ -21,19 +67,7 @@ async function bienvenida() {
         console.error('Error al obtener el nombre:', error);
     }
 }
-function manejarCierreSesion() {
-    const btnLogout = document.querySelector('.logout-btn');
-    btnLogout.addEventListener('click', async () => {
-        try {
-            const response = await fetch('/cerrar-sesion', { method: 'POST' });
-            if (response.ok) {
-                window.location.href = '/';
-            }
-        } catch (error) {
-            console.error('Error al cerrar sesión:', error);
-        }
-    });
-}
+
 function mostrar(item) {
     var div = document.querySelector(item);
     const otherDiv = item === '.cuentas' ? 

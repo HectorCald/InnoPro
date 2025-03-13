@@ -32,11 +32,11 @@ class LoginPin {
         if (this.currentIndex < 4) {
             this.inputs[this.currentIndex].value = valor;
             this.inputs[this.currentIndex].classList.add('filled');
-            
+
             const pinArray = this.currentPin.split('');
             pinArray[this.currentIndex] = valor;
             this.currentPin = pinArray.join('');
-            
+
             this.currentIndex++;
 
             if (this.currentPin.length === 4) {
@@ -50,7 +50,7 @@ class LoginPin {
             this.currentIndex--;
             this.inputs[this.currentIndex].value = '';
             this.inputs[this.currentIndex].classList.remove('filled');
-            
+
             const pinArray = this.currentPin.split('');
             pinArray[this.currentIndex] = '';
             this.currentPin = pinArray.join('');
@@ -65,6 +65,8 @@ class LoginPin {
         this.currentPin = '';
         this.currentIndex = 0;
     }
+    // ... existing code ...
+
     async validarPin(pin) {
         try {
             const response = await fetch('/verificar-pin', {
@@ -92,9 +94,11 @@ class LoginPin {
         this.errorMessage.style.color = '#28a745';
         this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
         setTimeout(() => {
-            window.location.href = '/dashboard';  // Removemos el parámetro nombre de la URL
+            window.location.replace('/dashboard'); // Usar replace en lugar de href
         }, 1500);
     }
+
+    // ... rest of the code ...
 
 
     mostrarError(mensaje = 'PIN incorrecto. Intente nuevamente.') {

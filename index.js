@@ -51,21 +51,37 @@ app.use(express.static(join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
+// ... existing code ...
+
 app.use(session({
     secret: 'tu_clave_secreta',
-    resave: true,
-    saveUninitialized: true
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // set to true if using https
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
+
+// Modificar el middleware requireAuth
 function requireAuth(req, res, next) {
-    if (req.session.authenticated) {
+    if (req.session && req.session.authenticated) {
         next();
     } else {
         res.redirect('/');
     }
 }
+
+// Modificar la ruta principal
 app.get('/', (req, res) => {
+    if (req.session && req.session.authenticated) {
+        res.redirect('/dashboard');
+    } else {
         res.render('login');
+    }
 });
+
+// ... rest of the code ...
 app.get('/dashboard', requireAuth, (req, res) => {
     res.render('dashboard');  // Ya no necesitamos pasar el nombre aquí
 });
