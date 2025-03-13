@@ -1,14 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     
-    // Agregar evento al botón de registro
-    const btnRegistro = document.querySelector('.registrarProducto');
-    if (btnRegistro) {
-        btnRegistro.addEventListener('click', () => {
-            mostrar('.form1');
-            inicializarFormulario(); // Inicializar después de mostrar
-        });
-    }
 
     // Agregar evento al botón de consulta
     const btnConsulta = document.querySelector('.consultarProducto');
@@ -228,26 +220,6 @@ function crearTarjetaRegistro(registro) {
 
     return div;
 }
-
-
-// Modificar la función mostrar para cargar registros cuando se abre la vista de cuentas
-function mostrar(item) {
-    var div = document.querySelector(item);
-    if (item === '.cuentas') {
-        document.querySelector('.form1').style.display = 'none';
-        cargarRegistros(); // Cargar registros cuando se muestra la vista
-    } else if (item === '.form1') {
-        document.querySelector('.cuentas').style.display = 'none';
-    }
-    
-    if (div.style.display === 'none' || div.style.display === '') {
-        div.style.display = 'flex';
-    } else {
-        div.style.display = 'none';
-    }
-    resetearFormulario();
-}
-
 
 
 
