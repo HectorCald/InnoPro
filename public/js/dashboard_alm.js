@@ -186,7 +186,10 @@ async function cargarRegistros() {
                             ` : ''}
                             <div class="acciones">
                                 <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-editar">
-                                    <i class="fas fa-${registro[10] ? 'edit' : 'check-circle'}"></i> ${registro[10] ? 'Verificar' : 'Verificar'}
+                                    <i class="fas fa-${registro[10] ? 'edit' : 'check-circle'}"></i> ${registro[10] ? 'Editar' : 'Verificar'}
+                                </button>
+                                <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}')" class="btn-eliminar">
+                                    <i class="fas fa-trash"></i> Eliminar
                                 </button>
                             </div>
                         </div>
@@ -332,7 +335,7 @@ async function eliminarRegistro(fecha, producto) {
                 
                 if (result.success) {
                     mostrarNotificacion('Registro eliminado correctamente', 'success');
-                    await cargarRegistros();
+                    await cargarRegistros(); // Recargar los registros
                 } else {
                     throw new Error(result.error || 'No se pudo eliminar el registro');
                 }
