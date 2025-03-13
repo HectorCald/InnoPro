@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
-
+    inicializarFormulario();
 
 });
 
@@ -18,7 +18,6 @@ async function bienvenida() {
     } catch (error) {
         console.error('Error al obtener el nombre:', error);
     }
-    inicializarFormulario();
 }
 function manejarCierreSesion() {
     const btnLogout = document.querySelector('.logout-btn');
