@@ -1,15 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
-    
-
-    // Agregar evento al botón de consulta
-    const btnConsulta = document.querySelector('.consultarProducto');
-    if (btnConsulta) {
-        btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
-    }
+    manejarCierreSesion();
+    inicializarFormulario();
 });
-
-// ... resto del código se mantiene igual ...
 
 async function bienvenida() {
     try {
@@ -41,8 +34,10 @@ function manejarCierreSesion() {
 }
 function mostrar(item) {
     var div = document.querySelector(item);
-    if (!div) return;
-
+    const otherDiv = item === '.cuentas' ? 
+        document.querySelector('.form1') : 
+        document.querySelector('.cuentas');
+    
     if (item === '.cuentas') {
         document.querySelector('.form1').style.display = 'none';
         cargarRegistros();
@@ -52,26 +47,31 @@ function mostrar(item) {
     
     if (div.style.display === 'none' || div.style.display === '') {
         div.style.display = 'flex';
+        // Reset animation
+        div.style.animation = 'none';
+        div.offsetHeight; // Trigger reflow
+        div.style.animation = null;
+        
+        // Apply animations
+        div.style.animation = 'fadeIn 0.3s ease-out forwards';
+        const content = item === '.form1' ? 
+            div.querySelector('form') : 
+            div.querySelector('.registros-container');
+        if (content) {
+            content.style.animation = 'slideUp 0.3s ease-out';
+        }
     } else {
         div.style.display = 'none';
     }
-    
-    if (item === '.form1') {
-        resetearFormulario();
-    }
+    resetearFormulario();
 }
 function inicializarFormulario() {
     const form = document.querySelector('.form1 form');
-
-    if (!form) {
-        console.error("Error: No se encontró el formulario dentro de '.form1'.");
-        return; // Salir de la función si el formulario no existe
-    }
-
+    
     // Agregar manejo de radio buttons para microondas
     const radioButtons = document.querySelectorAll('input[name="microondas-option"]');
     const tiempoMicroondas = document.querySelector('.microondas-tiempo');
-
+    
     radioButtons.forEach(radio => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'si') {
@@ -89,14 +89,16 @@ function inicializarFormulario() {
         e.preventDefault();
         const formData = new FormData(form);
         const data = {};
-
-        const microOption = form.querySelector('input[name="microondas-option"]:checked');
-        if (microOption && microOption.value === 'no') {
+        
+        // Procesar opción de microondas
+        const microOption = form.querySelector('input[name="microondas-option"]:checked').value;
+        if (microOption === 'no') {
             data.microondas = 'No';
         } else {
             data.microondas = formData.get('microondas');
         }
-
+        
+        // Process other fields
         formData.forEach((value, key) => {
             if (key !== 'microondas' && key !== 'microondas-option') {
                 if (['lote', 'gramaje', 'envasesTerminados'].includes(key)) {
@@ -117,9 +119,9 @@ function inicializarFormulario() {
             });
 
             const result = await response.json();
-
+            
             if (result.success) {
-                mostrarNotificacion('Registro guardado correctamente', 'success');
+                mostrarNotificacion('Registro guardado correctamente','success');
                 resetearFormulario();
                 mostrar('.form1');
             } else {
@@ -131,7 +133,6 @@ function inicializarFormulario() {
         }
     });
 }
-
 
 function resetearFormulario() {
     const inputs = document.querySelectorAll('.form1 form input:not([type="radio"])');
@@ -220,6 +221,26 @@ function crearTarjetaRegistro(registro) {
 
     return div;
 }
+
+
+// Modificar la función mostrar para cargar registros cuando se abre la vista de cuentas
+function mostrar(item) {
+    var div = document.querySelector(item);
+    if (item === '.cuentas') {
+        document.querySelector('.form1').style.display = 'none';
+        cargarRegistros(); // Cargar registros cuando se muestra la vista
+    } else if (item === '.form1') {
+        document.querySelector('.cuentas').style.display = 'none';
+    }
+    
+    if (div.style.display === 'none' || div.style.display === '') {
+        div.style.display = 'flex';
+    } else {
+        div.style.display = 'none';
+    }
+    resetearFormulario();
+}
+
 
 
 
@@ -321,4 +342,14 @@ async function eliminarRegistro(fecha, producto) {
         
         anuncio.style.display = 'flex';
     });
+}
+
+// Modificar la función de envío del formulario
+// Buscar el try-catch donde se maneja el registro y modificar:
+if (result.success) {
+    mostrarNotificacion('Registro guardado correctamente', 'success');
+    resetearFormulario();
+    mostrar('.form1');
+} else {
+    throw new Error(result.error || 'Error desconocido');
 }

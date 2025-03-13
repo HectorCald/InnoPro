@@ -116,4 +116,12 @@ mostrarExito(nombre) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginPin = new LoginPin();
+    bienvenida();
+    
+
+    // Agregar evento al botón de consulta
+    const btnConsulta = document.querySelector('.consultarProducto');
+    if (btnConsulta) {
+        btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+    }
 });
