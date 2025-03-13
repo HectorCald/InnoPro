@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
-    manejarCierreSesion();
     inicializarFormulario();
     const btnConsulta = document.querySelector('.consultarProducto');
     btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
