@@ -53,19 +53,25 @@ app.set('views', join(__dirname, 'views'));
 
 // ... existing code ...
 
+
+
+// ... existing code ...
+
 app.use(session({
     secret: 'tu_clave_secreta',
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // set to true if using https
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        secure: false,
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true
     }
 }));
 
 // Modificar el middleware requireAuth
 function requireAuth(req, res, next) {
     if (req.session && req.session.authenticated) {
+        res.set('Cache-Control', 'no-store');  // Prevenir caché
         next();
     } else {
         res.redirect('/');
@@ -74,6 +80,7 @@ function requireAuth(req, res, next) {
 
 // Modificar la ruta principal
 app.get('/', (req, res) => {
+    res.set('Cache-Control', 'no-store');  // Prevenir caché
     if (req.session && req.session.authenticated) {
         res.redirect('/dashboard');
     } else {
@@ -81,9 +88,9 @@ app.get('/', (req, res) => {
     }
 });
 
-// ... rest of the code ...
 app.get('/dashboard', requireAuth, (req, res) => {
-    res.render('dashboard');  // Ya no necesitamos pasar el nombre aquí
+    res.set('Cache-Control', 'no-store');  // Prevenir caché
+    res.render('dashboard');
 });
 app.get('/obtener-nombre', (req, res) => {
     res.json({ nombre: req.session.nombre });

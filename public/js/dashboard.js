@@ -1,6 +1,11 @@
+// Modificar el evento DOMContentLoaded para evitar múltiples verificaciones
+let verificacionRealizada = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
+    if (verificacionRealizada) return;
+    verificacionRealizada = true;
+
     try {
-        // Verificar sesión al cargar
         const response = await fetch('/obtener-nombre');
         if (!response.ok) {
             window.location.replace('/');
@@ -13,13 +18,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Inicializar dashboard
+        // Inicializar dashboard una sola vez
         bienvenida();
         manejarCierreSesion();
         inicializarFormulario();
+        
         const btnConsulta = document.querySelector('.consultarProducto');
         if (btnConsulta) {
-            btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+            // Remover eventos previos
+            btnConsulta.replaceWith(btnConsulta.cloneNode(true));
+            const newBtnConsulta = document.querySelector('.consultarProducto');
+            newBtnConsulta.addEventListener('click', () => mostrar('.cuentas'));
         }
     } catch (error) {
         console.error('Error al verificar sesión:', error);
