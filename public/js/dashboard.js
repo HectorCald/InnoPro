@@ -1,26 +1,47 @@
-document.addEventListener('DOMContentLoaded', () => {
-    bienvenida();
-    
-    const intentarBienvenida = async (intentos = 3) => {
-        for (let i = 0; i < intentos; i++) {
-            try {
-                await bienvenida();
-                break; // Si tiene éxito, salir del bucle
-            } catch (error) {
-                console.error(`Intento ${i + 1} fallido:`, error);
-                if (i === intentos - 1) {
-                    // Si es el último intento, redirigir al login
-                    window.location.href = '/';
-                } else {
-                    // Esperar antes del siguiente intento
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/obtener-nombre', {
+            method: 'GET',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            },
+            credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+            window.location.href = '/';
+            return;
         }
-    };
 
-    intentarBienvenida();
+        const data = await response.json();
+        if (!data.nombre) {
+            window.location.href = '/';
+            return;
+        }
 
+        // Si llegamos aquí, la sesión es válida
+        bienvenida();
+        manejarCierreSesion();
+        
+        // Agregar evento al botón de registro
+        const btnRegistro = document.querySelector('.registrarProducto');
+        if (btnRegistro) {
+            btnRegistro.addEventListener('click', () => {
+                mostrar('.form1');
+                inicializarFormulario();
+            });
+        }
+
+        // Agregar evento al botón de consulta
+        const btnConsulta = document.querySelector('.consultarProducto');
+        if (btnConsulta) {
+            btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        window.location.href = '/';
+    }
 });
 
 // ... resto del código se mantiene igual ...

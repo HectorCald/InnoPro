@@ -56,7 +56,7 @@ app.set('views', join(__dirname, 'views'));
 
 app.use(session({
     secret: 'tu_clave_secreta',
-    resave: false,
+    resave: true,
     saveUninitialized: false,
     cookie: {
         secure: false,
@@ -64,10 +64,15 @@ app.use(session({
         httpOnly: true
     }
 }));
+
 // Modificar el middleware requireAuth
 function requireAuth(req, res, next) {
     if (req.session && req.session.authenticated) {
-        res.set('Cache-Control', 'no-store');  // Prevenir caché
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+            'Pragma': 'no-cache',
+            'Expires': '-1'
+        });
         next();
     } else {
         res.redirect('/');
@@ -114,14 +119,17 @@ app.get('/obtener-registros', requireAuth, async (req, res) => {
 
 
 
-app.post('/verificar-pin', async (req, res) => {
+pp.post('/verificar-pin', async (req, res) => {
     try {
         const { pin } = req.body;
         const resultado = await verificarPin(pin);
+        
         if (resultado.valido) {
             req.session.authenticated = true;
             req.session.nombre = resultado.nombre;
+            await new Promise((resolve) => req.session.save(resolve));
         }
+        
         res.json(resultado);
     } catch (error) {
         console.error('Error al verificar PIN:', error);

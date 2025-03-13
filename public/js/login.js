@@ -80,9 +80,15 @@ async validarPin(pin) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({ pin })
         });
+
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
 
         const data = await response.json();
 
@@ -93,17 +99,18 @@ async validarPin(pin) {
         }
     } catch (error) {
         console.error('Error:', error);
-        this.mostrarError('Error de conexión');
+        this.mostrarError('Error de conexión. Por favor, intente nuevamente.');
     }
 }
 
 mostrarExito(nombre) {
     this.errorMessage.style.color = '#28a745';
     this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
-    setTimeout(() => {
-        window.location.replace('/dashboard'); // Usar replace en lugar de href
-    }, 1500);
+    
+    // Redirigir inmediatamente
+    window.location.href = '/dashboard';
 }
+
 
 // ... rest of the code ...
 
