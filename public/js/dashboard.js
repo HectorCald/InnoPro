@@ -1,8 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
-    inicializarFormulario();
+    
+    // Agregar evento al botón de registro
+    const btnRegistro = document.querySelector('.registrarProducto');
+    if (btnRegistro) {
+        btnRegistro.addEventListener('click', () => {
+            mostrar('.form1');
+            inicializarFormulario(); // Inicializar después de mostrar
+        });
+    }
 
+    // Agregar evento al botón de consulta
+    const btnConsulta = document.querySelector('.consultarProducto');
+    if (btnConsulta) {
+        btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+    }
 });
+
+// ... resto del código se mantiene igual ...
 
 async function bienvenida() {
     try {
@@ -34,10 +49,8 @@ function manejarCierreSesion() {
 }
 function mostrar(item) {
     var div = document.querySelector(item);
-    const otherDiv = item === '.cuentas' ? 
-        document.querySelector('.form1') : 
-        document.querySelector('.cuentas');
-    
+    if (!div) return;
+
     if (item === '.cuentas') {
         document.querySelector('.form1').style.display = 'none';
         cargarRegistros();
@@ -47,23 +60,13 @@ function mostrar(item) {
     
     if (div.style.display === 'none' || div.style.display === '') {
         div.style.display = 'flex';
-        // Reset animation
-        div.style.animation = 'none';
-        div.offsetHeight; // Trigger reflow
-        div.style.animation = null;
-        
-        // Apply animations
-        div.style.animation = 'fadeIn 0.3s ease-out forwards';
-        const content = item === '.form1' ? 
-            div.querySelector('form') : 
-            div.querySelector('.registros-container');
-        if (content) {
-            content.style.animation = 'slideUp 0.3s ease-out';
-        }
     } else {
         div.style.display = 'none';
     }
-    resetearFormulario();
+    
+    if (item === '.form1') {
+        resetearFormulario();
+    }
 }
 function inicializarFormulario() {
     const form = document.querySelector('.form1 form');
