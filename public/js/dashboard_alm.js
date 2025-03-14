@@ -162,65 +162,64 @@ async function cargarRegistros() {
             const container = document.querySelector('.registros-container');
             container.innerHTML = '';
 
-            // Agrupar registros por fecha, saltando la primera fila (encabezados)
-            const registrosPorFecha = {};
+            // Agrupar registros por nombre de operario, saltando la primera fila (encabezados)
+            const registrosPorOperario = {};
             data.registros.slice(1).forEach(registro => {
-                if (!registro[0]) return; // Saltar filas vacías
-                if (!registrosPorFecha[registro[0]]) {
-                    registrosPorFecha[registro[0]] = [];
+                if (!registro[8]) return; // Saltar filas sin nombre de operario
+                if (!registrosPorOperario[registro[8]]) {
+                    registrosPorOperario[registro[8]] = [];
                 }
-                registrosPorFecha[registro[0]].push(registro);
+                registrosPorOperario[registro[8]].push(registro);
             });
 
-            // Ordenar fechas de más reciente a más antigua
-            const fechasOrdenadas = Object.keys(registrosPorFecha).sort((a, b) => {
-                // Convertir fechas del formato DD/MM/YYYY a objetos Date
-                const [diaA, mesA, yearA] = a.split('/');
-                const [diaB, mesB, yearB] = b.split('/');
-                
-                // Crear fechas en formato YYYY-MM-DD para comparación correcta
-                const fechaA = new Date(`${yearA}-${mesA}-${diaA}`);
-                const fechaB = new Date(`${yearB}-${mesB}-${diaB}`);
-                
-                // Ordenar de más reciente a más antigua
-                return fechaB - fechaA;
-            });
-            // Crear tarjetas para cada fecha
-            fechasOrdenadas.forEach(fecha => {
-                const registros = registrosPorFecha[fecha];
-                const fechaCard = document.createElement('div');
-                fechaCard.className = 'fecha-card';
+            // Ordenar nombres alfabéticamente
+            const nombresOrdenados = Object.keys(registrosPorOperario).sort();
 
-                const fechaHeader = document.createElement('div');
-                fechaHeader.className = 'fecha-header';
-                fechaHeader.innerHTML = `
+            // Crear tarjetas para cada operario
+            nombresOrdenados.forEach(nombre => {
+                const registros = registrosPorOperario[nombre];
+                const operarioCard = document.createElement('div');
+                operarioCard.className = 'fecha-card'; // Mantenemos la misma clase para el estilo
+
+                const operarioHeader = document.createElement('div');
+                operarioHeader.className = 'fecha-header';
+                operarioHeader.innerHTML = `
                     <div class="fecha-info">
-                        <h3>${formatearFecha(fecha)}</h3>
+                        <h3>${nombre}</h3>
                         <span class="contador">${registros.length} registros</span>
                     </div>
                     <i class="fas fa-chevron-down"></i>
                 `;
-                fechaCard.appendChild(fechaHeader);
+                operarioCard.appendChild(operarioHeader);
 
-                // Contenedor para los registros de esta fecha
+                // Contenedor para los registros de este operario
                 const registrosContainer = document.createElement('div');
                 registrosContainer.className = 'registros-grupo';
 
-                // Añadir evento click al header de fecha
-                fechaHeader.addEventListener('click', () => {
+                // Añadir evento click al header
+                operarioHeader.addEventListener('click', () => {
                     registrosContainer.classList.toggle('active');
-                    const icono = fechaHeader.querySelector('.fa-chevron-down');
+                    const icono = operarioHeader.querySelector('.fa-chevron-down');
                     icono.style.transform = registrosContainer.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
+                });
+
+                // Ordenar registros por fecha (del más reciente al más antiguo)
+                registros.sort((a, b) => {
+                    const [diaA, mesA, yearA] = a[0].split('/');
+                    const [diaB, mesB, yearB] = b[0].split('/');
+                    const fechaA = new Date(`${yearA}-${mesA}-${diaA}`);
+                    const fechaB = new Date(`${yearB}-${mesB}-${diaB}`);
+                    return fechaB - fechaA;
                 });
 
                 registros.forEach(registro => {
                     const registroCard = document.createElement('div');
                     registroCard.className = 'registro-card';
-
                     registroCard.innerHTML = `
                         <div class="registro-header">
                             <div class="registro-info">
                                 ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
+                                <span class="registro-fecha">${registro[0]}</span>
                                 <span class="registro-producto">${registro[1]}</span>
                             </div>
                             <i class="fas fa-chevron-down"></i>
@@ -232,12 +231,11 @@ async function cargarRegistros() {
                             <p><span>Microondas:</span> ${registro[5] || '-'}</p>
                             <p><span>Envases:</span> ${registro[6] || '-'}</p>
                             <p><span>Vencimiento:</span> ${registro[7] || '-'}</p>
-                            <p><span>Operario:</span> ${registro[8] || '-'}</p>
                             <p><span>Estado:</span> <span class="estado ${(registro[9] || 'pendiente').toLowerCase()}">${registro[9] || 'Pendiente'}</span></p>
                             ${registro[10] ? `
-                            <p><span>Fecha Verificación:</span> ${registro[10]}</p>
-                            <p><span>Cantidad Real:</span> ${registro[9] || '-'}</p>
-                            <p><span>Observaciones:</span> ${registro[11] || '-'}</p>
+                                <p><span>Fecha Verificación:</span> ${registro[10]}</p>
+                                <p><span>Cantidad Real:</span> ${registro[9] || '-'}</p>
+                                <p><span>Observaciones:</span> ${registro[11] || '-'}</p>
                             ` : ''}
                             <div class="acciones">
                                 <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-editar">
@@ -250,24 +248,19 @@ async function cargarRegistros() {
                         </div>
                     `;
 
+                    // Evento para expandir/colapsar detalles
                     registroCard.querySelector('.registro-header').addEventListener('click', () => {
                         const detalles = registroCard.querySelector('.registro-detalles');
-                        const icono = registroCard.querySelector('.fa-chevron-down');
-
-                        if (detalles.classList.contains('active')) {
-                            detalles.classList.remove('active');
-                            icono.style.transform = 'rotate(0)';
-                        } else {
-                            detalles.classList.add('active');
-                            icono.style.transform = 'rotate(180deg)';
-                        }
+                        detalles.classList.toggle('active');
+                        const icono = registroCard.querySelector('.registro-header .fa-chevron-down');
+                        icono.style.transform = detalles.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
                     });
 
                     registrosContainer.appendChild(registroCard);
                 });
 
-                fechaCard.appendChild(registrosContainer);
-                container.appendChild(fechaCard);
+                operarioCard.appendChild(registrosContainer);
+                container.appendChild(operarioCard);
             });
         }
     } catch (error) {
@@ -447,20 +440,18 @@ async function buscarRegistros() {
     try {
         const fecha = document.getElementById('filtroFecha').value;
         const lote = document.getElementById('filtroLote').value;
-        const producto = document.getElementById('producto-input').value; // Cambiado de 'filtroProducto' a 'producto-input'
+        const producto = document.getElementById('producto-input').value;
+        const nombre = document.getElementById('filtroNombre').value; // Nuevo filtro
 
-        console.log('Filtros:', { fecha, lote, producto }); // Para debugging
+        console.log('Filtros:', { fecha, lote, producto, nombre }); // Para debugging
 
         const response = await fetch('/obtener-todos-registros');
         const data = await response.json();
 
         if (data.success) {
-            // Excluir la primera fila (encabezados) y filtrar registros
             const registrosFiltrados = data.registros.slice(1).filter(registro => {
-                // Verificar que el registro existe y tiene los campos necesarios
-                if (!registro || registro.length < 3) return false;
+                if (!registro || registro.length < 9) return false;
 
-                // Convertir la fecha del registro al formato YYYY-MM-DD para comparar
                 const [dia, mes, anio] = registro[0].split('/');
                 const fechaRegistro = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
 
@@ -469,19 +460,13 @@ async function buscarRegistros() {
                     registro[1].toLowerCase().includes(producto.toLowerCase());
                 const cumpleLote = !lote || 
                     String(registro[2]).toLowerCase().includes(String(lote).toLowerCase());
+                const cumpleNombre = !nombre || 
+                    registro[8].toLowerCase().includes(nombre.toLowerCase()); // Nuevo filtro
 
-                console.log('Comparación:', {
-                    fechaRegistro,
-                    fechaBuscada: fecha,
-                    cumpleFecha,
-                    cumpleProducto,
-                    cumpleLote
-                }); // Para debugging
-
-                return cumpleFecha && cumpleProducto && cumpleLote;
+                return cumpleFecha && cumpleProducto && cumpleLote && cumpleNombre;
             });
 
-            console.log('Registros filtrados:', registrosFiltrados); // Para debugging
+            console.log('Registros filtrados:', registrosFiltrados);
             mostrarResultadosBusqueda(registrosFiltrados);
         } else {
             mostrarNotificacion('Error al obtener registros', 'error');
@@ -555,7 +540,6 @@ function cambiarTab(tabName) {
     document.getElementById(`${tabName}-tab`).classList.add('active');
     document.querySelector(`[onclick="cambiarTab('${tabName}')"]`).classList.add('active');
 }
-
 async function cargarUsuarios() {
     try {
         const response = await fetch('/obtener-usuarios');

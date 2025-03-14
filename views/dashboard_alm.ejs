@@ -33,6 +33,8 @@
             <!-- Los registros se cargarán dinámicamente aquí -->
         </div>
     </div>
+
+
     <div class="consulta-view">
         <div class="title">
             <h1>Consulta de Registros</h1>
@@ -51,10 +53,15 @@
             </div>
             <div class="filtro">
                 <p>Nombre del producto</p>
-                <input type="text" name="producto" id="producto-input" list="productos-list" placeholder="Nombre del producto" autocomplete="off" required>
+                <input type="text" name="producto" id="producto-input" list="productos-list"
+                    placeholder="Nombre del producto" autocomplete="off" required>
                 <datalist id="productos-list">
-                <!-- Las opciones se cargarán dinámicamente -->
+                    <!-- Las opciones se cargarán dinámicamente -->
                 </datalist>
+            </div>
+            <div class="filtro">
+                <p>Nombre del Operario</p>
+                <input type="text" id="filtroNombre" placeholder="Nombre del operario">
             </div>
             <button class="btn-buscar" onclick="buscarRegistros()">
                 <i class="fas fa-search"></i> Buscar
@@ -127,31 +134,34 @@
         </div>
     </div>
 
-<!-- Agregar este modal al final del archivo, antes del </body> -->
-<div class="modal-usuario">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Nuevo Usuario</h2>
-            <button class="cerrar-modal">
-                <i class="fas fa-times"></i>
-            </button>
+    <!-- Agregar este modal al final del archivo, antes del </body> -->
+    <div class="modal-usuario">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nuevo Usuario</h2>
+                <button class="cerrar-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-usuario">
+                <div class="form-group">
+                    <label for="nuevo-pin">PIN:</label>
+                    <input type="number" id="nuevo-pin" required min="1000" max="9999"
+                        oninput="if(this.value.length > 4) this.value=this.value.slice(0,4)"
+                        placeholder="Solo 4 numeros">
+                </div>
+                <div class="form-group">
+                    <label for="nuevo-nombre">Nombre:</label>
+                    <input type="text" id="nuevo-nombre" required style="text-transform: uppercase;"
+                        oninput="this.value = this.value.toUpperCase()" placeholder="Nombre del operador">
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn-guardar">Guardar</button>
+                    <button type="button" class="btn-cancelar">Cancelar</button>
+                </div>
+            </form>
         </div>
-        <form id="form-usuario">
-            <div class="form-group">
-                <label for="nuevo-pin">PIN:</label>
-                <input type="number" id="nuevo-pin" required min="1000" max="9999" oninput="if(this.value.length > 4) this.value=this.value.slice(0,4)" placeholder="Solo 4 numeros">
-            </div>
-            <div class="form-group">
-                <label for="nuevo-nombre">Nombre:</label>
-                <input type="text" id="nuevo-nombre" required style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" placeholder="Nombre del operador">
-            </div>
-            <div class="form-buttons">
-                <button type="submit" class="btn-guardar">Guardar</button>
-                <button type="button" class="btn-cancelar">Cancelar</button>
-            </div>
-        </form>
     </div>
-</div>
     <div class="anuncio">
         <div class="anuncio-contenido">
             <i class="fas fa-exclamation-triangle"></i>
