@@ -4,13 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     manejarCierreSesion();
     inicializarMenu();
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const accion = e.currentTarget.getAttribute('data-action');
-            manejarAccionMenu(accion);
-        });
-    });
+    cargarUsuarios();
 });
 
 /* ==================== FUNCIONES DE AUTENTICACIÓN Y SESIÓN ==================== */
@@ -119,64 +113,6 @@ function inicializarMenu() {
     document.addEventListener('click', closeMenuOutside);
 }
 
-function manejarAccionMenu(accion) {
-    const dropdownMenu = document.querySelector('.dropdown-menu');
-    const usuariosView = document.querySelector('.usuarios-view');
-
-    // Primero ocultamos todas las vistas
-    document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
-    
-    switch(accion) {
-        case 'inicio':
-            window.location.href = '/dashboard_adm';
-            break;
-        case 'usuarios':
-            console.log('Mostrando vista de usuarios'); // Debug
-            dropdownMenu.classList.remove('active');
-            usuariosView.classList.add('active');
-            mostrarSeccionUsuarios();
-            break;
-        default:
-            usuariosView.classList.remove('active');
-            break;
-    }
-}
-
-// Modificar también la función mostrarSeccionUsuarios
-async function mostrarSeccionUsuarios() {
-    console.log('Iniciando mostrarSeccionUsuarios');
-    const usuariosView = document.querySelector('.usuarios-view');
-    
-    if (!usuariosView) {
-        console.error('No se encontró el elemento usuarios-view');
-        return;
-    }
-
-    usuariosView.innerHTML = `
-        <div class="usuarios-container">
-            <h2>Gestión de Usuarios</h2>
-            <div class="usuarios-table">
-                <div class="table-header">
-                    <div class="header-cell">PIN</div>
-                    <div class="header-cell">Nombre</div>
-                    <div class="header-cell">Rol</div>
-                    <div class="header-cell">Acciones</div>
-                </div>
-                <div class="table-body">
-                    <!-- Los usuarios se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    `;
-    
-    try {
-        await cargarUsuarios();
-        mostrarNotificacion('Usuarios cargados correctamente', 'success');
-    } catch (error) {
-        mostrarNotificacion('Error al cargar usuarios', 'error');
-    }
-}
-
 async function cargarUsuarios() {
     try {
         const response = await fetch('/obtener-usuarios', {
@@ -186,131 +122,74 @@ async function cargarUsuarios() {
             },
             credentials: 'include'
         });
-
         const data = await response.json();
 
         if (data.success) {
-            const tableBody = document.querySelector('.table-body');
-            tableBody.innerHTML = '';
+            const usuariosView = document.querySelector('.usuarios-view');
+            if (!usuariosView) return;
 
-            data.usuarios.forEach(usuario => {
-                const row = document.createElement('div');
-                row.className = 'usuario-row';
-                row.innerHTML = `
-                    <div class="usuario-info" onclick="toggleAcciones('${usuario.pin}')">
-                        <div class="cell">${usuario.pin || '-'}</div>
-                        <div class="cell">${usuario.nombre || '-'}</div>
-                        <div class="cell">${usuario.rol || '-'}</div>
-                        <div class="cell"><i class="fas fa-chevron-down"></i></div>
-                    </div>
-                    <div class="acciones-dropdown" id="acciones-${usuario.pin}">
-                        <button onclick="editarUsuario('${usuario.pin}')">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                        <button onclick="mostrarPermisos('${usuario.pin}')">
-                            <i class="fas fa-key"></i> Permisos
-                        </button>
-                        <button onclick="eliminarUsuario('${usuario.pin}')">
-                            <i class="fas fa-trash"></i> Eliminar
+            usuariosView.innerHTML = `
+                <div class="usuarios-container">
+                    <div class="usuarios-header">
+                        <h2>Usuarios</h2>
+                        <button class="btn-crear-usuario" onclick="mostrarDialogoNuevoUsuario()">
+                            <i class="fas fa-user-plus"></i> Crear Usuario
                         </button>
                     </div>
-                `;
-                tableBody.appendChild(row);
-            });
+                    <div class="usuarios-table">
+                        <div class="table-header">
+                            <div class="header-cell">PIN</div>
+                            <div class="header-cell">Nombre</div>
+                            <div class="header-cell">Rol</div>
+                        </div>
+                        <div class="table-body">
+                            ${data.usuarios.map(usuario => `
+                                <div class="usuario-row">
+                                    <div class="usuario-info" onclick="toggleAcciones('${usuario.pin}')">
+                                        <div class="cell">${usuario.pin}</div>
+                                        <div class="cell">${usuario.nombre}</div>
+                                        <div class="cell">${usuario.rol}</div>
+                                    </div>
+                                    <div class="acciones-dropdown" id="acciones-${usuario.pin}">
+                                        <button onclick="mostrarPermisos('${usuario.pin}')">
+                                            <i class="fas fa-key"></i> Permisos
+                                        </button>
+                                        <button onclick="editarUsuario('${usuario.pin}')">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button onclick="confirmarEliminarUsuario('${usuario.pin}')">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            mostrarNotificacion(data.error || 'Error al cargar usuarios', 'error');
         }
     } catch (error) {
-        console.error('Error al cargar usuarios:', error);
-        throw error;
+        console.error('Error:', error);
+        mostrarNotificacion('Error al cargar usuarios', 'error');
     }
 }
 
 function toggleAcciones(pin) {
-    const allDropdowns = document.querySelectorAll('.acciones-dropdown');
-    const targetDropdown = document.getElementById(`acciones-${pin}`);
+    const acciones = document.getElementById(`acciones-${pin}`);
+    const row = acciones.parentElement;
     const allRows = document.querySelectorAll('.usuario-row');
     
-    // Close all other dropdowns
-    allDropdowns.forEach(dropdown => {
-        if (dropdown !== targetDropdown) {
-            dropdown.classList.remove('active');
+    // Cerrar otros menús abiertos
+    allRows.forEach(r => {
+        if (r !== row) {
+            r.classList.remove('active');
+            r.querySelector('.acciones-dropdown').classList.remove('active');
         }
     });
     
-    // Remove active class from all rows
-    allRows.forEach(row => row.classList.remove('active'));
-    
-    // Toggle the clicked dropdown
-    if (targetDropdown) {
-        targetDropdown.classList.toggle('active');
-        targetDropdown.parentElement.classList.toggle('active');
-    }
-}
-
-// Agregar nuevas funciones para manejar usuarios
-function editarUsuario(pin) {
-    // Implementar lógica de edición
-    console.log('Editando usuario:', pin);
-    mostrarDialogoEdicion(pin);
-}
-
-function mostrarPermisos(pin) {
-    // Implementar lógica de permisos
-    console.log('Mostrando permisos:', pin);
-    mostrarDialogoPermisos(pin);
-}
-
-function mostrarDialogoEdicion(pin) {
-    const dialog = document.createElement('div');
-    dialog.className = 'dialogo-modal';
-    dialog.innerHTML = `
-        <div class="dialogo-contenido">
-            <h3>Editar Usuario</h3>
-            <form id="form-editar-usuario">
-                <input type="text" id="edit-pin" placeholder="PIN" value="${pin}" readonly>
-                <input type="text" id="edit-nombre" placeholder="Nombre">
-                <select id="edit-rol">
-                    <option value="user">Usuario</option>
-                    <option value="almacen">Almacén</option>
-                    <option value="admin">Administrador</option>
-                </select>
-                <div class="dialogo-botones">
-                    <button type="button" class="btn-cancelar">Cancelar</button>
-                    <button type="submit" class="btn-guardar">Guardar</button>
-                </div>
-            </form>
-        </div>
-    `;
-    document.body.appendChild(dialog);
-
-    // Manejar el cierre
-    dialog.querySelector('.btn-cancelar').onclick = () => dialog.remove();
-}
-
-function mostrarDialogoPermisos(pin) {
-    const dialog = document.createElement('div');
-    dialog.className = 'dialogo-modal';
-    dialog.innerHTML = `
-        <div class="dialogo-contenido">
-            <h3>Permisos de Usuario</h3>
-            <div class="permisos-lista">
-                <label>
-                    <input type="checkbox" name="permiso-almacen"> Acceso a Almacén
-                </label>
-                <label>
-                    <input type="checkbox" name="permiso-produccion"> Acceso a Producción
-                </label>
-                <label>
-                    <input type="checkbox" name="permiso-reportes"> Acceso a Reportes
-                </label>
-            </div>
-            <div class="dialogo-botones">
-                <button type="button" class="btn-cancelar">Cerrar</button>
-                <button type="button" class="btn-guardar">Guardar</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(dialog);
-
-    // Manejar el cierre
-    dialog.querySelector('.btn-cancelar').onclick = () => dialog.remove();
+    // Toggle del menú actual
+    row.classList.toggle('active');
+    acciones.classList.toggle('active');
 }

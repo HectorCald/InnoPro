@@ -110,6 +110,7 @@ app.get('/dashboard_adm', requireAuth, (req, res) => {
     }
 });
 
+
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
 app.post('/verificar-pin', async (req, res) => {
     try {
@@ -190,6 +191,125 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
         });
     }
 });
+// Añadir nueva ruta para obtener permisos
+app.get('/obtener-permisos/:pin', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const { pin } = req.params;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const usuario = rows.find(row => row[0] === pin);
+
+        if (!usuario) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+
+        const permisos = usuario[2] ? usuario[2].split(',').map(p => p.trim()) : [];
+        res.json({ success: true, permisos });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener permisos: ' + error.message 
+        });
+    }
+});
+app.post('/agregar-permiso', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const { pin, permiso } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener permisos actuales
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pin);
+        
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+
+        // Actualizar permisos
+        const permisosActuales = rows[rowIndex][2] ? rows[rowIndex][2].split(',').map(p => p.trim()) : [];
+        if (permisosActuales.includes(permiso)) {
+            return res.status(400).json({ success: false, error: 'El permiso ya existe' });
+        }
+
+        const nuevosPermisos = [...permisosActuales, permiso].join(', ');
+
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Usuarios!C${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[nuevosPermisos]]
+            }
+        });
+
+        res.json({ success: true, message: 'Permiso agregado correctamente' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al agregar permiso' });
+    }
+});
+
+app.delete('/eliminar-permiso', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const { pin, permiso } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener permisos actuales
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pin);
+        
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+
+        // Actualizar permisos
+        const permisosActuales = rows[rowIndex][2] ? rows[rowIndex][2].split(',').map(p => p.trim()) : [];
+        const nuevosPermisos = permisosActuales.filter(p => p !== permiso).join(', ');
+
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Usuarios!C${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[nuevosPermisos]]
+            }
+        });
+
+        res.json({ success: true, message: 'Permiso eliminado correctamente' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al eliminar permiso' });
+    }
+});
+
 
 app.post('/registrar-produccion', requireAuth, async (req, res) => {
     try {

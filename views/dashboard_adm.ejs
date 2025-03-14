@@ -1,7 +1,7 @@
 <!-- ==================== HEADER Y NAVEGACIÓN ==================== -->
 <%- include('partials/header') %>
     <link rel="stylesheet" href="./css/dashboard_adm.css">
-    <div class=".container">
+    <div class="container">
         <div class="dashboard">
             <h1 class="bienvenida">...</h1>
             <div class="nav-menu">
@@ -23,7 +23,7 @@
                         <i class="fas fa-cash-register"></i> Ventas
                     </a>
                     <a href="#" class="menu-item" data-action="productos">
-                        <i class="fas fa-box-open"></i>  Productos
+                        <i class="fas fa-box-open"></i> Productos
                     </a>
                     <a href="#" class="menu-item" data-action="usuarios">
                         <i class="fas fa-users"></i> Usuarios
@@ -34,7 +34,7 @@
                     <a href="#" class="menu-item" data-action="configuracion">
                         <i class="fas fa-cog"></i> Configuración
                     </a>
-                    
+
                     <div class="menu-divider"></div>
                     <button class="logout-btn" type="button">
                         <i class="fas fa-sign-out-alt"></i>
@@ -44,13 +44,10 @@
             </div>
         </div>
         <div class="usuarios-view">
-
         </div>
+        <div class="almacen-view">almacen</div>
+        <div class="acopio-view">acopio</div>
     </div>
-    <!-- Rest of the existing content -->
-
-
-    <!-- ==================== COMPONENTES DE NOTIFICACIÓN ==================== -->
     <div class="notificador">
     </div>
 
@@ -66,6 +63,9 @@
             </div>
         </div>
     </div>
+    </div>
+    <!-- ==================== COMPONENTES DE NOTIFICACIÓN ==================== -->
+
     <!-- ==================== FOOTER ==================== -->
     <script src="./js/dashboard_adm.js"></script>
     <%- include('partials/footer') %>

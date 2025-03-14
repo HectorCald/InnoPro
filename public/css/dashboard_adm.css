@@ -2,35 +2,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
 /* ==================== HEADER SECTION ==================== */
+body{
+    background: #212121;
+}
 .bienvenida {
     text-align: center;
     color: white;
     padding: 2rem;
     font-size: 0.5rem;
     letter-spacing: 2px;
-    background: linear-gradient(45deg, #1a1a1a, #212121);
+    background: #1a1a1a;
     margin: 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     text-align: left;
     font-family: 'Poppins', sans-serif;
 }
 
 /* ==================== MAIN CONTAINER ==================== */
 .container {
+    margin-top: 100px; /* Height of dashboard */
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-    padding: 5em;
+    align-items: flex-start;
     gap: 2em;
-    background-color: #212121;
-    min-height: calc(100vh - 200px);
+    background: #1a1a1a;
+    min-height: calc(100vh);
     width: 100%;
-    height: 100%;
-    z-index: 1;
     position: relative;
-    border: 1px solid red;
 }
 .container.no-touch {
     pointer-events: none;
@@ -38,15 +37,18 @@
     transition: filter 0.3s ease;
 }
 /* ==================== NAVIGATION MENU ==================== */
-.dashboard{
+.dashboard {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding-inline: 1em;
-    width: 100%;
-    height: auto;
-    background: linear-gradient(45deg, #1a1a1a, #212121);
+    background: #1a1a1a;
+    z-index: 1000;
 }
 
 .nav-menu {
@@ -55,7 +57,7 @@
 }
 
 .menu-btn {
-    background: #2d2d2d;
+    background: #1a1a1a;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -151,10 +153,9 @@
         justify-content: flex-start;
         align-items: center;
         align-content: top;
-        padding: 1em;
         gap: 1em;
-        background-color: #212121;
-        height: 87vh;
+        background: #1a1a1a;
+        height:90vh;
         width: 100%;
         margin: 0;
     }
@@ -164,22 +165,17 @@
     }
 }
 /* ==================== USUARIOS VIEW ==================== */
-.usuarios-view {
+.usuarios-view, .almacen-view, .acopio-view {
     width: 100%;
-    padding: 2rem;
     background: #1a1a1a;
-    border-radius: 8px;
-    margin-top: 1rem;
-    display: none;
-    position: absolute;
-    top: 100px;
-    left: 0;
-    right: 0;
+    margin-top: 5em;
+    height: 80vh;
+    color: white;
+    overflow: hidden;
+    margin-top: 7em;
+    padding-inline: 1em;
 }
 
-.usuarios-view.active {
-    display: block;
-}
 
 .usuarios-container {
     width: 100%;
@@ -187,7 +183,7 @@
 
 .usuarios-container h2 {
     color: white;
-    margin-bottom: 2rem;
+    margin:0;
     font-size: 1.5rem;
 }
 
@@ -195,7 +191,6 @@
     width: 100%;
     background: #2d2d2d;
     border-radius: 8px;
-    overflow: hidden;
 }
 
 .table-header {
@@ -205,6 +200,9 @@
     padding: 1rem;
     font-weight: bold;
     color: white;
+    height: 70px;
+    justify-content: center;
+    align-items: center;
 }
 
 .header-cell {
@@ -214,9 +212,10 @@
 .table-body {
     max-height: 400px;
     overflow-y: auto;
+    height: 60vh;
+
 }
 
-/* Update existing usuarios table styles */
 .usuario-row {
     background: #2d2d2d;
     border-radius: 4px;
@@ -288,6 +287,31 @@
     }
 }
 
+.usuario-row:hover {
+    background: #353535;
+}
+
+.cell {
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.btn-crear-usuario {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-block: 1em;
+}
+
+.btn-crear-usuario:hover {
+    background: #1d7a33;
+}
 /* ==================== NOTIFICATIONS ==================== */
 .notificador {
     position: fixed;
@@ -395,7 +419,6 @@
     align-items: center;
     z-index: 10000;
 }
-
 .anuncio-contenido {
     background: #2d2d2d;
     padding: 2em;
