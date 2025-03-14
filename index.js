@@ -59,16 +59,22 @@ async function verificarPin(pin) {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2:C' // Agregamos una columna para el rol
+            range: 'Usuarios!A2:C'
         });
         const rows = response.data.values || [];
         const usuario = rows.find(row => row[0] === pin);
         
         if (usuario) {
+            console.log('Usuario encontrado:', usuario); // Debug log
+            const nombre = usuario[1];
+            const rol = usuario[1].toLowerCase() === 'administrador' ? 'admin' : 
+                       usuario[1] === 'Almacen' ? 'almacen' : 'user';
+            
+            
             return { 
                 valido: true, 
-                nombre: usuario[1],
-                rol: usuario[1] === 'Almacen_adm' ? 'admin' : 'user'
+                nombre: nombre,
+                rol: rol
             };
         }
         return { valido: false };
@@ -83,11 +89,28 @@ app.get('/', (req, res) => {
     res.render('login');
 });
 
-app.get('/dashboard', (req, res) => {
-    res.render('dashboard');
+app.get('/dashboard', requireAuth, (req, res) => {
+    if (req.user.rol === 'admin') {
+        res.redirect('/dashboard_adm');
+    } else if (req.user.rol === 'almacen') {
+        res.redirect('/dashboard_alm');
+    } else {
+        res.render('dashboard');
+    }
 });
-app.get('/dashboard_alm', (req, res) => {
-    res.render('dashboard_alm');
+app.get('/dashboard_alm', requireAuth, (req, res) => {
+    if (req.user.rol !== 'almacen') {
+        res.redirect('/dashboard');
+    } else {
+        res.render('dashboard_alm');
+    }
+});
+app.get('/dashboard_adm', requireAuth, (req, res) => {
+    if (req.user.rol !== 'admin') {
+        res.redirect('/dashboard');
+    } else {
+        res.render('dashboard_adm');
+    }
 });
 
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
@@ -97,7 +120,10 @@ app.post('/verificar-pin', async (req, res) => {
         const resultado = await verificarPin(pin);
         if (resultado.valido) {
             const token = jwt.sign(
-                { nombre: resultado.nombre },
+                { 
+                    nombre: resultado.nombre,
+                    rol: resultado.rol
+                },
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
@@ -106,7 +132,13 @@ app.post('/verificar-pin', async (req, res) => {
                 secure: process.env.NODE_ENV === 'production',
                 maxAge: 24 * 60 * 60 * 1000
             });
-            res.json({ ...resultado, token });
+            res.json({ 
+                ...resultado, 
+                token,
+                redirect: resultado.rol === 'admin' ? '/dashboard_adm' : 
+                         resultado.rol === 'almacen' ? '/dashboard_alm' : 
+                         '/dashboard'
+            });
         } else {
             res.json(resultado);
         }
@@ -115,6 +147,7 @@ app.post('/verificar-pin', async (req, res) => {
         res.status(500).json({ error: 'Error al verificar el PIN' });
     }
 });
+
 
 app.post('/cerrar-sesion', (req, res) => {
     res.clearCookie('token');

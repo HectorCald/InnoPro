@@ -78,43 +78,44 @@ class LoginPin {
 
     /* ==================== VALIDACIÓN Y AUTENTICACIÓN ==================== */
     async validarPin(pin) {
-        try {
-            const response = await fetch('/verificar-pin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ pin })
-            });
+    try {
+        const response = await fetch('/verificar-pin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ pin })
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            if (data.valido) {
-                this.mostrarExito(data.nombre);
-                // Redirigir según el rol
-                setTimeout(() => {
-                    if (data.rol === 'admin') {
-                        window.location.replace('/dashboard_alm');
-                    } else {
-                        window.location.replace('/dashboard');
-                    }
-                }, 1500);
-            } else {
-                this.mostrarError();
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            this.mostrarError('Error de conexión');
+        if (data.valido) {
+            this.mostrarExito(data.nombre);
+            // Redirigir según el rol
+            setTimeout(() => {
+                if (data.rol === 'admin') {
+                    window.location.replace('/dashboard_adm');
+                } else if (data.rol === 'almacen') {
+                    window.location.replace('/dashboard_alm');
+                } else {
+                    window.location.replace('/dashboard');
+                }
+            }, 1500);
+        } else {
+            this.mostrarError();
         }
+    } catch (error) {
+        console.error('Error:', error);
+        this.mostrarError('Error de conexión');
     }
+}
 
     /* ==================== GESTIÓN DE MENSAJES Y RESPUESTAS ==================== */
+        /* ==================== GESTIÓN DE MENSAJES Y RESPUESTAS ==================== */
     mostrarExito(nombre) {
         this.errorMessage.style.color = '#28a745';
         this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
-        setTimeout(() => {
-            window.location.replace('/dashboard');
-        }, 1500);
+        // Eliminamos la redirección aquí ya que se maneja en validarPin
     }
 
     mostrarError(mensaje = 'PIN incorrecto. Intente nuevamente.') {
