@@ -3,13 +3,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     manejarCierreSesion();
-    inicializarFormulario();
-    cargarProductos();
-    const closeButtons = document.querySelectorAll('.title button');
-    closeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const container = document.querySelector('.container');
-            container.classList.remove('no-touch');
+    inicializarMenu();
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const accion = e.currentTarget.getAttribute('data-action');
+            manejarAccionMenu(accion);
         });
     });
 });
@@ -23,14 +22,13 @@ async function bienvenida() {
         if (data.nombre) {
             const bienvenida = document.querySelector('.bienvenida');
             if (bienvenida) {
-                bienvenida.innerHTML = '<i class="fas fa-microchip"></i> DB Tec.';
+                bienvenida.innerHTML = '<i class="fas fa-microchip"></i> Adimin.';
             }
         }
     } catch (error) {
         console.error('Error al obtener el nombre:', error);
     }
 }
-
 function manejarCierreSesion() {
     const btnLogout = document.querySelector('.logout-btn');
     btnLogout.addEventListener('click', async () => {
@@ -44,281 +42,6 @@ function manejarCierreSesion() {
         }
     });
 }
-
-/* ==================== GESTIÓN DE INTERFAZ Y NAVEGACIÓN ==================== */
-// Agregar esta función para cargar los productos
-async function cargarProductos() {
-    try {
-        const response = await fetch('/obtener-productos');
-        const data = await response.json();
-        
-        if (data.success) {
-            const datalist = document.getElementById('productos-list');
-            datalist.innerHTML = ''; // Limpiar opciones existentes
-            
-            data.productos.forEach(producto => {
-                const option = document.createElement('option');
-                option.value = producto;
-                datalist.appendChild(option);
-            });
-        }
-    } catch (error) {
-        console.error('Error al cargar productos:', error);
-    }
-}
-
-
-function mostrar(item) {
-    var div = document.querySelector(item);
-    const container = document.querySelector('.container');
-    const otherDiv = item === '.cuentas' ? 
-        document.querySelector('.form1') : 
-        document.querySelector('.cuentas');
-    
-    if (item === '.cuentas') {
-        document.querySelector('.form1').style.display = 'none';
-        cargarRegistros();
-        // Deshabilitar touch en el contenedor
-        container.classList.add('no-touch');
-    } else if (item === '.form1') {
-        document.querySelector('.cuentas').style.display = 'none';
-        // Deshabilitar touch en el contenedor
-        container.classList.add('no-touch');
-    } else {
-        // Si se está cerrando, habilitar touch en el contenedor
-        container.classList.remove('no-touch');
-    }
-    
-    if (div.style.display === 'none' || div.style.display === '') {
-        div.style.display = 'flex';
-        // Reset animation
-        div.style.animation = 'none';
-        div.offsetHeight; // Trigger reflow
-        div.style.animation = null;
-        
-        // Apply animations
-        div.style.animation = 'fadeIn 0.3s ease-out forwards';
-        const content = item === '.form1' ? 
-            div.querySelector('form') : 
-            div.querySelector('.registros-container');
-        if (content) {
-            content.style.animation = 'slideUp 0.3s ease-out';
-        }
-    } else {
-        div.style.display = 'none';
-        // Habilitar touch en el contenedor cuando se cierra
-        container.classList.remove('no-touch');
-    }
-    resetearFormulario();
-}
-
-/* ==================== GESTIÓN DE FORMULARIOS ==================== */
-function inicializarFormulario() {
-    const form = document.querySelector('.form1 form');
-    
-    // Agregar manejo de radio buttons para microondas
-    const radioButtons = document.querySelectorAll('input[name="microondas-option"]');
-    const tiempoMicroondas = document.querySelector('.microondas-tiempo');
-    
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            if (e.target.value === 'si') {
-                tiempoMicroondas.style.display = 'block';
-                tiempoMicroondas.querySelector('input').required = true;
-            } else {
-                tiempoMicroondas.style.display = 'none';
-                tiempoMicroondas.querySelector('input').required = false;
-                tiempoMicroondas.querySelector('input').value = '';
-            }
-        });
-    });
-
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const data = {};
-        
-        // Procesar opción de microondas
-        const microOption = form.querySelector('input[name="microondas-option"]:checked').value;
-        if (microOption === 'no') {
-            data.microondas = 'No';
-        } else {
-            data.microondas = formData.get('microondas');
-        }
-        
-        // Process other fields
-        formData.forEach((value, key) => {
-            if (key !== 'microondas' && key !== 'microondas-option') {
-                if (['lote', 'gramaje', 'envasesTerminados'].includes(key)) {
-                    data[key] = Number(value) || 0;
-                } else {
-                    data[key] = value;
-                }
-            }
-        });
-
-        try {
-            const response = await fetch('/registrar-produccion', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                mostrarNotificacion('Registro guardado correctamente','success');
-                resetearFormulario();
-                mostrar('.form1');
-            } else {
-                throw new Error(result.error || 'Error desconocido');
-            }
-        } catch (error) {
-            console.error('Error completo:', error);
-            alert('Error al guardar el registro: ' + error.message);
-        }
-    });
-}
-
-function resetearFormulario() {
-    const inputs = document.querySelectorAll('.form1 form input:not([type="radio"])');
-    inputs.forEach(input => {
-        input.value = '';
-    });
-    
-    const radioInputs = document.querySelectorAll('input[type="radio"]');
-    radioInputs.forEach(radio => {
-        radio.checked = false;
-    });
-    
-    const selector = document.querySelector('.form1 form select');
-    if (selector) {
-        selector.selectedIndex = 0;
-    }
-    
-    document.querySelector('.microondas-tiempo').style.display = 'none';
-}
-
-/* ==================== GESTIÓN DE REGISTROS Y DATOS ==================== */
-async function cargarRegistros() {
-    try {
-        const response = await fetch('/obtener-registros');
-        const data = await response.json();
-        
-        if (data.success) {
-            const container = document.querySelector('.registros-container');
-            container.innerHTML = ''; // Limpiar contenedor
-
-            data.registros.forEach(registro => {
-                const card = crearTarjetaRegistro(registro);
-                container.appendChild(card);
-            });
-        } else {
-            throw new Error(data.error || 'Error al cargar registros');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error al cargar los registros');
-    }
-}
-
-function crearTarjetaRegistro(registro) {
-    const div = document.createElement('div');
-    div.className = 'registro-card';
-    
-    div.innerHTML = `
-        <div class="registro-header" onclick="mostrarDetalles(this.parentElement)">
-            <div class="registro-fecha">${registro[0]}</div>
-            <div class="registro-producto">${registro[1]}</div>
-        </div>
-        <div class="registro-detalles">
-            <p><span>Lote:</span> ${registro[2]}</p>
-            <p><span>Gramaje:</span> ${registro[3]}gr</p>
-            <p><span>Selección/Cernido:</span> ${registro[4]}</p>
-            <p><span>Microondas:</span> ${registro[5]}s</p>
-            <p><span>Envases Terminados:</span> ${registro[6]}</p>
-            <p><span>Fecha Vencimiento:</span> ${registro[7]}</p>
-            <p><span>Nombre:</span> ${registro[8]}</p>
-            <p><span>Verificar:</span> ${registro[9] || '—'}</p>
-            <p><span>Fecha Ver.:</span> ${registro[10] || '—'}</p>
-            <p><span>Observaciones:</span> ${registro[11] || '—'}</p>
-        </div>
-    `;
-
-    return div;
-}
-
-function mostrarDetalles(card) {
-    const detalles = card.querySelector('.registro-detalles');
-    const todosLosDetalles = document.querySelectorAll('.registro-detalles');
-    
-    // Cerrar otros detalles abiertos
-    todosLosDetalles.forEach(det => {
-        if (det !== detalles && det.classList.contains('active')) {
-            det.classList.remove('active');
-        }
-    });
-    
-    // Toggle detalles actuales
-    detalles.classList.toggle('active');
-}
-
-async function eliminarRegistro(fecha, producto) {
-    const anuncio = document.querySelector('.anuncio');
-    const confirmarBtn = anuncio.querySelector('.confirmar');
-    const cancelarBtn = anuncio.querySelector('.cancelar');
-
-    return new Promise((resolve) => {
-        const cerrarAnuncio = () => {
-            anuncio.style.display = 'none';
-            confirmarBtn.removeEventListener('click', handleConfirmar);
-            cancelarBtn.removeEventListener('click', handleCancelar);
-        };
-
-        const handleConfirmar = async () => {
-            cerrarAnuncio();
-            try {
-                const response = await fetch('/eliminar-registro', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ fecha, producto })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Error en la respuesta del servidor');
-                }
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    mostrarNotificacion('Registro eliminado correctamente', 'success');
-                    await cargarRegistros();
-                } else {
-                    throw new Error(result.error || 'No se pudo eliminar el registro');
-                }
-            } catch (error) {
-                console.error('Error detallado:', error);
-                mostrarNotificacion(`Error al eliminar el registro: ${error.message}`, 'error');
-            }
-        };
-
-        const handleCancelar = () => {
-            cerrarAnuncio();
-            mostrarNotificacion('Operación cancelada', 'warning');
-        };
-
-        confirmarBtn.addEventListener('click', handleConfirmar);
-        cancelarBtn.addEventListener('click', handleCancelar);
-        
-        anuncio.style.display = 'flex';
-    });
-}
-
 /* ==================== SISTEMA DE NOTIFICACIONES ==================== */
 function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {
     const notificador = document.querySelector('.notificador');
@@ -360,4 +83,234 @@ function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {
             setTimeout(() => notificacion.remove(), 300);
         }
     }, duracion);
+}
+/* ==================== MANEJO DEL MENÚ ==================== */
+function inicializarMenu() {
+    const menuBtn = document.querySelector('.menu-btn');
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+
+    if (!menuBtn || !dropdownMenu) {
+        console.error('No se encontraron elementos del menú');
+        return;
+    }
+
+    // Removemos eventos previos si existen
+    menuBtn.removeEventListener('click', toggleMenu);
+    document.removeEventListener('click', closeMenuOutside);
+
+    // Función para toggle del menú
+    function toggleMenu(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('active');
+    }
+
+    // Función para cerrar al hacer clic fuera
+    function closeMenuOutside(e) {
+        if (dropdownMenu.classList.contains('active') && 
+            !dropdownMenu.contains(e.target) && 
+            !menuBtn.contains(e.target)) {
+            dropdownMenu.classList.remove('active');
+        }
+    }
+
+    // Agregamos los eventos
+    menuBtn.addEventListener('click', toggleMenu);
+    document.addEventListener('click', closeMenuOutside);
+}
+
+function manejarAccionMenu(accion) {
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    const usuariosView = document.querySelector('.usuarios-view');
+
+    // Primero ocultamos todas las vistas
+    document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+    
+    switch(accion) {
+        case 'inicio':
+            window.location.href = '/dashboard_adm';
+            break;
+        case 'usuarios':
+            console.log('Mostrando vista de usuarios'); // Debug
+            dropdownMenu.classList.remove('active');
+            usuariosView.classList.add('active');
+            mostrarSeccionUsuarios();
+            break;
+        default:
+            usuariosView.classList.remove('active');
+            break;
+    }
+}
+
+// Modificar también la función mostrarSeccionUsuarios
+async function mostrarSeccionUsuarios() {
+    console.log('Iniciando mostrarSeccionUsuarios');
+    const usuariosView = document.querySelector('.usuarios-view');
+    
+    if (!usuariosView) {
+        console.error('No se encontró el elemento usuarios-view');
+        return;
+    }
+
+    usuariosView.innerHTML = `
+        <div class="usuarios-container">
+            <h2>Gestión de Usuarios</h2>
+            <div class="usuarios-table">
+                <div class="table-header">
+                    <div class="header-cell">PIN</div>
+                    <div class="header-cell">Nombre</div>
+                    <div class="header-cell">Rol</div>
+                    <div class="header-cell">Acciones</div>
+                </div>
+                <div class="table-body">
+                    <!-- Los usuarios se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+    `;
+    
+    try {
+        await cargarUsuarios();
+        mostrarNotificacion('Usuarios cargados correctamente', 'success');
+    } catch (error) {
+        mostrarNotificacion('Error al cargar usuarios', 'error');
+    }
+}
+
+async function cargarUsuarios() {
+    try {
+        const response = await fetch('/obtener-usuarios', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const tableBody = document.querySelector('.table-body');
+            tableBody.innerHTML = '';
+
+            data.usuarios.forEach(usuario => {
+                const row = document.createElement('div');
+                row.className = 'usuario-row';
+                row.innerHTML = `
+                    <div class="usuario-info" onclick="toggleAcciones('${usuario.pin}')">
+                        <div class="cell">${usuario.pin || '-'}</div>
+                        <div class="cell">${usuario.nombre || '-'}</div>
+                        <div class="cell">${usuario.rol || '-'}</div>
+                        <div class="cell"><i class="fas fa-chevron-down"></i></div>
+                    </div>
+                    <div class="acciones-dropdown" id="acciones-${usuario.pin}">
+                        <button onclick="editarUsuario('${usuario.pin}')">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button onclick="mostrarPermisos('${usuario.pin}')">
+                            <i class="fas fa-key"></i> Permisos
+                        </button>
+                        <button onclick="eliminarUsuario('${usuario.pin}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+        throw error;
+    }
+}
+
+function toggleAcciones(pin) {
+    const allDropdowns = document.querySelectorAll('.acciones-dropdown');
+    const targetDropdown = document.getElementById(`acciones-${pin}`);
+    const allRows = document.querySelectorAll('.usuario-row');
+    
+    // Close all other dropdowns
+    allDropdowns.forEach(dropdown => {
+        if (dropdown !== targetDropdown) {
+            dropdown.classList.remove('active');
+        }
+    });
+    
+    // Remove active class from all rows
+    allRows.forEach(row => row.classList.remove('active'));
+    
+    // Toggle the clicked dropdown
+    if (targetDropdown) {
+        targetDropdown.classList.toggle('active');
+        targetDropdown.parentElement.classList.toggle('active');
+    }
+}
+
+// Agregar nuevas funciones para manejar usuarios
+function editarUsuario(pin) {
+    // Implementar lógica de edición
+    console.log('Editando usuario:', pin);
+    mostrarDialogoEdicion(pin);
+}
+
+function mostrarPermisos(pin) {
+    // Implementar lógica de permisos
+    console.log('Mostrando permisos:', pin);
+    mostrarDialogoPermisos(pin);
+}
+
+function mostrarDialogoEdicion(pin) {
+    const dialog = document.createElement('div');
+    dialog.className = 'dialogo-modal';
+    dialog.innerHTML = `
+        <div class="dialogo-contenido">
+            <h3>Editar Usuario</h3>
+            <form id="form-editar-usuario">
+                <input type="text" id="edit-pin" placeholder="PIN" value="${pin}" readonly>
+                <input type="text" id="edit-nombre" placeholder="Nombre">
+                <select id="edit-rol">
+                    <option value="user">Usuario</option>
+                    <option value="almacen">Almacén</option>
+                    <option value="admin">Administrador</option>
+                </select>
+                <div class="dialogo-botones">
+                    <button type="button" class="btn-cancelar">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(dialog);
+
+    // Manejar el cierre
+    dialog.querySelector('.btn-cancelar').onclick = () => dialog.remove();
+}
+
+function mostrarDialogoPermisos(pin) {
+    const dialog = document.createElement('div');
+    dialog.className = 'dialogo-modal';
+    dialog.innerHTML = `
+        <div class="dialogo-contenido">
+            <h3>Permisos de Usuario</h3>
+            <div class="permisos-lista">
+                <label>
+                    <input type="checkbox" name="permiso-almacen"> Acceso a Almacén
+                </label>
+                <label>
+                    <input type="checkbox" name="permiso-produccion"> Acceso a Producción
+                </label>
+                <label>
+                    <input type="checkbox" name="permiso-reportes"> Acceso a Reportes
+                </label>
+            </div>
+            <div class="dialogo-botones">
+                <button type="button" class="btn-cancelar">Cerrar</button>
+                <button type="button" class="btn-guardar">Guardar</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(dialog);
+
+    // Manejar el cierre
+    dialog.querySelector('.btn-cancelar').onclick = () => dialog.remove();
 }

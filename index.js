@@ -65,11 +65,9 @@ async function verificarPin(pin) {
         const usuario = rows.find(row => row[0] === pin);
         
         if (usuario) {
-            console.log('Usuario encontrado:', usuario); // Debug log
             const nombre = usuario[1];
-            const rol = usuario[1].toLowerCase() === 'administrador' ? 'admin' : 
-                       usuario[1] === 'Almacen' ? 'almacen' : 'user';
-            
+            const rol = (nombre === 'Almacen_adm' || nombre === 'Administrador') ? 'admin' : 
+                       nombre === 'Almacen' ? 'almacen' : 'user';
             
             return { 
                 valido: true, 
@@ -83,7 +81,6 @@ async function verificarPin(pin) {
         throw error;
     }
 }
-
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
     res.render('login');
@@ -235,7 +232,7 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
 });
 app.post('/crear-usuario', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen_adm') {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
             return res.status(403).json({ success: false, error: 'No autorizado' });
         }
 
@@ -287,7 +284,7 @@ app.post('/crear-usuario', requireAuth, async (req, res) => {
 // Añadir esta nueva ruta
 app.get('/obtener-usuarios', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen_adm') {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
             return res.status(403).json({ success: false, error: 'No autorizado' });
         }
 
@@ -385,7 +382,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
 });
 app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen_adm') {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
             return res.status(403).json({ success: false, error: 'No autorizado' });
         }
 
@@ -449,7 +446,7 @@ app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
 });
 app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen_adm') {
+        if (req.user.nombre !== 'Almacen') {
             return res.status(403).json({ success: false, error: 'No autorizado' });
         }
 
@@ -468,7 +465,7 @@ app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
 });
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen_adm') {
+        if (req.user.nombre !== 'Almacen') {
             return res.status(403).json({ success: false, error: 'No autorizado' });
         }
 
