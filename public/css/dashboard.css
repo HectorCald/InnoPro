@@ -408,32 +408,6 @@ input[list]:focus {
     }
 }
 
-/* ==================== DELETE BUTTON ==================== */
-.btn-eliminar {
-    width: 100%;
-    padding: 0.8em;
-    margin-top: 1em;
-    border-radius: 0.5em;
-    background: #dc3545;
-    color: white;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    gap: 0.5em;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.3s ease;
-}
-
-.btn-eliminar:hover {
-    background: #c82333;
-    transform: translateY(-2px);
-}
-
-.btn-eliminar i {
-    font-size: 1rem;
-}
-
 /* ==================== MODAL ANIMATIONS ==================== */
 .form1, .cuentas {
     position: fixed;

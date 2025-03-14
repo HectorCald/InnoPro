@@ -244,9 +244,6 @@ function crearTarjetaRegistro(registro) {
             <p><span>Verificar:</span> ${registro[9] || '—'}</p>
             <p><span>Fecha Ver.:</span> ${registro[10] || '—'}</p>
             <p><span>Observaciones:</span> ${registro[11] || '—'}</p>
-            <button class="btn-eliminar" onclick="eliminarRegistro('${registro[0]}', '${registro[1]}')">
-                <i class="fas fa-trash"></i> Eliminar
-            </button>
         </div>
     `;
 

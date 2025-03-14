@@ -15,6 +15,10 @@
             <i class="fas fa-chart-line"></i>
             <span>Consultar Registros</span>
         </button>
+        <button class="dashboard-btn aciopio" onclick="mostrar('.acopio-view'), acopio()">
+            <i class="fas fa-boxes"></i>
+            <span>Acopio</span>
+        </button>
         <button class="dashboard-btn configuraciones" onclick="mostrar('.configuraciones-view'); cargarUsuarios();">
             <i class="fas fa-cog"></i>
             <span>Configuraciones</span>
@@ -44,8 +48,12 @@
         </div>
         <div class="filtros-container">
             <div class="filtro">
-                <p>Fecha</p>
-                <input type="date" id="filtroFecha" placeholder="Fecha">
+                <p>Rango de Fechas</p>
+                <div class="fecha-range">
+                    <input type="date" id="filtroFechaInicio" placeholder="Fecha Inicio">
+                    <span>hasta</span>
+                    <input type="date" id="filtroFechaFin" placeholder="Fecha Fin">
+                </div>
             </div>
             <div class="filtro">
                 <p>Numero de Lote</p>
@@ -173,6 +181,7 @@
             </div>
         </div>
     </div>
+
 
     <script src="./js/dashboard_alm.js"></script>
     <%- include('partials/footer') %>

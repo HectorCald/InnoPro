@@ -1005,6 +1005,21 @@ input[list]:focus {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1em;
 }
+.fecha-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.fecha-range span {
+    color: #fff;
+    font-size: 0.9em;
+}
+
+.fecha-range input[type="date"] {
+    flex: 1;
+    min-width: 130px;
+}
 
 @media (max-width: 768px) {
     .filtros-container {

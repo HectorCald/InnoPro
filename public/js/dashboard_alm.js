@@ -16,7 +16,7 @@ async function bienvenida() {
         if (data.nombre) {
             const bienvenida = document.querySelector('.bienvenida');
             if (bienvenida) {
-                bienvenida.innerHTML = '<i class="fas fa-warehouse"></i> Admin';
+                bienvenida.innerHTML = '<i class="fas fa-warehouse"></i> Almacen';
             }
         }
     } catch (error) {
@@ -438,12 +438,13 @@ function inicializarBotones() {
 
 async function buscarRegistros() {
     try {
-        const fecha = document.getElementById('filtroFecha').value;
+        const fechaInicio = document.getElementById('filtroFechaInicio').value;
+        const fechaFin = document.getElementById('filtroFechaFin').value;
         const lote = document.getElementById('filtroLote').value;
         const producto = document.getElementById('producto-input').value;
-        const nombre = document.getElementById('filtroNombre').value; // Nuevo filtro
+        const nombre = document.getElementById('filtroNombre').value;
 
-        console.log('Filtros:', { fecha, lote, producto, nombre }); // Para debugging
+        console.log('Filtros:', { fechaInicio, fechaFin, lote, producto, nombre });
 
         const response = await fetch('/obtener-todos-registros');
         const data = await response.json();
@@ -452,16 +453,31 @@ async function buscarRegistros() {
             const registrosFiltrados = data.registros.slice(1).filter(registro => {
                 if (!registro || registro.length < 9) return false;
 
+                // Convertir la fecha del registro al formato YYYY-MM-DD
                 const [dia, mes, anio] = registro[0].split('/');
-                const fechaRegistro = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+                const fechaRegistro = new Date(anio, mes - 1, dia);
+                const fechaRegistroStr = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
 
-                const cumpleFecha = !fecha || fechaRegistro === fecha;
+                // Verificar el rango de fechas
+                let cumpleFecha = true;
+                if (fechaInicio && fechaFin) {
+                    const inicio = new Date(fechaInicio);
+                    const fin = new Date(fechaFin);
+                    cumpleFecha = fechaRegistro >= inicio && fechaRegistro <= fin;
+                } else if (fechaInicio) {
+                    const inicio = new Date(fechaInicio);
+                    cumpleFecha = fechaRegistro >= inicio;
+                } else if (fechaFin) {
+                    const fin = new Date(fechaFin);
+                    cumpleFecha = fechaRegistro <= fin;
+                }
+
                 const cumpleProducto = !producto || 
                     registro[1].toLowerCase().includes(producto.toLowerCase());
                 const cumpleLote = !lote || 
                     String(registro[2]).toLowerCase().includes(String(lote).toLowerCase());
                 const cumpleNombre = !nombre || 
-                    registro[8].toLowerCase().includes(nombre.toLowerCase()); // Nuevo filtro
+                    registro[8].toLowerCase().includes(nombre.toLowerCase());
 
                 return cumpleFecha && cumpleProducto && cumpleLote && cumpleNombre;
             });
@@ -679,4 +695,7 @@ async function cargarProductos() {
     } catch (error) {
         console.error('Error al cargar productos:', error);
     }
+}
+async function acopio() {
+    mostrarNotificacion('Función de acopio en desarrollo', 'warning');
 }
