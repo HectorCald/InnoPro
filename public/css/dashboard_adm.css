@@ -406,6 +406,86 @@ body{
     }
 }
 
+
+
+
+
+.nuevoUsuario {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1100;
+}
+
+.nuevoUsuario .contenido {
+    background: #2d2d2d;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    color: white;
+}
+
+.nuevoUsuario .contenido i {
+    font-size: 2rem;
+    color: #4CAF50;
+    margin-bottom: 1rem;
+}
+
+.nuevoUsuario .contenido h2 {
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group p {
+    margin-bottom: 0.5rem;
+    color: #aaa;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    background: #404040;
+    border: 1px solid #505050;
+    color: white;
+    border-radius: 4px;
+}
+
+.form-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-cancelar {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-crear {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 /* ==================== ANNOUNCEMENT MODAL ==================== */
 .anuncio {
     position: fixed;
