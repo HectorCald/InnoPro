@@ -1,0 +1,10 @@
+{
+  "appId": "com.miapp",
+  "appName": "MiApp",
+  "webDir": "public",
+  "server": {
+  "url": "https://app-produccion-db.vercel.app/",
+  "cleartext": false
+}
+
+}

@@ -1,5 +1,17 @@
 /* ==================== FONTS ==================== */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+* {
+    -webkit-tap-highlight-color: transparent; /* Quita el efecto azul */
+    outline: none; /* Evita el borde al hacer clic */
+  }
+  button, a {
+    user-select: none; /* Evita selecciones no deseadas */
+    -webkit-user-select: none; /* Para navegadores basados en WebKit (Chrome, Safari) */
+    -moz-user-select: none; /* Para Firefox */
+    -ms-user-select: none; /* Para Internet Explorer/Edge */
+    -webkit-tap-highlight-color: rgba(0,0,0,0); /* Elimina el efecto gris/azul al tocar */
+  }
+  
 
 /* ==================== BASE STYLES ==================== */
 body {
