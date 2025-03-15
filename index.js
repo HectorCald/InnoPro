@@ -583,6 +583,31 @@ app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener registros' });
     }
 });
+// ... existing code ...
+
+app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Permisos!A2:A' // Obtener solo la primera columna, excluyendo el título
+        });
+
+        const permisos = response.data.values ? response.data.values.map(row => row[0]) : [];
+        res.json({ success: true, permisos });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener lista de permisos: ' + error.message 
+        });
+    }
+});
+
+// ... existing code ...
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
         if (req.user.nombre !== 'Almacen') {
@@ -641,6 +666,7 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
         });
     }
 });
+
 
 // ... existing code ...
 
@@ -710,7 +736,54 @@ app.put('/actualizar-usuario', requireAuth, async (req, res) => {
 // ... existing code ...
 
 // ... existing code ...
+// ... existing code ...
 
+// Add this new endpoint for updating all permissions
+app.put('/actualizar-permisos', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const { pin, permisos } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get current users
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pin);
+        
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+
+        // Update permissions
+        const nuevosPermisos = permisos.join(', ');
+
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Usuarios!C${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[nuevosPermisos]]
+            }
+        });
+
+        res.json({ success: true, message: 'Permisos actualizados correctamente' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar permisos: ' + error.message 
+        });
+    }
+});
+
+// ... rest of your code ...
 
 
 
