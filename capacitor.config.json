@@ -3,8 +3,12 @@
   "appName": "MiApp",
   "webDir": "public",
   "server": {
-  "url": "https://app-produccion-db.vercel.app/",
-  "cleartext": false
-}
-
+    "url": "https://app-produccion-db.vercel.app/",
+    "cleartext": false
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
 }

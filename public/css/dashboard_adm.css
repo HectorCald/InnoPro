@@ -228,7 +228,7 @@ body{
     max-height: 400px;
     overflow-y: auto;
     height: 60vh;
-
+    padding-bottom: 2em;
 }
 
 .usuario-row {
@@ -581,3 +581,6 @@ body{
         opacity: 1;
     }
 }
+
+
+

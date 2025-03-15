@@ -125,7 +125,7 @@ class LoginPin {
 }
 
 /* ==================== INICIALIZACIÓN DE LA APLICACIÓN ==================== */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded',async () => {
     const loginPin = new LoginPin();
     bienvenida();
 

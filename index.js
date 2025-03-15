@@ -642,6 +642,78 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     }
 });
 
+// ... existing code ...
+
+// ... existing code ...
+
+app.put('/actualizar-usuario', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const { pinActual, pinNuevo } = req.body;
+
+        if (!pinActual || !pinNuevo) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'PIN actual y nuevo son requeridos' 
+            });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener usuarios actuales
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pinActual);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Usuario no encontrado' 
+            });
+        }
+
+        // Verificar si el nuevo PIN ya existe
+        if (rows.some(row => row[0] === pinNuevo)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'El nuevo PIN ya está en uso' 
+            });
+        }
+
+        // Actualizar PIN
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Usuarios!A${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[pinNuevo]]
+            }
+        });
+
+        res.json({ success: true, message: 'PIN actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar PIN:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar PIN: ' + (error.message || 'Error desconocido') 
+        });
+    }
+});
+
+// ... existing code ...
+
+// ... existing code ...
+
+
+
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);

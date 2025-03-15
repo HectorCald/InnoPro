@@ -330,3 +330,77 @@ function agregarUsuario() {
         document.querySelector('.container').classList.remove('no-touch');
     };
 }
+
+
+
+function editarUsuario(pin) {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    const btnConfirmar = anuncio.querySelector('.confirmar');
+    const btnCancelar = anuncio.querySelector('.cancelar');
+
+    btnConfirmar.textContent = 'Guardar';
+    btnConfirmar.style.backgroundColor = '#2196F3';
+
+    // Personalizar el contenido del anuncio
+    contenido.querySelector('h2').textContent = 'Editar Usuario';
+    contenido.querySelector('p').innerHTML = `
+        <div class="form-group">
+            <p>PIN Actual</p>
+            <input type="text" id="pin-actual" value="${pin}" readonly>
+        </div>
+        <div class="form-group">
+            <p>Nuevo PIN</p>
+            <input type="number" id="nuevo-pin" required>
+        </div>
+    `;
+
+    // Mostrar el anuncio
+    anuncio.style.display = 'flex';
+    document.querySelector('.container').classList.add('no-touch');
+
+    // Manejar la confirmación
+    btnConfirmar.onclick = async () => {
+        const nuevoPIN = document.getElementById('nuevo-pin').value;
+
+        if (!nuevoPIN) {
+            mostrarNotificacion('Por favor ingrese el nuevo PIN', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/actualizar-usuario', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ 
+                    pinActual: pin,
+                    pinNuevo: nuevoPIN
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('PIN actualizado correctamente', 'success');
+                cargarUsuarios(); // Recargar la lista
+            } else {
+                mostrarNotificacion(data.error || 'Error al actualizar PIN', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al actualizar PIN', 'error');
+        }
+
+        // Cerrar el anuncio
+        anuncio.style.display = 'none';
+        document.querySelector('.container').classList.remove('no-touch');
+    };
+
+    // Manejar la cancelación
+    btnCancelar.onclick = () => {
+        anuncio.style.display = 'none';
+        document.querySelector('.container').classList.remove('no-touch');
+    };
+}
