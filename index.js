@@ -11,9 +11,13 @@ import cookieParser from 'cookie-parser';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config();
+
+
 /* ==================== CONFIGURACIÓN DE EXPRESS ==================== */
 const app = express();
 const port = process.env.PORT || 3000;
+
+
 /* ==================== CONFIGURACIÓN DE GOOGLE SHEETS ==================== */
 const auth = new google.auth.GoogleAuth({
     credentials: {
@@ -25,6 +29,8 @@ const auth = new google.auth.GoogleAuth({
         "https://www.googleapis.com/auth/spreadsheets"
     ]
 });
+
+
 /* ==================== MIDDLEWARES Y CONFIGURACIÓN DE APP ==================== */
 app.use(cors());
 app.use(express.json());
@@ -32,6 +38,8 @@ app.use(cookieParser());
 app.use(express.static(join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
+
+
 /* ==================== CONFIGURACIÓN DE AUTENTICACIÓN ==================== */
 const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';
 function requireAuth(req, res, next) {
@@ -47,6 +55,8 @@ function requireAuth(req, res, next) {
         return res.status(401).json({ error: 'Token inválido' });
     }
 }
+
+
 /* ==================== FUNCIONES DE UTILIDAD ==================== */
 async function verificarPin(pin) {
     try {
@@ -75,6 +85,8 @@ async function verificarPin(pin) {
         throw error;
     }
 }
+
+
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
     res.render('login');
@@ -102,6 +114,8 @@ app.get('/dashboard_adm', requireAuth, (req, res) => {
         res.render('dashboard_adm');
     }
 });
+
+
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
 app.post('/verificar-pin', async (req, res) => {
     try {
@@ -140,10 +154,14 @@ app.post('/cerrar-sesion', (req, res) => {
     res.clearCookie('token');
     res.json({ mensaje: 'Sesión cerrada correctamente' });
 });
+
+
 /* ==================== RUTAS DE API - DATOS ==================== */
 app.get('/obtener-nombre', requireAuth, (req, res) => {
     res.json({ nombre: req.user.nombre });
 });
+
+
 /* ==================== API DE PRODUCTOS ==================== */
 app.get('/obtener-productos', requireAuth, async (req, res) => {
     try {
@@ -163,6 +181,8 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
         });
     }
 });
+
+
 /* ==================== API DE USUARIO ==================== */
 app.post('/crear-usuario', requireAuth, async (req, res) => {
     try {
@@ -368,6 +388,8 @@ app.put('/actualizar-usuario', requireAuth, async (req, res) => {
         });
     }
 });
+
+
 /* ==================== API DE REGISTRO ==================== */
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
@@ -531,6 +553,8 @@ app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
         });
     }
 });
+
+
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
@@ -590,6 +614,8 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
         });
     }
 });
+
+
 /* ==================== API DE PERMISOS ==================== */
 app.put('/actualizar-permisos', requireAuth, async (req, res) => {
     try {
@@ -750,6 +776,41 @@ app.delete('/eliminar-permiso', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al eliminar permiso' });
     }
 });
+app.get('/obtener-mis-permisos', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const usuario = rows.find(row => row[1] === req.user.nombre);
+
+        if (!usuario || !usuario[2]) {
+            return res.json({ success: true, permisos: [] });
+        }
+
+        // Split permissions and clean them
+        const permisos = usuario[2]
+            .split(',')
+            .map(p => p.trim())
+            .filter(p => p !== '');
+
+        console.log('Usuario:', usuario[1]);
+        console.log('Permisos encontrados:', permisos);
+        
+        res.json({ success: true, permisos });
+    } catch (error) {
+        console.error('Error al obtener permisos:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener permisos' 
+        });
+    }
+});
+
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);
