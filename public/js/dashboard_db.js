@@ -1,6 +1,7 @@
 import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario,mostrarPermisos, agregarPermiso, eliminarPermiso } from './modules/users.js';
 import { cargarRegistros, verificarRegistro} from './modules/vRegistros.js';
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta } from './modules/cRegistros.js';
+import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -26,6 +27,10 @@ window.cargarRegistros = cargarRegistros;
 window.verificarRegistro = verificarRegistro;
 window.buscarRegistros = buscarRegistros;
 window.mostrarResultadosBusqueda = mostrarResultadosBusqueda;
+window.inicializarFormulario = inicializarFormulario;
+window.resetearFormulario = resetearFormulario;
+window.inicializarFormularioProduccion = inicializarFormularioProduccion;
+window.cargarProductos = cargarProductos;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-nombre');
@@ -93,14 +98,12 @@ export function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) 
     }, duracion);
 }
 document.addEventListener('DOMContentLoaded', () => {
-    bienvenida();// Agregar esta línea
+    bienvenida();
     cargarUsuarios();
     cargarRegistros();
     inicializarConsulta();
+    inicializarFormularioProduccion();
 });
-
-// ... resto del código existente ...
-
 
 
 

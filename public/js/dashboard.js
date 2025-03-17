@@ -265,60 +265,6 @@ function mostrarDetalles(card) {
     detalles.classList.toggle('active');
 }
 
-async function eliminarRegistro(fecha, producto) {
-    const anuncio = document.querySelector('.anuncio');
-    const confirmarBtn = anuncio.querySelector('.confirmar');
-    const cancelarBtn = anuncio.querySelector('.cancelar');
-
-    return new Promise((resolve) => {
-        const cerrarAnuncio = () => {
-            anuncio.style.display = 'none';
-            confirmarBtn.removeEventListener('click', handleConfirmar);
-            cancelarBtn.removeEventListener('click', handleCancelar);
-        };
-
-        const handleConfirmar = async () => {
-            cerrarAnuncio();
-            try {
-                const response = await fetch('/eliminar-registro', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ fecha, producto })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Error en la respuesta del servidor');
-                }
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    mostrarNotificacion('Registro eliminado correctamente', 'success');
-                    await cargarRegistros();
-                } else {
-                    throw new Error(result.error || 'No se pudo eliminar el registro');
-                }
-            } catch (error) {
-                console.error('Error detallado:', error);
-                mostrarNotificacion(`Error al eliminar el registro: ${error.message}`, 'error');
-            }
-        };
-
-        const handleCancelar = () => {
-            cerrarAnuncio();
-            mostrarNotificacion('Operación cancelada', 'warning');
-        };
-
-        confirmarBtn.addEventListener('click', handleConfirmar);
-        cancelarBtn.addEventListener('click', handleCancelar);
-        
-        anuncio.style.display = 'flex';
-    });
-}
-
 /* ==================== SISTEMA DE NOTIFICACIONES ==================== */
 function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {
     const notificador = document.querySelector('.notificador');
