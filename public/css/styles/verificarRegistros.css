@@ -1,0 +1,260 @@
+/* Contenedor principal */
+.verificarRegistros-view {
+    width: 100%;
+    background: #1a1a1a;
+    height: calc(100vh - 7em);
+    color: white;
+    overflow-y: auto;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    display: flex;
+}
+/* Ocultar la barra de desplazamiento para Chrome, Safari y Opera */
+.registros-container::-webkit-scrollbar {
+    display: none;
+}
+
+.fecha-card {
+    background: #2d2d2d;
+    border-radius: 8px;
+    overflow: visible; /* Cambiado de hidden a visible */
+    margin-bottom: 1em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.fecha-header {
+    background: #353535;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 8px;
+}
+.fecha-header:hover {
+    background: #252525;
+}
+.fecha-header i {
+    transition: transform 0.3s ease;
+}
+.fecha-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 1.1rem;
+    white-space: nowrap; /* Previene el wrap del texto */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Añade ... si el texto es muy largo */
+}
+.fecha-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: nowrap; /* Previene el wrap */
+}
+.contador {
+    background: #3d3d3d;
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    color: #aaa;
+    white-space: nowrap; /* Previene el wrap */
+}
+
+.registros-grupo {
+    height: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+    padding: 0 1em;
+    margin-top: 0;
+}
+.registros-grupo.active {
+    opacity: 1;
+    visibility: visible;
+    padding: 1em;
+    margin-top: 1em;
+    height: auto;
+}
+
+.fecha-card {
+    background: #2d2d2d;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.registro-card {
+    background: #353535;
+    border-radius: 6px;
+    margin-bottom: 1em;
+    overflow: visible; /* Cambiado de hidden a visible */
+}
+
+.registro-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.registro-header:hover {
+    background: #404040;
+}
+
+.registro-header i {
+    transition: transform 0.3s ease;
+}
+
+.registro-producto {
+    font-weight: 500;
+    color: white;
+}
+
+
+.registro-detalles {
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    background: #2d2d2d;
+    overflow: hidden;
+}
+
+.registro-detalles.active {
+    height: auto;
+    opacity: 1;
+    visibility: visible;
+    padding: 1rem;
+    margin-top: 0.5em;
+    border-top: 1px solid #404040;
+}
+
+.registro-detalles p {
+    margin: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Cambiado de center a flex-start */
+    border-bottom: 1px solid #404040;
+    padding-bottom: 0.8rem;
+    flex-wrap: wrap; /* Añadido para permitir que el contenido se ajuste */
+    gap: 0.5rem; /* Espacio entre elementos cuando se envuelven */
+}
+
+.registro-detalles p span {
+    word-break: break-word; /* Permite que las palabras largas se rompan */
+}
+
+.registro-detalles p span:first-child {
+    color: #888;
+    min-width: 100px; /* Ancho mínimo para las etiquetas */
+}
+
+.registro-detalles p span:last-child {
+    text-align: right;
+    flex: 1; /* Toma el espacio restante */
+}
+.registro-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.verificado-icon {
+    color: #4CAF50;
+}
+
+.registro-fecha {
+    color: #aaa;
+    font-size: 0.9em;
+}
+
+.registro-producto {
+    font-weight: 500;
+}
+
+.acciones {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-editar, .btn-eliminar {
+    padding: 0.8rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-editar {
+    background: #2196F3;
+    color: white;
+}
+
+.btn-eliminar {
+    background: #f44336;
+    color: white;
+}
+
+/* Animación para el icono */
+.fa-chevron-down {
+    transition: transform 0.3s ease;
+}
+
+.fecha-header.active .fa-chevron-down,
+.registro-header.active .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .fecha-header {
+        padding: 0.8rem;
+    }
+
+    .fecha-header h3 {
+        font-size: 0.9rem; /* Reduce el tamaño de la fuente */
+        max-width: 60%; /* Limita el ancho del título */
+    }
+
+    .registro-header {
+        padding: 0.8rem;
+    }
+
+    .registro-detalles p {
+        font-size: 0.9rem;
+    }
+    .registro-detalles p {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .registro-detalles p span:last-child {
+        text-align: left;
+    }
+
+    .acciones {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btn-editar,
+    .btn-eliminar {
+        width: 100%;
+    }
+    .contador {
+        padding: 0.2rem 0.6rem; /* Reduce el padding */
+        font-size: 0.7rem; /* Reduce el tamaño de la fuente */
+    }
+    .fecha-info {
+        gap: 0.5rem; /* Reduce el espacio entre elementos */
+    }
+}
+

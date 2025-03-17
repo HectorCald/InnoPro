@@ -1,26 +1,24 @@
 <!-- ==================== HEADER Y NAVEGACIÓN ==================== -->
 <%- include('partials/header') %>
-    <link rel="stylesheet" href="./css/dashboard_adm.css">
+    <link rel="stylesheet" href="./css/dashboard_db.css">
     <div class="container">
         <div class="dashboard">
             <h1 class="bienvenida">...</h1>
-            <div class="nav-menu">
-                <button class="menu-btn" type="button">
-                    <i class="fas fa-bars"></i>
-                    <span>Menú</span>
-                </button>
-                <div class="dropdown-menu">
-                    <!-- El menú se generará dinámicamente aquí -->
-                </div>
-            </div>
+            <button class="logout-btn" onclick="manejarCierreSesion()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Sesión</span>
+            </button>
         </div>
-        <div class="usuarios-view">Usuarios</div>
-        <div class="verificarRegistros">Verificar registros</div>
-        <div class="produccion">Producción</div>
+        <div class="opciones">
+
+        </div>
+        <div class="usuarios-view"></div>
+        <div class="produccion"></div>
+        <div class="verificarRegistros-view">verificar</div>
+        <div class="consultarRegistros-view"></div>
     </div>
     <div class="notificador">
     </div>
-
     <!-- ==================== DIÁLOGO DE CONFIRMACIÓN ==================== -->
     <div class="anuncio">
         <div class="anuncio-contenido">
@@ -34,9 +32,10 @@
         </div>
     </div>
     <!-- Corregir la clase 'contetido' a 'contenido' -->
-    
+
+
     <!-- ==================== COMPONENTES DE NOTIFICACIÓN ==================== -->
 
     <!-- ==================== FOOTER ==================== -->
-    <script type="module" src="./js/dashboard_adm.js"></script>
+    <script type="module" src="./js/dashboard_db.js"></script>
     <%- include('partials/footer') %>

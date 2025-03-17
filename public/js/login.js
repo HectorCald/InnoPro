@@ -94,7 +94,7 @@ class LoginPin {
             // Redirigir según el rol
             setTimeout(() => {
                 if (data.rol === 'admin') {
-                    window.location.replace('/dashboard_adm');
+                    window.location.replace('/dashboard_db');
                 } else if (data.rol === 'almacen') {
                     window.location.replace('/dashboard_alm');
                 } else {

@@ -1,0 +1,202 @@
+/* ==================== DISEÑO GENERAL DE ANUNCIO ==================== */
+.anuncio {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.anuncio-contenido {
+    background: #2d2d2d;
+    padding: 2em;
+    border-radius: 1em;
+    text-align: center;
+    color: white;
+    animation: aparecer 0.3s ease-out;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.anuncio-contenido i {
+    font-size: 3em;
+    color: #dc3545;
+    margin-bottom: 0.5em;
+}
+
+.anuncio-contenido h2 {
+    margin-bottom: 1em;
+    font-size: 1.5em;
+}
+
+.anuncio-contenido p {
+    margin-bottom: 2em;
+    color: #aaa;
+}
+
+.anuncio-botones {
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+}
+
+.anuncio-btn {
+    padding: 0.8em 2em;
+    border-radius: 0.5em;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.anuncio-btn.confirmar {
+    background: #dc3545;
+    color: white;
+}
+
+.anuncio-btn.cancelar {
+    background: #6c757d;
+    color: white;
+}
+
+.anuncio-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    color: #fff;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8em;
+    border: 1px solid #404040;
+    border-radius: 4px;
+    background: #353535;
+    color: white;
+}
+@keyframes aparecer {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ==================== DISEÑO GENERAL DE NOTIFICADOR ==================== */
+.notificador {
+    position: fixed;
+    bottom: 20px;
+    right: 10px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notificacion {
+    background: #2d2d2d;
+    color: white;
+    padding: 1em 1.5em;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    max-width: 400px;
+    animation: slideIn 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+.notificacion.success {
+    border-left: 4px solid #28a745;
+}
+
+.notificacion.warning {
+    border-left: 4px solid #ffc107;
+}
+
+.notificacion.error {
+    border-left: 4px solid #dc3545;
+}
+
+.notificacion i {
+    font-size: 1.2em;
+}
+
+.notificacion.success i {
+    color: #28a745;
+}
+
+.notificacion.warning i {
+    color: #ffc107;
+}
+
+.notificacion.error i {
+    color: #dc3545;
+}
+
+.notificacion .mensaje {
+    flex-grow: 1;
+}
+
+.notificacion .cerrar {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.notificacion .cerrar:hover {
+    color: white;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}

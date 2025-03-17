@@ -107,11 +107,11 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
         res.render('dashboard_alm');
     }
 });
-app.get('/dashboard_adm', requireAuth, (req, res) => {
+app.get('/dashboard_db', requireAuth, (req, res) => {
     if (req.user.rol !== 'admin') {
         res.redirect('/dashboard');
     } else {
-        res.render('dashboard_adm');
+        res.render('dashboard_db');
     }
 });
 
@@ -184,19 +184,20 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
 
 
 /* ==================== API DE USUARIO ==================== */
+// ... existing code ...
+
 app.post('/crear-usuario', requireAuth, async (req, res) => {
     try {
         if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
             return res.status(403).json({ success: false, error: 'No autorizado' });
         }
 
-        const { pin, nombre } = req.body;
+        const { nombre, pin, rol } = req.body;
 
-        // Validaciones
-        if (!pin || !nombre) {
+        if (!nombre || !pin || !rol) {
             return res.status(400).json({ 
                 success: false, 
-                error: 'PIN y nombre son requeridos' 
+                error: 'Faltan datos requeridos' 
             });
         }
 
@@ -204,34 +205,38 @@ app.post('/crear-usuario', requireAuth, async (req, res) => {
 
         // Verificar si el PIN ya existe
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2:B'
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
         });
 
         const rows = response.data.values || [];
         if (rows.some(row => row[0] === pin)) {
             return res.status(400).json({ 
                 success: false, 
-                error: 'El PIN ya existe' 
+                error: 'El PIN ya está en uso' 
             });
         }
 
         // Agregar nuevo usuario
         await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2',
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C',
             valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
             resource: {
-                values: [[pin, nombre]]
+                values: [[pin, nombre, rol]]
             }
         });
 
-        res.json({ success: true, message: 'Usuario creado correctamente' });
+        res.json({ 
+            success: true, 
+            message: 'Usuario creado exitosamente' 
+        });
     } catch (error) {
         console.error('Error al crear usuario:', error);
         res.status(500).json({ 
             success: false, 
-            error: 'Error al crear usuario: ' + (error.message || 'Error desconocido') 
+            error: 'Error al crear usuario: ' + error.message 
         });
     }
 });
@@ -242,9 +247,8 @@ app.get('/obtener-usuarios', requireAuth, async (req, res) => {
         }
 
         const sheets = google.sheets({ version: 'v4', auth });
-
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Usuarios!A2:C'
         });
 
@@ -252,15 +256,14 @@ app.get('/obtener-usuarios', requireAuth, async (req, res) => {
         const usuarios = rows.map(row => ({
             pin: row[0] || '',
             nombre: row[1] || '',
-            rol: row[1] === 'Almacen_adm' ? 'Administrador' : 'Operador'
+            rol: row[2] || ''  // Cambiamos de permisos a rol
         }));
-
 
         res.json({ success: true, usuarios });
     } catch (error) {
         res.status(500).json({ 
             success: false, 
-            error: 'Error al obtener usuarios: ' + (error.message || 'Error desconocido') 
+            error: 'Error al obtener usuarios: ' + error.message 
         });
     }
 });
@@ -461,7 +464,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
 });
 app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen') {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
             return res.status(403).json({ success: false, error: 'No autorizado' });
         }
 
@@ -558,7 +561,7 @@ app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen') {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
             return res.status(403).json({ success: false, error: 'No autorizado' });
         }
 
@@ -809,6 +812,29 @@ app.get('/obtener-mis-permisos', requireAuth, async (req, res) => {
         });
     }
 });
+app.get('/obtener-lista-roles', requireAuth, async (req, res) => {
+    try {
+        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
+            return res.status(403).json({ success: false, error: 'No autorizado' });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Permisos!A2:A' // Ahora esta hoja contiene roles
+        });
+
+        const roles = response.data.values ? response.data.values.map(row => row[0]) : [];
+        res.json({ success: true, roles });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener lista de roles: ' + error.message 
+        });
+    }
+});
+
+// ... rest of the code ...
 
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
