@@ -2,6 +2,7 @@ import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario,mostrarP
 import { cargarRegistros, verificarRegistro} from './modules/vRegistros.js';
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
+import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -31,6 +32,9 @@ window.inicializarFormulario = inicializarFormulario;
 window.resetearFormulario = resetearFormulario;
 window.inicializarFormularioProduccion = inicializarFormularioProduccion;
 window.cargarProductos = cargarProductos;
+window.cargarRegistrosCuentas = cargarRegistrosCuentas;
+window.mostrarDetalles = mostrarDetalles;
+window.crearTarjetaRegistro = crearTarjetaRegistro;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-nombre');
@@ -103,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarRegistros();
     inicializarConsulta();
     inicializarFormularioProduccion();
+    cargarRegistrosCuentas();
 });
 
 
