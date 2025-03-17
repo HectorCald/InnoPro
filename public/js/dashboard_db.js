@@ -1,5 +1,6 @@
 import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario,mostrarPermisos, agregarPermiso, eliminarPermiso } from './modules/users.js';
 import { cargarRegistros, verificarRegistro} from './modules/vRegistros.js';
+import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta } from './modules/cRegistros.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -23,6 +24,8 @@ window.toggleAcciones = (pin) => {
 };
 window.cargarRegistros = cargarRegistros;
 window.verificarRegistro = verificarRegistro;
+window.buscarRegistros = buscarRegistros;
+window.mostrarResultadosBusqueda = mostrarResultadosBusqueda;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-nombre');
@@ -93,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bienvenida();// Agregar esta línea
     cargarUsuarios();
     cargarRegistros();
+    inicializarConsulta();
 });
 
 // ... resto del código existente ...
