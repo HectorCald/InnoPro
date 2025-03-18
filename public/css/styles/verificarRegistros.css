@@ -112,6 +112,10 @@
 .registro-producto {
     font-weight: 500;
     color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; /* Ajusta este valor según necesites */
 }
 
 
@@ -163,6 +167,8 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    max-width: 70%; /* Limitar el ancho del contenedor */
+    overflow: hidden;
 }
 
 .verificado-icon {

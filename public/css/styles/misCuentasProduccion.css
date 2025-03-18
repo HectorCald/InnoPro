@@ -91,3 +91,21 @@
     padding: 2em;
     font-size: 1.2em;
 }
+.registro-header {
+    background-color: #606060;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.registro-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.verificado-icon {
+    color: #4CAF50;
+    font-size: 1.2em;
+}

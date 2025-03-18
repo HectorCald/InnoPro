@@ -45,8 +45,11 @@ export function crearTarjetaRegistro(registro) {
 
     div.innerHTML = `
         <div class="registro-header">
-            <div class="registro-fecha">${registro[0] || 'Sin fecha'}</div>
-            <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
+            <div class="registro-info">
+                ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
+                <div class="registro-fecha">${registro[0] || 'Sin fecha'}</div>
+                <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
+            </div>
         </div>
         <div class="registro-detalles">
             <p><span>Lote:</span> ${registro[2] || '—'}</p>

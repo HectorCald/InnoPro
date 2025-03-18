@@ -29,18 +29,39 @@ export function inicializarConsulta() {
                     <p>Nombre del Operario</p>
                     <input type="text" id="filtroNombre" placeholder="Nombre del operario">
                 </div>
-                <button class="btn-buscar" onclick="buscarRegistros()">
-                    <i class="fas fa-search"></i> Buscar
-                </button>
+                <div class="btn-container">
+                    <button class="btn-buscar" onclick="buscarRegistros()">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                    <button class="btn-limpiar" onclick="limpiarFiltros()">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </button>
+                </div>
             </div>
             <div class="resultados-container">
             </div>
         </div>
     `;
 
-    // Configurar el evento de búsqueda en el botón
+    // Configurar eventos
     const btnBuscar = container.querySelector('.btn-buscar');
+    const btnLimpiar = container.querySelector('.btn-limpiar');
     btnBuscar.addEventListener('click', buscarRegistros);
+    btnLimpiar.addEventListener('click', limpiarFiltros);
+}
+export function limpiarFiltros() {
+    mostrarCarga();
+    document.getElementById('filtroFechaInicio').value = '';
+    document.getElementById('filtroFechaFin').value = '';
+    document.getElementById('filtroLote').value = '';
+    document.getElementById('producto-input').value = '';
+    document.getElementById('filtroNombre').value = '';
+    
+    // Limpiar resultados
+    const container = document.querySelector('.resultados-container');
+    container.innerHTML = '';
+    ocultarCarga();
+    mostrarNotificacion('Filtros limpiados', 'success');
 }
 export async function buscarRegistros() {
     try {

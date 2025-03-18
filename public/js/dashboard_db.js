@@ -1,6 +1,6 @@
 import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario, mostrarPermisos, agregarPermiso, eliminarPermiso } from './modules/users.js';
 import { cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
-import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta } from './modules/cRegistros.js';
+import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
 window.mostrarNotificacion = mostrarNotificacion;
@@ -35,6 +35,7 @@ window.cargarProductos = cargarProductos;
 window.cargarRegistrosCuentas = cargarRegistrosCuentas;
 window.mostrarDetalles = mostrarDetalles;
 window.crearTarjetaRegistro = crearTarjetaRegistro;
+window.limpiarFiltros = limpiarFiltros;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -129,40 +130,77 @@ async function iniciarApp() {
     // Limpiar botones existentes
     opcionesDiv.innerHTML = '';
 
-    if (rol === 'Producción') {
-        // Crear botones para Producción
-        opcionesDiv.innerHTML = `
-            <button class="opcion-btn active" data-vista="formProduccion-view" >
-                <i class="fas fa-clipboard-list"></i> Formulario
-            </button>
-            <button class="opcion-btn" data-vista="cuentasProduccion-view" onclick="cargarRegistrosCuentas()">
-                <i class="fas fa-history"></i> Registros
-            </button>
-        `;
-        // Mostrar vista inicial
-        document.querySelector('.formProduccion-view').style.display = 'flex';
-    } else if (rol === 'Almacen') {
-        // Crear botones para Almacén
-        opcionesDiv.innerHTML = `
-            <button class="opcion-btn active" data-vista="verificarRegistros-view" onclick="cargarRegistros()">
-                <i class="fas fa-check-double"></i> Verificar
-            </button>
-            <button class="opcion-btn" data-vista="consultarRegistros-view" onclick="inicializarConsulta()">
-                <i class="fas fa-search"></i> Consultar
-            </button>
-        `;
-        // Mostrar vista inicial
-        document.querySelector('.verificarRegistros-view').style.display = 'flex';
-    } else if (rol === 'Administración') {
-        // Crear botón para Administración
-        opcionesDiv.innerHTML = `
-            <button class="opcion-btn active" data-vista="usuarios-view">
-                <i class="fas fa-users-cog"></i> Gestión de Usuarios
-            </button>
-        `;
-        // Mostrar vista inicial
-        document.querySelector('.usuarios-view').style.display = 'flex';
-    }
+    // Dividir los roles si hay múltiples
+    const roles = rol ? rol.split(',').map(r => r.trim()) : [];
+
+    // Objeto con la configuración de botones por rol
+    const botonesRoles = {
+        'Producción': [
+            {
+                clase: 'opcion-btn',
+                vista: 'formProduccion-view',
+                icono: 'fa-clipboard-list',
+                texto: 'Formulario',
+                onclick: ''
+            },
+            {
+                clase: 'opcion-btn',
+                vista: 'cuentasProduccion-view',
+                icono: 'fa-history',
+                texto: 'Registros',
+                onclick: 'onclick="cargarRegistrosCuentas()"'
+            }
+        ],
+        'Almacen': [
+            {
+                clase: 'opcion-btn',
+                vista: 'verificarRegistros-view',
+                icono: 'fa-check-double',
+                texto: 'Verificar',
+                onclick: 'onclick="cargarRegistros()"'
+            },
+            {
+                clase: 'opcion-btn',
+                vista: 'consultarRegistros-view',
+                icono: 'fa-search',
+                texto: 'Consultar',
+                onclick: 'onclick="inicializarConsulta()"'
+            }
+        ],
+        'Administración': [
+            {
+                clase: 'opcion-btn',
+                vista: 'usuarios-view',
+                icono: 'fa-users-cog',
+                texto: 'Usuarios',
+                onclick: 'onclick="cargarUsuarios()"'
+            }
+        ]
+    };
+
+    // Agregar botones para cada rol
+    let esElPrimero = true;
+    roles.forEach(rolActual => {
+        const botonesRol = botonesRoles[rolActual];
+        if (botonesRol) {
+            botonesRol.forEach(boton => {
+                const btnHTML = `
+                    <button class="${boton.clase}${esElPrimero ? ' active' : ''}" 
+                            data-vista="${boton.vista}" 
+                            ${boton.onclick}>
+                        <i class="fas ${boton.icono}"></i> ${boton.texto}
+                    </button>
+                `;
+                opcionesDiv.innerHTML += btnHTML;
+                
+                // Si es el primer botón, mostrar su vista
+                if (esElPrimero) {
+                    document.querySelector(`.${boton.vista}`).style.display = 'flex';
+                    esElPrimero = false;
+                }
+            });
+        }
+    });
 
     // Agregar event listeners a los botones
     const botones = opcionesDiv.querySelectorAll('.opcion-btn');

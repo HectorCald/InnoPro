@@ -1,5 +1,6 @@
 export async function cargarUsuarios() {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-usuarios', {
             method: 'GET',
             headers: {
@@ -58,6 +59,9 @@ export async function cargarUsuarios() {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al cargar usuarios', 'error');
+    }
+    finally{
+        ocultarCarga();
     }
 }
 export async function eliminarUsuario(pin) {

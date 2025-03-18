@@ -59,13 +59,17 @@ export async function cargarRegistros() {
                 });
 
                 registros.forEach(registro => {
+                    // Formatear la fecha para mostrar el año abreviado
+                    const [dia, mes, año] = registro[0].split('/');
+                    const fechaFormateada = `${dia}/${mes}/${año.slice(-2)}`; // Toma solo los últimos 2 dígitos del año
+                
                     const registroCard = document.createElement('div');
                     registroCard.className = 'registro-card';
                     registroCard.innerHTML = `
                         <div class="registro-header">
                             <div class="registro-info">
                                 ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
-                                <span class="registro-fecha">${registro[0]}</span>
+                                <span class="registro-fecha">${fechaFormateada}</span>
                                 <span class="registro-producto">${registro[1]}</span>
                             </div>
                             <i class="fas fa-chevron-down"></i>
