@@ -11,16 +11,7 @@
     display: none;
     margin-bottom: 50px;
 }
-.registros-container {
-    flex-direction: column;
-    overflow-y: auto;
-    max-height: 90vh;
-    padding: 0;
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
-}
+
 
 .registro-card {
     background-color: #2d2d2d;
