@@ -19,11 +19,13 @@
 }
 
 .form1 input{
+    background-color: #3d4145 !important;
     border-radius: 1em;
     width: 100%;
     padding: 1em;
     margin-bottom: 1em;
     font-size: 16px;
+    color: white !important;
 }
 .form1 select{
     border-radius: 1em;
