@@ -84,22 +84,23 @@ export async function buscarRegistros() {
                 // Convertir la fecha del registro al formato YYYY-MM-DD
                 const [dia, mes, anio] = registro[0].split('/');
                 const fechaRegistro = new Date(anio, mes - 1, dia);
-                const fechaRegistroStr = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+                fechaRegistro.setHours(12, 0, 0, 0); 
+               
 
                 // Verificar el rango de fechas
-                let cumpleFecha = true;
-                if (fechaInicio && fechaFin) {
-                    const inicio = new Date(fechaInicio);
-                    const fin = new Date(fechaFin);
-                    cumpleFecha = fechaRegistro >= inicio && fechaRegistro <= fin;
-                } else if (fechaInicio) {
-                    const inicio = new Date(fechaInicio);
-                    cumpleFecha = fechaRegistro >= inicio;
-                } else if (fechaFin) {
-                    const fin = new Date(fechaFin);
-                    cumpleFecha = fechaRegistro <= fin;
-                }
-
+                                // Verificar el rango de fechas
+                                let cumpleFecha = true;
+                                if (fechaInicio && fechaFin) {
+                                    const inicio = new Date(fechaInicio + 'T00:00:00');
+                                    const fin = new Date(fechaFin + 'T23:59:59');
+                                    cumpleFecha = fechaRegistro >= inicio && fechaRegistro <= fin;
+                                } else if (fechaInicio) {
+                                    const inicio = new Date(fechaInicio + 'T00:00:00');
+                                    cumpleFecha = fechaRegistro >= inicio;
+                                } else if (fechaFin) {
+                                    const fin = new Date(fechaFin + 'T23:59:59');
+                                    cumpleFecha = fechaRegistro <= fin;
+                                }
                 const cumpleProducto = !producto || 
                     registro[1].toLowerCase().includes(producto.toLowerCase());
                 const cumpleLote = !lote || 
