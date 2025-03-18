@@ -1,4 +1,5 @@
 export function inicializarFormularioProduccion() {
+    mostrarCarga();
     const container = document.querySelector('.formProduccion-view');
     container.innerHTML = `
         <div class="form1">
@@ -55,11 +56,11 @@ export function inicializarFormularioProduccion() {
             </form>
         </div>
     `;
-
     // Inicializar el formulario después de renderizarlo
     inicializarFormulario();
 }
 export function inicializarFormulario() {
+    ocultarCarga();
     const form = document.querySelector('.form1 form');
     
     // Agregar manejo de radio buttons para microondas
@@ -104,6 +105,7 @@ export function inicializarFormulario() {
         });
 
         try {
+            mostrarCarga();
             const response = await fetch('/registrar-produccion', {
                 method: 'POST',
                 headers: {
@@ -123,6 +125,9 @@ export function inicializarFormulario() {
         } catch (error) {
             console.error('Error completo:', error);
             alert('Error al guardar el registro: ' + error.message);
+        }
+        finally{
+            ocultarCarga();
         }
     });
     cargarProductos();
@@ -147,6 +152,7 @@ export function resetearFormulario() {
 }
 export async function cargarProductos() {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-productos');
         const data = await response.json();
         
@@ -162,5 +168,8 @@ export async function cargarProductos() {
         }
     } catch (error) {
         console.error('Error al cargar productos:', error);
+    }
+    finally{
+        ocultarCarga();
     }
 }

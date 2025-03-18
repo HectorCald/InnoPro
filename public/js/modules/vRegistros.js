@@ -1,5 +1,6 @@
 export async function cargarRegistros() {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-todos-registros');
         const data = await response.json();
 
@@ -110,6 +111,9 @@ export async function cargarRegistros() {
         console.error('Error al cargar registros:', error);
         mostrarNotificacion('Error al cargar los registros', 'error');
     }
+    finally{
+        ocultarCarga();
+    }
 }
 export function verificarRegistro(fecha, producto, lote, operario) {
     const anuncio = document.querySelector('.anuncio');
@@ -126,6 +130,7 @@ export function verificarRegistro(fecha, producto, lote, operario) {
     const fechaHoy = new Date().toISOString().split('T')[0];
 
     // Personalizar el contenido del anuncio
+    mostrarCarga();
     contenido.querySelector('h2').textContent = 'Verificar Registro';
     contenido.querySelector('p').innerHTML = `
         <form id="form-verificacion">
@@ -143,7 +148,7 @@ export function verificarRegistro(fecha, producto, lote, operario) {
             </div>
         </form>
     `;
-
+    ocultarCarga();
     // Mostrar el anuncio
     anuncio.style.display = 'flex';
     document.querySelector('.container').classList.add('no-touch');
@@ -160,6 +165,7 @@ export function verificarRegistro(fecha, producto, lote, operario) {
         }
 
         try {
+            mostrarCarga();
             const response = await fetch('/actualizar-verificacion', {
                 method: 'PUT',
                 headers: {
@@ -188,6 +194,9 @@ export function verificarRegistro(fecha, producto, lote, operario) {
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion('Error al guardar la verificación', 'error');
+        }
+        finally{
+            ocultarCarga();
         }
     };
 

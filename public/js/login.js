@@ -79,6 +79,7 @@ class LoginPin {
     /* ==================== VALIDACIÓN Y AUTENTICACIÓN ==================== */
     async validarPin(pin) {
     try {
+        mostrarCarga();
         const response = await fetch('/verificar-pin', {
             method: 'POST',
             headers: {
@@ -103,10 +104,12 @@ class LoginPin {
             }, 1500);
         } else {
             this.mostrarError();
+            ocultarCarga();
         }
     } catch (error) {
         console.error('Error:', error);
         this.mostrarError('Error de conexión');
+        ocultarCarga();
     }
 }
 
@@ -134,3 +137,12 @@ document.addEventListener('DOMContentLoaded',async () => {
         btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
     }
 });
+function mostrarCarga() {
+    const cargaDiv = document.querySelector('.carga');
+    cargaDiv.style.display = 'flex';
+}
+
+function ocultarCarga() {
+    const cargaDiv = document.querySelector('.carga');
+    cargaDiv.style.display = 'none';
+}

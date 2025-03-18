@@ -1,5 +1,6 @@
 export async function cargarRegistrosCuentas() {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-registros');
         const data = await response.json();
         
@@ -26,6 +27,9 @@ export async function cargarRegistrosCuentas() {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al cargar los registros', 'error');
+    }
+    finally{
+        ocultarCarga();
     }
 }
 

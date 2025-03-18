@@ -44,6 +44,7 @@ export function inicializarConsulta() {
 }
 export async function buscarRegistros() {
     try {
+        mostrarCarga();
         const fechaInicio = document.getElementById('filtroFechaInicio').value;
         const fechaFin = document.getElementById('filtroFechaFin').value;
         const lote = document.getElementById('filtroLote').value;
@@ -96,6 +97,9 @@ export async function buscarRegistros() {
     } catch (error) {
         console.error('Error en la búsqueda:', error);
         mostrarNotificacion('Error al buscar registros', 'error');
+    }
+    finally{
+        ocultarCarga();
     }
 }
 export function mostrarResultadosBusqueda(registros) {

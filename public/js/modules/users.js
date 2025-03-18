@@ -80,6 +80,7 @@ export async function eliminarUsuario(pin) {
     // Manejar la confirmación
     btnConfirmar.onclick = async () => {
         try {
+            mostrarCarga();
             const response = await fetch('/eliminar-usuario', {
                 method: 'DELETE',
                 headers: {
@@ -100,6 +101,9 @@ export async function eliminarUsuario(pin) {
             console.error('Error:', error);
             mostrarNotificacion('Error al eliminar usuario', 'error');
         }
+        finally{
+            ocultarCarga();
+        }
 
         // Cerrar el anuncio y quitar el efecto blur
         anuncio.style.display = 'none';
@@ -114,6 +118,7 @@ export async function eliminarUsuario(pin) {
 }
 export async function agregarUsuario() {
     try {
+        mostrarCarga();
         const responseRoles = await fetch('/obtener-lista-roles', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
@@ -170,6 +175,7 @@ export async function agregarUsuario() {
             }
 
             try {
+                mostrarCarga();
                 const response = await fetch('/crear-usuario', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -187,6 +193,9 @@ export async function agregarUsuario() {
             } catch (error) {
                 mostrarNotificacion(error.message || 'Error al crear usuario', 'error');
             }
+            finally{
+                ocultarCarga();
+            }
         };
         btnCancelar.onclick = () => {
             anuncio.style.display = 'none';
@@ -195,6 +204,9 @@ export async function agregarUsuario() {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al cargar roles', 'error');
+    }
+    finally{
+        ocultarCarga();
     }
 }
 function seleccionarRol(elemento) {
@@ -247,6 +259,7 @@ export function editarUsuario(pin) {
         }
 
         try {
+            mostrarCarga();
             const response = await fetch('/actualizar-usuario', {
                 method: 'PUT',
                 headers: {
@@ -269,6 +282,9 @@ export function editarUsuario(pin) {
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion('Error al actualizar PIN', 'error');
+        }
+        finally{
+            ocultarCarga();
         }
 
         // Cerrar el anuncio
@@ -296,6 +312,8 @@ export async function mostrarPermisos(pin) {
     contenido.querySelector('h2').textContent = 'Gestión de Roles';
     
     try {
+        mostrarCarga();
+        // Obtener roles actuales del usuario
         // Obtener permisos actuales del usuario
         const responsePermisos = await fetch(`/obtener-permisos/${pin}`, {
             method: 'GET',
@@ -367,6 +385,9 @@ export async function mostrarPermisos(pin) {
             </div>
         `;
     }
+    finally{
+        ocultarCarga();
+    }
 
     // Mostrar el anuncio
     anuncio.style.display = 'flex';
@@ -383,6 +404,7 @@ export async function mostrarPermisos(pin) {
 }
 export async function agregarPermiso(pin, permiso, event) {  // Add event parameter
     try {
+        mostrarCarga();
         const response = await fetch('/agregar-permiso', {
             method: 'POST',
             headers: {
@@ -429,9 +451,13 @@ export async function agregarPermiso(pin, permiso, event) {  // Add event parame
         console.error('Error:', error);
         mostrarNotificacion('Error al agregar permiso', 'error');
     }
+    finally{
+        ocultarCarga();
+    }
 }
 export async function eliminarPermiso(pin, permiso) {
     try {
+        mostrarCarga();
         const response = await fetch('/eliminar-permiso', {
             method: 'DELETE',
             headers: {
@@ -472,5 +498,8 @@ export async function eliminarPermiso(pin, permiso) {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al eliminar permiso', 'error');
+    }
+    finally{
+        ocultarCarga();
     }
 }

@@ -52,12 +52,16 @@ async function bienvenida() {
 }
 async function manejarCierreSesion() {
     try {
+        mostrarCarga();
         const response = await fetch('/cerrar-sesion', { method: 'POST' });
         if (response.ok) {
             window.location.href = '/';
         }
     } catch (error) {
         console.error('Error al cerrar sesión:', error);
+    }
+    finally{
+        ocultarCarga();
     }
 }
 export function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {
@@ -131,10 +135,10 @@ async function iniciarApp() {
     if (rol === 'Producción') {
         // Crear botones para Producción
         opcionesDiv.innerHTML = `
-            <button class="opcion-btn active" data-vista="formProduccion-view">
+            <button class="opcion-btn active" data-vista="formProduccion-view" >
                 <i class="fas fa-clipboard-list"></i> Formulario
             </button>
-            <button class="opcion-btn" data-vista="cuentasProduccion-view">
+            <button class="opcion-btn" data-vista="cuentasProduccion-view" onclick="cargarRegistrosCuentas()">
                 <i class="fas fa-history"></i> Registros
             </button>
         `;
@@ -143,10 +147,10 @@ async function iniciarApp() {
     } else if (rol === 'Almacen') {
         // Crear botones para Almacén
         opcionesDiv.innerHTML = `
-            <button class="opcion-btn active" data-vista="verificarRegistros-view">
+            <button class="opcion-btn active" data-vista="verificarRegistros-view" onclick="cargarRegistros()">
                 <i class="fas fa-check-double"></i> Verificar
             </button>
-            <button class="opcion-btn" data-vista="consultarRegistros-view">
+            <button class="opcion-btn" data-vista="consultarRegistros-view" onclick="inicializarConsulta()">
                 <i class="fas fa-search"></i> Consultar
             </button>
         `;
@@ -204,6 +208,17 @@ async function iniciarApp() {
         });
     });
 }
+// Agregar esta función después de las importaciones
+function mostrarCarga() {
+    const cargaDiv = document.querySelector('.carga');
+    cargaDiv.style.display = 'flex';
+}
+
+function ocultarCarga() {
+    const cargaDiv = document.querySelector('.carga');
+    cargaDiv.style.display = 'none';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     cargarUsuarios();
