@@ -92,15 +92,6 @@
     overflow: visible; /* Cambiado de hidden a visible */
 }
 
-.registro-header {
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
 .registro-header:hover {
     background: #404040;
 }
@@ -163,16 +154,10 @@
     text-align: right;
     flex: 1; /* Toma el espacio restante */
 }
-.registro-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    max-width: 70%; /* Limitar el ancho del contenedor */
-    overflow: hidden;
-}
 
 .verificado-icon {
     color: #4CAF50;
+    margin: 0;
 }
 
 .registro-fecha {
@@ -231,10 +216,11 @@
 @media (max-width: 768px) {
     .fecha-header {
         padding: 0.8rem;
+        font-size: 13px;
     }
 
     .fecha-header h3 {
-        font-size: 0.9rem; /* Reduce el tamaño de la fuente */
+        font-size: 13px; /* Reduce el tamaño de la fuente */
         max-width: 60%; /* Limita el ancho del título */
     }
 
@@ -272,12 +258,15 @@
     gap: 1rem;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    font-size: 13px !important;
+    position: relative;
 }
 .registro-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 10px;
     flex: 1;
+    width: 100%;
 }
 
 .registro-total {
@@ -285,6 +274,9 @@
     font-weight: bold;
     white-space: nowrap;
     font-size: 10px;
+    margin: 0;
+    padding: 0;
+    font-size: 13px !important;
 }
 
 
@@ -295,7 +287,9 @@
     cursor: pointer;
     color: #3498db;
     margin-left: 10px;
-    position: relative;
+    position: absolute !important;
+    top: 0;
+    right: 0;
 }
 
 .info-icon:hover {

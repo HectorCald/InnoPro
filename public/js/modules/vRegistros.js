@@ -60,10 +60,11 @@ export async function cargarRegistros() {
 
                 registros.forEach(registro => {
                     // Formatear la fecha para mostrar el año abreviado
-                    const [dia, mes, año] = registro[0].split('/');
-                    const fechaFormateada = `${dia}/${mes}/${año.slice(-2)}`; // Toma solo los últimos 2 dígitos del año
-
-                                        const registroCard = document.createElement('div');
+                    const [dia, mes] = registro[0].split('/');
+                    const fechaFormateada = `${dia}/${mes}`; // Toma solo los últimos 2 dígitos del año
+                    
+                    const registroCard = document.createElement('div');
+                   
                     registroCard.className = 'registro-card';
                     const resultados = calcularTotal(registro[1], registro[6], registro[3]);
                     registroCard.innerHTML = `
@@ -87,16 +88,33 @@ export async function cargarRegistros() {
                             </div>
                         </div>
                         <div class="registro-detalles">
-                        // ... resto del código de detalles ...
+                            <p><span>Lote:</span> ${registro[2] || '-'}</p>
+                            <p><span>Gramaje:</span> ${registro[3] || '-'}</p>
+                            <p><span>Selección:</span> ${registro[4] || '-'}</p>
+                            <p><span>Microondas:</span> ${registro[5] || '-'}</p>
+                            <p><span>Envases:</span> ${registro[6] || '-'}</p>
+                            <p><span>Vencimiento:</span> ${registro[7] || '-'}</p>
+                            <p><span>Estado:</span> <span class="estado ${(registro[9] || 'pendiente').toLowerCase()}">${registro[9] || 'Pendiente'}</span></p>
+                            ${registro[10] ? `
+                                <p><span>Fecha Verificación:</span> ${registro[10]}</p>
+                                <p><span>Cantidad Real:</span> ${registro[9] || '-'}</p>
+                                <p><span>Observaciones:</span> ${registro[11] || '-'}</p>
+                            ` : `
+                                <div class="acciones">
+                                    <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-editar">
+                                        <i class="fas fa-check-circle"></i> Verificar
+                                    </button>
+                                </div>
+                            `}
+                        </div>
                     `;
-
-                    // Configurar el panel de información
-                    configurarPanelInfo(registroCard);
-
-                    // Evento para expandir/colapsar detalles
+                        configurarPanelInfo(registroCard);
+                    // Evento para expandir/colapsar detalles (ahora funciona para todos los registros)
                     registroCard.querySelector('.registro-header').addEventListener('click', () => {
                         const detalles = registroCard.querySelector('.registro-detalles');
                         detalles.classList.toggle('active');
+                        const icono = registroCard.querySelector('.fa-chevron-down');
+                        icono.style.transform = detalles.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
                     });
 
                     registrosContainer.appendChild(registroCard);
