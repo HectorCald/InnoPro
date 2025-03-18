@@ -41,15 +41,26 @@ export function crearTarjetaRegistro(registro) {
         return div;
     }
 
-    // Calcular el total
-    const total = calcularTotal(registro[1], registro[6], registro[3]); // nombre, cantidad, gramaje
+    // Calcular el total y obtener desglose
+    const resultados = calcularTotal(registro[1], registro[6], registro[3]); // nombre, cantidad, gramaje
 
     div.innerHTML = `
         <div class="registro-header">
                 ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
                 <div class="registro-fecha">${registro[0] || 'Sin fecha'}</div>
                 <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
-                <div class="registro-total">${total.toFixed(2)} Bs.</div>
+                <div class="registro-total">${resultados.total.toFixed(2)} Bs.</div>
+                <div class="info-icon"><i class="fas fa-info-circle"></i></div>
+        </div>
+        <div class="panel-info">
+            <div class="panel-content">
+                <h4>Desglose de Costos</h4>
+                <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
+                <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
+                <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
+                <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
+                <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
+            </div>
         </div>
         <div class="registro-detalles">
             <p><span>Lote:</span> ${registro[2] || '—'}</p>
@@ -67,8 +78,9 @@ export function crearTarjetaRegistro(registro) {
 
     const header = div.querySelector('.registro-header');
     header.addEventListener('click', () => mostrarDetalles(div));
-
+    configurarPanelInfo(div);
     return div;
+
 }
 function calcularTotal(nombre, cantidad, gramaje) {
     nombre = (nombre || '').toLowerCase();
@@ -140,7 +152,13 @@ function calcularTotal(nombre, cantidad, gramaje) {
             resultadoSernido = (kilos * 0.08) * 5;
         }
     }
-    return resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido;
+    return {
+        total: resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido,
+        envasado: resultado,
+        etiquetado: resultadoEtiquetado,
+        sellado: resultadoSellado,
+        cernido: resultadoSernido
+    };
 }
 export function mostrarDetalles(card) {
     const detalles = card.querySelector('.registro-detalles');
@@ -155,4 +173,29 @@ export function mostrarDetalles(card) {
 
     // Toggle detalles actuales
     detalles.classList.toggle('active');
+}
+function configurarPanelInfo(card) {
+    const infoIcon = card.querySelector('.info-icon');
+    const panelInfo = card.querySelector('.panel-info');
+    
+    if (!infoIcon || !panelInfo) return;
+
+    infoIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        panelInfo.classList.toggle('active');
+        
+        // Cerrar otros paneles abiertos
+        document.querySelectorAll('.panel-info.active').forEach(panel => {
+            if (panel !== panelInfo) {
+                panel.classList.remove('active');
+            }
+        });
+    });
+
+    // Cerrar panel al hacer clic fuera
+    document.addEventListener('click', (e) => {
+        if (!infoIcon.contains(e.target) && !panelInfo.contains(e.target)) {
+            panelInfo.classList.remove('active');
+        }
+    });
 }
