@@ -73,8 +73,9 @@ button {
 }
 
 .pin-input.filled {
-    background-color: #ffffff;
-    border-color: #40ff00;
+    background-color: #c3ac00;
+    border-color: #ffffff;
+    color: white;
 }
 
 .error-message {
