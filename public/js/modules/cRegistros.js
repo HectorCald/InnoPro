@@ -135,13 +135,18 @@ export function mostrarResultadosBusqueda(registros) {
     registros.forEach(registro => {
         const card = document.createElement('div');
         card.className = 'registro-card';
+        
+        // Calcular el total
+        const total = calcularTotal(registro[1], registro[6], registro[3]);
+
         card.innerHTML = `
             <div class="registro-header">
                 <div class="registro-info">
                     ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
                     <span class="registro-producto">${registro[1]}</span>
+                    <span class="registro-fecha">${registro[0]}</span>
                 </div>
-                <span class="registro-fecha">${registro[0]}</span>
+                <div class="registro-total">${total.toFixed(2)} Bs.</div>
             </div>
             <div class="registro-detalles">
                 <p><span>Lote:</span> ${registro[2] || '-'}</p>
@@ -168,4 +173,76 @@ export function mostrarResultadosBusqueda(registros) {
 
         container.appendChild(card);
     });
+}
+function calcularTotal(nombre, cantidad, gramaje) {
+    nombre = (nombre || '').toLowerCase();
+    cantidad = parseFloat(cantidad) || 0;
+    gramaje = parseFloat(gramaje) || 0;
+
+    let resultado = cantidad;
+    let resultadoEtiquetado = cantidad;
+    let resultadoSellado = cantidad;
+    const kilos = (cantidad * gramaje) / 1000;
+    let resultadoSernido = 0;
+
+    // Lógica para envasado
+    if (nombre.includes('Pipoca')) {
+        if (gramaje >= 1000) {
+            resultado = (cantidad * 5) * 0.048;
+        } else if (gramaje >= 500) {
+            resultado = (cantidad * 4) * 0.048;
+        } else {
+            resultado = (cantidad * 2) * 0.048;
+        }
+    } else if (nombre.includes('bote') || (nombre.includes('clavo de olor entero') && gramaje === 12)) {
+        resultado = (cantidad * 2) * 0.048;
+    } else if (nombre.includes('laurel') || nombre.includes('huacatay') || nombre.includes('albahaca') || (nombre.includes('canela') && gramaje === 14)) {
+        resultado = (cantidad * 3) * 0.048;
+    } else {
+        if (gramaje == 150) {
+            resultado = (cantidad * 3) * 0.048;
+        } else if (gramaje == 500) {
+            resultado = (cantidad * 4) * 0.048;
+        } else if (gramaje == 1000) {
+            resultado = (cantidad * 5) * 0.048;
+        } else {
+            resultado = (cantidad * 1) * 0.048;
+        }
+    }
+
+    // Lógica para etiquetado
+    if (nombre.includes('bote')) {
+        resultadoEtiquetado = (cantidad * 2) * 0.016;
+    } else {
+        resultadoEtiquetado = cantidad * 0.016;
+    }
+
+    // Lógica para sellado
+    if (nombre.includes('bote')) {
+        resultadoSellado = cantidad * 0.3 / 60 * 5;
+    } else if (gramaje > 150) {
+        resultadoSellado = (cantidad * 2) * 0.006;
+    } else {
+        resultadoSellado = (cantidad * 1) * 0.006;
+    }
+
+    // Lógica para sernido
+    if (nombre.includes('bote')) {
+        if (nombre.includes('canela') || nombre.includes('cebolla') || nombre.includes('locoto')) {
+            resultadoSernido = (kilos * 0.34) * 5;
+        } else {
+            resultadoSernido = (kilos * 0.1) * 5;
+        }
+    } else if (nombre.includes('canela') || nombre.includes('cebolla') ||
+        nombre.includes('aji amarillo dulce') || nombre.includes('locoto')) {
+        resultadoSernido = (kilos * 0.3) * 5;
+    } else {
+        if (nombre.includes('tomillo')) {
+            resultadoSernido = 0;
+        }
+        else {
+            resultadoSernido = (kilos * 0.08) * 5;
+        }
+    }
+    return resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido;
 }

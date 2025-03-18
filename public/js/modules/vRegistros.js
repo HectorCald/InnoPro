@@ -62,16 +62,15 @@ export async function cargarRegistros() {
                     // Formatear la fecha para mostrar el año abreviado
                     const [dia, mes, año] = registro[0].split('/');
                     const fechaFormateada = `${dia}/${mes}/${año.slice(-2)}`; // Toma solo los últimos 2 dígitos del año
-                
+
                     const registroCard = document.createElement('div');
                     registroCard.className = 'registro-card';
                     registroCard.innerHTML = `
                         <div class="registro-header">
-                            <div class="registro-info">
-                                ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
-                                <span class="registro-fecha">${fechaFormateada}</span>
-                                <span class="registro-producto">${registro[1]}</span>
-                            </div>
+                            ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
+                            <span class="registro-fecha">${fechaFormateada}</span>
+                            <span class="registro-producto">${registro[1]}</span>
+                            <span class="registro-total">${calcularTotal(registro[1], registro[6], registro[3]).toFixed(2)} Bs.</span>
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="registro-detalles">
@@ -95,7 +94,7 @@ export async function cargarRegistros() {
                             `}
                         </div>
                     `;
-                
+
                     // Evento para expandir/colapsar detalles (ahora funciona para todos los registros)
                     registroCard.querySelector('.registro-header').addEventListener('click', () => {
                         const detalles = registroCard.querySelector('.registro-detalles');
@@ -103,7 +102,7 @@ export async function cargarRegistros() {
                         const icono = registroCard.querySelector('.fa-chevron-down');
                         icono.style.transform = detalles.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
                     });
-                
+
                     registrosContainer.appendChild(registroCard);
                 });
 
@@ -115,7 +114,7 @@ export async function cargarRegistros() {
         console.error('Error al cargar registros:', error);
         mostrarNotificacion('Error al cargar los registros', 'error');
     }
-    finally{
+    finally {
         ocultarCarga();
     }
 }
@@ -199,7 +198,7 @@ export function verificarRegistro(fecha, producto, lote, operario) {
             console.error('Error:', error);
             mostrarNotificacion('Error al guardar la verificación', 'error');
         }
-        finally{
+        finally {
             ocultarCarga();
         }
     };
@@ -209,4 +208,76 @@ export function verificarRegistro(fecha, producto, lote, operario) {
         anuncio.style.display = 'none';
         document.querySelector('.container').classList.remove('no-touch');
     };
+}
+function calcularTotal(nombre, cantidad, gramaje) {
+    nombre = (nombre || '').toLowerCase();
+    cantidad = parseFloat(cantidad) || 0;
+    gramaje = parseFloat(gramaje) || 0;
+
+    let resultado = cantidad;
+    let resultadoEtiquetado = cantidad;
+    let resultadoSellado = cantidad;
+    const kilos = (cantidad * gramaje) / 1000;
+    let resultadoSernido = 0;
+
+    // Lógica para envasado
+    if (nombre.includes('Pipoca')) {
+        if (gramaje >= 1000) {
+            resultado = (cantidad * 5) * 0.048;
+        } else if (gramaje >= 500) {
+            resultado = (cantidad * 4) * 0.048;
+        } else {
+            resultado = (cantidad * 2) * 0.048;
+        }
+    } else if (nombre.includes('bote') || (nombre.includes('clavo de olor entero') && gramaje === 12)) {
+        resultado = (cantidad * 2) * 0.048;
+    } else if (nombre.includes('laurel') || nombre.includes('huacatay') || nombre.includes('albahaca') || (nombre.includes('canela') && gramaje === 14)) {
+        resultado = (cantidad * 3) * 0.048;
+    } else {
+        if (gramaje == 150) {
+            resultado = (cantidad * 3) * 0.048;
+        } else if (gramaje == 500) {
+            resultado = (cantidad * 4) * 0.048;
+        } else if (gramaje == 1000) {
+            resultado = (cantidad * 5) * 0.048;
+        } else {
+            resultado = (cantidad * 1) * 0.048;
+        }
+    }
+
+    // Lógica para etiquetado
+    if (nombre.includes('bote')) {
+        resultadoEtiquetado = (cantidad * 2) * 0.016;
+    } else {
+        resultadoEtiquetado = cantidad * 0.016;
+    }
+
+    // Lógica para sellado
+    if (nombre.includes('bote')) {
+        resultadoSellado = cantidad * 0.3 / 60 * 5;
+    } else if (gramaje > 150) {
+        resultadoSellado = (cantidad * 2) * 0.006;
+    } else {
+        resultadoSellado = (cantidad * 1) * 0.006;
+    }
+
+    // Lógica para sernido
+    if (nombre.includes('bote')) {
+        if (nombre.includes('canela') || nombre.includes('cebolla') || nombre.includes('locoto')) {
+            resultadoSernido = (kilos * 0.34) * 5;
+        } else {
+            resultadoSernido = (kilos * 0.1) * 5;
+        }
+    } else if (nombre.includes('canela') || nombre.includes('cebolla') ||
+        nombre.includes('aji amarillo dulce') || nombre.includes('locoto')) {
+        resultadoSernido = (kilos * 0.3) * 5;
+    } else {
+        if (nombre.includes('tomillo')) {
+            resultadoSernido = 0;
+        }
+        else {
+            resultadoSernido = (kilos * 0.08) * 5;
+        }
+    }
+    return resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido;
 }

@@ -39,13 +39,6 @@
     transform: translateY(-5px);
 }
 
-.registro-header {
-    background-color: #606060;
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
 .registro-fecha {
     font-weight: bold;
@@ -91,21 +84,22 @@
     padding: 2em;
     font-size: 1.2em;
 }
-.registro-header {
-    background-color: #606060;
+.cuentasProduccion-view .registro-header {
+    background-color: #373737;
     padding: 1rem;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.registro-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    width: 100% !important;
+    align-items: left;
+    justify-content: flex-start;
+    gap: 1em;
 }
 
 .verificado-icon {
     color: #4CAF50;
     font-size: 1.2em;
+}
+
+.registro-total {
+    color: #4CAF50;
+    font-weight: bold;
 }

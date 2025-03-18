@@ -254,6 +254,7 @@ function ocultarCarga() {
     cargaDiv.style.display = 'none';
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     cargarUsuarios();

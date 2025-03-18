@@ -145,3 +145,42 @@ input[list]:focus {
     background: #c0392b;
     transform: translateY(-2px);
 }
+.registro-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.registro-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.registro-total {
+    color: #4CAF50;
+    font-weight: bold;
+    margin-left: 1rem;
+    white-space: nowrap;
+}
+
+/* Ajuste responsive */
+@media (max-width: 768px) {
+    .registro-header {
+        flex-wrap: wrap;
+    }
+
+    .registro-info {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .registro-total {
+        width: 100%;
+        text-align: right;
+    }
+}

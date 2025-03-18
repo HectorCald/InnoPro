@@ -258,4 +258,39 @@
         gap: 0.5rem; /* Reduce el espacio entre elementos */
     }
 }
+.registro-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
 
+.registro-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.registro-total {
+    color: #4CAF50;
+    font-weight: bold;
+    margin: 0 1rem;
+    white-space: nowrap;
+}
+
+/* Ajuste responsive */
+@media (max-width: 768px) {
+    .registro-header {
+        flex-wrap: wrap;
+    }
+    
+    .registro-total {
+        order: 3;
+        width: 100%;
+        text-align: right;
+        margin-top: 0.5rem;
+    }
+}
