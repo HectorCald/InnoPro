@@ -61,7 +61,7 @@ button {
     text-align: center;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    background: white;
+    background: rgb(82, 82, 82);
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -211,4 +211,8 @@ button {
 @keyframes fadeOut {
     from { opacity: 1; }
     to { opacity: 0; }
+}
+.pin-container img{
+    width: 100px;
+    height: auto;
 }
