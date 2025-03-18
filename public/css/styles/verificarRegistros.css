@@ -10,6 +10,7 @@
     flex-direction: column;
     gap: 1em;
     display: none;
+    margin-bottom: 50px;
 }
 /* Ocultar la barra de desplazamiento para Chrome, Safari y Opera */
 .registros-container::-webkit-scrollbar {

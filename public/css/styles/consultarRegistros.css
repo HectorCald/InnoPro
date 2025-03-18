@@ -9,6 +9,7 @@
     flex-direction: column;
     gap: 1em;
     display: none;
+    margin-bottom: 50px;
 }
 /* ==================== CONSULTA VIEW ==================== */
 input[list] {

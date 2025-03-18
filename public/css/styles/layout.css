@@ -37,6 +37,11 @@
     background: #1a1a1a;
     z-index: 1000;
 }
+.dashboard h1 {
+    color: white;
+    margin: 0;
+    padding: 0;
+}
 
 .logout-btn {
     width: 40%;

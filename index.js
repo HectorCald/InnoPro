@@ -92,27 +92,13 @@ app.get('/', (req, res) => {
     res.render('login');
 });
 app.get('/dashboard', requireAuth, (req, res) => {
-    if (req.user.rol === 'admin') {
-        res.redirect('/dashboard_adm');
-    } else if (req.user.rol === 'almacen') {
-        res.redirect('/dashboard_alm');
-    } else {
-        res.render('dashboard');
-    }
+    res.redirect('/dashboard_db')
 });
 app.get('/dashboard_alm', requireAuth, (req, res) => {
-    if (req.user.rol !== 'almacen') {
-        res.redirect('/dashboard');
-    } else {
-        res.render('dashboard_alm');
-    }
+    res.redirect('dashboard_db')
 });
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    if (req.user.rol !== 'admin') {
-        res.redirect('/dashboard');
-    } else {
         res.render('dashboard_db');
-    }
 });
 
 
@@ -138,9 +124,7 @@ app.post('/verificar-pin', async (req, res) => {
             res.json({ 
                 ...resultado, 
                 token,
-                redirect: resultado.rol === 'admin' ? '/dashboard_adm' : 
-                         resultado.rol === 'almacen' ? '/dashboard_alm' : 
-                         '/dashboard'
+                redirect: '/dashboard_db'
             });
         } else {
             res.json(resultado);
@@ -188,9 +172,6 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
 
 app.post('/crear-usuario', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const { nombre, pin, rol } = req.body;
 
@@ -242,9 +223,6 @@ app.post('/crear-usuario', requireAuth, async (req, res) => {
 });
 app.get('/obtener-usuarios', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
@@ -269,9 +247,6 @@ app.get('/obtener-usuarios', requireAuth, async (req, res) => {
 });
 app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const { pin } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
@@ -333,9 +308,6 @@ app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
 });
 app.put('/actualizar-usuario', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const { pinActual, pinNuevo } = req.body;
 
@@ -464,9 +436,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
 });
 app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
+        
 
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
@@ -537,9 +507,6 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
 });
 app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
@@ -561,9 +528,6 @@ app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const { fecha, producto, lote, operario, verificacion, fechaVerificacion, observaciones } = req.body;
         
@@ -622,9 +586,6 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
 /* ==================== API DE PERMISOS ==================== */
 app.put('/actualizar-permisos', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const { pin, permisos } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
@@ -665,9 +626,6 @@ app.put('/actualizar-permisos', requireAuth, async (req, res) => {
 });
 app.get('/obtener-permisos/:pin', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const { pin } = req.params;
         const sheets = google.sheets({ version: 'v4', auth });
@@ -695,9 +653,6 @@ app.get('/obtener-permisos/:pin', requireAuth, async (req, res) => {
 });
 app.post('/agregar-permiso', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const { pin, permiso } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
@@ -740,9 +695,6 @@ app.post('/agregar-permiso', requireAuth, async (req, res) => {
 });
 app.delete('/eliminar-permiso', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const { pin, permiso } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
@@ -814,9 +766,6 @@ app.get('/obtener-mis-permisos', requireAuth, async (req, res) => {
 });
 app.get('/obtener-lista-roles', requireAuth, async (req, res) => {
     try {
-        if (req.user.nombre !== 'Almacen' && req.user.nombre !== 'Administrador') {
-            return res.status(403).json({ success: false, error: 'No autorizado' });
-        }
 
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
@@ -830,6 +779,33 @@ app.get('/obtener-lista-roles', requireAuth, async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: 'Error al obtener lista de roles: ' + error.message 
+        });
+    }
+});
+// Añadir esta nueva ruta
+app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const usuario = rows.find(row => row[1] === req.user.nombre);
+
+        if (!usuario) {
+            return res.json({ success: true, rol: null });
+        }
+
+        const rol = usuario[2]; // Obtener el rol de la columna C
+        
+        res.json({ success: true, rol: rol });
+    } catch (error) {
+        console.error('Error al obtener rol:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener rol' 
         });
     }
 });
