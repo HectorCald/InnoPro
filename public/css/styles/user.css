@@ -4,10 +4,10 @@
     background: #1a1a1a;
     height: 80vh;
     color: white;
-    overflow: hidden;
+    overflow: auto;
     padding-inline: 1em;
     display: none;
-    margin-bottom: 50px;
+    padding-bottom: 50px;
 }
 
 .usuarios-container {
