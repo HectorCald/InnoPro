@@ -6,6 +6,8 @@
 @import 'styles/consultarRegistros.css';
 @import 'styles/formProduccion.css';
 @import 'styles/misCuentasProduccion.css';
+@import'styles/registrarProduccion.css';
+@import'styles/newPedido.css';
 
 /* ... imports existentes ... */
 

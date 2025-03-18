@@ -3,6 +3,7 @@ import { cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
+import { compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -36,6 +37,14 @@ window.cargarRegistrosCuentas = cargarRegistrosCuentas;
 window.mostrarDetalles = mostrarDetalles;
 window.crearTarjetaRegistro = crearTarjetaRegistro;
 window.limpiarFiltros = limpiarFiltros;
+window.inicializarPedidos = inicializarPedidos;
+window.mostrarFormularioPedido = mostrarFormularioPedido;
+window.cargarPedidos = cargarPedidos;
+window.guardarPedido = guardarPedido;
+window.cerrarFormularioPedido = cerrarFormularioPedido;
+window.eliminarPedido = eliminarPedido;
+window.mostrarConfirmacionEliminar = mostrarConfirmacionEliminar;
+window.compartirPedido = compartirPedido;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -122,7 +131,7 @@ async function iniciarApp() {
     bienvenida();
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view');
+    const vistas = document.querySelectorAll('.usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
     
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => vista.style.display = 'none');
@@ -149,6 +158,15 @@ async function iniciarApp() {
                 icono: 'fa-history',
                 texto: 'Registros',
                 onclick: 'onclick="cargarRegistrosCuentas()"'
+            }
+        ],
+        'Acopio': [
+            {
+                clase: 'opcion-btn',
+                vista: 'newPedido-view',
+                icono: 'fa-clipboard-list',
+                texto: 'Pedido',
+                onclick: 'onclick="inicializarPedidos()"'
             }
         ],
         'Almacen': [
@@ -254,7 +272,13 @@ function ocultarCarga() {
     cargaDiv.style.display = 'none';
 }
 
-
+window.addEventListener('load', function() {
+    if (typeof window.jspdf === 'undefined') {
+        console.error('jsPDF no está disponible globalmente');
+    } else {
+        console.log('jsPDF está cargado correctamente');
+    }
+});
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     cargarUsuarios();
@@ -263,6 +287,12 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarFormularioProduccion();
     cargarRegistrosCuentas();
     iniciarApp();
+    if (!window.jspdf) {
+        console.error('jsPDF no está cargado correctamente');
+    }
+    else{
+        console.error('jsPDF cargado correctamente');
+    }
 });
 
 

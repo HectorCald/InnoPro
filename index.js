@@ -810,8 +810,130 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
     }
 });
 
-// ... rest of the code ...
 
+app.post('/guardar-pedido', requireAuth, async (req, res) => {
+    try {
+        const { nombre, cantidad, observaciones } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        const fecha = new Date().toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+
+        const values = [[
+            fecha,
+            nombre,
+            cantidad,
+            observaciones || ''
+        ]];
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A2',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: { values }
+        });
+
+        res.json({ success: true, message: 'Pedido guardado correctamente' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al guardar el pedido: ' + error.message 
+        });
+    }
+});
+
+app.get('/obtener-pedidos', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:D'
+        });
+
+        const pedidos = response.data.values || [];
+        res.json({ success: true, pedidos });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener pedidos: ' + error.message 
+        });
+    }
+});
+app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
+    try {
+        const { fecha, nombre } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get all pedidos
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:D'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === nombre
+        );
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Pedido no encontrado' 
+            });
+        }
+
+        // Get the sheet ID for Pedidos sheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const pedidosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Pedidos'
+        );
+
+        if (!pedidosSheet) {
+            throw new Error('Hoja de Pedidos no encontrada');
+        }
+
+        // Delete the row
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: pedidosSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex,
+                            endIndex: rowIndex + 1
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true, message: 'Pedido eliminado correctamente' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el pedido: ' + error.message 
+        });
+    }
+});
+// Agregar después de las importaciones existentes
+app.get('/obtener-usuario-actual', requireAuth, (req, res) => {
+    res.json({ 
+        nombre: req.user.nombre,
+        rol: req.user.rol 
+    });
+});
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
