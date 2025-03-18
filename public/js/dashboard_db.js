@@ -60,9 +60,6 @@ async function manejarCierreSesion() {
     } catch (error) {
         console.error('Error al cerrar sesión:', error);
     }
-    finally{
-        ocultarCarga();
-    }
 }
 export function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {
     const notificador = document.querySelector('.notificador');
