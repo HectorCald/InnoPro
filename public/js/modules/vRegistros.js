@@ -5,7 +5,7 @@ export async function cargarRegistros() {
 
         if (data.success) {
             const container = document.querySelector('.verificarRegistros-view');
-            container.innerHTML = '';
+            container.innerHTML = '<h3 class="titulo-seccion">Verificar Registros</h3>';
 
             // Agrupar registros por nombre de operario, saltando la primera fila (encabezados)
             const registrosPorOperario = {};

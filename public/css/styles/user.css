@@ -4,7 +4,7 @@
     background: #1a1a1a;
     height: 80vh;
     color: white;
-    overflow: auto;
+    overflow: hidden;
     padding-inline: 1em;
     display: none;
     padding-bottom: 50px;
@@ -12,6 +12,7 @@
 
 .usuarios-container {
     width: 100%;
+    height: auto;
 }
 
 .usuarios-container h2 {
@@ -45,8 +46,9 @@
 .table-body {
     max-height: 400px;
     overflow-y: auto;
-    height: 60vh;
+    height: auto;
     padding-bottom: 2em;
+    padding-bottom: 60px;
 }
 
 .usuario-row {

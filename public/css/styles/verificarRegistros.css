@@ -2,15 +2,14 @@
 .verificarRegistros-view {
     width: 100%;
     background: #1a1a1a;
-    height: calc(100vh - 7em);
+    min-height: calc(100vh - 80px); /* Ajustado para el menú de navegación */
     color: white;
-    overflow-y: auto;
+    overflow: auto;
     padding: 1em;
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: 0.4em;
     display: none;
-    margin-bottom: 50px;
 }
 /* Ocultar la barra de desplazamiento para Chrome, Safari y Opera */
 .registros-container::-webkit-scrollbar {
@@ -137,16 +136,18 @@
 .registro-detalles p {
     margin: 0.5rem 0;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start; /* Cambiado de center a flex-start */
+    justify-content: center;
+    align-items: center; /* Cambiado de center a flex-start */
     border-bottom: 1px solid #404040;
     padding-bottom: 0.8rem;
+    height: 40px;
     flex-wrap: wrap; /* Añadido para permitir que el contenido se ajuste */
     gap: 0.5rem; /* Espacio entre elementos cuando se envuelven */
 }
 
 .registro-detalles p span {
     word-break: break-word; /* Permite que las palabras largas se rompan */
+    text-align: left;
 }
 
 .registro-detalles p span:first-child {
@@ -229,13 +230,6 @@
         padding: 0.8rem;
     }
 
-    .registro-detalles p {
-        font-size: 0.9rem;
-    }
-    .registro-detalles p {
-        flex-direction: column;
-        align-items: stretch;
-    }
 
     .registro-detalles p span:last-child {
         text-align: left;
