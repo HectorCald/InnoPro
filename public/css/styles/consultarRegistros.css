@@ -184,3 +184,15 @@ input[list]:focus {
         text-align: right;
     }
 }
+.registro-total.no-verificado {
+    color: #f44336;
+}
+
+.registro-total {
+    color: #4CAF50;
+    font-weight: bold;
+    white-space: nowrap;
+    font-size: 13px !important;
+    margin: 0;
+    padding: 0;
+}

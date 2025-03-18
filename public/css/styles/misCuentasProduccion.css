@@ -89,7 +89,7 @@
     width: 100% !important;
     align-items: left;
     justify-content: space-between;
-    gap: 1em;
+    gap: 5px !important;
     flex-wrap: nowrap;
 }
 
@@ -171,4 +171,14 @@
 .panel-content .total span:last-child {
     color: #4CAF50;
 }
+.registro-total.no-verificado {
+    color: #f44336; /* Color rojo para registros no verificados */
+}
 
+.registro-total {
+    font-weight: bold;
+    white-space: nowrap;
+    font-size: 13px !important;
+    margin: 0;
+    padding: 0;
+}

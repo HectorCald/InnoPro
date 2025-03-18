@@ -288,8 +288,8 @@
     color: #3498db;
     margin-left: 10px;
     position: absolute !important;
-    top: 0;
-    right: 0;
+    top: 5px;
+    right: 5px;
 }
 
 .info-icon:hover {
@@ -347,3 +347,14 @@
     color: #4CAF50;
 }
 
+.registro-total.no-verificado {
+    color: #f44336; /* Color rojo para registros no verificados */
+}
+
+.registro-total {
+    font-weight: bold;
+    white-space: nowrap;
+    font-size: 13px !important;
+    margin: 0;
+    padding: 0;
+}

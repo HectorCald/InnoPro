@@ -66,7 +66,8 @@ export async function cargarRegistros() {
                     const registroCard = document.createElement('div');
                    
                     registroCard.className = 'registro-card';
-                    const resultados = calcularTotal(registro[1], registro[6], registro[3]);
+                    const cantidadAUsar = registro[10] ? registro[9] : registro[6]; // Si está verificado usa cantidad real, sino usa envases
+                    const resultados = calcularTotal(registro[1], cantidadAUsar, registro[3], registro[4]);
                     registroCard.innerHTML = `
                         <div class="registro-header">
                             <div class="registro-info">
@@ -74,7 +75,7 @@ export async function cargarRegistros() {
                                 <span class="registro-fecha">${fechaFormateada}</span>
                                 <span class="registro-producto" title="${registro[1]}">${registro[1]}</span>
                             </div>
-                            <span class="registro-total">${resultados.total.toFixed(2)} Bs.</span>
+                            <span class="registro-total ${!registro[10] ? 'no-verificado' : ''}">${resultados.total.toFixed(2)} Bs.</span>
                             <div class="info-icon"><i class="fas fa-info-circle"></i></div>
                         </div>
                         <div class="panel-info">
@@ -224,7 +225,8 @@ export function verificarRegistro(fecha, producto, lote, operario) {
         document.querySelector('.container').classList.remove('no-touch');
     };
 }
-function calcularTotal(nombre, cantidad, gramaje) {
+function calcularTotal(nombre, cantidad, gramaje, seleccion) {
+
     nombre = (nombre || '').toLowerCase();
     cantidad = parseFloat(cantidad) || 0;
     gramaje = parseFloat(gramaje) || 0;
@@ -276,22 +278,26 @@ function calcularTotal(nombre, cantidad, gramaje) {
         resultadoSellado = (cantidad * 1) * 0.006;
     }
 
-    // Lógica para sernido
-    if (nombre.includes('bote')) {
-        if (nombre.includes('canela') || nombre.includes('cebolla') || nombre.includes('locoto')) {
-            resultadoSernido = (kilos * 0.34) * 5;
-        } else {
-            resultadoSernido = (kilos * 0.1) * 5;
-        }
-    } else if (nombre.includes('canela') || nombre.includes('cebolla') ||
-        nombre.includes('aji amarillo dulce') || nombre.includes('locoto')) {
-        resultadoSernido = (kilos * 0.3) * 5;
+    // Lógica para cernido
+    if (seleccion !== 'seleccionado') {
+        resultadoSernido = 0;
     } else {
-        if (nombre.includes('tomillo')) {
-            resultadoSernido = 0;
-        }
-        else {
-            resultadoSernido = (kilos * 0.08) * 5;
+        if (nombre.includes('bote')) {
+            if (nombre.includes('canela') || nombre.includes('cebolla') || nombre.includes('locoto')) {
+                resultadoSernido = (kilos * 0.34) * 5;
+            } else {
+                resultadoSernido = (kilos * 0.1) * 5;
+            }
+        } else if (nombre.includes('canela') || nombre.includes('cebolla') ||
+            nombre.includes('aji amarillo dulce') || nombre.includes('locoto')) {
+            resultadoSernido = (kilos * 0.3) * 5;
+        } else {
+            if (nombre.includes('tomillo')) {
+                resultadoSernido = 0;
+            }
+            else {
+                resultadoSernido = (kilos * 0.08) * 5;
+            }
         }
     }
     return {

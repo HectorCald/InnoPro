@@ -136,17 +136,22 @@ export function mostrarResultadosBusqueda(registros) {
         const card = document.createElement('div');
         card.className = 'registro-card';
         
-        // Calcular el total
-        const total = calcularTotal(registro[1], registro[6], registro[3]);
+        // Determinar qué cantidad usar basado en si está verificado
+        const cantidadAUsar = registro[10] ? registro[9] : registro[6];
+        const resultados = calcularTotal(registro[1], cantidadAUsar, registro[3], registro[4]);
+
+        // Formatear la fecha para mostrar solo día y mes
+        const [dia, mes] = registro[0].split('/');
+        const fechaFormateada = `${dia}/${mes}`;
 
         card.innerHTML = `
             <div class="registro-header">
                 <div class="registro-info">
                     ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
                     <span class="registro-producto">${registro[1]}</span>
-                    <span class="registro-fecha">${registro[0]}</span>
+                    <span class="registro-fecha">${fechaFormateada}</span>
                 </div>
-                <div class="registro-total">${total.toFixed(2)} Bs.</div>
+                <div class="registro-total ${!registro[10] ? 'no-verificado' : ''}">${resultados.total.toFixed(2)} Bs.</div>
             </div>
             <div class="registro-detalles">
                 <p><span>Lote:</span> ${registro[2] || '-'}</p>
@@ -174,7 +179,8 @@ export function mostrarResultadosBusqueda(registros) {
         container.appendChild(card);
     });
 }
-function calcularTotal(nombre, cantidad, gramaje) {
+function calcularTotal(nombre, cantidad, gramaje, seleccion) {
+
     nombre = (nombre || '').toLowerCase();
     cantidad = parseFloat(cantidad) || 0;
     gramaje = parseFloat(gramaje) || 0;
@@ -226,23 +232,33 @@ function calcularTotal(nombre, cantidad, gramaje) {
         resultadoSellado = (cantidad * 1) * 0.006;
     }
 
-    // Lógica para sernido
-    if (nombre.includes('bote')) {
-        if (nombre.includes('canela') || nombre.includes('cebolla') || nombre.includes('locoto')) {
-            resultadoSernido = (kilos * 0.34) * 5;
-        } else {
-            resultadoSernido = (kilos * 0.1) * 5;
-        }
-    } else if (nombre.includes('canela') || nombre.includes('cebolla') ||
-        nombre.includes('aji amarillo dulce') || nombre.includes('locoto')) {
-        resultadoSernido = (kilos * 0.3) * 5;
+    // Lógica para cernido
+    if (seleccion !== 'seleccionado') {
+        resultadoSernido = 0;
     } else {
-        if (nombre.includes('tomillo')) {
-            resultadoSernido = 0;
-        }
-        else {
-            resultadoSernido = (kilos * 0.08) * 5;
+        if (nombre.includes('bote')) {
+            if (nombre.includes('canela') || nombre.includes('cebolla') || nombre.includes('locoto')) {
+                resultadoSernido = (kilos * 0.34) * 5;
+            } else {
+                resultadoSernido = (kilos * 0.1) * 5;
+            }
+        } else if (nombre.includes('canela') || nombre.includes('cebolla') ||
+            nombre.includes('aji amarillo dulce') || nombre.includes('locoto')) {
+            resultadoSernido = (kilos * 0.3) * 5;
+        } else {
+            if (nombre.includes('tomillo')) {
+                resultadoSernido = 0;
+            }
+            else {
+                resultadoSernido = (kilos * 0.08) * 5;
+            }
         }
     }
-    return resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido;
+    return {
+        total: resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido,
+        envasado: resultado,
+        etiquetado: resultadoEtiquetado,
+        sellado: resultadoSellado,
+        cernido: resultadoSernido
+    };
 }
