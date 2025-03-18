@@ -279,7 +279,7 @@ function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     }
 
     // Lógica para cernido
-    if (seleccion !== 'seleccionado') {
+    if (seleccion !== 'Cernido') {
         resultadoSernido = 0;
     } else {
         if (nombre.includes('bote')) {
