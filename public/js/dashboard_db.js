@@ -4,6 +4,7 @@ import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpia
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
 import {togglePedidosRecibidos,mostrarPedidosRecibidos, mostrarFormularioIngreso, procesarIngreso,togglePedidosArchivados, mostrarPedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos,compartirEnWhatsApp, compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
+import {mostrarHistorialTareas,toggleProcesos,mostrarProcesos,pausarProceso, finalizarProceso,inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, guardarTarea, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea} from './modules/newTarea.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -54,6 +55,20 @@ window.mostrarPedidosRecibidos = mostrarPedidosRecibidos;
 window.togglePedidosRecibidos = togglePedidosRecibidos;
 window.procesarIngreso = procesarIngreso;
 window.mostrarFormularioIngreso = mostrarFormularioIngreso;
+window.inicializarTareas = inicializarTareas;
+window.mostrarFormularioTarea = mostrarFormularioTarea;
+window.cargarTareasEnProceso = cargarTareasEnProceso;
+window.guardarTarea = guardarTarea;
+window.iniciarCronometro = iniciarCronometro;
+window.agregarProceso = agregarProceso;
+window.pausarTarea = pausarTarea;
+window.finalizarTarea = finalizarTarea;
+window.agregarProceso = agregarProceso;
+window.pausarProceso = pausarProceso;
+window.finalizarProceso = finalizarProceso;
+window.mostrarProcesos = mostrarProcesos;
+window.toggleProcesos = toggleProcesos;
+window.mostrarHistorialTareas = mostrarHistorialTareas;
 
 async function bienvenida() {
     try {
@@ -141,7 +156,7 @@ async function iniciarApp() {
     bienvenida();
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
+    const vistas = document.querySelectorAll('.newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
     
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => vista.style.display = 'none');
@@ -177,6 +192,13 @@ async function iniciarApp() {
                 icono: 'fa-clipboard-list',
                 texto: 'Pedido',
                 onclick: 'onclick="inicializarPedidos()"'
+            },
+            {
+                clase: 'opcion-btn',
+                vista: 'newTarea-view',
+                icono: 'fa-clipboard-list',
+                texto: 'Tarea',
+                onclick: 'onclick="inicializarTareas()"'
             }
         ],
         'Almacen': [

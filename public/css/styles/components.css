@@ -24,7 +24,11 @@
     width: 90%;
     max-width: 500px;
     max-height: 80vh;
+    min-height: 60vh;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .anuncio-contenido i {

@@ -1276,6 +1276,436 @@ app.get('/obtener-detalles-pedido/:hoja', requireAuth, async (req, res) => {
         });
     }
 });
+
+
+
+
+// Agregar estas nuevas rutas
+// Update the crear-tarea endpoint
+// Modificar la ruta crear-tarea
+app.post('/crear-tarea', requireAuth, async (req, res) => {
+    try {
+        const { nombre, peso, descripcion, fechaInicio, estado } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        const tiempoInicial = Date.now();
+
+        // Verificar y actualizar Almacen Bruto
+        const almacenResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen Bruto!A:B'
+        });
+
+        const almacenRows = almacenResponse.data.values || [];
+        const productoIndex = almacenRows.findIndex(row => row[0] === nombre);
+
+        if (productoIndex === -1) {
+            return res.status(400).json({
+                success: false,
+                error: 'Producto no encontrado en Almacen Bruto'
+            });
+        }
+
+        const pesoActual = parseFloat(almacenRows[productoIndex][1]) || 0;
+        if (pesoActual < peso) {
+            return res.status(400).json({
+                success: false,
+                error: 'No hay suficiente peso disponible en Almacen Bruto'
+            });
+        }
+
+        // Actualizar peso en Almacen Bruto
+        const nuevoPeso = pesoActual - peso;
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Almacen Bruto!B${productoIndex + 1}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[nuevoPeso]]
+            }
+        });
+
+        // Crear la tarea
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Tareas!A2:G',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[
+                    nombre,
+                    descripcion || '',
+                    fechaInicio,
+                    estado,
+                    req.user.nombre,
+                    tiempoInicial,
+                    peso
+                ]]
+            }
+        });
+
+        res.json({ success: true, tareaId: nombre, tiempoInicial });
+    } catch (error) {
+        console.error('Error al crear tarea:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al crear la tarea: ' + error.message
+        });
+    }
+});
+
+// Modificar la ruta obtener-tareas-proceso
+app.get('/obtener-tareas-proceso', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Tareas!A2:H' // Cambiado a H para incluir los procesos
+        });
+
+        const rows = response.data.values || [];
+        const tareas = rows
+            .filter(row => row[3] === 'En proceso')
+            .map(row => ({
+                id: row[0],
+                nombre: row[0],
+                descripcion: row[1],
+                fechaInicio: row[2],
+                estado: row[3],
+                usuario: row[4],
+                tiempoInicial: row[5] || Date.now(),
+                peso: row[6] || '0',
+                procesos: row[7] ? JSON.parse(row[7]) : [] // Parseamos los procesos de la columna H
+            }));
+
+        res.json({ success: true, tareas });
+    } catch (error) {
+        console.error('Error al obtener tareas:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener las tareas' 
+        });
+    }
+});
+// Agregar esta nueva ruta
+app.post('/actualizar-estado-tarea', requireAuth, async (req, res) => {
+    try {
+        const { tareaId, estado, tiempoTranscurrido } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener la tarea actual
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Tareas!A2:F'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === tareaId) + 2;
+
+        if (rowIndex < 2) {
+            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
+        }
+
+        // Actualizar estado y tiempo
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Tareas!D${rowIndex}:E${rowIndex}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[estado, tiempoTranscurrido]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+// Add new route for process management
+app.post('/agregar-proceso-tarea', requireAuth, async (req, res) => {
+    try {
+        const { tareaId, descripcion } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get current task data
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Tareas!A2:H'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === tareaId) + 2;
+
+        if (rowIndex < 2) {
+            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
+        }
+
+        // Get existing processes or create new array
+        const procesos = rows[rowIndex - 2][7] ? JSON.parse(rows[rowIndex - 2][7]) : [];
+        
+        // Add new process without initial peso
+        const nuevoProceso = {
+            id: Date.now().toString(),
+            descripcion,
+            inicio: new Date().toISOString(),
+            estado: 'En proceso'
+        };
+        procesos.push(nuevoProceso);
+
+        // Update sheet with new process data
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Tareas!H${rowIndex}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[JSON.stringify(procesos)]]
+            }
+        });
+
+        res.json({ success: true, proceso: nuevoProceso });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/actualizar-proceso', requireAuth, async (req, res) => {
+    try {
+        const { tareaId, procesoId, estado, fin, peso } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get current task data
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Tareas!A2:H'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === tareaId) + 2;
+
+        if (rowIndex < 2) {
+            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
+        }
+
+        // Update process
+        const procesos = JSON.parse(rows[rowIndex - 2][7] || '[]');
+        const procesoIndex = procesos.findIndex(p => p.id === procesoId);
+
+        if (procesoIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Proceso no encontrado' });
+        }
+
+        // Update process with final weight
+        procesos[procesoIndex] = {
+            ...procesos[procesoIndex],
+            estado,
+            fin: fin ? new Date().toISOString() : procesos[procesoIndex].fin,
+            peso: peso
+        };
+
+        // Update processes in task
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Tareas!H${rowIndex}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[JSON.stringify(procesos)]]
+            }
+        });
+
+        res.json({ success: true, proceso: procesos[procesoIndex] });
+    } catch (error) {
+        console.error('Error al actualizar proceso:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Add this new route
+app.get('/obtener-lista-tareas', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen bruto!A2:A' // First column after header
+        });
+
+        const tareas = response.data.values ? response.data.values.map(row => row[0]) : [];
+        res.json({ success: true, tareas });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener lista de tareas: ' + error.message 
+        });
+    }
+});
+app.get('/obtener-lista-tareas2', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Lista tareas!A2:A' // First column after header
+        });
+
+        const tareas = response.data.values ? response.data.values.map(row => row[0]) : [];
+        res.json({ success: true, tareas });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener lista de tareas: ' + error.message 
+        });
+    }
+});
+app.post('/finalizar-tarea', requireAuth, async (req, res) => {
+    try {
+        const { tareaId, tiempoCronometro } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+
+        // Get current task data
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Tareas!A2:H'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === tareaId);
+        
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
+        }
+
+        const tarea = rows[rowIndex];
+        const procesos = tarea[7] ? JSON.parse(tarea[7]) : [];
+        const pesoInicial = parseFloat(tarea[6] || 0);
+        
+        // Get only the last process weight
+        const ultimoProceso = procesos[procesos.length - 1];
+        const pesoFinal = ultimoProceso ? parseFloat(ultimoProceso.peso || 0) : 0;
+
+        // Actualizar Almacen Prima solo con el peso del último proceso
+        const almacenPrimaResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen Prima!A:B'
+        });
+
+        const almacenPrimaRows = almacenPrimaResponse.data.values || [];
+        const productoIndex = almacenPrimaRows.findIndex(row => row[0] === tareaId);
+
+        if (productoIndex >= 0) {
+            const pesoActual = parseFloat(almacenPrimaRows[productoIndex][1]) || 0;
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: `Almacen Prima!B${productoIndex + 1}`,
+                valueInputOption: 'RAW',
+                resource: {
+                    values: [[pesoActual + pesoFinal]]
+                }
+            });
+        } else {
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: 'Almacen Prima!A:B',
+                valueInputOption: 'RAW',
+                insertDataOption: 'INSERT_ROWS',
+                resource: {
+                    values: [[tareaId, pesoFinal]]
+                }
+            });
+        }
+
+        // Add to historial_tareas with the last process weight
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Historial_tareas!A2',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[
+                    tarea[0],
+                    tarea[1],
+                    tarea[2],
+                    new Date().toISOString(),
+                    tiempoCronometro, // Use the chronometer time instead of user name
+                    pesoInicial,
+                    pesoFinal,
+                    pesoInicial - pesoFinal,
+                    tarea[7]
+                ]]
+            }
+        });
+
+        // Delete task from Tareas sheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const tareasSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Tareas'
+        );
+
+        if (!tareasSheet) {
+            throw new Error('Hoja de Tareas no encontrada');
+        }
+
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: tareasSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1,
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({
+            success: true,
+            message: 'Tarea finalizada correctamente',
+            pesoRestante: pesoInicial - pesoFinal,
+            pesoProcesado: pesoFinal
+        });
+    } catch (error) {
+        console.error('Error al finalizar tarea:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al finalizar la tarea: ' + error.message
+        });
+    }
+});
+// Add this with the other API routes
+app.get('/obtener-historial-tareas', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Historial_tareas!A2:I' // All columns including processes
+        });
+
+        const tareas = (response.data.values || []).map(row => ({
+            id: row[1],
+            nombre: row[0],
+            descripcion: row[1],
+            fechaInicio: row[2],
+            fechaFin: row[3],
+            pesoInicial: parseFloat(row[5] || 0),
+            pesoFinal: parseFloat(row[6] || 0),
+            merma: parseFloat(row[7] || 0),
+            procesos: row[8] ? JSON.parse(row[8]) : []
+        }));
+
+        res.json({ success: true, tareas });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener historial de tareas: ' + error.message 
+        });
+    }
+});
+
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);
