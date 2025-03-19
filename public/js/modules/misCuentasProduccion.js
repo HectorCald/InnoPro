@@ -86,8 +86,7 @@ export function crearTarjetaRegistro(registro) {
 
 }
 function calcularTotal(nombre, cantidad, gramaje, seleccion) {
-
-    nombre = (nombre || '').toLowerCase();
+    nombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
     cantidad = parseFloat(cantidad) || 0;
     gramaje = parseFloat(gramaje) || 0;
 
@@ -98,7 +97,7 @@ function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     let resultadoSernido = 0;
 
     // Lógica para envasado
-    if (nombre.includes('Pipoca')) {
+    if (nombre.includes('pipoca')) {
         if (gramaje >= 1000) {
             resultado = (cantidad * 5) * 0.048;
         } else if (gramaje >= 500) {
@@ -106,9 +105,19 @@ function calcularTotal(nombre, cantidad, gramaje, seleccion) {
         } else {
             resultado = (cantidad * 2) * 0.048;
         }
-    } else if (nombre.includes('bote') || (nombre.includes('clavo de olor entero') && gramaje === 12)) {
+    } else if (
+        nombre.includes('bote') || 
+        (nombre.includes('clavo de olor entero') && gramaje === 12) || 
+        (nombre.includes('canela en rama') && gramaje === 4) || 
+        (nombre.includes('linaza') && gramaje === 50)
+    ) {
         resultado = (cantidad * 2) * 0.048;
-    } else if (nombre.includes('laurel') || nombre.includes('huacatay') || nombre.includes('albahaca') || (nombre.includes('canela') && gramaje === 14)) {
+    } else if (
+        nombre.includes('laurel') || 
+        nombre.includes('huacatay') || 
+        nombre.includes('albahaca') || 
+        (nombre.includes('canela') && gramaje === 14)
+    ) {
         resultado = (cantidad * 3) * 0.048;
     } else {
         if (gramaje == 150) {
@@ -154,12 +163,12 @@ function calcularTotal(nombre, cantidad, gramaje, seleccion) {
         } else {
             if (nombre.includes('tomillo')) {
                 resultadoSernido = 0;
-            }
-            else {
+            } else {
                 resultadoSernido = (kilos * 0.08) * 5;
             }
         }
     }
+
     return {
         total: resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido,
         envasado: resultado,
