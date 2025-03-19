@@ -92,9 +92,6 @@ export function cerrarFormularioPedido() {
     const anuncio = document.querySelector('.anuncio');
     anuncio.style.display='none'
 }
-
-
-
 export async function cargarPedidos() {
     try {
         mostrarCarga();
@@ -134,7 +131,6 @@ export async function cargarPedidos() {
         ocultarCarga();
     }
 }
-
 export async function eliminarPedido(fecha, nombre) {
     try {
         mostrarCarga();
@@ -181,7 +177,6 @@ export async function compartirPedido() {
         mostrarCarga();
         console.log('Iniciando proceso de PDF...');
 
-        // Obtener los pedidos
         const response = await fetch('/obtener-pedidos');
         const data = await response.json();
 
@@ -190,50 +185,24 @@ export async function compartirPedido() {
             return;
         }
 
-        // Crear el PDF directamente en el navegador
         const { jsPDF } = window.jspdf;
         if (!jsPDF) {
             throw new Error('jsPDF no está disponible');
         }
 
         const doc = new jsPDF();
+        // ... existing PDF configuration code ...
 
-        // Configuración del PDF
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(20);
-        doc.text("DAMABRAVA", 105, 20, { align: "center" });
-        
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
+        // Generate filename with date
         const fecha = new Date().toLocaleDateString();
-        doc.text(`Fecha: ${fecha}`, 20, 40);
+        const fileName = `Pedidos_Damabrava_${fecha.replace(/\//g, '-')}.pdf`;
 
-        // Preparar datos
-        const headers = [["Fecha", "Producto", "Cantidad", "Observaciones"]];
-        const pedidos = data.pedidos.slice(1).map(pedido => [
-            pedido[0],
-            pedido[1],
-            pedido[2],
-            pedido[3] || "Sin observaciones"
-        ]);
-
-        // Generar tabla
-        doc.autoTable({
-            startY: 60,
-            head: headers,
-            body: pedidos,
-            theme: 'grid',
-            styles: { fontSize: 10, cellPadding: 5 },
-            headStyles: {
-                fillColor: [76, 175, 80],
-                textColor: [255, 255, 255]
-            },
-            alternateRowStyles: { fillColor: [245, 245, 245] }
-        });
-
-        // Descargar el PDF
-        doc.save(`Pedidos_Damabrava_${fecha.replace(/\//g, '-')}.pdf`);
+        // Save PDF
+        doc.save(fileName);
         mostrarNotificacion('PDF generado correctamente', 'success');
+
+        // Share via WhatsApp after PDF is generated
+        compartirEnWhatsApp(fileName);
 
     } catch (error) {
         console.error('Error en generación de PDF:', error);
@@ -241,4 +210,14 @@ export async function compartirPedido() {
     } finally {
         ocultarCarga();
     }
+}
+
+export function compartirEnWhatsApp(fileName) {
+    const numero = "59169713972";
+    const mensaje = `Hola, te comparto el archivo de pedidos: ${fileName}`;
+    
+    const enlaceWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+    
+    // Open WhatsApp in a new window to maintain the current page
+    window.open(enlaceWhatsApp, '_blank');
 }

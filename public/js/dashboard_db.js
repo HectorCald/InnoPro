@@ -3,7 +3,7 @@ import { cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-import { compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
+import { compartirEnWhatsApp, compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -45,6 +45,7 @@ window.cerrarFormularioPedido = cerrarFormularioPedido;
 window.eliminarPedido = eliminarPedido;
 window.mostrarConfirmacionEliminar = mostrarConfirmacionEliminar;
 window.compartirPedido = compartirPedido;
+window.compartirEnWhatsApp = compartirEnWhatsApp;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -271,14 +272,6 @@ function ocultarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'none';
 }
-
-window.addEventListener('load', function() {
-    if (typeof window.jspdf === 'undefined') {
-        console.error('jsPDF no está disponible globalmente');
-    } else {
-        console.log('jsPDF está cargado correctamente');
-    }
-});
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     cargarUsuarios();
@@ -287,12 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarFormularioProduccion();
     cargarRegistrosCuentas();
     iniciarApp();
-    if (!window.jspdf) {
-        console.error('jsPDF no está cargado correctamente');
-    }
-    else{
-        console.error('jsPDF cargado correctamente');
-    }
+    inicializarPedidos();
 });
 
 
