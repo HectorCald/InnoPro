@@ -30,7 +30,6 @@ export function inicializarPedidos() {
             </div>
             <div class="lista-pedidos"></div>
         </div>
-        <div class="anuncio" style="display: none;"></div>
     `;
     cargarPedidos();
     cargarPedidosArchivados();
@@ -390,33 +389,38 @@ export async function confirmarFinalizacionPedidos() {
 }
 export function mostrarFormularioPedido() {
     const anuncio = document.querySelector('.anuncio');
-    anuncio.style.display='flex'
-    anuncio.innerHTML = `
-        <div class="anuncio-contenido">
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    
+    contenido.innerHTML = `
         <i class="fas fa-shopping-basket fa-2x"></i>
-            <h2>Nuevo Pedido</h2>
-            <div class="form-pedido">
-                <input type="text" id="nombre-pedido" placeholder="Nombre del producto">
-                <div class="cantidad-container">
-                    <input type="number" id="cantidad-pedido" placeholder="Cantidad">
-                    <select id="unidad-medida">
-                        <option value="unid.">und.</option>
-                        <option value="cajas">cj.</option>
-                        <option value="bolsas">bls.</option>
-                        <option value="qq">qq</option>
-                        <option value="kg">kg</option>
-                        <option value="arroba">@</option>
-                    </select>
-                </div>
-                <textarea id="obs-pedido" placeholder="Observaciones"></textarea>
+        <h2>Nuevo Pedido</h2>
+        <div class="form-pedido">
+            <input type="text" id="nombre-pedido" placeholder="Nombre del producto">
+            <div class="cantidad-container">
+                <input type="number" id="cantidad-pedido" placeholder="Cantidad">
+                <select id="unidad-medida">
+                    <option value="unid.">und.</option>
+                    <option value="cajas">cj.</option>
+                    <option value="bolsas">bls.</option>
+                    <option value="qq">qq</option>
+                    <option value="kg">kg</option>
+                    <option value="arroba">@</option>
+                </select>
             </div>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar" onclick="cerrarFormularioPedido()">Cancelar</button>
-                <button class="anuncio-btn confirmar" onclick="guardarPedido()">Añadir</button>
-            </div>
+            <textarea id="obs-pedido" placeholder="Observaciones"></textarea>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn cancelar">Cancelar</button>
+            <button class="anuncio-btn confirmar">Añadir</button>
         </div>
     `;
+
+    // Actualizar los event listeners
+    anuncio.querySelector('.cancelar').onclick = cerrarFormularioPedido;
+    anuncio.querySelector('.confirmar').onclick = guardarPedido;
+    anuncio.style.display = 'flex';
 }
+
 export async function guardarPedido() {
     try {
         mostrarCarga();
@@ -461,7 +465,7 @@ export async function guardarPedido() {
 }
 export function cerrarFormularioPedido() {
     const anuncio = document.querySelector('.anuncio');
-    anuncio.style.display='none'
+    anuncio.style.display = 'none';
 }
 export async function cargarPedidos() {
     try {
@@ -530,18 +534,22 @@ export async function eliminarPedido(fecha, nombre) {
 }
 export function mostrarConfirmacionEliminar(fecha, nombre) {
     const anuncio = document.querySelector('.anuncio');
-    anuncio.style.display = 'flex';
-    anuncio.innerHTML = `
-        <div class="anuncio-contenido">
-            <i class="fas fa-exclamation-triangle"></i>
-            <h2>¿Eliminar pedido?</h2>
-            <p>Esta acción no se puede deshacer</p>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar" onclick="cerrarFormularioPedido()">Cancelar</button>
-                <button class="anuncio-btn confirmar" onclick="eliminarPedido('${fecha}', '${nombre}')">Eliminar</button>
-            </div>
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    
+    contenido.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>¿Eliminar pedido?</h2>
+        <p>Esta acción no se puede deshacer</p>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn cancelar">Cancelar</button>
+            <button class="anuncio-btn confirmar">Eliminar</button>
         </div>
     `;
+
+    // Actualizar los event listeners
+    anuncio.querySelector('.cancelar').onclick = cerrarFormularioPedido;
+    anuncio.querySelector('.confirmar').onclick = () => eliminarPedido(fecha, nombre);
+    anuncio.style.display = 'flex';
 }
 export async function compartirPedido() {
     try {
