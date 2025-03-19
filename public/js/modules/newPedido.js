@@ -168,6 +168,7 @@ export function mostrarFormularioPedido() {
     anuncio.style.display='flex'
     anuncio.innerHTML = `
         <div class="anuncio-contenido">
+        <i class="fas fa-shopping-basket fa-2x"></i>
             <h2>Nuevo Pedido</h2>
             <div class="form-pedido">
                 <input type="text" id="nombre-pedido" placeholder="Nombre del producto">
