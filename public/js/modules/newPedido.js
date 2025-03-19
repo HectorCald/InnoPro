@@ -38,11 +38,18 @@ export function inicializarPedidos() {
 // Nueva función para manejar pedidos recibidos
 export function togglePedidosRecibidos() {
     const listaRecibidos = document.querySelector('.lista-recibidos');
-    const boton = document.querySelector('.btn-toggle-recibidos');
+    const listaArchivados = document.querySelector('.lista-archivados');
+    const botonRecibidos = document.querySelector('.btn-toggle-recibidos');
+    const botonArchivados = document.querySelector('.btn-toggle-archivados');
     const estaVisible = listaRecibidos.style.display !== 'none';
     
+    // Ocultar archivados y actualizar su botón
+    listaArchivados.style.display = 'none';
+    botonArchivados.innerHTML = '<i class="fas fa-archive"></i> Ver Pedidos Archivados';
+    
+    // Toggle recibidos
     listaRecibidos.style.display = estaVisible ? 'none' : 'block';
-    boton.innerHTML = estaVisible ? 
+    botonRecibidos.innerHTML = estaVisible ? 
         '<i class="fas fa-truck-loading"></i> Ver Recibidos' : 
         '<i class="fas fa-truck-loading"></i> Ocultar Recibidos';
     
@@ -50,13 +57,32 @@ export function togglePedidosRecibidos() {
         cargarPedidosRecibidos();
     }
 }
+
+export function togglePedidosArchivados() {
+    const listaArchivados = document.querySelector('.lista-archivados');
+    const listaRecibidos = document.querySelector('.lista-recibidos');
+    const botonArchivados = document.querySelector('.btn-toggle-archivados');
+    const botonRecibidos = document.querySelector('.btn-toggle-recibidos');
+    const estaVisible = listaArchivados.style.display !== 'none';
+    
+    // Ocultar recibidos y actualizar su botón
+    listaRecibidos.style.display = 'none';
+    botonRecibidos.innerHTML = '<i class="fas fa-truck-loading"></i> Ver Recibidos';
+    
+    // Toggle archivados
+    listaArchivados.style.display = estaVisible ? 'none' : 'block';
+    botonArchivados.innerHTML = estaVisible ? 
+        '<i class="fas fa-archive"></i> Ver Pedidos Archivados' : 
+        '<i class="fas fa-archive"></i> Ocultar Pedidos Archivados';
+}
 export async function cargarPedidosRecibidos() {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-pedidos-recibidos');
         const data = await response.json();
 
+        const container = document.querySelector('.lista-recibidos');
         if (data.success && data.hojas.length > 0) {
-            const container = document.querySelector('.lista-recibidos');
             container.innerHTML = data.hojas.map(hoja => `
                 <div class="hoja-recibida">
                     <button class="btn-hoja" onclick="mostrarPedidosRecibidos('${hoja}')">
@@ -64,10 +90,15 @@ export async function cargarPedidosRecibidos() {
                     </button>
                 </div>
             `).join('');
+        } else {
+            container.innerHTML = '<p class="no-archivos">No hay pedidos recibidos</p>';
         }
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al cargar pedidos recibidos', 'error');
+    }
+    finally{
+        ocultarCarga();
     }
 }
 export async function procesarIngreso(producto, hoja) {
@@ -186,6 +217,7 @@ export async function mostrarFormularioIngreso(producto, hoja) {
 }
 export async function cargarPedidosArchivados() {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-hojas-pedidos');
         const data = await response.json();
 
@@ -205,6 +237,9 @@ export async function cargarPedidosArchivados() {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al cargar pedidos archivados', 'error');
+    }
+    finally{
+        ocultarCarga();
     }
 }
 export async function mostrarDetallesPedido(hoja) {
@@ -246,16 +281,6 @@ export async function mostrarDetallesPedido(hoja) {
     } finally {
         ocultarCarga();
     }
-}
-export function togglePedidosArchivados() {
-    const listaArchivados = document.querySelector('.lista-archivados');
-    const boton = document.querySelector('.btn-toggle-archivados');
-    const estaVisible = listaArchivados.style.display !== 'none';
-    
-    listaArchivados.style.display = estaVisible ? 'none' : 'block';
-    boton.innerHTML = estaVisible ? 
-        '<i class="fas fa-archive"></i> Ver Pedidos Archivados' : 
-        '<i class="fas fa-archive"></i> Ocultar Pedidos Archivados';
 }
 export async function mostrarPedidosArchivados(hoja) {
     try {
