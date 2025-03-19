@@ -3,7 +3,7 @@ import { cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-import { compartirEnWhatsApp, compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
+import { togglePedidosArchivados, mostrarPedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos,compartirEnWhatsApp, compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -46,6 +46,11 @@ window.eliminarPedido = eliminarPedido;
 window.mostrarConfirmacionEliminar = mostrarConfirmacionEliminar;
 window.compartirPedido = compartirPedido;
 window.compartirEnWhatsApp = compartirEnWhatsApp;
+window.confirmarFinalizacionPedidos = confirmarFinalizacionPedidos;
+window.finalizarPedidos = finalizarPedidos;
+window.togglePedidosArchivados = togglePedidosArchivados;
+window.mostrarPedidosArchivados = mostrarPedidosArchivados;
+
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');

@@ -170,3 +170,149 @@
     display: flex;
     gap: 1em;
 }
+
+.pedidos-resumen {
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 1em 0;
+    padding: 1em;
+    background: #2a2a2a;
+    border-radius: 5px;
+}
+
+.pedido-resumen-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5em;
+    border-bottom: 1px solid #404040;
+}
+
+.pedido-resumen-item:last-child {
+    border-bottom: none;
+}
+
+.pedido-resumen-item span {
+    color: #fff;
+}
+.pedidos-archivados {
+    margin: 1em 0;
+}
+.fecha-archivo {
+    color: #888;
+    margin-bottom: 1em;
+    font-size: 0.9em;
+}
+
+.pedidos-archivados-lista {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 1em 0;
+    padding: 1em;
+    background: #2a2a2a;
+    border-radius: 5px;
+}
+
+.pedido-archivado-item {
+    background: #333;
+    padding: 1em;
+    margin: 0.5em 0;
+    border-radius: 5px;
+    border-left: 3px solid #4CAF50;
+}
+
+.pedido-archivado-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+}
+
+.pedido-obs {
+    color: #888;
+    font-size: 0.9em;
+}
+
+.lista-archivados {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1em;
+    padding: 1em;
+    background: #2a2a2a;
+    border-radius: 5px;
+}
+
+.btn-hoja {
+    width: 100%;
+    text-align: left;
+    padding: 1em;
+    background: #333;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-hoja:hover {
+    background: #444;
+}
+
+.btn-toggle-archivados {
+    background: #607d8b;
+    color: white;
+    border: none;
+    padding: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.btn-toggle-archivados:hover {
+    background: #546e7a;
+}
+
+.lista-archivados {
+    margin-top: 1em;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1em;
+}
+
+.btn-hoja {
+    background: #455a64;
+    color: white;
+    border: none;
+    padding: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.btn-hoja:hover {
+    background: #37474f;
+}
+
+.pedidos-archivados-lista {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 1em 0;
+}
+
+.pedido-archivado-item {
+    background: #2a2a2a;
+    padding: 1em;
+    margin: 0.5em 0;
+    border-radius: 5px;
+}
+
+.pedido-archivado-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5em;
+}
