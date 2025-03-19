@@ -321,8 +321,6 @@ export function mostrarConfirmacionEliminar(fecha, nombre) {
 export async function compartirPedido() {
     try {
         mostrarCarga();
-        console.log('Iniciando proceso de PDF...');
-
         const response = await fetch('/obtener-pedidos');
         const data = await response.json();
 
@@ -331,32 +329,36 @@ export async function compartirPedido() {
             return;
         }
 
-        const { jsPDF } = window.jspdf;
-        if (!jsPDF) {
-            throw new Error('jsPDF no está disponible');
-        }
-
-        const doc = new jsPDF();
-        // ... existing PDF configuration code ...
-
-        // Generate filename with date
+        // Format pedidos as text
         const fecha = new Date().toLocaleDateString();
-        const fileName = `Pedidos_Damabrava_${fecha.replace(/\//g, '-')}.pdf`;
+        let mensaje = `*PEDIDOS DAMABRAVA ${fecha}*\n\n`;
+        
+        data.pedidos.slice(1).forEach(pedido => {
+            mensaje += `📦 *${pedido[1]}*\n`;
+            mensaje += `📏 Cantidad: ${pedido[2]}\n`;
+            if (pedido[3]) {
+                mensaje += `📝 Obs: ${pedido[3]}\n`;
+            }
+            mensaje += `\n`;
+        });
 
-        // Save PDF
-        doc.save(fileName);
-        mostrarNotificacion('PDF generado correctamente', 'success');
+        mensaje += '\n_Enviado desde App Damabrava_';
 
-        // Share via WhatsApp after PDF is generated
-        compartirEnWhatsApp(fileName);
-
+        // Share via WhatsApp
+        const numero = "59169713972";
+        const enlaceWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+        window.open(enlaceWhatsApp, '_blank');
+        
+        mostrarNotificacion('Abriendo WhatsApp...', 'success');
     } catch (error) {
-        console.error('Error en generación de PDF:', error);
-        mostrarNotificacion('Error al generar el PDF: ' + error.message, 'error');
+        console.error('Error al compartir:', error);
+        mostrarNotificacion('Error al compartir los pedidos', 'error');
     } finally {
         ocultarCarga();
     }
 }
+
+// Remove or comment out the compartirEnWhatsApp function as it's no longer needed
 export function compartirEnWhatsApp(fileName) {
     const numero = "59169713972";
     const mensaje = `Hola, te comparto el archivo de pedidos: ${fileName}`;
