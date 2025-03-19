@@ -10,7 +10,7 @@ export function inicializarPedidos() {
                     <i class="fas fa-plus"></i> Agregar
                 </button>
                 <button class="btn-agregar-pedido" onclick="compartirPedido()">
-                    <i class="fas fa-file-pdf"></i> Exportar
+                    <i class="fab fa-whatsapp"></i> Compartir
                 </button>
                 <button class="btn-agregar-pedido" onclick="finalizarPedidos()">
                     <i class="fas fa-check-circle"></i> Finalizar
