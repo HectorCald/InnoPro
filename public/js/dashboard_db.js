@@ -3,7 +3,7 @@ import { cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-import { togglePedidosArchivados, mostrarPedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos,compartirEnWhatsApp, compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
+import {togglePedidosRecibidos,mostrarPedidosRecibidos, mostrarFormularioIngreso, procesarIngreso,togglePedidosArchivados, mostrarPedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos,compartirEnWhatsApp, compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -50,6 +50,10 @@ window.confirmarFinalizacionPedidos = confirmarFinalizacionPedidos;
 window.finalizarPedidos = finalizarPedidos;
 window.togglePedidosArchivados = togglePedidosArchivados;
 window.mostrarPedidosArchivados = mostrarPedidosArchivados;
+window.mostrarPedidosRecibidos = mostrarPedidosRecibidos;
+window.togglePedidosRecibidos = togglePedidosRecibidos;
+window.procesarIngreso = procesarIngreso;
+window.mostrarFormularioIngreso = mostrarFormularioIngreso;
 
 async function bienvenida() {
     try {

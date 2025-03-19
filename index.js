@@ -1025,32 +1025,257 @@ app.get('/obtener-hojas-pedidos', requireAuth, async (req, res) => {
             spreadsheetId: process.env.SPREADSHEET_ID
         });
         
+        // Filtrar hojas que empiezan con "Pedidos_" y NO contienen "recibido"
         const hojasPedidos = spreadsheet.data.sheets
             .map(sheet => sheet.properties.title)
-            .filter(title => title.startsWith('Pedidos_'));
+            .filter(title => 
+                title.startsWith('Pedidos_') && 
+                !title.toLowerCase().includes('recibido')
+            );
         
         res.json({ success: true, hojas: hojasPedidos });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Error al obtener hojas de pedidos' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener hojas de pedidos' 
+        });
+    }
+});
+// Ruta para obtener pedidos recibidos
+// Modificar la ruta de pedidos recibidos
+app.get('/obtener-pedidos-recibidos', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        // Obtener todas las hojas que empiezan con "Pedidos_"
+        const hojasPedidos = spreadsheet.data.sheets
+            .map(sheet => sheet.properties.title)
+            .filter(title => title.startsWith('Pedidos_'));
+
+        // Verificar cada hoja por pedidos recibidos
+        const hojasRecibidos = [];
+        for (const hoja of hojasPedidos) {
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: `${hoja}!A:F`
+            });
+            
+            const pedidos = response.data.values || [];
+            // Si hay al menos un pedido con cantidad entregada o proveedor
+            const tieneRecibidos = pedidos.slice(1).some(pedido => 
+                (pedido[4] && pedido[4].trim() !== '') || 
+                (pedido[5] && pedido[5].trim() !== '')
+            );
+            
+            if (tieneRecibidos) {
+                hojasRecibidos.push(hoja);
+            }
+        }
+        
+        res.json({ success: true, hojas: hojasRecibidos });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener hojas de recibidos: ' + error.message 
+        });
     }
 });
 
-app.get('/obtener-pedidos-archivados/:hoja', requireAuth, async (req, res) => {
+app.get('/obtener-detalles-recibidos/:hoja', requireAuth, async (req, res) => {
     try {
         const { hoja } = req.params;
         const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `${hoja}!A:F`
+        });
+
+        const todos = response.data.values || [];
+        // Filtrar solo los pedidos que tienen datos en columnas 5 o 6
+        const pedidosRecibidos = todos.filter((pedido, index) => {
+            if (index === 0) return true; // Mantener la fila de encabezados
+            return (pedido[4] && pedido[4].trim() !== '') || 
+                   (pedido[5] && pedido[5].trim() !== '');
+        });
+
+        res.json({ success: true, pedidos: pedidosRecibidos });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener pedidos recibidos: ' + error.message 
+        });
+    }
+});
+// ... resto del código ...
+app.post('/procesar-ingreso', requireAuth, async (req, res) => {
+    try {
+        const { producto, peso, hoja } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Verificar si la hoja existe
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const hojaActual = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === hoja
+        );
+
+        if (!hojaActual) {
+            return res.json({ 
+                success: true, 
+                message: 'La hoja ya no existe',
+                hojaEliminada: true
+            });
+        }
+
+        // Verificar si el producto existe en la hoja
+        const pedidosResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `${hoja}!A:F`
+        });
+
+        const pedidos = pedidosResponse.data.values || [];
+        const productoRowIndex = pedidos.findIndex(row => row[1] === producto);
+
+        if (productoRowIndex === -1) {
+            return res.json({ 
+                success: true, 
+                message: 'El producto ya fue procesado',
+                hojaEliminada: false
+            });
+        }
+
+        // Actualizar Almacen Bruto
+        const almacenResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen Bruto!A:B'
+        });
+
+        const rows = almacenResponse.data.values || [];
+        const productoIndex = rows.findIndex(row => row[0] === producto);
+        const pesoActual = productoIndex >= 0 ? parseFloat(rows[productoIndex][1]) || 0 : 0;
+        const nuevoPeso = pesoActual + parseFloat(peso);
+
+        if (productoIndex >= 0) {
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: `Almacen Bruto!B${productoIndex + 1}`,
+                valueInputOption: 'RAW',
+                resource: {
+                    values: [[nuevoPeso]]
+                }
+            });
+        } else {
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: 'Almacen Bruto!A:B',
+                valueInputOption: 'RAW',
+                resource: {
+                    values: [[producto, peso]]
+                }
+            });
+        }
+
+        // Eliminar el producto de la hoja
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: hojaActual.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: productoRowIndex,
+                            endIndex: productoRowIndex + 1
+                        }
+                    }
+                }]
+            }
+        });
+
+        // Verificar si quedan productos en la hoja
+        const nuevaResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `${hoja}!A:F`
+        });
+
+        const pedidosRestantes = nuevaResponse.data.values || [];
+        let hojaEliminada = false;
+
+        // Si solo queda el encabezado o está vacía, eliminar la hoja
+        if (pedidosRestantes.length <= 1) {
+            await sheets.spreadsheets.batchUpdate({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                resource: {
+                    requests: [{
+                        deleteSheet: {
+                            sheetId: hojaActual.properties.sheetId
+                        }
+                    }]
+                }
+            });
+            hojaEliminada = true;
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'Ingreso procesado correctamente',
+            hojaEliminada: hojaEliminada
+        });
+
+    } catch (error) {
+        console.error('Error en procesar-ingreso:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al procesar el ingreso: ' + error.message 
+        });
+    }
+});
+app.get('/obtener-detalles-pedido/:hoja', requireAuth, async (req, res) => {
+    try {
+        const { hoja } = req.params;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Verificar si la hoja existe
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const hojaExiste = spreadsheet.data.sheets.some(sheet => 
+            sheet.properties.title === hoja
+        );
+
+        if (!hojaExiste) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Hoja no encontrada' 
+            });
+        }
+
+        // Obtener datos de la hoja
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: `${hoja}!A:D`
         });
 
         const pedidos = response.data.values || [];
-        res.json({ success: true, pedidos });
+        
+        res.json({ 
+            success: true, 
+            pedidos: pedidos
+        });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Error al obtener pedidos archivados' });
+        console.error('Error al obtener detalles del pedido:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener detalles del pedido: ' + error.message 
+        });
     }
 });
-
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);

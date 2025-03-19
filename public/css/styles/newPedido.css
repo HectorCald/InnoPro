@@ -317,3 +317,49 @@
     justify-content: space-between;
     margin-bottom: 0.5em;
 }
+.botones-archivos {
+    display: flex;
+    gap: 1em;
+    margin-bottom: 1em;
+}
+
+.btn-toggle-recibidos {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 0.8em 1.2em;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.pedido-recibido-item {
+    background: #2a2a2a;
+    padding: 1em;
+    border-radius: 5px;
+    margin-bottom: 1em;
+}
+
+.cantidad-entregada {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.form-ingreso {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    margin: 1em 0;
+}
+
+.btn-ingreso {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1em;
+}
