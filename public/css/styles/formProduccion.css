@@ -1,7 +1,7 @@
 .formProduccion-view {
     width: 100%;
     background: #1a1a1a;
-    min-height: calc(100vh - 160px); /* Adjusted to account for header + welcome */
+    height: 100%;
     color: white;
     overflow-y: auto;
     padding: 1.5em;
