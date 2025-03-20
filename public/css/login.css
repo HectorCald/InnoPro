@@ -15,18 +15,20 @@
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
     font-family: 'Poppins', sans-serif;
-    touch-action: manipulation;
 }
 button, input {
     touch-action: manipulation;
     font-size: 16px; /* Tamaño mínimo para evitar zoom en iOS */
+}
+body {
+    background: var(--background);
+    color: white;
 }
 
 .login-container {
     height: 98vh;
     display: flex;
     flex-direction: column;
-
 }
 
 /* Header Section */
