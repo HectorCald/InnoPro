@@ -161,8 +161,8 @@
     width: 50%;
     border-top: 1px solid #444;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    top: 0;
-    right: 0;
+    top: 20px;
+    right: 5px;
 }
 
 .cuentasProduccion-view .panel-info.active {
