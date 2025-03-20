@@ -41,13 +41,12 @@
 /* Update navigation styles */
 .opciones {
     width: 100%;
-    background-color: #1E1E1E;
+    background-color: #383838;
     display: flex;
     position: fixed;
     bottom: 0;
     justify-content: center;
     align-items: center;
-    padding: 0.8em;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     gap: 1.5em;
@@ -72,7 +71,7 @@
 }
 
 .opciones button i {
-    font-size: 1.4em;
+    font-size: 2em;
     transition: all 0.3s ease;
 }
 
@@ -84,19 +83,18 @@
 
 .opciones button.active {
     color: #3498db;
-    background: rgba(52, 152, 219, 0.1);
     transform: translateY(-2px);
 }
 
 .opciones button.active i {
     transform: scale(1.1);
-    color: #3498db;
+    color: #ffffff;
 }
 
 .opciones button.active span {
     opacity: 1;
     font-weight: 500;
-    color: #3498db;
+    color: #ffffff;
 }
 
 .opciones button:hover {
