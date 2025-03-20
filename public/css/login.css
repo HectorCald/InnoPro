@@ -1,219 +1,197 @@
-/* ==================== FONTS ==================== */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+/* Base Styles */
+:root {
+    --primary-color: #66ff00;
+    --primary-light: #61d700;
+    --primary-dark: #1d6200;
+    --background: #1a1a1a;
+    --surface: #2a2a2a;
+    --error: #ff4d4d;
+    --success: #4CAF50;
+}
+
 * {
-    -webkit-tap-highlight-color: transparent; /* Quita el efecto azul */
-    outline: none; /* Evita el borde al hacer clic */
-  }
-  button, a {
-    user-select: none; /* Evita selecciones no deseadas */
-    -webkit-user-select: none; /* Para navegadores basados en WebKit (Chrome, Safari) */
-    -moz-user-select: none; /* Para Firefox */
-    -ms-user-select: none; /* Para Internet Explorer/Edge */
-    -webkit-tap-highlight-color: rgba(0,0,0,0); /* Elimina el efecto gris/azul al tocar */
-  }
-  
-  html, body {
-    overflow: hidden; /* Evita scroll innecesario */
-  }
-  
-/* ==================== GLOBAL STYLES ==================== */
-* {
-    box-sizing: border-box;
-    padding: 0;
     margin: 0;
-    font-family:'Poppins', sans-serif;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'Poppins', sans-serif;
 }
 
-button {
-    touch-action: manipulation;
+body {
+    background: var(--background);
+    min-height: 100vh;
+    color: white;
 }
 
-/* ==================== PIN CONTAINER & LAYOUT ==================== */
-.pin-container {
+.login-container {
+    height: 98vh;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-    padding: 1rem;
-    background-color: #212121;
-    height: 100vh;
-    width: 100%;
-    padding-block: 5em;
+
 }
 
-.pin-container h1, .pin-container h2 {
-    color: white;
-    font-size: 1.5rem;
-}
-
-/* ==================== PIN INPUT STYLES ==================== */
-.pin-input-container {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1em;
-}
-
-.pin-input {
-    width: 50px;
-    height: 60px;
-    font-size: 1.5rem;
+/* Header Section */
+.login-header {
     text-align: center;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    background: rgb(82, 82, 82);
+    padding: 2rem 0;
+}
+
+.login-header img {
+    width: 80px;
+    height: auto;
+    margin-bottom: 1.5rem;
+}
+
+.login-header h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.login-header p {
+    color: #888;
+    font-size: 1rem;
+}
+
+/* PIN Dots */
+.pin-section {
+    margin: auto 0;
+}
+
+.pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.pin-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--primary-color);
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.pin-input:focus {
-    border-color: #40ff00;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+.pin-dot.filled {
+    background: var(--primary-color);
+    transform: scale(1.1);
 }
 
-.pin-input.filled {
-    background-color: #c3ac00;
-    border-color: #ffffff;
-    color: white;
+/* Keyboard Section */
+.keyboard-section {
+    margin-top: auto;
+    padding-bottom: 2rem;
 }
 
-.error-message {
-    color: #dc3545;
-    margin-top: 0.3em;
-    margin-bottom: 0.7em;
-    font-size: 0.9rem;
-    min-height: 20px;
-}
-
-/* ==================== NUMERIC KEYBOARD ==================== */
 .numeric-keyboard {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    max-width: 300px;
-    width: 100%;
-    margin-top: 0;
+    gap: 1rem;
+    max-width: 250px;
+    margin: 0 auto;
 }
 
 .num-key {
-    background: #333;
-    color: white;
-    border: none;
-    padding: 15px;
-    font-size: 1.5rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
     aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.num-key:hover {
-    background: #444;
+    border: none;
+    background: var(--surface);
+    color: white;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .num-key:active {
     transform: scale(0.95);
+    background: var(--primary-dark);
 }
 
+/* Ripple Effect */
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.5s;
+}
+
+.ripple:active::after {
+    transform: scale(2);
+    opacity: 0;
+}
+
+/* Special Keys */
 .num-key.clear {
-    background: #dc3545;
+    color: var(--error);
 }
 
 .num-key.delete {
-    background: #ffc107;
-    color: #333;
+    color: #ffd54f;
 }
 
-/* ==================== RESPONSIVE STYLES ==================== */
-@media (max-width: 400px) {
-    .pin-input {
-        width: 60px;
-        height: 60px;
-        font-size: 2rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .pin-input-container {
-        gap: 0.8rem;
-    }
-
-    .error-message {
-        color: #dc3545;
-        margin-top: 1rem;
-        font-size: 1rem;
-        min-height: 20px;
-        text-align: center;
-    }
-
-    .numeric-keyboard {
-        max-width: 280px;
-        gap: 8px;
-    }
-
-    .num-key {
-        font-size: 1.9rem;
-        padding: 10px;
-    }
+/* Error Message */
+.error-message {
+    text-align: center;
+    min-height: 24px;
+    color: var(--error);
+    margin: 1rem 0;
 }
-.carga {
+
+/* Loading Screen */
+.loading-screen {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.197);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 9999;
+    background: var(--background);
     display: none;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
 }
 
-.carga h1 {
-    font-size: 2em;
-    font-family: 'Arial', sans-serif;
-    color: #fff;
+.loading-content {
+    text-align: center;
 }
 
-.carga h1 span {
+.loading-logo img {
+    width: 60px;
+    margin-bottom: 2rem;
+}
+
+.loading-text span {
     display: inline-block;
-    color: white;
-    animation: bounce 1s ease infinite;
+    font-size: 2rem;
+    font-weight: 600;
+    animation: bounce 1.5s ease infinite;
     opacity: 0;
 }
 
-.carga h1 span:nth-child(1) { animation-delay: 0.1s; }
-.carga h1 span:nth-child(2) { animation-delay: 0.2s; }
-.carga h1 span:nth-child(3) { animation-delay: 0.3s; }
-.carga h1 span:nth-child(4) { animation-delay: 0.4s; }
-.carga h1 span:nth-child(5) { animation-delay: 0.5s; }
-.carga h1 span:nth-child(6) { animation-delay: 0.6s; }
-.carga h1 span:nth-child(7) { animation-delay: 0.7s; }
-.carga h1 span:nth-child(8) { animation-delay: 0.8s; }
-
 @keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    50% {
-        transform: translateY(-15px);
-        opacity: 0.5;
-    }
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(-20px); opacity: 0.5; }
 }
 
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-.pin-container img{
-    width: 100px;
-    height: auto;
-}
+.loading-text span:nth-child(1) { animation-delay: 0.1s; }
+.loading-text span:nth-child(2) { animation-delay: 0.2s; }
+.loading-text span:nth-child(3) { animation-delay: 0.3s; }
+.loading-text span:nth-child(4) { animation-delay: 0.4s; }
+.loading-text span:nth-child(5) { animation-delay: 0.5s; }
+.loading-text span:nth-child(6) { animation-delay: 0.6s; }
+.loading-text span:nth-child(7) { animation-delay: 0.7s; }
+.loading-text span:nth-child(8) { animation-delay: 0.8s; }
+.loading-text span:nth-child(9) { animation-delay: 0.9s; }

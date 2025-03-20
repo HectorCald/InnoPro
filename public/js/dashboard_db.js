@@ -75,14 +75,21 @@ async function bienvenida() {
         const response = await fetch('/obtener-mi-rol');
         const data = await response.json();
 
-        if (data.rol) {
+        if (data) {
             const bienvenida = document.querySelector('.bienvenida');
             if (bienvenida) {
-                bienvenida.innerHTML = data.rol;
+                bienvenida.innerHTML = `
+                    <div class="profile-section">
+                        <img src="/img/Logotipo-damabrava.png" alt="Perfil" class="profile-image">
+                        <div class="profile-info">
+                            <span class="profile-name">${data.rol || 'Usuario'} <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 0.8em;"></i></span>
+                        </div>
+                    </div>
+                `;
             }
         }
     } catch (error) {
-        console.error('Error al obtener el nombre:', error);
+        console.error('Error al obtener los datos:', error);
     }
 }
 async function manejarCierreSesion() {

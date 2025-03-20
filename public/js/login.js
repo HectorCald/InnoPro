@@ -1,129 +1,119 @@
 /* ==================== CLASE PRINCIPAL DE LOGIN ==================== */
 class LoginPin {
     constructor() {
-        if (!document.querySelector('.pin-container')) {
-            return;
-        }
-
-        this.inputs = document.querySelectorAll('.pin-input');
+        this.pinDots = document.querySelectorAll('.pin-dot');
         this.errorMessage = document.querySelector('.error-message');
         this.numericKeyboard = document.querySelector('.numeric-keyboard');
         this.currentPin = '';
-        this.currentIndex = 0;
-        this.inicializar();
+        this.maxLength = 4;
+        this.init();
     }
 
-    /* ==================== INICIALIZACIÓN Y EVENTOS ==================== */
-    inicializar() {
+    init() {
         if (!this.numericKeyboard) return;
 
         this.numericKeyboard.addEventListener('click', (e) => {
-            if (e.target.classList.contains('num-key')) {
-                this.manejarTecladoNumerico(e.target);
+            const key = e.target.closest('.num-key');
+            if (key) {
+                this.handleKeyPress(key);
             }
         });
     }
 
-    /* ==================== GESTIÓN DEL TECLADO NUMÉRICO ==================== */
-    manejarTecladoNumerico(tecla) {
-        const valor = tecla.textContent;
+    handleKeyPress(key) {
+        const value = key.textContent.trim();
 
-        if (valor === 'C') {
-            this.reiniciarInputs();
+        if (value === 'C') {
+            this.resetPin();
             return;
         }
 
-        if (valor === '⌫') {
-            this.borrarUltimoDigito();
+        if (key.classList.contains('delete')) {
+            this.deleteLastDigit();
             return;
         }
 
-        if (this.currentIndex < 4) {
-            this.inputs[this.currentIndex].value = valor;
-            this.inputs[this.currentIndex].classList.add('filled');
+        if (this.currentPin.length < this.maxLength) {
+            this.currentPin += value;
+            this.updatePinDots();
 
-            const pinArray = this.currentPin.split('');
-            pinArray[this.currentIndex] = valor;
-            this.currentPin = pinArray.join('');
-
-            this.currentIndex++;
-
-            if (this.currentPin.length === 4) {
-                this.validarPin(this.currentPin);
+            if (this.currentPin.length === this.maxLength) {
+                this.validatePin();
             }
         }
     }
 
-    /* ==================== MANIPULACIÓN DE INPUTS ==================== */
-    borrarUltimoDigito() {
-        if (this.currentIndex > 0) {
-            this.currentIndex--;
-            this.inputs[this.currentIndex].value = '';
-            this.inputs[this.currentIndex].classList.remove('filled');
+    updatePinDots() {
+        this.pinDots.forEach((dot, index) => {
+            dot.classList.toggle('filled', index < this.currentPin.length);
+        });
+    }
 
-            const pinArray = this.currentPin.split('');
-            pinArray[this.currentIndex] = '';
-            this.currentPin = pinArray.join('');
+    deleteLastDigit() {
+        if (this.currentPin.length > 0) {
+            this.currentPin = this.currentPin.slice(0, -1);
+            this.updatePinDots();
         }
     }
 
-    reiniciarInputs() {
-        this.inputs.forEach(input => {
-            input.value = '';
-            input.classList.remove('filled');
-        });
+    resetPin() {
         this.currentPin = '';
-        this.currentIndex = 0;
+        this.updatePinDots();
+        this.errorMessage.textContent = '';
     }
 
-    /* ==================== VALIDACIÓN Y AUTENTICACIÓN ==================== */
-    async validarPin(pin) {
-    try {
-        mostrarCarga();
-        const response = await fetch('/verificar-pin', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ pin })
-        });
+    async validatePin() {
+        try {
+            this.showLoading();
+            const response = await fetch('/verificar-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: this.currentPin })
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (data.valido) {
-            this.mostrarExito(data.nombre);
-            // Redirigir según el rol
-            setTimeout(() => {
-                if (data.rol === 'admin') {
-                    window.location.replace('/dashboard_db');
-                } else if (data.rol === 'almacen') {
-                    window.location.replace('/dashboard_alm');
-                } else {
-                    window.location.replace('/dashboard');
-                }
-            }, 1500);
-        } else {
-            this.mostrarError();
-            ocultarCarga();
+            if (data.valido) {
+                this.showSuccess(data.nombre);
+                setTimeout(() => {
+                    window.location.replace(this.getRedirectUrl(data.rol));
+                }, 1500);
+            } else {
+                this.showError();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.showError('Error de conexión');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        this.mostrarError('Error de conexión');
-        ocultarCarga();
     }
-}
 
-    /* ==================== GESTIÓN DE MENSAJES Y RESPUESTAS ==================== */
-        /* ==================== GESTIÓN DE MENSAJES Y RESPUESTAS ==================== */
-    mostrarExito(nombre) {
-        this.errorMessage.style.color = '#28a745';
+    getRedirectUrl(rol) {
+        const routes = {
+            'admin': '/dashboard_db',
+            'almacen': '/dashboard_alm',
+            'default': '/dashboard'
+        };
+        return routes[rol] || routes.default;
+    }
+
+    showLoading() {
+        document.querySelector('.loading-screen').style.display = 'flex';
+    }
+
+    hideLoading() {
+        document.querySelector('.loading-screen').style.display = 'none';
+    }
+
+    showSuccess(nombre) {
+        this.errorMessage.style.color = 'var(--success)';
         this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
-        // Eliminamos la redirección aquí ya que se maneja en validarPin
     }
 
-    mostrarError(mensaje = 'PIN incorrecto. Intente nuevamente.') {
-        this.errorMessage.textContent = mensaje;
-        this.reiniciarInputs();
+    showError(message = 'PIN incorrecto. Intente nuevamente.') {
+        this.hideLoading();
+        this.errorMessage.style.color = 'var(--error)';
+        this.errorMessage.textContent = message;
+        this.resetPin();
     }
 }
 

@@ -2,61 +2,75 @@ export function inicializarFormularioProduccion() {
     mostrarCarga();
     const container = document.querySelector('.formProduccion-view');
     container.innerHTML = `
+        <div class="title">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>Formulario de Registro</h3>
+        </div>
         <div class="form1">
-            <div class="title">
-                <h3>Formulario de Registro</h3>
-            </div>
             <form action="">
-                <!-- Campos del Producto -->
-                <p>Producto *</p>
-                <input type="text" name="producto" id="producto-input" list="productos-list" placeholder="Nombre del producto" autocomplete="off" required>
-                <datalist id="productos-list">
-                </datalist>
-                <p>Lote *</p>
-                <input type="number" name="lote" placeholder="Número de lote" required>
+                <div class="form-group">
+                    <p>Producto *</p>
+                    <input type="text" name="producto" id="producto-input" list="productos-list" 
+                           placeholder="Buscar producto..." autocomplete="off" required>
+                    <datalist id="productos-list"></datalist>
+                </div>
 
-                <p>Gramaje (gr) *</p>
-                <input type="number" name="gramaje" placeholder="Peso en gramos" required>
+                <div class="form-group">
+                    <p>Lote *</p>
+                    <input type="number" name="lote" placeholder="Ingrese número de lote" required>
+                </div>
 
-                <!-- Campos de Proceso -->
-                <p>Selección/Cernido *</p>
-                <select name="seleccion" required>
-                    <option value="">Seleccione una opción</option>
-                    <option value="Cernido">Cernido</option>
-                    <option value="Seleccionado">Seleccionado</option>
-                </select>
+                <div class="form-group">
+                    <p>Gramaje (gr) *</p>
+                    <input type="number" name="gramaje" placeholder="Ingrese peso en gramos" required>
+                </div>
 
-                <!-- Sección de Microondas -->
-                <p>Microondas *</p>
-                <div class="microondas-container">
-                    <div class="radio-group">
-                        <input type="radio" id="micro-si" name="microondas-option" value="si" required>
-                        <label for="micro-si">Sí</label>
-                        <input type="radio" id="micro-no" name="microondas-option" value="no">
-                        <label for="micro-no">No</label>
-                    </div>
-                    <div class="microondas-tiempo" style="display: none;">
-                        <input type="number" name="microondas" placeholder="Tiempo en segundos">
+                <div class="form-group">
+                    <p>Selección/Cernido *</p>
+                    <select name="seleccion" required>
+                        <option value="">Seleccione una opción</option>
+                        <option value="Cernido">Cernido</option>
+                        <option value="Seleccionado">Seleccionado</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <p>Microondas *</p>
+                    <div class="microondas-container">
+                        <div class="radio-group">
+                            <input type="radio" id="micro-si" name="microondas-option" value="si" required>
+                            <label for="micro-si"><i class="fas fa-check"></i> Sí</label>
+                            <input type="radio" id="micro-no" name="microondas-option" value="no">
+                            <label for="micro-no"><i class="fas fa-times"></i> No</label>
+                        </div>
+                        <div class="microondas-tiempo" style="display: none;">
+                            <input type="number" name="microondas" placeholder="Tiempo en segundos">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Campos de Producción -->
-                <p>Envases Terminados *</p>
-                <input type="number" name="envasesTerminados" placeholder="Cantidad de envases" required>
+                <div class="form-group">
+                    <p>Envases Terminados *</p>
+                    <input type="number" name="envasesTerminados" placeholder="Cantidad de envases" required>
+                </div>
 
-                <p>Fecha de Vencimiento *</p>
-                <input type="month" name="fechaVencimiento" required>
+                <div class="form-group">
+                    <p>Fecha de Vencimiento *</p>
+                    <input type="month" name="fechaVencimiento" required>
+                </div>
 
-                <!-- Botón de Envío -->
-                <p class="nota"><i class="fas fa-exclamation-circle"></i> Verifica bien la informacion antes de registrar!</p>
-                <button class="enviarRegistro">
+                <p class="nota">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Verifica bien la información antes de registrar
+                </p>
+
+                <button class="enviarRegistro" type="submit">
                     <i class="fas fa-clipboard-check"></i>
-                    Registrar
+                    Registrar Producción
                 </button>
             </form>
         </div>
     `;
-    // Inicializar el formulario después de renderizarlo
     inicializarFormulario();
 }
 export function inicializarFormulario() {
