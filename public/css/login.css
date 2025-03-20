@@ -20,15 +20,18 @@ button, input {
     touch-action: manipulation;
     font-size: 16px; /* Tamaño mínimo para evitar zoom en iOS */
 }
-body {
-    background: var(--background);
-    color: white;
+html, body {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Para mejor scroll en iOS */
 }
 
 .login-container {
-    height: 98vh;
+    min-height: 100vh; /* Cambiar height por min-height */
     display: flex;
     flex-direction: column;
+    padding: 1rem;
+    overflow-y: auto;
 }
 
 /* Header Section */
