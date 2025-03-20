@@ -25,17 +25,17 @@ body {
 }
 
 .login-container {
-    height: 98vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    padding-inline: 1.5rem;
+    padding: 2em;
+    justify-content: center;
 
 }
 
 /* Header Section */
 .login-header {
     text-align: center;
-    padding: 2rem 0;
 }
 
 .login-header img {
@@ -57,14 +57,17 @@ body {
 
 /* PIN Dots */
 .pin-section {
-    margin: auto 0;
+    margin-top: 10px;
+    padding: 0;
+    width: auto;
+    height: auto;
 }
 
 .pin-dots {
     display: flex;
     justify-content: center;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 10px;
 }
 
 .pin-dot {
@@ -83,7 +86,7 @@ body {
 
 /* Keyboard Section */
 .keyboard-section {
-    margin-top: auto;
+    margin-top: 20px;
     padding-bottom: 2rem;
 }
 
@@ -149,7 +152,6 @@ body {
     text-align: center;
     min-height: 24px;
     color: var(--error);
-    margin: 1rem 0;
 }
 
 
