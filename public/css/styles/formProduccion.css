@@ -10,12 +10,19 @@
     gap: 1em;
     display: none;
     margin-bottom: 50px;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .formProduccion-view .title {
     display: flex;
     align-items: center;
     gap: 1em;
+    margin-top: 1em;
 }
 
 .formProduccion-view .title h3 {
