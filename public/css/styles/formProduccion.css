@@ -79,6 +79,10 @@
 .formProduccion-view .radio-group {
     display: flex;
     gap: 1em;
+    flex-wrap: wrap;
+}
+.formProduccion-view .radio-group input[type="radio"] {
+    display: none;
 }
 
 .formProduccion-view .radio-group label {
@@ -90,7 +94,15 @@
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5em;
+    min-width: 100px;
+    text-align: center;
+}
+.formProduccion-view .microondas-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
 }
 
 .formProduccion-view .radio-group input[type="radio"]:checked + label {
