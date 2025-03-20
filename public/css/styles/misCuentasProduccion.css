@@ -16,6 +16,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
 .section-title {
     color: #fff ;
     font-size: 1rem;
@@ -148,7 +149,7 @@
     width: 100%;
     position: relative;
     overflow: visible;
-    flex-wrap: nowrap;
+    flex-wrap: nowrap !important;
     gap: 0.5em;
 }
 
@@ -170,7 +171,7 @@
     color: #4CAF50;
     font-weight: 600;
     margin: 0;
-    width: auto;
+    white-space: nowrap;
 }
 
 .registro-total.no-verificado {

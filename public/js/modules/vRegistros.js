@@ -37,15 +37,12 @@ function crearRegistroCard(registro) {
     
     registroCard.innerHTML = `
         <div class="registro-header">
-            <div class="registro-info">
                 ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
                 <div class="registro-fecha">${fechaFormateada}</div>
                 <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
                 <div class="registro-total ${!registro[10] ? 'no-verificado' : ''}">${resultados.total.toFixed(2)} Bs.</div>
                 <i class="fas fa-info-circle info-icon"></i>
-            </div>
-            <div class="panel-info">
-                <div class="panel-content">
+                <div class="panel-info">
                     <h4>Desglose de Costos</h4>
                     <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
                     <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
@@ -53,7 +50,6 @@ function crearRegistroCard(registro) {
                     <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
                     <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
                 </div>
-            </div>
         </div>
         <div class="registro-detalles">
             <p><span>Lote:</span> ${registro[2] || '-'}</p>

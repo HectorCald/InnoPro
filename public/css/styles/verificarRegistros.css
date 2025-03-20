@@ -7,7 +7,7 @@
     padding: 1em;
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: 0.5em;
     display: none;
     &::-webkit-scrollbar {
         display: none;
@@ -35,7 +35,7 @@
 .fecha-header h3 {
     margin: 0;
     color: white;
-    font-size: 1.1rem;
+    font-size: 15px;
     white-space: nowrap; /* Previene el wrap del texto */
     overflow: hidden;
     text-overflow: ellipsis; /* Añade ... si el texto es muy largo */
