@@ -65,6 +65,7 @@
     color: white;
     font-size: 1em;
     transition: all 0.3s ease;
+    width: 100%;
 }
 
 .formProduccion-view .form1 input:focus,
@@ -80,6 +81,7 @@
     background-repeat: no-repeat;
     background-position: right 1em center;
     background-size: 1em;
+    width: 100%;
 }
 
 .formProduccion-view .radio-group {

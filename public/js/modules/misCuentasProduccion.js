@@ -236,8 +236,8 @@ export function crearTarjetaRegistro(registro) {
             <p><span>Envases Terminados:</span> ${registro[6] || '—'}</p>
             <p><span>Fecha Vencimiento:</span> ${registro[7] || '—'}</p>
             <p><span>Nombre:</span> ${registro[8] || '—'}</p>
-            <p><span>Verificar:</span> ${registro[9] || '—'}</p>
-            <p><span>Fecha Ver.:</span> ${registro[10] || '—'}</p>
+            <p><span>Cantidad verificada:</span> ${registro[9] || '—'}</p>
+            <p><span>Fecha Verificación:</span> ${registro[10] || '—'}</p>
             <p><span>Observaciones:</span> ${registro[11] || '—'}</p>
         </div>
     `;
