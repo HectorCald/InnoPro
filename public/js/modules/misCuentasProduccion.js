@@ -22,7 +22,7 @@ export async function cargarRegistrosCuentas() {
             // Crear sección de filtros
             // En la función cargarRegistrosCuentas, modifica el HTML de los filtros
 container.innerHTML = `
-    <h2 class="section-title">Filtros</h2>
+    <h2 class="section-title"><i class="fas fa-filter"></i> Filtros</h2>
     <div class="filters-section">
         <div class="filter-wrapper">
             <h3 class="filter-title">Período de tiempo</h3>
@@ -43,7 +43,7 @@ container.innerHTML = `
             </div>
         </div>
     </div>
-    <h2 class="section-title">Registros</h2>
+    <h2 class="section-title"><i class="fas fa-clipboard-list"></i>  Registros</h2>
     <div class="registros-container"></div>
     <button class="load-more" style="display: none;">Cargar más</button>
 `;
