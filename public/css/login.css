@@ -12,7 +12,10 @@
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* Elimina el efecto gris/azul al tocar */
   }
   
-  
+  html, body {
+    height: 100%;
+    overflow: hidden;
+}
 /* ==================== GLOBAL STYLES ==================== */
 * {
     box-sizing: border-box;
