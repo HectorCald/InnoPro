@@ -1,56 +1,53 @@
 <!-- ==================== HEADER ==================== -->
 <%- include('partials/header') %>
 
-<!-- ==================== CONTENEDOR PRINCIPAL DE LOGIN ==================== -->
-<div class="pin-container">
-    <img src="./img/logotipo.webp" alt="">
-    <!-- Encabezado -->
-    <h2>Ingrese su PIN</h2>
-
-    <!-- ==================== CAMPOS DE ENTRADA PIN ==================== -->
-    <div class="pin-input-container">
-        <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
-        <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
-        <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
-        <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" readonly>
+<div class="login-container">
+    <div class="login-header">
+        <img src="./img/logotipo.webp" alt="Logo Damabrava">
+        <h1>Bienvenido</h1>
+        <p>Ingresa tu PIN para continuar</p>
     </div>
 
-    <!-- ==================== MENSAJE DE ERROR ==================== -->
-    <div class="error-message"></div>
-    
-    <!-- ==================== TECLADO NUMÉRICO ==================== -->
-    <div class="numeric-keyboard">
-        <!-- Números -->
-        <button class="num-key">1</button>
-        <button class="num-key">2</button>
-        <button class="num-key">3</button>
-        <button class="num-key">4</button>
-        <button class="num-key">5</button>
-        <button class="num-key">6</button>
-        <button class="num-key">7</button>
-        <button class="num-key">8</button>
-        <button class="num-key">9</button>
-        <!-- Teclas especiales -->
-        <button class="num-key clear">C</button>
-        <button class="num-key">0</button>
-        <button class="num-key delete">⌫</button>
+    <div class="pin-section">
+        <div class="pin-dots">
+            <span class="pin-dot"></span>
+            <span class="pin-dot"></span>
+            <span class="pin-dot"></span>
+            <span class="pin-dot"></span>
+        </div>
+        <div class="error-message"></div>
     </div>
-    
-</div>
-<!-- Modificar la sección de carga -->
-<div class="carga">
-    <h1>
-        <span>D</span>
-        <span>a</span>
-        <span>m</span>
-        <span>a</span>
-        <span>b</span>
-        <span>r</span>
-        <span>a</span>
-        <span>v</span>
-        <span>a</span>
-    </h1>
+
+    <div class="keyboard-section">
+        <div class="numeric-keyboard">
+            <button class="num-key ripple">1</button>
+            <button class="num-key ripple">2</button>
+            <button class="num-key ripple">3</button>
+            <button class="num-key ripple">4</button>
+            <button class="num-key ripple">5</button>
+            <button class="num-key ripple">6</button>
+            <button class="num-key ripple">7</button>
+            <button class="num-key ripple">8</button>
+            <button class="num-key ripple">9</button>
+            <button class="num-key clear ripple">C</button>
+            <button class="num-key ripple">0</button>
+            <button class="num-key delete ripple">
+                <i class="fas fa-backspace"></i>
+            </button>
+        </div>
+    </div>
 </div>
 
-<!-- ==================== FOOTER ==================== -->
+<div class="loading-screen">
+    <div class="loading-content">
+        <div class="loading-logo">
+            <img src="./img/logotipo.webp" alt="Logo Damabrava">
+        </div>
+        <div class="loading-text">
+            <span>D</span><span>a</span><span>m</span><span>a</span>
+            <span>b</span><span>r</span><span>a</span><span>v</span><span>a</span>
+        </div>
+    </div>
+</div>
+
 <%- include('partials/footer') %>
