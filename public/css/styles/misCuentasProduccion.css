@@ -16,14 +16,15 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
-.cuentasProduccion-view .section-title {
-    color: #fff;
-    font-size: 1.5rem;
+.section-title {
+    color: #fff ;
+    font-size: 1rem;
     font-weight: 500;
     margin-top: 0.5em;
+    margin-bottom: 10px;
 }
 
-.cuentasProduccion-view .filters-section {
+.filters-section {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -32,18 +33,18 @@
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
-.cuentasProduccion-view .filter-wrapper {
+.filter-wrapper {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
 }
-.cuentasProduccion-view .filter-title {
+.filter-title {
     color: #aaa;    
     font-size: 1.1rem;
     font-weight: 500;
 }
 
-.cuentasProduccion-view .filter-group {
+.filter-group {
     display: flex;
     gap: 1rem;
     align-items: center;
@@ -54,7 +55,7 @@
     border-radius: 8px;
 }
 
-.cuentasProduccion-view .filter-btn {
+.filter-btn {
     padding: 0.6rem 1.2rem;
     border: 1px solid #444;
     border-radius: 8px;
@@ -65,26 +66,63 @@
     font-size: 0.9rem;
 }
 
-.cuentasProduccion-view .filter-btn:hover {
+.filter-btn:hover {
     background: #3498db;
     border-color: #3498db;
 }
 
-.cuentasProduccion-view .filter-btn.active {
+.filter-btn.active {
     background: #3498db;
     border-color: #3498db;
     box-shadow: 0 0 10px rgba(57, 73, 171, 0.3);
 }
 
-.cuentasProduccion-view .registros-container {
+.registros-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 0.1rem;
     padding: 0.5rem;
     width: 100%;
 }
+.registro-detalles {
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    background: #2d2d2d;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
 
-.cuentasProduccion-view .registro-card {
+.registro-detalles.active {
+    height: auto;
+    opacity: 1;
+    visibility: visible;
+    padding: 1rem;
+    margin-top: 0.5em;
+    border-top: 1px solid #404040;
+}
+
+.registro-detalles p {
+    margin: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Cambiado de center a flex-start */
+    border-bottom: 1px solid #404040;
+    padding-bottom: 0.8rem;
+    height: 40px;
+    flex-wrap: wrap; /* Añadido para permitir que el contenido se ajuste */
+    gap: 0.5rem; /* Espacio entre elementos cuando se envuelven */
+}
+
+.registro-detalles p span {
+    word-break: break-word; /* Permite que las palabras largas se rompan */
+    text-align: left;
+}
+
+
+.registro-card {
     background: #2a2a2a;
     border-radius: 12px;
     overflow: hidden;
@@ -92,32 +130,34 @@
     transition: all 0.3s ease;
     width: 100%;
     max-width: 100%;
+    margin-bottom: 1em;
 }
 
-.cuentasProduccion-view .registro-card:hover {
+.registro-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-.cuentasProduccion-view .registro-header {
+.registro-header {
     padding: 1.2rem;
     background: #333;
     border-bottom: 1px solid #444;
-    display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto auto;
     align-items: center;
-    gap: 1.2rem;
+    display: flex;
     width: 100%;
     position: relative;
     overflow: visible;
+    flex-wrap: nowrap;
+    gap: 0.5em;
 }
 
-.cuentasProduccion-view .registro-fecha {
+.registro-fecha {
     color: #aaa;
     font-size: 0.9rem;
 }
 
-.cuentasProduccion-view .registro-producto {
+.registro-producto {
     color: #fff;
     font-weight: 500;
     white-space: nowrap;
@@ -126,66 +166,77 @@
     min-width: 0;
 }
 
-.cuentasProduccion-view .registro-total {
+.registro-total {
     color: #4CAF50;
     font-weight: 600;
+    margin: 0;
+    width: auto;
 }
 
-.cuentasProduccion-view .registro-total.no-verificado {
+.registro-total.no-verificado {
     color: #f44336;
 }
 
-.cuentasProduccion-view .verificado-icon {
+.verificado-icon {
     color: #4CAF50;
     font-size: 1.2rem;
 }
 
-.cuentasProduccion-view .info-icon {
+.info-icon {
     color: #3498db;
     cursor: pointer;
     transition: color 0.3s ease;
     display: none;
 }
 
-.cuentasProduccion-view .info-icon:hover {
+.info-icon:hover {
     color: #5c6bc0;
 }
 
-.cuentasProduccion-view .panel-info {
+.panel-info {
     background: #656565;
     padding: 1.2rem;
     display: none;
     position: absolute;
     z-index: 9999;
-    width: 50%;
+    width: 80%;
     border-top: 1px solid #444;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     top: 20px;
     right: 5px;
+    border-radius: 10px;
 }
 
-.cuentasProduccion-view .panel-info.active {
+.panel-info.active {
     display: block;
 }
 
-.cuentasProduccion-view .panel-info h4 {
+.panel-info h4 {
     color: #fff;
     margin-bottom: 1rem;
     font-size: 1.1rem;
 }
 
-.cuentasProduccion-view .panel-info p {
+.panel-info p {
     color: #ddd;
     margin: 0.5rem 0;
     display: flex;
     justify-content: space-between;
 }
 
-.cuentasProduccion-view .panel-info p span:first-child {
+.panel-info p span:first-child {
     color: #aaa;
 }
+.info-icon {
+    cursor: pointer;
+    color: #3498db;
+    margin-left: 10px;
+    position: absolute !important;
+    top: 5px;
+    right: 5px;
+}
 
-.cuentasProduccion-view .load-more {
+.load-more {
     margin: 1.5rem auto;
     padding: 0.8rem 2rem;
     background: #3498db;
@@ -197,12 +248,12 @@
     font-size: 1rem;
 }
 
-.cuentasProduccion-view .load-more:hover {
+.load-more:hover {
     background: #3498db;
     transform: translateY(-2px);
 }
 
-.cuentasProduccion-view .no-registros {
+.no-registros {
     color: #aaa;
     text-align: center;
     grid-column: 1 / -1;

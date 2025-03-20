@@ -368,35 +368,34 @@ app.put('/actualizar-usuario', requireAuth, async (req, res) => {
 /* ==================== API DE REGISTRO ==================== */
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
-        const { fecha, producto } = req.body;
+        const { fecha, producto, lote } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
-        // Get all records first from Produccion sheet only
+        // Get all records from Produccion sheet
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A:L'  // Específicamente de la hoja Produccion
+            range: 'Produccion!A:L'
         });
 
         const rows = response.data.values || [];
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
             row[1] === producto && 
-            (req.user.nombre === 'Almacen_adm' || row[8] === req.user.nombre)
+            row[2] === lote
         );
 
         if (rowIndex === -1) {
             return res.status(404).json({ 
                 success: false, 
-                error: 'Registro no encontrado o no autorizado para eliminarlo' 
+                error: 'Registro no encontrado' 
             });
         }
 
-        // Get the sheet ID specifically for Produccion sheet
+        // Get the sheet ID for Produccion sheet
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw'
         });
         
-        // Find the Produccion sheet ID
         const produccionSheet = spreadsheet.data.sheets.find(sheet => 
             sheet.properties.title === 'Produccion'
         );
@@ -405,7 +404,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
             throw new Error('Hoja de Producción no encontrada');
         }
 
-        // Delete only from Produccion sheet
+        // Delete the row
         await sheets.spreadsheets.batchUpdate({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
             resource: {
@@ -421,9 +420,6 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
                 }]
             }
         });
-
-        // Wait for the operation to complete
-        await new Promise(resolve => setTimeout(resolve, 1000));
 
         res.json({ success: true, message: 'Registro eliminado correctamente' });
     } catch (error) {

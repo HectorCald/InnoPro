@@ -4,7 +4,7 @@ export function inicializarFormularioProduccion() {
     container.innerHTML = `
         <div class="title">
             <i class="fas fa-clipboard-list"></i>
-            <h3>Formulario de Registro</h3>
+            <h2 class="section-title">Formulario de Registro</h2>
         </div>
         <div class="form1">
             <form action="">

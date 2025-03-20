@@ -1,29 +1,20 @@
-/* Contenedor principal */
 .verificarRegistros-view {
-    width: 100%;
-    background: #1a1a1a;
-    min-height: calc(100vh - 110px); /* Ajustado para el menú de navegación */
-    color: white;
-    overflow: auto;
-    padding: 1em;
     display: flex;
     flex-direction: column;
-    gap: 0.4em;
+    gap: 0.1rem;
+    padding: 1em;
+    width: 100%;
+    background: #1a1a1a;
+    color: white;
+    overflow-y: auto;
+    margin-top: 20px;
     display: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
-/* Ocultar la barra de desplazamiento para Chrome, Safari y Opera */
-.registros-container::-webkit-scrollbar {
-    display: none;
-}
-
-.fecha-card {
-    background: #2d2d2d;
-    border-radius: 8px;
-    overflow: visible; /* Cambiado de hidden a visible */
-    margin-bottom: 1em;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
 .fecha-header {
     background: #353535;
     padding: 1rem;
@@ -62,126 +53,37 @@
     color: #aaa;
     white-space: nowrap; /* Previene el wrap */
 }
-
 .registros-grupo {
-    height: 10px;
+    max-height: 0;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease;
-    padding: 0 1em;
-    margin-top: 0;
+    transition: all 0.3s ease;
+    overflow: hidden;
 }
 .registros-grupo.active {
+    max-height: none;
     opacity: 1;
     visibility: visible;
     padding: 1em;
     margin-top: 1em;
-    height: auto;
 }
-
 .fecha-card {
     background: #2d2d2d;
     border-radius: 8px;
     margin-bottom: 1rem;
+    width: 100%;
+
 }
-
-.registro-card {
-    background: #353535;
-    border-radius: 6px;
-    margin-bottom: 1em;
-    overflow: visible; /* Cambiado de hidden a visible */
-}
-
-.registro-header:hover {
-    background: #404040;
-}
-
-.registro-header i {
-    transition: transform 0.3s ease;
-}
-
-.registro-producto {
-    font-weight: 500;
-    color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px; /* Ajusta este valor según necesites */
-}
-
-
-.registro-detalles {
-    height: 0;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    background: #2d2d2d;
-    overflow: hidden;
-}
-
-.registro-detalles.active {
-    height: auto;
-    opacity: 1;
-    visibility: visible;
-    padding: 1rem;
-    margin-top: 0.5em;
-    border-top: 1px solid #404040;
-}
-
-.registro-detalles p {
-    margin: 0.5rem 0;
-    display: flex;
-    justify-content: center;
-    align-items: center; /* Cambiado de center a flex-start */
-    border-bottom: 1px solid #404040;
-    padding-bottom: 0.8rem;
-    height: 40px;
-    flex-wrap: wrap; /* Añadido para permitir que el contenido se ajuste */
-    gap: 0.5rem; /* Espacio entre elementos cuando se envuelven */
-}
-
-.registro-detalles p span {
-    word-break: break-word; /* Permite que las palabras largas se rompan */
-    text-align: left;
-}
-
-.registro-detalles p span:first-child {
-    color: #888;
-    min-width: 100px; /* Ancho mínimo para las etiquetas */
-}
-
-.registro-detalles p span:last-child {
-    text-align: right;
-    flex: 1; /* Toma el espacio restante */
-}
-
 .verificado-icon {
     color: #4CAF50;
     margin: 0;
 }
-
-.registro-fecha {
-    color: #aaa;
-    font-size: 0.9em;
-}
-
-.registro-producto {
-    font-weight: 500;
-    color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 150px; /* Ajusta este valor según necesites */
-    flex-shrink: 1;
-}
-
 .acciones {
     display: flex;
     gap: 1rem;
     margin-top: 1rem;
 }
-
-.btn-editar, .btn-eliminar {
+.btn-editar{
     padding: 0.8rem 1.2rem;
     border: none;
     border-radius: 4px;
@@ -190,171 +92,25 @@
     align-items: center;
     gap: 0.5rem;
     transition: all 0.3s ease;
-}
-
-.btn-editar {
     background: #2196F3;
     color: white;
+    width: 100%;
 }
-
-.btn-eliminar {
-    background: #f44336;
+.btn-eliminar-registro{
+    padding: 0.8rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    background: #ff0000;
     color: white;
+    width: 100%;
 }
 
 /* Animación para el icono */
 .fa-chevron-down {
     transition: transform 0.3s ease;
-}
-
-.fecha-header.active .fa-chevron-down,
-.registro-header.active .fa-chevron-down {
-    transform: rotate(180deg);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .fecha-header {
-        padding: 0.8rem;
-        font-size: 13px;
-    }
-
-    .fecha-header h3 {
-        font-size: 13px; /* Reduce el tamaño de la fuente */
-        max-width: 60%; /* Limita el ancho del título */
-    }
-
-    .registro-header {
-        padding: 0.8rem;
-    }
-
-
-    .registro-detalles p span:last-child {
-        text-align: left;
-    }
-
-    .acciones {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .btn-editar,
-    .btn-eliminar {
-        width: 100%;
-    }
-    .contador {
-        padding: 0.2rem 0.6rem; /* Reduce el padding */
-        font-size: 0.7rem; /* Reduce el tamaño de la fuente */
-    }
-    .fecha-info {
-        gap: 0.5rem; /* Reduce el espacio entre elementos */
-    }
-}
-.registro-header {
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 13px !important;
-    position: relative;
-}
-.registro-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    width: 100%;
-}
-
-.registro-total {
-    color: #4CAF50;
-    font-weight: bold;
-    white-space: nowrap;
-    font-size: 10px;
-    margin: 0;
-    padding: 0;
-    font-size: 13px !important;
-}
-
-
-
-
-
-.info-icon {
-    cursor: pointer;
-    color: #3498db;
-    margin-left: 10px;
-    position: absolute !important;
-    top: 5px;
-    right: 5px;
-}
-
-.info-icon:hover {
-    color: #2980b9;
-}
-.panel-info {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: #2d2d2d;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    z-index: 1000;
-    min-width: 250px;
-    border: 1px solid #404040;
-}
-
-.panel-info.active {
-    display: block;
-}
-
-.panel-content {
-    padding: 1rem;
-}
-
-.panel-content h4 {
-    color: #3498db;
-    margin: 0 0 1rem 0;
-    font-size: 1.1rem;
-    border-bottom: 1px solid #404040;
-    padding-bottom: 0.5rem;
-}
-
-.panel-content p {
-    margin: 0.5rem 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-}
-
-.panel-content p span:first-child {
-    color: #888;
-}
-
-.panel-content .total {
-    margin-top: 1rem;
-    border-top: 1px solid #404040;
-    padding-top: 0.5rem;
-    font-weight: bold;
-}
-
-.panel-content .total span:last-child {
-    color: #4CAF50;
-}
-
-.registro-total.no-verificado {
-    color: #f44336; /* Color rojo para registros no verificados */
-}
-
-.registro-total {
-    font-weight: bold;
-    white-space: nowrap;
-    font-size: 13px !important;
-    margin: 0;
-    padding: 0;
 }

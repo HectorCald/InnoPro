@@ -1,5 +1,5 @@
 import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario, mostrarPermisos, agregarPermiso, eliminarPermiso } from './modules/users.js';
-import { cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
+import { eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
@@ -69,6 +69,7 @@ window.finalizarProceso = finalizarProceso;
 window.mostrarProcesos = mostrarProcesos;
 window.toggleProcesos = toggleProcesos;
 window.mostrarHistorialTareas = mostrarHistorialTareas;
+window.eliminarRegistro = eliminarRegistro;
 
 async function bienvenida() {
     try {
@@ -217,13 +218,6 @@ async function iniciarApp() {
                 icono: 'fa-check-double',
                 texto: 'Verificar',
                 onclick: 'onclick="cargarRegistros()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'consultarRegistros-view',
-                icono: 'fa-search',
-                texto: 'Consultar',
-                onclick: 'onclick="inicializarConsulta()"'
             }
         ],
         'Administración': [
@@ -233,6 +227,13 @@ async function iniciarApp() {
                 icono: 'fa-users-cog',
                 texto: 'Usuarios',
                 onclick: 'onclick="cargarUsuarios()"'
+            },
+            {
+                clase: 'opcion-btn',
+                vista: 'consultarRegistros-view',
+                icono: 'fa-search',
+                texto: 'Consultar',
+                onclick: 'onclick="inicializarConsulta()"'
             }
         ]
     };

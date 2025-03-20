@@ -137,22 +137,27 @@ export function mostrarResultadosBusqueda(registros) {
         const card = document.createElement('div');
         card.className = 'registro-card';
         
-        // Determinar qué cantidad usar basado en si está verificado
         const cantidadAUsar = registro[10] ? registro[9] : registro[6];
         const resultados = calcularTotal(registro[1], cantidadAUsar, registro[3], registro[4]);
 
-        // Formatear la fecha para mostrar solo día y mes
         const [dia, mes] = registro[0].split('/');
         const fechaFormateada = `${dia}/${mes}`;
 
         card.innerHTML = `
             <div class="registro-header">
-                <div class="registro-info">
-                    ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
-                    <span class="registro-producto">${registro[1]}</span>
-                    <span class="registro-fecha">${fechaFormateada}</span>
-                </div>
+                ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
+                <div class="registro-fecha">${fechaFormateada}</div>
+                <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
                 <div class="registro-total ${!registro[10] ? 'no-verificado' : ''}">${resultados.total.toFixed(2)} Bs.</div>
+                <i class="fas fa-info-circle info-icon"></i>
+                <div class="panel-info">
+                    <h4>Desglose de Costos</h4>
+                    <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
+                    <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
+                    <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
+                    <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
+                    <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
+                </div>
             </div>
             <div class="registro-detalles">
                 <p><span>Lote:</span> ${registro[2] || '-'}</p>
@@ -161,16 +166,25 @@ export function mostrarResultadosBusqueda(registros) {
                 <p><span>Microondas:</span> ${registro[5] || '-'}</p>
                 <p><span>Envases:</span> ${registro[6] || '-'}</p>
                 <p><span>Vencimiento:</span> ${registro[7] || '-'}</p>
-                <p><span>Operario:</span> ${registro[8] || '-'}</p>
+                <p><span>Estado:</span> <span class="estado ${(registro[9] || 'pendiente').toLowerCase()}">${registro[9] || 'Pendiente'}</span></p>
                 ${registro[10] ? `
-                    <p><span>Verificación:</span> ${registro[10]}</p>
+                    <p><span>Fecha Verificación:</span> ${registro[10]}</p>
                     <p><span>Cantidad Real:</span> ${registro[9] || '-'}</p>
                     <p><span>Observaciones:</span> ${registro[11] || '-'}</p>
                 ` : ''}
+                <div class="acciones">
+                    ${!registro[10] ? `
+                        <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-editar">
+                            <i class="fas fa-check-circle"></i> Verificar
+                        </button>
+                    ` : ''}
+                    <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
             </div>
         `;
 
-        // Añadir evento para expandir/colapsar detalles
         const header = card.querySelector('.registro-header');
         const detalles = card.querySelector('.registro-detalles');
         header.addEventListener('click', () => {

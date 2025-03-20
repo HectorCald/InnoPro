@@ -2,29 +2,37 @@ export function inicializarPedidos() {
     const container = document.querySelector('.newPedido-view');
     container.innerHTML = `
         <div class="title">
-            <h3>Gestión de Pedidos</h3>
+            <h2 class="section-title">Gestión de Pedidos</h2>
         </div>
         <div class="pedidos-container">
             <div class="pedidos-botones">
-                <button class="btn-agregar-pedido" onclick="mostrarFormularioPedido()">
-                    <i class="fas fa-plus"></i> Agregar
-                </button>
-                <button class="btn-agregar-pedido" onclick="compartirPedido()">
-                    <i class="fab fa-whatsapp"></i> Compartir
-                </button>
-                <button class="btn-agregar-pedido" onclick="finalizarPedidos()">
-                    <i class="fas fa-check-circle"></i> Finalizar
-                </button>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido" onclick="mostrarFormularioPedido()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <p>Agregar</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido" onclick="compartirPedido()">
+                        <i class="fab fa-whatsapp"></i>
+                    </button>
+                    <p>Compartir</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido" onclick="finalizarPedidos()">
+                        <i class="fas fa-check-circle"></i>
+                    </button>
+                    <p>Finalizar</p>
+                </div> 
+                <div class="cuadro-btn"><button class="btn-agregar-pedido btn-toggle-archivados" onclick="togglePedidosArchivados()">
+                        <i class="fas fa-archive"></i>
+                    </button>
+                    <p>Archivados</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido btn-toggle-recibidos" onclick="togglePedidosRecibidos()">
+                        <i class="fas fa-truck-loading"></i>
+                    </button>
+                    <p>Recibidos</p>
+                </div>
             </div>
             <div class="pedidos-archivados">
-                <div class="botones-archivos">
-                    <button class="btn-toggle-archivados" onclick="togglePedidosArchivados()">
-                        <i class="fas fa-archive"></i> Ver Pedidos Archivados
-                    </button>
-                    <button class="btn-toggle-recibidos" onclick="togglePedidosRecibidos()">
-                        <i class="fas fa-truck-loading"></i> Ver Recibidos
-                    </button>
-                </div>
                 <div class="lista-archivados" style="display: none;"></div>
                 <div class="lista-recibidos" style="display: none;"></div>
             </div>
@@ -38,19 +46,13 @@ export function inicializarPedidos() {
 export function togglePedidosRecibidos() {
     const listaRecibidos = document.querySelector('.lista-recibidos');
     const listaArchivados = document.querySelector('.lista-archivados');
-    const botonRecibidos = document.querySelector('.btn-toggle-recibidos');
-    const botonArchivados = document.querySelector('.btn-toggle-archivados');
     const estaVisible = listaRecibidos.style.display !== 'none';
     
     // Ocultar archivados y actualizar su botón
     listaArchivados.style.display = 'none';
-    botonArchivados.innerHTML = '<i class="fas fa-archive"></i> Ver Pedidos Archivados';
     
     // Toggle recibidos
     listaRecibidos.style.display = estaVisible ? 'none' : 'block';
-    botonRecibidos.innerHTML = estaVisible ? 
-        '<i class="fas fa-truck-loading"></i> Ver Recibidos' : 
-        '<i class="fas fa-truck-loading"></i> Ocultar Recibidos';
     
     if (!estaVisible) {
         cargarPedidosRecibidos();
@@ -60,19 +62,13 @@ export function togglePedidosRecibidos() {
 export function togglePedidosArchivados() {
     const listaArchivados = document.querySelector('.lista-archivados');
     const listaRecibidos = document.querySelector('.lista-recibidos');
-    const botonArchivados = document.querySelector('.btn-toggle-archivados');
-    const botonRecibidos = document.querySelector('.btn-toggle-recibidos');
     const estaVisible = listaArchivados.style.display !== 'none';
     
     // Ocultar recibidos y actualizar su botón
     listaRecibidos.style.display = 'none';
-    botonRecibidos.innerHTML = '<i class="fas fa-truck-loading"></i> Ver Recibidos';
     
     // Toggle archivados
     listaArchivados.style.display = estaVisible ? 'none' : 'block';
-    botonArchivados.innerHTML = estaVisible ? 
-        '<i class="fas fa-archive"></i> Ver Pedidos Archivados' : 
-        '<i class="fas fa-archive"></i> Ocultar Pedidos Archivados';
 }
 export async function cargarPedidosRecibidos() {
     try {

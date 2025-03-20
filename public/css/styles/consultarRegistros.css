@@ -74,14 +74,6 @@ input[list]:focus {
     transform: translateY(-2px);
 }
 
-.resultados-container {
-    width: 100%;
-    max-width: 1200px;
-    padding: 2em;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1em;
-}
 .fecha-range {
     display: flex;
     align-items: center;
@@ -97,30 +89,6 @@ input[list]:focus {
     flex: 1;
     min-width: 130px;
 }
-
-@media (max-width: 768px) {
-    .filtros-container {
-        flex-direction: column;
-        padding: 1em;
-    }
-
-    .filtro {
-        width: 100%;
-    }
-
-    .resultados-container {
-        padding: 1em;
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Ajustes adicionales para pantallas muy pequeñas */
-@media (max-width: 480px) {
-    .registros-view .title h1 {
-        font-size: 1rem;
-    }
-}
-/* ... código existente ... */
 
 .btn-container {
     display: flex;
@@ -141,58 +109,3 @@ input[list]:focus {
     transition: all 0.3s ease;
 }
 
-.btn-limpiar:hover {
-    background: #c0392b;
-    transform: translateY(-2px);
-}
-.registro-header {
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.registro-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex: 1;
-}
-
-.registro-total {
-    color: #4CAF50;
-    font-weight: bold;
-    margin-left: 1rem;
-    white-space: nowrap;
-}
-
-/* Ajuste responsive */
-@media (max-width: 768px) {
-    .registro-header {
-        flex-wrap: wrap;
-    }
-
-    .registro-info {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-
-    .registro-total {
-        width: 100%;
-        text-align: right;
-    }
-}
-.registro-total.no-verificado {
-    color: #f44336;
-}
-
-.registro-total {
-    color: #4CAF50;
-    font-weight: bold;
-    white-space: nowrap;
-    font-size: 13px !important;
-    margin: 0;
-    padding: 0;
-}

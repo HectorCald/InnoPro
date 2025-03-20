@@ -23,8 +23,7 @@
     border-radius: 8px;
     width: 90%;
     max-width: 500px;
-    max-height: 80vh;
-    min-height: 60vh;
+    max-height: 90vh;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
