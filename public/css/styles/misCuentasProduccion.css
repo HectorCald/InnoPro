@@ -59,13 +59,13 @@
 }
 
 .cuentasProduccion-view .filter-btn:hover {
-    background: #3949AB;
-    border-color: #3949AB;
+    background: #3498db;
+    border-color: #3498db;
 }
 
 .cuentasProduccion-view .filter-btn.active {
-    background: #3949AB;
-    border-color: #3949AB;
+    background: #3498db;
+    border-color: #3498db;
     box-shadow: 0 0 10px rgba(57, 73, 171, 0.3);
 }
 
@@ -133,7 +133,7 @@
 }
 
 .cuentasProduccion-view .info-icon {
-    color: #3949AB;
+    color: #3498db;
     cursor: pointer;
     transition: color 0.3s ease;
 }
@@ -172,7 +172,7 @@
 .cuentasProduccion-view .load-more {
     margin: 1.5rem auto;
     padding: 0.8rem 2rem;
-    background: #3949AB;
+    background: #3498db;
     color: white;
     border: none;
     border-radius: 8px;
@@ -182,7 +182,7 @@
 }
 
 .cuentasProduccion-view .load-more:hover {
-    background: #303f9f;
+    background: #3498db;
     transform: translateY(-2px);
 }
 
