@@ -62,9 +62,9 @@ class LoginPin {
         this.errorMessage.textContent = '';
     }
 
-    async validatePin() {
+        async validatePin() {
         try {
-            this.showLoading();
+            mostrarCarga();
             const response = await fetch('/verificar-pin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -79,12 +79,16 @@ class LoginPin {
                     window.location.replace(this.getRedirectUrl(data.rol));
                 }, 1500);
             } else {
-                this.showError();
+                ocultarCarga();
+                this.resetPin();
+                this.showError('PIN incorrecto. Intente nuevamente.');
             }
         } catch (error) {
+            ocultarCarga();
             console.error('Error:', error);
-            this.showError('Error de conexión');
-        }
+            this.resetPin();
+            this.showError('Error de conexión. Intente nuevamente.');
+        } 
     }
 
     getRedirectUrl(rol) {

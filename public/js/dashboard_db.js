@@ -160,13 +160,15 @@ async function obtenerRolUsuario() {
 }
 
 async function iniciarApp() {
-    bienvenida();
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
     const vistas = document.querySelectorAll('.newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
     
     // Ocultar todas las vistas inicialmente
-    vistas.forEach(vista => vista.style.display = 'none');
+    vistas.forEach(vista => {
+        vista.style.display = 'none';
+        vista.style.opacity = '0';
+    });
 
     // Limpiar botones existentes
     opcionesDiv.innerHTML = '';
@@ -182,7 +184,7 @@ async function iniciarApp() {
                 vista: 'formProduccion-view',
                 icono: 'fa-clipboard-list',
                 texto: 'Formulario',
-                onclick: ''
+                onclick: 'onclick="inicializarFormularioProduccion()"'
             },
             {
                 clase: 'opcion-btn',
@@ -239,20 +241,31 @@ async function iniciarApp() {
     let esElPrimero = true;
     roles.forEach(rolActual => {
         const botonesRol = botonesRoles[rolActual];
-        if (botonesRol) {
+        if (botonesRol && botonesRol.length > 0) {
             botonesRol.forEach(boton => {
                 const btnHTML = `
                     <button class="${boton.clase}${esElPrimero ? ' active' : ''}" 
                             data-vista="${boton.vista}" 
                             ${boton.onclick}>
-                        <i class="fas ${boton.icono}"></i> ${boton.texto}
+                        <i class="fas ${boton.icono}"></i>
+                        <span>${boton.texto}</span>
                     </button>
                 `;
-                opcionesDiv.innerHTML += btnHTML;
+                opcionesDiv.insertAdjacentHTML('beforeend', btnHTML);
                 
-                // Si es el primer botón, mostrar su vista
+                // Si es el primer botón, mostrar su vista y ejecutar su función
                 if (esElPrimero) {
-                    document.querySelector(`.${boton.vista}`).style.display = 'flex';
+                    const vistaInicial = document.querySelector(`.${boton.vista}`);
+                    if (vistaInicial) {
+                        vistaInicial.style.display = 'flex';
+                        vistaInicial.style.opacity = '1';
+                        
+                        // Ejecutar la función del primer botón
+                        const onclickFn = boton.onclick.replace('onclick="', '').replace('"', '');
+                        if (window[onclickFn]) {
+                            window[onclickFn]();
+                        }
+                    }
                     esElPrimero = false;
                 }
             });
@@ -262,44 +275,48 @@ async function iniciarApp() {
     // Agregar event listeners a los botones
     const botones = opcionesDiv.querySelectorAll('.opcion-btn');
     botones.forEach(boton => {
-        // Añadir efecto ripple
-        boton.addEventListener('click', (e) => {
+        boton.addEventListener('click', async (e) => {
+            if (boton.classList.contains('active')) return;
+            
+            botones.forEach(b => b.classList.remove('active'));
+            boton.classList.add('active');
+            
+            vistas.forEach(vista => {
+                vista.style.opacity = '0';
+                setTimeout(() => {
+                    vista.style.display = 'none';
+                }, 300);
+            });
+            
+            const vistaId = boton.dataset.vista;
+            const vistaActual = document.querySelector(`.${vistaId}`);
+            if (vistaActual) {
+                const onclickFn = boton.getAttribute('onclick')?.replace('onclick="', '').replace('"', '');
+                if (window[onclickFn]) {
+                    await window[onclickFn]();
+                }
+                
+                setTimeout(() => {
+                    vistaActual.style.display = 'flex';
+                    requestAnimationFrame(() => {
+                        vistaActual.style.opacity = '1';
+                    });
+                }, 300);
+            }
+
             const ripple = document.createElement('span');
             ripple.classList.add('ripple');
-            
             const rect = boton.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);
-            
             ripple.style.width = ripple.style.height = `${size}px`;
             ripple.style.left = `${e.clientX - rect.left - size/2}px`;
             ripple.style.top = `${e.clientY - rect.top - size/2}px`;
-            
             boton.appendChild(ripple);
-            
-            // Remover el ripple después de la animación
             setTimeout(() => ripple.remove(), 600);
-
-            // Remover clase active de todos los botones
-            botones.forEach(b => b.classList.remove('active'));
-            // Agregar clase active al botón clickeado
-            boton.classList.add('active');
-            
-            // Ocultar todas las vistas
-            vistas.forEach(vista => vista.style.display = 'none');
-            
-            // Mostrar la vista correspondiente con animación
-            const vistaId = boton.dataset.vista;
-            const vistaActual = document.querySelector(`.${vistaId}`);
-            vistaActual.style.display = 'flex';
-            vistaActual.classList.add('vista-transition');
-            
-            // Remover la clase de animación después de que termine
-            setTimeout(() => {
-                vistaActual.classList.remove('vista-transition');
-            }, 300);
         });
     });
 }
+
 // Agregar esta función después de las importaciones
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
