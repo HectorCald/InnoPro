@@ -1,17 +1,18 @@
 .verificarRegistros-view {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    padding: 1em;
     width: 100%;
     background: #1a1a1a;
+    height: calc(100vh - 3em);
     color: white;
     overflow-y: auto;
-    margin-top: 20px;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
     display: none;
     &::-webkit-scrollbar {
         display: none;
     }
+    /* Hide scrollbar for IE, Edge and Firefox */
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
@@ -107,7 +108,7 @@
     transition: all 0.3s ease;
     background: #ff0000;
     color: white;
-    width: 100%;
+    width: 100%;    
 }
 
 /* Animación para el icono */
