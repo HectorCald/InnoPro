@@ -171,7 +171,30 @@ function parsearFecha(fechaStr) {
     const [dia, mes, año] = fechaStr.split('/');
     return new Date(2000 + parseInt(año), parseInt(mes) - 1, parseInt(dia));
 }
+export function mostrarDetalles(card) {
+    const detalles = card.querySelector('.registro-detalles');
+    const todosLosDetalles = document.querySelectorAll('.registro-detalles');
+    const todosLosIconos = document.querySelectorAll('.info-icon');
+    const currentIcon = card.querySelector('.info-icon');
 
+    // Cerrar otros detalles abiertos y restablecer iconos
+    todosLosDetalles.forEach((det, index) => {
+        if (det !== detalles && det.classList.contains('active')) {
+            det.classList.remove('active');
+            if (todosLosIconos[index]) {
+                todosLosIconos[index].style.display = 'none';
+            }
+        }
+    });
+
+    // Toggle detalles actuales
+    detalles.classList.toggle('active');
+    
+    // Ajustar visibilidad del icono actual
+    if (currentIcon) {
+        currentIcon.style.display = detalles.classList.contains('active') ? 'block' : 'none';
+    }
+}
 // El resto de las funciones (crearTarjetaRegistro, calcularTotal, etc.) se mantienen igual
 export function crearTarjetaRegistro(registro) {
     const div = document.createElement('div');
@@ -194,17 +217,16 @@ export function crearTarjetaRegistro(registro) {
                 <div class="registro-fecha">${fechaFormateada}</div>
                 <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
                 <div class="registro-total ${!registro[10] ? 'no-verificado' : ''}">${resultados.total.toFixed(2)} Bs.</div>
-            <i class="fas fa-info-circle info-icon"></i>
+                <i class="fas fa-info-circle info-icon"></i>
+                <div class="panel-info">
+                    <h4>Desglose de Costos</h4>
+                    <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
+                    <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
+                    <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
+                    <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
+                    <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
+                </div>
         </div>
-        <div class="panel-info">
-            <div class="panel-content">
-                <h4>Desglose de Costos</h4>
-                <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
-                <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
-                <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
-                <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
-                <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
-            </div>
         </div>
         <div class="registro-detalles">
             <p><span>Lote:</span> ${registro[2] || '—'}</p>
@@ -318,42 +340,45 @@ function calcularTotal(nombre, cantidad, gramaje, seleccion) {
         cernido: resultadoSernido
     };
 }
-export function mostrarDetalles(card) {
-    const detalles = card.querySelector('.registro-detalles');
-    const todosLosDetalles = document.querySelectorAll('.registro-detalles');
 
-    // Cerrar otros detalles abiertos
-    todosLosDetalles.forEach(det => {
-        if (det !== detalles && det.classList.contains('active')) {
-            det.classList.remove('active');
-        }
-    });
-
-    // Toggle detalles actuales
-    detalles.classList.toggle('active');
-}
+// Update the configurarPanelInfo function
 function configurarPanelInfo(card) {
     const infoIcon = card.querySelector('.info-icon');
     const panelInfo = card.querySelector('.panel-info');
+    const header = card.querySelector('.registro-header');
     
     if (!infoIcon || !panelInfo) return;
 
     infoIcon.addEventListener('click', (e) => {
-        e.stopPropagation();
-        panelInfo.classList.toggle('active');
+        e.stopPropagation(); // Prevent event from bubbling up
         
-        // Cerrar otros paneles abiertos
+        // Close all other panels first
         document.querySelectorAll('.panel-info.active').forEach(panel => {
             if (panel !== panelInfo) {
                 panel.classList.remove('active');
             }
         });
+        
+        // Toggle current panel
+        panelInfo.classList.toggle('active');
     });
 
-    // Cerrar panel al hacer clic fuera
+    // Prevent panel from closing when clicking inside it
+    panelInfo.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    // Close panel when clicking anywhere else in the document
     document.addEventListener('click', (e) => {
         if (!infoIcon.contains(e.target) && !panelInfo.contains(e.target)) {
             panelInfo.classList.remove('active');
+        }
+    });
+
+    // Prevent header click from triggering details when clicking info icon
+    header.addEventListener('click', (e) => {
+        if (infoIcon.contains(e.target)) {
+            e.stopPropagation();
         }
     });
 }

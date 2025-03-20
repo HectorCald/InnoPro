@@ -109,7 +109,8 @@
     align-items: center;
     gap: 1.2rem;
     width: 100%;
-    overflow: hidden;
+    position: relative;
+    overflow: visible;
 }
 
 .cuentasProduccion-view .registro-fecha {
@@ -144,6 +145,7 @@
     color: #3498db;
     cursor: pointer;
     transition: color 0.3s ease;
+    display: none;
 }
 
 .cuentasProduccion-view .info-icon:hover {
@@ -151,29 +153,36 @@
 }
 
 .cuentasProduccion-view .panel-info {
-    background: #333;
-    padding: 1rem;
+    background: #656565;
+    padding: 1.2rem;
     display: none;
+    position: absolute;
+    z-index: 9999;
+    width: 50%;
+    border-top: 1px solid #444;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    top: 0;
+    right: 0;
 }
 
 .cuentasProduccion-view .panel-info.active {
     display: block;
 }
 
-.cuentasProduccion-view .panel-content h4 {
+.cuentasProduccion-view .panel-info h4 {
     color: #fff;
     margin-bottom: 1rem;
     font-size: 1.1rem;
 }
 
-.cuentasProduccion-view .panel-content p {
+.cuentasProduccion-view .panel-info p {
     color: #ddd;
     margin: 0.5rem 0;
     display: flex;
     justify-content: space-between;
 }
 
-.cuentasProduccion-view .panel-content p span:first-child {
+.cuentasProduccion-view .panel-info p span:first-child {
     color: #aaa;
 }
 
