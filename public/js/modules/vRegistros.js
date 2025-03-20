@@ -58,7 +58,7 @@ function crearRegistroCard(registro) {
             <p><span>Microondas:</span> ${registro[5] || '-'}</p>
             <p><span>Envases:</span> ${registro[6] || '-'}</p>
             <p><span>Vencimiento:</span> ${registro[7] || '-'}</p>
-            <p><span>Estado:</span> <span class="estado ${(registro[9] || 'pendiente').toLowerCase()}">${registro[9] || 'Pendiente'}</span></p>
+            
             ${registro[10] ? `
                 <p><span>Fecha Verificación:</span> ${registro[10]}</p>
                 <p><span>Cantidad Real:</span> ${registro[9] || '-'}</p>
