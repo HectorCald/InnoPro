@@ -98,12 +98,14 @@
     background: #353535 !important;
     color: white !important;
     margin-block: 10px;
+    font-size: 16px !important;
 }
 .anuncio-contenido select{
-    width: auto;
+    width: 100%;
     background: #353535 !important;
     color: white !important;
     border: 1px solid #404040 !important;
+    height: 60px;
 }
 .form-group label {
     display: block;

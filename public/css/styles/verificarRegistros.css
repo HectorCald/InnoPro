@@ -12,106 +12,275 @@
     &::-webkit-scrollbar {
         display: none;
     }
-    /* Hide scrollbar for IE, Edge and Firefox */
     -ms-overflow-style: none;
     scrollbar-width: none;
-}
-.fecha-header {
-    background: #353535;
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    border-radius: 8px;
-}
-.fecha-header:hover {
-    background: #252525;
-}
-.fecha-header i {
-    transition: transform 0.3s ease;
-}
-.fecha-header h3 {
-    margin: 0;
-    color: white;
-    font-size: 15px;
-    white-space: nowrap; /* Previene el wrap del texto */
-    overflow: hidden;
-    text-overflow: ellipsis; /* Añade ... si el texto es muy largo */
-}
-.fecha-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: nowrap; /* Previene el wrap */
-}
-.contador {
-    background: #3d3d3d;
-    padding: 0.3rem 0.8rem;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    color: #aaa;
-    white-space: nowrap; /* Previene el wrap */
-}
-.registros-grupo {
-    max-height: 0;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
-.registros-grupo.active {
-    max-height: none;
-    opacity: 1;
-    visibility: visible;
-    padding: 1em;
-    margin-top: 1em;
-}
-.fecha-card {
-    background: #2d2d2d;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    width: 100%;
 
-}
-.verificado-icon {
-    color: #4CAF50;
-    margin: 0;
-}
-.acciones {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-.btn-editar{
-    padding: 0.8rem 1.2rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    background: #2196F3;
-    color: white;
-    width: 100%;
-}
-.btn-eliminar-registro{
-    padding: 0.8rem 1.2rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    background: #ff0000;
-    color: white;
-    width: 100%;    
-}
+    .fecha-header {
+        background: #353535;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        border-radius: 8px;
 
-/* Animación para el icono */
-.fa-chevron-down {
-    transition: transform 0.3s ease;
+        &:hover {
+            background: #252525;
+        }
+
+        i {
+            transition: transform 0.3s ease;
+        }
+
+        h3 {
+            margin: 0;
+            color: white;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .fecha-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: nowrap;
+    }
+
+    .contador {
+        background: #3d3d3d;
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        color: #aaa;
+        white-space: nowrap;
+    }
+
+    .registros-grupo {
+        max-height: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        overflow: hidden;
+
+        &.active {
+            max-height: none;
+            opacity: 1;
+            visibility: visible;
+            padding: 1em;
+            margin-top: 1em;
+        }
+    }
+
+    .fecha-card {
+        background: #2d2d2d;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        width: 100%;
+    }
+
+    /* Estilos de registros heredados de misCuentasProduccion */
+    .registros-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+        padding: 0.5rem;
+        width: 100%;
+    }
+
+    .registro-card {
+        background: #2a2a2a;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 1em;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+    }
+
+    .registro-header {
+        padding: 1.2rem;
+        background: #333;
+        border-bottom: 1px solid #444;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        position: relative;
+    }
+
+    .registro-fecha {
+        color: #aaa;
+        font-size: 0.9rem;
+    }
+
+    .registro-producto {
+        color: #fff;
+        font-weight: 500;
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .registro-total {
+        color: #4CAF50;
+        font-weight: 600;
+        margin: 0;
+        white-space: nowrap;
+
+        &.no-verificado {
+            color: #f44336;
+        }
+    }
+
+    .registro-detalles {
+        height: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        background: #2d2d2d;
+        overflow: hidden;
+
+        &.active {
+            height: auto;
+            opacity: 1;
+            visibility: visible;
+            padding: 1rem;
+            margin-top: 0.5em;
+            border-top: 1px solid #404040;
+        }
+
+        p {
+            margin: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #404040;
+            padding-bottom: 0.8rem;
+
+            span {
+                word-break: break-word;
+            }
+        }
+    }
+
+    .verificado-icon {
+        color: #4CAF50;
+        font-size: 1.2rem;
+        margin: 0;
+    }
+
+    .acciones {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn-editar {
+        padding: 0.8rem 1.2rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        background: #2196F3;
+        color: white;
+        width: 100%;
+
+        &:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+    }
+
+    .btn-eliminar-registro {
+        padding: 0.8rem 1.2rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        background: #ff0000;
+        color: white;
+        width: 100%;
+
+        &:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+    }
+
+    .fa-chevron-down {
+        transition: transform 0.3s ease;
+
+        &.rotated {
+            transform: rotate(180deg);
+        }
+    }
+
+    .info-icon {
+        color: #3498db;
+        cursor: pointer;
+        transition: color 0.3s ease;
+        margin-left: auto;
+
+        &:hover {
+            color: #5c6bc0;
+        }
+        display: none;
+    }
+
+    .no-registros {
+        color: #aaa;
+        text-align: center;
+        padding: 2rem;
+        font-size: 1.1rem;
+    }
+    .panel-info {
+        background: #656565;
+        padding: 1.2rem;
+        display: none;
+        position: absolute;
+        z-index: 9999;
+        width: 80%;
+        border-top: 1px solid #444;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        top: 20px;
+        right: 5px;
+        border-radius: 10px;
+
+        &.active {
+            display: block;
+        }
+
+        h4 {
+            color: #fff;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        p {
+            color: #ddd;
+            margin: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+
+            span:first-child {
+                color: #aaa;
+            }
+        }
+    }
 }

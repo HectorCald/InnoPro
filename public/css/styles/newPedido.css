@@ -1,4 +1,5 @@
 .newPedido-view {
+    /* Main Container Styles */
     width: 100%;
     background: #1a1a1a;
     height: calc(100vh - 4em);
@@ -9,419 +10,441 @@
     flex-direction: column;
     gap: 1em;
     display: none;
+
+    /* Scrollbar Styles */
     &::-webkit-scrollbar {
         display: none;
     }
-    /* Hide scrollbar for IE, Edge and Firefox */
     -ms-overflow-style: none;
     scrollbar-width: none;
-}
 
-.pedidos-container {
-    display: flex;
-    flex-direction: column;
-}
-.pedidos-botones{
-    display: flex;
-    gap: 1em;
-    justify-content: center;
-}
-.btn-agregar-pedido {
-    background: #3d3d3d;
-    color: white;
-    border: none;
-    padding: 1em;
-    border-radius: 40px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    width: 50px;
-    height: 50px;
-    justify-content: center;
-    align-items: center;
-    font-size: 15px;
-}
-.pedidos-container .cuadro-btn{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px;
-    gap: 5px;
-}
+    /* Pedidos Container and Buttons */
+    .pedidos-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+    }
+    .title .section-title{
+        margin-top: 10px;
+        font-size: 16px;
+    }
 
-.btn-agregar-pedido:hover {
-    background: #45a049;
-}
+    .pedidos-botones {
+        display: flex;
+        gap: 1em;
+        justify-content: center;
+    }
 
-.form-pedido {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    margin: 1em 0;
-}
+    .cuadro-btn {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+        gap: 5px;
+    }
 
-.form-pedido input,
-.form-pedido textarea {
-    padding: 0.5em;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
+    .btn-agregar-pedido {
+        background: #3d3d3d;
+        color: white;
+        border: none;
+        padding: 1em;
+        border-radius: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        width: 50px;
+        height: 50px;
+        justify-content: center;
+        font-size: 15px;
 
-.lista-pedidos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1em;
-    padding-bottom: 10px;
-}
+        &:hover {
+            background: #45a049;
+        }
+    }
 
-.pedido-card {
-    background: #2a2a2a;
-    padding: 1.5em;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease;
-}
+    /* Form Styles */
+    .form-pedido {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+        margin: 1em 0;
 
-.pedido-card:hover {
-    transform: translateY(-2px);
-}
+        input, textarea {
+            padding: 0.5em;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background: #2d2d2d;
+            color: white;
+        }
+    }
 
-.pedido-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
+    .cantidad-container {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
 
-.pedido-info {
-    flex: 1;
-}
+        input {
+            flex: 1;
+        }
 
-.pedido-principal {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-}
+        select {
+            padding: 0.5em;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background: #2d2d2d;
+            color: white;
+            cursor: pointer;
+            min-width: 100px;
 
-.pedido-nombre {
-    font-size: 1.2em;
-    font-weight: 600;
-    color: #fff;
-}
+            &:hover {
+                border-color: #4CAF50;
+            }
 
-.pedido-detalles {
-    display: flex;
-    gap: 1em;
-    font-size: 0.9em;
-    color: #aaa;
-}
+            &:focus {
+                outline: none;
+                border-color: #4CAF50;
+                box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+            }
+        }
+    }
 
-.pedido-fecha, .pedido-cantidad {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-}
+    /* Pedidos List Styles */
+    .lista-pedidos {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1em;
+        padding: 1em;
+    }
 
-.pedido-obs {
-    color: #888;
-    font-size: 0.9em;
-    padding-top: 0.8em;
-    border-top: 1px solid #404040;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5em;
-}
+    .pedido-card {
+        background: #333;
+        border-radius: 6px;
+        padding: 1em;
+        border-left: 4px solid #4CAF50;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-.btn-eliminar {
-    background: none;
-    border: none;
-    color: #ff4444;
-    cursor: pointer;
-    padding: 0.5em;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-}
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        margin-bottom: 10px;
+    }
 
-.btn-eliminar:hover {
-    color: #ff0000;
-    opacity: 1;
-    transform: scale(1.1);
-}
+    /* Pedido Card Header and Details */
+    .pedido-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
 
-.no-pedidos {
-    text-align: center;
-    color: #888;
-    padding: 2em;
-    grid-column: 1 / -1;
-}
-.cantidad-container {
-    display: flex;
-    gap: 0.5em;
-    align-items: center;
-}
+    .pedido-info {
+        h4 {
+            margin: 0 0 0.5em 0;
+            color: #fff;
+            font-size: 1.1em;
+        }
 
-.cantidad-container input {
-    flex: 1;
-}
+        .cantidad {
+            font-size: 0.9em;
+            color: #ccc;
+            margin: 0.5em 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
 
-.cantidad-container select {
-    padding: 0.5em;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    background: white;
-    color: #333;
-    cursor: pointer;
-    min-width: 100px;
-}
+        .observaciones {
+            font-size: 0.85em;
+            color: #999;
+            margin: 0.5em 0;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+    }
 
-.cantidad-container select:hover {
-    border-color: #4CAF50;
-}
+    .pedido-principal {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+    }
 
-.cantidad-container select:focus {
-    outline: none;
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
-}
+    .pedido-nombre {
+        font-size: 1.2em;
+        font-weight: 600;
+        color: #fff;
+    }
 
-.pedidos-resumen {
-    max-height: 180px;
-    overflow-y: auto;
-    margin: 1em 0;
-    padding: 1em;
-    background: #2a2a2a;
-    border-radius: 5px;
-}
+    .pedido-detalles {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+        background: transparent;
+        padding: 0;
 
-.pedido-resumen-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5em;
-    border-bottom: 1px solid #404040;
-}
+        span {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            color: #ccc;
+            font-size: 0.9em;
 
-.pedido-resumen-item:last-child {
-    border-bottom: none;
-}
+            i {
+                color: #666;
+                width: 16px;
+            }
+        }
 
-.pedido-resumen-item span {
-    color: #fff;
-}
-.pedidos-archivados {
-    margin: 1em 0;
-}
-.fecha-archivo {
-    color: #888;
-    margin-bottom: 1em;
-    font-size: 0.9em;
-}
+        .pedido-cantidad {
+            color: #4CAF50;
+        }
 
-.pedidos-archivados-lista {
-    max-height: 250px !important;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    padding: 1em;
-    background: #2a2a2a;
-    border-radius: 5px;
-}
+        .pedido-cantidad-recibida {
+            color: #2196F3;
+        }
 
-.pedido-archivado-item {
-    background: #333;
-    padding: 1em;
-    margin: 0.5em 0;
-    border-radius: 5px;
-    border-left: 3px solid #4CAF50;
-}
+        .pedido-obs {
+            color: #999;
+            font-style: italic;
+            padding: 0;
+        }
+    }
+    
 
-.pedido-archivado-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5em;
-    font-weight: bold;
-}
+    .pedido-detalles-lista {
+        color: gray;
+    }
 
-.pedido-obs {
-    color: #888;
-    font-size: 0.9em;
-}
+    .pedido-fecha, .pedido-cantidad {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+    }
 
-.lista-archivados {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1em;
-    padding: 1em;
-    background: #2a2a2a;
-    border-radius: 5px;
-}
+    .pedido-obs {
+        color: rgb(238, 238, 238);
+        font-size: 15px;
+        padding-top: 0.8em;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5em;
+    }
 
-.btn-hoja {
-    width: 100%;
-    text-align: left;
-    padding: 1em;
-    background: #333;
-    border: none;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
+    /* Action Buttons */
+    .btn-eliminar {
+        background: none;
+        border: none;
+        color: #ff4444;
+        cursor: pointer;
+        padding: 0.5em;
+        opacity: 0.7;
+        transition: all 0.3s ease;
+        font-size: 1em;
 
-.btn-hoja:hover {
-    background: #444;
-}
+        &:hover {
+            color: #ff0000;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    }
 
+    /* Archived and Received Pedidos */
+    .pedidos-archivados {
+        margin: 0;
+    }
 
-.btn-toggle-archivados:hover {
-    background: #546e7a;
-}
+    .lista-archivados, .lista-recibidos {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+        padding: 1em;
+        background: transparent;
+        width: 100%;
+    }
 
-.lista-archivados {
-    margin-top: 1em;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1em;
-}
+    .pedido-archivado-card {
+        background: #333;
+        border-radius: 8px;
+        padding: 1.2em;
+        border-left: 4px solid #4CAF50;
+        transition: all 0.3s ease;
+        margin: 0;
 
-.btn-hoja {
-    background: #455a64;
-    color: white;
-    border: none;
-    padding: 1em;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    margin-bottom: 5px;
-}
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        margin-bottom: 10px;
+    }
 
-.btn-hoja:hover {
-    background: #37474f;
-}
+    .pedido-archivado-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.8em;
+        padding: 0;
 
-.pedido-archivado-item {
-    background: #2a2a2a;
-    padding: 1em;
-    margin: 0.5em 0;
-    border-radius: 5px;
-}
+        .pedido-nombre {
+            font-size: 1.1em;
+            font-weight: 500;
+            color: #fff;
+        }
 
-.pedido-archivado-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5em;
-}
-.botones-archivos {
-    display: flex;
-    gap: 1em;
-    margin-bottom: 1em;
-}
+        .pedido-fecha {
+            color: #888;
+            font-size: 0.9em;
+        }
+    }
+    .pedido-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.75em;
+        padding-top: 0.75em;
+        border-top: 1px solid #444;
+        font-size: 0.8em;
+        color: #888;
 
-.pedido-recibido-item {
-    background: #2a2a2a;
-    padding: 1em;
-    border-radius: 5px;
-    margin-bottom: 1em;
-}
+        span {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+    }
 
-.cantidad-entregada {
-    color: #4CAF50;
-    font-weight: bold;
-}
-.form-ingreso {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    margin: 1em 0;
-}
-.btn-ingreso-pedido {
-    background-color: #4CAF50;
-    border: none;
-    cursor: pointer;
-    padding: 20px;
-    font-weight: 300;
-    color: white;
-    width: 100px;
-    height: 50px;
-    padding: 5px;
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    border-radius: 10px;
-}
-.btn-rechazo-pedido{
-    background-color: red;
-    border: none;
-    cursor: pointer;
-    padding: 20px;
-    font-weight: 300;
-    color: white;
-    width: 100px;
-    height: 50px;
-    padding: 5px;
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    border-radius: 10px;
-}
-.btn-recibido-pedido i{
-    color: white !important;
-    font-size: 20px;
-    text-align: center;
-}
-.btn-recibido-pedido{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
+    /* Received Pedidos Specific */
+    .btn-recibido-pedido {
+        display: flex;
+        gap: 0.8em;
+        margin-top: 1em;
+        padding-top: 1em;
+        border-top: 1px solid #444;
 
+        button {
+            flex: 1;
+            padding: 0.6em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5em;
+            transition: all 0.2s ease;
 
+            &.enviar {
+                background: #4CAF50;
+                color: white;
 
+                &:hover {
+                    background: #45a049;
+                }
+            }
 
-.sugerencia-pedido-existente {
-    background: #2d2d2d;
-    padding: 1em;
-    border-radius: 8px;
-    margin-top: 1em;
-    border: 1px solid #4d4d4d;
-}
+            &.cancelar {
+                background: #666;
+                color: white;
 
-.sugerencia-contenido {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-}
+                &:hover {
+                    background: #555;
+                }
+            }
 
-.sugerencia-botones {
-    display: flex;
-    gap: 1em;
-    margin-top: 1em;
-}
+            i {
+                font-size: 1em;
+            }
+        }
+    }
 
-.btn-usar-existente, .btn-crear-nuevo {
-    padding: 0.5em 1em;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
+    /* Summary Section */
+    .pedidos-resumen {
+        max-height: 180px;
+        overflow-y: auto;
+        margin: 1em 0;
+        padding: 1em;
+        background: #2a2a2a;
+        border-radius: 5px;
+    }
 
-.btn-usar-existente {
-    background: #4CAF50;
-    color: white;
-}
+    .pedido-resumen-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5em;
+        border-bottom: 1px solid #404040;
 
-.btn-crear-nuevo {
-    background: #666;
-    color: white;
+        &:last-child {
+            border-bottom: none;
+        }
+
+        span {
+            color: #fff;
+        }
+    }
+
+    /* Suggestion Styles */
+    .sugerencia-pedido-existente {
+        background: #2d2d2d;
+        padding: 1em;
+        border-radius: 8px;
+        margin-top: 1em;
+        border: 1px solid #4d4d4d;
+    }
+
+    .sugerencia-contenido {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+    }
+
+    .sugerencia-botones {
+        display: flex;
+        gap: 1em;
+        margin-top: 1em;
+    }
+
+    .btn-usar-existente, .btn-crear-nuevo {
+        padding: 0.5em 1em;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-usar-existente {
+        background: #4CAF50;
+        color: white;
+
+        &:hover {
+            background: #45a049;
+        }
+    }
+
+    .btn-crear-nuevo {
+        background: #666;
+        color: white;
+
+        &:hover {
+            background: #555;
+        }
+    }
+
+    /* Status Messages */
+    .no-pedidos {
+        text-align: center;
+        color: #888;
+        padding: 2em;
+        grid-column: 1 / -1;
+    }
+    .no-archivados, .no-recibidos {
+        text-align: center;
+        color: #888;
+        padding: 2em;
+        font-size: 0.9em;
+    }
+
+    .cantidad-entregada {
+        color: #4CAF50;
+        font-weight: bold;
+    }
 }

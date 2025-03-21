@@ -3,7 +3,7 @@ import { eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-import {confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos,mostrarPedidosRecibidos, mostrarFormularioIngreso, procesarIngreso,togglePedidosArchivados, mostrarPedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos,compartirEnWhatsApp, compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
+import {confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso,togglePedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
 import {mostrarHistorialTareas,toggleProcesos,mostrarProcesos,pausarProceso, finalizarProceso,inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, guardarTarea, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea} from './modules/newTarea.js';
 import {inicializarCompras} from './modules/compras.js';
 window.mostrarNotificacion = mostrarNotificacion;
@@ -46,16 +46,11 @@ window.guardarPedido = guardarPedido;
 window.cerrarFormularioPedido = cerrarFormularioPedido;
 window.eliminarPedido = eliminarPedido;
 window.mostrarConfirmacionEliminar = mostrarConfirmacionEliminar;
-window.compartirPedido = compartirPedido;
-window.compartirEnWhatsApp = compartirEnWhatsApp;
 window.confirmarFinalizacionPedidos = confirmarFinalizacionPedidos;
 window.finalizarPedidos = finalizarPedidos;
 window.togglePedidosArchivados = togglePedidosArchivados;
-window.mostrarPedidosArchivados = mostrarPedidosArchivados;
-window.mostrarPedidosRecibidos = mostrarPedidosRecibidos;
 window.togglePedidosRecibidos = togglePedidosRecibidos;
 window.procesarIngreso = procesarIngreso;
-window.mostrarFormularioIngreso = mostrarFormularioIngreso;
 window.inicializarTareas = inicializarTareas;
 window.mostrarFormularioTarea = mostrarFormularioTarea;
 window.cargarTareasEnProceso = cargarTareasEnProceso;
@@ -72,10 +67,9 @@ window.toggleProcesos = toggleProcesos;
 window.mostrarHistorialTareas = mostrarHistorialTareas;
 window.eliminarRegistro = eliminarRegistro;
 window.mostrarFormularioRechazo = mostrarFormularioRechazo;
+window.mostrarFormularioIngreso = mostrarFormularioIngreso;
 window.confirmarRechazo = confirmarRechazo;
 window.inicializarCompras = inicializarCompras;
-
-
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');

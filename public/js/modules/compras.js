@@ -1,273 +1,79 @@
 export function inicializarCompras() {
     mostrarCarga();
     const container = document.querySelector('.compras-view');
+    container.style.display = 'flex';
     container.innerHTML = `
-        <div class="title">
-            <h2 class="section-title"><i class="fas fa-shopping-cart fa-2x"></i> Gestión de Compras</h2>
+        <div class="compras-header">
+            <h2><i class="fas fa-shopping-cart"></i> Gestión de Compras</h2>
         </div>
-        <div class="acopio-section">
-            <div class="acopio-header">
-                <i class="fas fa-archive"></i>
-                <h3>Acopio</h3>
-                <i class="fas fa-chevron-down"></i>
+        <div class="pedidos-container">
+            <div class="pedidos-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-clock"></i> Pedidos Pendientes</h3>
+                    <span class="contador-pendientes">0</span>
+                </div>
+                <div class="pedidos-list pendientes"></div>
             </div>
-            <div class="acopio-content">
-                <div class="pedidos-section">
-                    <h4 class="section-subtitle"><i class="fas fa-times-circle"></i> Pedidos Rechazados</h4>
-                    <div class="pedidos-rechazados"></div>
+            <div class="pedidos-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-times-circle"></i> Pedidos Rechazados</h3>
+                    <span class="contador-rechazados">0</span>
                 </div>
-                <div class="pedidos-section">
-                    <h4 class="section-subtitle"><i class="fas fa-clock"></i> Pedidos Pendientes</h4>
-                    <div class="pedidos-pendientes"></div>
-                </div>
-                <div class="pedidos-section">
-                    <h4 class="section-subtitle"><i class="fas fa-exclamation-circle"></i> Pedidos Parcialmente Recibidos</h4>
-                    <div class="pedidos-parciales"></div>
-                </div>
+                <div class="pedidos-list rechazados"></div>
             </div>
         </div>
     `;
 
-    // Configurar el comportamiento desplegable
-    const acopioHeader = container.querySelector('.acopio-header');
-    const acopioSection = container.querySelector('.acopio-section');
-    const acopioContent = container.querySelector('.acopio-content');
-    const chevronIcon = acopioHeader.querySelector('.fa-chevron-down');
-
-    acopioHeader.addEventListener('click', () => {
-        acopioSection.classList.toggle('expanded');
-        acopioContent.classList.toggle('expanded');
-        chevronIcon.classList.toggle('rotated');
-        if (acopioContent.classList.contains('expanded')) {
-            cargarPedidosArchivados();
-        }
-    });
+    cargarPedidos();
     ocultarCarga();
 }
-// ... existing code ...
-async function cargarPedidosArchivados() {
+
+async function cargarPedidos() {
     try {
         mostrarCarga();
-        const response = await fetch('/obtener-pedidos-clasificados');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        
+        // Cargar pedidos pendientes
+        const resPendientes = await fetch('/obtener-pedidos-estado/Pendiente');
+        const dataPendientes = await resPendientes.json();
+        
+        // Cargar pedidos rechazados
+        const resRechazados = await fetch('/obtener-pedidos-estado/Rechazado');
+        const dataRechazados = await resRechazados.json();
 
-        if (data.success) {
-            const rechazadosContainer = document.querySelector('.pedidos-rechazados');
-            const pendientesContainer = document.querySelector('.pedidos-pendientes');
-            const parcialesContainer = document.querySelector('.pedidos-parciales');
-            
-            const renderizarPedidos = (pedidos, container) => {
-                if (!container) {
-                    console.error('Container not found');
-                    return;
-                }
-                
-                if (pedidos && pedidos.length > 0) {
-                    container.innerHTML = pedidos.map(hoja => {
-                        const nombreHoja = typeof hoja === 'object' ? hoja.nombre : hoja;
-                        return `
-                            <div class="pedido-archivado">
-                                <div class="pedido-archivado-header">
-                                    <span>${nombreHoja}</span>
-                                    <button class="btn-ver-detalles" data-hoja="${nombreHoja}">
-                                        Ver Detalles
-                                    </button>
-                                </div>
-                                <div class="pedido-detalles-compras" id="detalles-${nombreHoja.replace(/[^a-zA-Z0-9]/g, '')}"></div>
-                                <button class="anuncio-btn confirmar entregar" data-hoja="${nombreHoja}">
-                                    Entregar
-                                </button>
-                            </div>
-                        `;
-                    }).join('');
+        // Actualizar contadores
+        document.querySelector('.contador-pendientes').textContent = dataPendientes.pedidos.length;
+        document.querySelector('.contador-rechazados').textContent = dataRechazados.pedidos.length;
 
-                    // Configurar botones de ver detalles
-                    container.querySelectorAll('.btn-ver-detalles').forEach(btn => {
-                        btn.addEventListener('click', async (e) => {
-                            const hoja = e.target.dataset.hoja;
-                            const detallesContainer = document.getElementById(`detalles-${hoja.replace(/[^a-zA-Z0-9]/g, '')}`);
-                            const detallesButton = e.target;
-
-                            try {
-                                if (!detallesContainer.innerHTML) {
-                                    detallesButton.disabled = true;
-                                    mostrarCarga();
-                                    const response = await fetch(`/obtener-detalles-pedidos/${encodeURIComponent(hoja)}`);
-                                    const data = await response.json();
-
-                                    if (data.success) {
-                                        detallesContainer.innerHTML = `
-                                            <table class="detalles-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Fecha</th>
-                                                        <th>Producto</th>
-                                                        <th>Cantidad</th>
-                                                        <th>Observaciones</th>
-                                                        <th>Cant. Recibida</th>
-                                                        <th>Proveedor</th>
-                                                        <th>Fecha Recepción</th>
-                                                        <th>Estado</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    ${data.pedidos.map(pedido => `
-                                                        <tr>
-                                                            <td>${pedido[0] || '-'}</td>
-                                                            <td>${pedido[1] || '-'}</td>
-                                                            <td>${pedido[2] || '-'}</td>
-                                                            <td>${pedido[3] || '-'}</td>
-                                                            <td>${pedido[4] || '-'}</td>
-                                                            <td>${pedido[5] || '-'}</td>
-                                                            <td>${pedido[6] || '-'}</td>
-                                                            <td>${pedido[7] || 'Pendiente'}</td>
-                                                        </tr>
-                                                    `).join('')}
-                                                </tbody>
-                                            </table>
-                                        `;
-                                    }
-                                    detallesButton.disabled = false;
-                                }
-                                detallesContainer.classList.toggle('expanded');
-                                detallesButton.textContent = detallesContainer.classList.contains('expanded') ? 
-                                    'Ocultar Detalles' : 'Ver Detalles';
-                            } catch (error) {
-                                console.error('Error:', error);
-                                detallesContainer.innerHTML = '<p class="error">Error al cargar los detalles</p>';
-                                detallesButton.disabled = false;
-                            } finally {
-                                ocultarCarga();
-                            }
-                        });
-                    });
-                    
-                    // Configurar botones de entregar
-                    container.querySelectorAll('.entregar').forEach(btn => {
-                        btn.addEventListener('click', async (e) => {
-                            const hoja = e.target.dataset.hoja;
-                            try {
-                                mostrarCarga();
-                                const response = await fetch(`/obtener-detalles-pedidos/${encodeURIComponent(hoja)}`);
-                                const data = await response.json();
-                                
-                                if (data.success) {
-                                    mostrarFormularioEntrega(hoja, data.pedidos);
-                                } else {
-                                    mostrarNotificacion('Error al cargar los detalles del pedido', 'error');
-                                }
-                            } catch (error) {
-                                console.error('Error:', error);
-                                mostrarNotificacion('Error al cargar los detalles del pedido', 'error');
-                            } finally {
-                                ocultarCarga();
-                            }
-                        });
-                    });
-                } else {
-                    container.innerHTML = '<p class="no-pedidos">No hay pedidos en esta sección</p>';
-                }
-            };
-
-            // Renderizar cada sección
-            renderizarPedidos(data.pedidos.rechazados, rechazadosContainer);
-            renderizarPedidos(data.pedidos.pendientes, pendientesContainer);
-            renderizarPedidos(data.pedidos.parciales, parcialesContainer);
-        } else {
-            throw new Error(data.error || 'Error al cargar los pedidos');
-        }
+        // Mostrar pedidos
+        mostrarPedidos(dataPendientes.pedidos, 'pendientes');
+        mostrarPedidos(dataRechazados.pedidos, 'rechazados');
     } catch (error) {
         console.error('Error:', error);
-        mostrarNotificacion('Error al cargar los pedidos: ' + error.message, 'error');
-        const containers = [
-            '.pedidos-rechazados',
-            '.pedidos-pendientes',
-            '.pedidos-parciales'
-        ];
-        containers.forEach(container => {
-            const element = document.querySelector(container);
-            if (element) {
-                element.innerHTML = '<p class="error">Error al cargar los pedidos</p>';
-            }
-        });
+        mostrarNotificacion('Error al cargar los pedidos', 'error');
     } finally {
         ocultarCarga();
     }
 }
-function mostrarFormularioEntrega(hoja, pedidos) {
-    const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+function mostrarPedidos(pedidos, tipo) {
+    const container = document.querySelector(`.pedidos-list.${tipo}`);
     
-    contenido.innerHTML = `
-        <i class="fas fa-truck-loading fa-2x"></i>
-        <h2>Registrar Entrega</h2>
-        <div class="form-entrega">
-            <select id="producto-entrega" required>
-                <option value="">Seleccione un producto</option>
-                ${pedidos.map(pedido => `
-                    <option value="${pedido[1]}">${pedido[1]} - ${pedido[2]}</option>
-                `).join('')}
-            </select>
-            <input type="text" id="cantidad-entrega" placeholder="Cantidad" required>
-            <input type="text" id="proveedor-entrega" placeholder="Proveedor" required>
-            <input type="number" id="precio-entrega" placeholder="Precio/Costo" step="0.01" required>
+    if (!pedidos.length) {
+        container.innerHTML = `<p class="no-pedidos">No hay pedidos ${tipo}</p>`;
+        return;
+    }
+
+    container.innerHTML = pedidos.map(pedido => `
+        <div class="pedido-card ${tipo}">
+            <div class="pedido-info">
+                <h4>${pedido.nombre}</h4>
+                <p class="cantidad"><i class="fas fa-box"></i> ${pedido.cantidad}</p>
+                ${pedido.observaciones ? `<p class="observaciones"><i class="fas fa-comment"></i> ${pedido.observaciones}</p>` : ''}
+            </div>
+            <div class="pedido-meta">
+                <span class="fecha"><i class="far fa-calendar"></i> ${pedido.fecha}</span>
+                ${pedido.proveedor ? `<span class="proveedor"><i class="fas fa-truck"></i> ${pedido.proveedor}</span>` : ''}
+            </div>
         </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn cancelar">Cancelar</button>
-            <button class="anuncio-btn confirmar">Confirmar</button>
-        </div>
-    `;
-
-    // Configurar los event listeners
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
-
-    anuncio.querySelector('.confirmar').onclick = async () => {
-        const producto = document.getElementById('producto-entrega').value;
-        const cantidad = document.getElementById('cantidad-entrega').value;
-        const proveedor = document.getElementById('proveedor-entrega').value;
-        const precio = document.getElementById('precio-entrega').value;
-
-        if (!producto || !cantidad || !proveedor || !precio) {
-            mostrarNotificacion('Por favor complete todos los campos', 'warning');
-            return;
-        }
-
-        try {
-            mostrarCarga();
-            const response = await fetch('/actualizar-entrega-pedido', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    hoja,
-                    producto,
-                    cantidad,
-                    proveedor,
-                    precio
-                })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                mostrarNotificacion('Entrega registrada correctamente', 'success');
-                anuncio.style.display = 'none';
-                cargarPedidosArchivados(); // Recargar la lista
-            } else {
-                mostrarNotificacion(data.error, 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al registrar la entrega', 'error');
-        }finally{
-            ocultarCarga();
-        }
-    };
-
-    anuncio.style.display = 'flex';
+    `).join('');
 }

@@ -2,8 +2,9 @@
 @import 'styles/layout.css';
 @import 'styles/components.css';
 @import 'styles/user.css';
-@import 'styles/consultarRegistros.css';
 @import 'styles/verificarRegistros.css';
+@import 'styles/consultarRegistros.css';
+
 @import'styles/compras.css';
 @import 'styles/formProduccion.css';
 @import 'styles/misCuentasProduccion.css';

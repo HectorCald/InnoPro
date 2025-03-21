@@ -1,4 +1,5 @@
 export function inicializarPedidos() {
+    const anuncio = document.querySelector('.anuncio').style.display='none'
     const container = document.querySelector('.newPedido-view');
     container.innerHTML = `
         <div class="title">
@@ -40,9 +41,8 @@ export function inicializarPedidos() {
         </div>
     `;
     cargarPedidos();
-    cargarPedidosArchivados();
 }
-export function togglePedidosRecibidos() {
+export async function togglePedidosRecibidos() {
     const listaRecibidos = document.querySelector('.lista-recibidos');
     const listaArchivados = document.querySelector('.lista-archivados');
     const estaVisible = listaRecibidos.style.display !== 'none';
@@ -50,14 +50,78 @@ export function togglePedidosRecibidos() {
     // Ocultar archivados y actualizar su botón
     listaArchivados.style.display = 'none';
     
-    // Toggle recibidos
-    listaRecibidos.style.display = estaVisible ? 'none' : 'block';
-    
     if (!estaVisible) {
-        cargarPedidosRecibidos();
+        try {
+            mostrarCarga();
+            const response = await fetch('/obtener-pedidos-recibidos');
+            const data = await response.json();
+
+            if (data.success && data.pedidos.length > 0) {
+                listaRecibidos.innerHTML = `
+                    <h2 class="section-title">Pedidos recibidos</h2>
+                    ${data.pedidos.map(pedido => `
+                        <div class="pedido-archivado-card">
+                            <div class="pedido-archivado-header">
+                                <span class="pedido-nombre">${pedido.nombre}</span>
+                                <span class="pedido-fecha"><i class="fas fa-calendar"></i> ${pedido.fecha}</span>
+                            </div>
+                            <div class="pedido-detalles">
+                                <span class="pedido-cantidad">
+                                    <i class="fas fa-box"></i>
+                                    Pedido: ${pedido.cantidad}
+                                </span>
+                                <span class="pedido-cantidad-recibida">
+                                    <i class="fas fa-check-circle"></i>
+                                    Recibido: ${pedido.cantidadRecibida || 'No especificado'}
+                                </span>
+                                ${pedido.proveedor ? `
+                                <span class="pedido-proveedor">
+                                    <i class="fas fa-truck"></i>
+                                    Proveedor: ${pedido.proveedor}
+                                </span>` : ''}
+                                ${pedido.precio ? `
+                                <span class="pedido-precio">
+                                    <i class="fas fa-tag"></i>
+                                    Precio: ${pedido.precio}
+                                </span>` : ''}
+                                ${pedido.observaciones ? `
+                                <span class="pedido-obs">
+                                    <i class="fas fa-comment"></i>
+                                    ${pedido.observaciones}
+                                </span>` : ''}
+                            </div>
+                            <div class="btn-recibido-pedido">
+                                <button class="enviar" onclick="window.mostrarFormularioIngreso('${pedido.nombre}', 'Pedidos')">
+                                    <i class="fas fa-check"></i>
+                                    Ingresar
+                                </button>
+                                <button class="cancelar" onclick="window.mostrarFormularioRechazo('${pedido.nombre}', 'Pedidos')">
+                                    <i class="fas fa-times"></i>
+                                    Rechazar
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+
+                // Make functions available globally
+                window.mostrarFormularioIngreso = mostrarFormularioIngreso;
+                window.mostrarFormularioRechazo = mostrarFormularioRechazo;
+            } else {
+                listaRecibidos.innerHTML = '<p class="no-recibidos">No hay pedidos recibidos</p>';
+            }
+            listaRecibidos.style.display = 'block';
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al cargar pedidos recibidos', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    } else {
+        listaRecibidos.style.display = 'none';
     }
 }
-export function togglePedidosArchivados() {
+export async function togglePedidosArchivados() {
     const listaArchivados = document.querySelector('.lista-archivados');
     const listaRecibidos = document.querySelector('.lista-recibidos');
     const estaVisible = listaArchivados.style.display !== 'none';
@@ -65,136 +129,112 @@ export function togglePedidosArchivados() {
     // Ocultar recibidos y actualizar su botón
     listaRecibidos.style.display = 'none';
     
-    // Toggle archivados
-    listaArchivados.style.display = estaVisible ? 'none' : 'block';
+    if (!estaVisible) {
+        try {
+            mostrarCarga();
+            const response = await fetch('/obtener-pedidos-pendientes');
+            const data = await response.json();
+
+            if (data.success && data.pedidos.length > 0) {
+                listaArchivados.innerHTML = `
+                        <p class="section-title">Pedidos pendientes</p>
+                        ${data.pedidos.map(pedido => `
+                            <div class="pedido-archivado-card">
+                                <div class="pedido-archivado-header">
+                                    <span class="pedido-nombre">${pedido.nombre}</span>
+                                    <span class="pedido-fecha"><i class="fas fa-calendar"></i> ${pedido.fecha}</span>
+                                </div>
+                                <div class="pedido-detalles">
+                                    <span class="pedido-cantidad">
+                                        <i class="fas fa-box"></i>
+                                        ${pedido.cantidad}
+                                    </span>
+                                    ${pedido.observaciones ? `
+                                    <span class="pedido-obs">
+                                        <i class="fas fa-comment"></i>
+                                        ${pedido.observaciones}
+                                    </span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    `;
+            } else {
+                listaArchivados.innerHTML = '<p class="no-archivados">No hay pedidos pendientes</p>';
+            }
+            listaArchivados.style.display = 'block';
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al cargar pedidos pendientes', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    } else {
+        listaArchivados.style.display = 'none';
+    }
 }
-export async function cargarPedidosRecibidos() {
+export async function mostrarFormularioIngreso(producto, hoja) {
     try {
         mostrarCarga();
-        const response = await fetch('/obtener-pedidos-recibidos');
+        const response = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
         const data = await response.json();
+        const siguienteLote = data.success ? data.siguienteLote : '?';
 
-        const container = document.querySelector('.lista-recibidos');
-        if (data.success && data.hojas.length > 0) {
-            container.innerHTML = data.hojas.map(hoja => `
-                <div class="hoja-recibida">
-                    <button class="btn-hoja" onclick="mostrarPedidosRecibidos('${hoja}')">
-                        <i class="fas fa-file-invoice"></i> ${hoja}
-                    </button>
+        const anuncio = document.querySelector('.anuncio');
+        anuncio.style.display='flex'
+        anuncio.innerHTML = `
+            <div class="anuncio-contenido">
+                <h2>Ingreso de Producto</h2>
+                <div class="form-ingreso">
+                    <input type="text" id="producto-ingreso" value="${producto}" readonly>
+                    <div class="lote-info">Lote a asignar: ${siguienteLote}</div>
+                    <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+                    <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
                 </div>
-            `).join('');
-        } else {
-            container.innerHTML = '<p class="no-archivos">No hay pedidos recibidos</p>';
-        }
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn cancelar" onclick="inicializarPedidos()">Cancelar</button>
+                    <button class="anuncio-btn confirmar" onclick="procesarIngreso('${producto}', '${hoja}')">Ingresar</button>
+                </div>
+            </div>
+        `;
     } catch (error) {
         console.error('Error:', error);
-        mostrarNotificacion('Error al cargar pedidos recibidos', 'error');
-    }
-    finally{
+        mostrarNotificacion('Error al cargar el formulario de ingreso', 'error');
+    } finally {
         ocultarCarga();
     }
 }
 export async function procesarIngreso(producto, hoja) {
     try {
+        mostrarCarga();
         const pesoInput = document.getElementById('peso-ingreso');
-        const peso = pesoInput.value.trim();
+        const observacionesInput = document.getElementById('observaciones-ingreso');
+        const peso = parseFloat(pesoInput.value);
+        const observaciones = observacionesInput.value.trim();
 
-        if (!peso) {
-            mostrarNotificacion('Por favor ingrese el peso', 'warning');
+        if (isNaN(peso) || peso <= 0) {
+            mostrarNotificacion('Por favor ingrese un peso válido', 'error');
             return;
         }
 
-        mostrarCarga();
         const response = await fetch('/procesar-ingreso', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ producto, peso, hoja })
+            body: JSON.stringify({ producto, peso, hoja, observaciones })
         });
 
         const data = await response.json();
         if (data.success) {
             mostrarNotificacion('Ingreso procesado correctamente', 'success');
             cerrarFormularioPedido();
-            
-            // Si la hoja fue eliminada, actualizar la vista
-            if (data.hojaEliminada) {
-                const listaRecibidos = document.querySelector('.lista-recibidos');
-                if (listaRecibidos) {
-                    // Eliminar la hoja de la lista
-                    const hojaElement = listaRecibidos.querySelector(`[onclick="mostrarPedidosRecibidos('${hoja}')"]`);
-                    if (hojaElement) {
-                        hojaElement.closest('.hoja-recibida').remove();
-                    }
-                }
-            }
-            
-            // Recargar la lista de pedidos recibidos
-            await cargarPedidosRecibidos();
+            await togglePedidosRecibidos();
         } else {
             mostrarNotificacion(data.error || 'Error al procesar el ingreso', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al procesar el ingreso', 'error');
-    } finally {
-        ocultarCarga();
-        const anuncio = document.querySelector('.anuncio');
-        if (anuncio) {
-            anuncio.style.display = 'none';
-        }
-    }
-}
-export async function mostrarPedidosRecibidos(hoja) {
-    try {
-        mostrarCarga();
-        const response = await fetch(`/obtener-detalles-recibidos/${encodeURIComponent(hoja)}`);
-        const data = await response.json();
-
-        if (data.success && data.pedidos && data.pedidos.length > 1) {
-            const anuncio = document.querySelector('.anuncio');
-            anuncio.style.display = 'flex';
-            
-            anuncio.innerHTML = `
-                <div class="anuncio-contenido">
-                    <h2>Pedidos Recibidos</h2>
-                    <p class="fecha-archivo">Fecha: ${hoja.replace('Pedidos_', '')}</p>
-                    <div class="pedidos-recibidos-lista">
-                        ${data.pedidos.slice(1).map(pedido => `
-                            <div class="pedido-recibido-item">
-                                <div class="pedido-recibido-info">
-                                    <span class="pedido-nombre">${pedido[1] || ''}</span>
-                                    <span class="pedido-cantidad">${pedido[2] || ''}</span>
-                                    <span class="pedido-recibido">Cantidad: ${pedido[4] || 'No recibido'}</span> <br>
-                                    <span class="pedido-proveedor">Proveedor: ${pedido[5] || 'Sin proveedor'}</span><br>
-                                    <span class="pedido-costo">Precio: ${pedido[6]+' Bs.' || 'Sin costo'}</span><br>
-                                    <div class="btn-recibido-pedido">
-                                        <button class="btn-ingreso-pedido" onclick="mostrarFormularioIngreso('${pedido[1]}', '${hoja}', '${pedido[4]}')">
-                                            <i class="fas fa-warehouse"></i> Ingresar
-                                        </button>
-                                        <button class="btn-rechazo-pedido" onclick="mostrarFormularioRechazo('${pedido[1]}', '${hoja}')">
-                                            <i class="fas fa-times-circle"></i> Rechazar
-                                        </button>
-                                    </div>
-                                    
-                                </div>
-                                <div class="pedido-obs">${pedido[3] || 'Sin observaciones'}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="anuncio-botones">
-                        <button class="anuncio-btn cancelar" onclick="cerrarFormularioPedido()">Cerrar</button>
-                    </div>
-                </div>
-            `;
-        } else {
-            mostrarNotificacion('No hay pedidos recibidos', 'info');
-            cerrarFormularioPedido();
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar pedidos recibidos', 'error');
     } finally {
         ocultarCarga();
     }
@@ -210,7 +250,7 @@ export function mostrarFormularioRechazo(producto, hoja) {
                 <textarea id="razon-rechazo" placeholder="Razón del rechazo" required></textarea>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar" onclick="mostrarPedidosRecibidos('${hoja}')">Cancelar</button>
+                <button class="anuncio-btn cancelar" onclick="inicializarPedidos()">Cancelar</button>
                 <button class="anuncio-btn confirmar" onclick="confirmarRechazo('${producto}', '${hoja}')">Confirmar</button>
             </div>
         </div>
@@ -219,8 +259,9 @@ export function mostrarFormularioRechazo(producto, hoja) {
 }
 export async function confirmarRechazo(producto, hoja) {
     try {
-        const razon = document.getElementById('razon-rechazo').value.trim();
-        
+        const razonTextarea = document.getElementById('razon-rechazo');
+        const razon = razonTextarea.value.trim();
+
         if (!razon) {
             mostrarNotificacion('Por favor ingrese la razón del rechazo', 'warning');
             return;
@@ -236,160 +277,24 @@ export async function confirmarRechazo(producto, hoja) {
         });
 
         const data = await response.json();
-        if (data.success) {
+        
+        if (response.ok && data.success) {
             mostrarNotificacion('Pedido rechazado correctamente', 'success');
-            await mostrarPedidosRecibidos(hoja);
+            cerrarFormularioPedido();
+            await togglePedidosRecibidos();
         } else {
-            mostrarNotificacion(data.error || 'Error al rechazar el pedido', 'error');
+            throw new Error(data.error || 'Error al rechazar el pedido');
         }
     } catch (error) {
         console.error('Error:', error);
-        mostrarNotificacion('Error al rechazar el pedido', 'error');
-    } finally {
-        ocultarCarga();
-    }
-}
-export async function mostrarFormularioIngreso(producto, hoja) {
-    try {
-        // Get next lot number
-        const response = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
-        const data = await response.json();
-        const siguienteLote = data.success ? data.siguienteLote : '?';
-
-        const anuncio = document.querySelector('.anuncio');
-        anuncio.innerHTML = `
-            <div class="anuncio-contenido">
-                <h2>Ingreso de Producto</h2>
-                <div class="form-ingreso">
-                    <input type="text" id="producto-ingreso" value="${producto}" readonly>
-                    <div class="lote-info">Lote a asignar: ${siguienteLote}</div>
-                    <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
-                </div>
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn cancelar" onclick="mostrarPedidosRecibidos('${hoja}')">Cancelar</button>
-                    <button class="anuncio-btn confirmar" onclick="procesarIngreso('${producto}', '${hoja}')">Ingresar</button>
-                </div>
-            </div>
-        `;
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar el formulario de ingreso', 'error');
-    }
-}
-export async function cargarPedidosArchivados() {
-    try {
-        mostrarCarga();
-        const response = await fetch('/obtener-hojas-pedidos');
-        const data = await response.json();
-
-        if (data.success && data.hojas.length > 0) {
-            const container = document.querySelector('.lista-archivados');
-            container.innerHTML = data.hojas.map(hoja => `
-                <div class="hoja-archivada">
-                    <button class="btn-hoja" onclick="mostrarPedidosArchivados('${hoja}')">
-                        <i class="fas fa-file-invoice"></i> ${hoja}
-                    </button>
-                </div>
-            `).join('');
-        } else {
-            const container = document.querySelector('.lista-archivados');
-            container.innerHTML = '<p class="no-archivos">No hay pedidos archivados</p>';
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar pedidos archivados', 'error');
-    }
-    finally{
-        ocultarCarga();
-    }
-}
-export async function mostrarDetallesPedido(hoja) {
-    try {
-        mostrarCarga();
-        const response = await fetch(`/obtener-detalles-pedido/${encodeURIComponent(hoja)}`);
-        const data = await response.json();
-
-        if (data.success && data.pedidos) {
-            const anuncio = document.querySelector('.anuncio');
-            anuncio.style.display = 'flex';
-            
-            anuncio.innerHTML = `
-                <div class="anuncio-contenido">
-                    <h2>Pedidos Archivados</h2>
-                    <p class="fecha-archivo">Fecha: ${hoja.replace('Pedidos_', '')}</p>
-                    <div class="pedidos-archivados-lista">
-                        ${data.pedidos.slice(1).map(pedido => `
-                            <div class="pedido-archivado-item">
-                                <div class="pedido-info">
-                                    <span class="pedido-nombre">${pedido[1] || ''}</span>
-                                    <span class="pedido-cantidad">${pedido[2] || ''}</span>
-                                    <span class="pedido-obs">${pedido[3] || 'Sin observaciones'}</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="anuncio-botones">
-                        <button class="anuncio-btn cancelar" onclick="cerrarFormularioPedido()">Cerrar</button>
-                    </div>
-                </div>
-            `;
-        } else {
-            mostrarNotificacion('No se encontraron detalles del pedido', 'warning');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar detalles del pedido', 'error');
-    } finally {
-        ocultarCarga();
-    }
-}
-export async function mostrarPedidosArchivados(hoja) {
-    try {
-        mostrarCarga();
-        const response = await fetch(`/obtener-detalles-pedido/${encodeURIComponent(hoja)}`);
-        const data = await response.json();
-
-        if (data.success && data.pedidos) {
-            const anuncio = document.querySelector('.anuncio');
-            anuncio.style.display = 'flex';
-            
-            anuncio.innerHTML = `
-                <div class="anuncio-contenido">
-                    <h2>Pedidos Archivados</h2>
-                    <p class="fecha-archivo">Fecha: ${hoja.replace('Pedidos_', '')}</p>
-                    <div class="pedidos-archivados-lista">
-                        ${data.pedidos.slice(1).map(pedido => `
-                            <div class="pedido-archivado-item">
-                                <div class="pedido-info">
-                                    <span class="pedido-nombre">${pedido[1] || ''}</span>
-                                    <span class="pedido-cantidad">${pedido[2] || ''}</span>
-                                    <span class="pedido-obs">${pedido[3] || 'Sin observaciones'}</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="anuncio-botones">
-                        <button class="anuncio-btn cancelar" onclick="cerrarFormularioPedido()">Cerrar</button>
-                    </div>
-                </div>
-            `;
-        } else {
-            mostrarNotificacion('No se encontraron detalles del pedido', 'warning');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar detalles del pedido', 'error');
+        mostrarNotificacion(error.message, 'error');
     } finally {
         ocultarCarga();
     }
 }
 export async function finalizarPedidos() {
     try {
-        mostrarCarga();
-        const response = await fetch('/obtener-pedidos');
-        const data = await response.json();
-
-        if (!data.success || !data.pedidos.length) {
+        if (pedidosTemporales.length === 0) {
             mostrarNotificacion('No hay pedidos para finalizar', 'warning');
             return;
         }
@@ -404,10 +309,10 @@ export async function finalizarPedidos() {
                 <p>¿Desea finalizar y archivar todos los pedidos actuales?</p>
                 <div class="pedidos-resumen">
                     <h3>Resumen de Pedidos:</h3>
-                    ${data.pedidos.slice(1).map(pedido => `
+                    ${pedidosTemporales.map(pedido => `
                         <div class="pedido-resumen-item">
-                            <span>${pedido[1]}</span>
-                            <span>${pedido[2]}</span>
+                            <span>${pedido.nombre}</span>
+                            <span>${pedido.cantidad}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -420,27 +325,29 @@ export async function finalizarPedidos() {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al cargar los pedidos', 'error');
-    } finally {
-        ocultarCarga();
     }
 }
 export async function confirmarFinalizacionPedidos() {
     try {
         mostrarCarga();
         const response = await fetch('/finalizar-pedidos', {
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ pedidos: pedidosTemporales })
         });
 
         const data = await response.json();
         if (data.success) {
+            pedidosTemporales = []; // Clear the temporary pedidos
             mostrarNotificacion('Pedidos finalizados correctamente', 'success');
             cerrarFormularioPedido();
             await Promise.all([
                 cargarPedidos(),
-                cargarPedidosArchivados() // Agregamos esta línea para actualizar la lista
             ]);
         } else {
-            mostrarNotificacion(data.error, 'error');
+            mostrarNotificacion(data.error || 'Error al finalizar los pedidos', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
@@ -449,7 +356,6 @@ export async function confirmarFinalizacionPedidos() {
         ocultarCarga();
     }
 }
-
 export async function mostrarFormularioPedido() {
     try {
         mostrarCarga();
@@ -555,64 +461,95 @@ export async function mostrarFormularioPedido() {
         ocultarCarga();
     }
 }
-// Agregar esta función para verificar pedidos existentes
-async function verificarPedidoExistente(nombre) {
+export async function verificarPedidoExistente(nombre) {
     try {
-        const response = await fetch(`/buscar-pedido-existente/${encodeURIComponent(nombre)}`);
+        const response = await fetch(`/buscar-producto-pendiente/${encodeURIComponent(nombre)}`);
         const data = await response.json();
         
-        if (data.success && data.pedidoExistente) {
-            const { hoja, datos } = data.pedidoExistente;
-            mostrarSugerenciaPedido(hoja, datos);
-            return true;
+        if (data.success && data.productos.length > 0) {
+            const producto = data.productos[0];
+            // Create pedido object in the format expected by mostrarSugerenciaPedido
+            const pedidoExistente = [
+                producto.fecha,
+                producto.nombre,
+                producto.cantidad,
+                producto.observaciones
+            ];
+            
+            // Remove any existing suggestion before showing new one
+            const existingSuggestion = document.querySelector('.sugerencia-pedido-existente');
+            if (existingSuggestion) {
+                existingSuggestion.remove();
+            }
+            
+            // Show suggestion for the existing pedido
+            mostrarSugerenciaPedido('Pedidos', pedidoExistente);
         }
-        return false;
     } catch (error) {
-        console.error('Error:', error);
-        return false;
-    }
-    finally {
-        ocultarCarga();
+        console.error('Error al verificar pedido existente:', error);
+        mostrarNotificacion('Error al verificar pedido existente', 'error');
     }
 }
-
-// Agregar esta función para mostrar la sugerencia
-// Modificar la función mostrarSugerenciaPedido
 function mostrarSugerenciaPedido(hoja, pedido) {
     const sugerenciaDiv = document.createElement('div');
     sugerenciaDiv.className = 'sugerencia-pedido-existente';
     
-    // Extraer cantidad y unidad del pedido[2] (ejemplo: "5 kg" -> ["5", "kg"])
-    const [cantidad, unidad] = pedido[2].split(' ');
     sugerenciaDiv.innerHTML = `
         <div class="sugerencia-contenido">
-            <p>Ya existe un pedido sin recibir para "${pedido[1]}"</p>
+            <p>Ya existe un pedido pendiente para "${pedido[1]}"</p>
             <p>Cantidad: ${pedido[2]}</p>
-            <p>En la hoja: ${hoja}</p>
+            <p>Fecha: ${pedido[0]}</p>
+            ${pedido[3] ? `<p>Observaciones: ${pedido[3]}</p>` : ''}
             <div class="sugerencia-botones">
                 <button class="btn-usar-existente">Usar pedido existente</button>
                 <button class="btn-crear-nuevo">Crear nuevo pedido</button>
             </div>
         </div>
     `;
-    mostrarCarga();
     const formPedido = document.querySelector('.form-pedido');
     formPedido.appendChild(sugerenciaDiv);
 
     // Manejar la decisión del usuario
     sugerenciaDiv.querySelector('.btn-usar-existente').onclick = async () => {
-        // Establecer valores en el formulario
-        document.getElementById('cantidad-pedido').value = cantidad;
-        const selectUnidad = document.getElementById('unidad-medida');
-        // Encontrar la opción que coincida con la unidad
-        const opcionUnidad = Array.from(selectUnidad.options)
-            .find(option => option.value === unidad || option.text === unidad);
-        if (opcionUnidad) {
-            selectUnidad.value = opcionUnidad.value;
+        try {
+            mostrarCarga();
+            // Eliminar el pedido existente de la hoja Pedidos
+            const response = await fetch('/eliminar-pedido', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fecha: pedido[0],
+                    nombre: pedido[1]
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // Establecer valores en el formulario
+                document.getElementById('cantidad-pedido').value = pedido[2].split(' ')[0];
+                document.getElementById('obs-pedido').value = pedido[3] || '';
+                
+                const selectUnidad = document.getElementById('unidad-medida');
+                const unidad = pedido[2].split(' ')[1];
+                const opcionUnidad = Array.from(selectUnidad.options)
+                    .find(option => option.value === unidad || option.text === unidad);
+                if (opcionUnidad) {
+                    selectUnidad.value = opcionUnidad.value;
+                }
+                
+                mostrarNotificacion('Pedido existente actualizado correctamente', 'success');
+            } else {
+                mostrarNotificacion('Error al actualizar pedido existente', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al procesar el pedido existente', 'error');
         }
-        
-        // Eliminar el pedido existente
-        await eliminarPedidoExistente(hoja, pedido[1]);
+        finally{
+            ocultarCarga();
+        }
         sugerenciaDiv.remove();
     };
 
@@ -620,148 +557,91 @@ function mostrarSugerenciaPedido(hoja, pedido) {
         sugerenciaDiv.remove();
     };
 }
-
-// Agregar la función eliminarPedidoExistente
-async function eliminarPedidoExistente(hoja, nombre) {
-    try {
-        mostrarCarga();
-        const response = await fetch('/eliminar-pedido-existente', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ hoja, nombre })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            mostrarNotificacion('Pedido existente eliminado correctamente', 'success');
-            if (data.hojaEliminada) {
-                mostrarNotificacion('Hoja de pedido eliminada', 'info');
-            }
-        } else {
-            mostrarNotificacion(data.error || 'Error al eliminar pedido existente', 'error');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al eliminar pedido existente', 'error');
-    }
-    finally {
-        ocultarCarga();
-    }
-}
-
+let pedidosTemporales = [];
 
 export async function guardarPedido() {
     try {
-        mostrarCarga();
-        const nombre = document.getElementById('nombre-pedido').value;
+        const nombre = document.getElementById('nombre-pedido').value.trim();
         const cantidad = document.getElementById('cantidad-pedido').value;
         const unidad = document.getElementById('unidad-medida').value;
-        const observaciones = document.getElementById('obs-pedido').value;
+        const observaciones = document.getElementById('obs-pedido').value.trim();
 
         if (!nombre || !cantidad) {
-            mostrarNotificacion('Por favor complete los campos requeridos', 'warning');
+            mostrarNotificacion('Por favor complete todos los campos requeridos', 'warning');
             return;
         }
 
-        const cantidadFormateada = `${cantidad} ${unidad}`;
+        const fecha = new Date().toLocaleDateString('es-ES');
+        const nuevoPedido = {
+            fecha,
+            nombre,
+            cantidad: `${cantidad} ${unidad}`,
+            observaciones
+        };
 
-        const response = await fetch('/guardar-pedido', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                nombre,
-                cantidad: cantidadFormateada,
-                observaciones
-            })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            mostrarNotificacion('Pedido guardado correctamente', 'success');
-            cerrarFormularioPedido();
-            cargarPedidos();
-        } else {
-            mostrarNotificacion(data.error, 'error');
-        }
+        pedidosTemporales.push(nuevoPedido);
+        cerrarFormularioPedido();
+        await cargarPedidos(); // This will now show temporary pedidos
+        mostrarNotificacion('Pedido agregado correctamente', 'success');
     } catch (error) {
         console.error('Error:', error);
-        mostrarNotificacion('Error al guardar el pedido', 'error');
-    } finally {
-        ocultarCarga();
+        mostrarNotificacion('Error al agregar el pedido', 'error');
     }
+}
+export async function cargarPedidos() {
+    try {
+        const container = document.querySelector('.lista-pedidos');
+        
+        if (pedidosTemporales.length === 0) {
+            container.innerHTML = '<p class="no-pedidos">No hay pedidos pendientes</p>';
+            return;
+        }
+
+               container.innerHTML = `
+            <div class="pedidos-lista">
+                ${pedidosTemporales.map(pedido => `
+                    <div class="pedido-card">
+                        <div class="pedido-info">
+                            <h4>${pedido.nombre}</h4>
+                            <div class="cantidad">
+                                <i class="fas fa-box"></i>
+                                <span>${pedido.cantidad}</span>
+                            </div>
+                            ${pedido.observaciones ? `
+                            <div class="observaciones">
+                                <i class="fas fa-comment"></i>
+                                <span>${pedido.observaciones}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="pedido-meta">
+                            <span>
+                                <i class="fas fa-calendar"></i>
+                                ${pedido.fecha}
+                            </span>
+                            <button class="btn-eliminar" onclick="mostrarConfirmacionEliminar('${pedido.nombre}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al cargar los pedidos', 'error');
+    }
+    document.querySelector('.lista-recibidos').style.display='none'
+    document.querySelector('.lista-archivados').style.display='none'
+}
+export function eliminarPedido(nombre) {
+    pedidosTemporales = pedidosTemporales.filter(p => p.nombre !== nombre);
+    cargarPedidos();
+    mostrarNotificacion('Pedido eliminado correctamente', 'success');
 }
 export function cerrarFormularioPedido() {
     const anuncio = document.querySelector('.anuncio');
     anuncio.style.display = 'none';
-}
-export async function cargarPedidos() {
-    try {
-        mostrarCarga();
-        const response = await fetch('/obtener-pedidos');
-        const data = await response.json();
-
-        const container = document.querySelector('.lista-pedidos');
-        if (data.success && data.pedidos.length > 0) {
-            container.innerHTML = data.pedidos.slice(1).map(pedido => `
-                <div class="pedido-card">
-                    <div class="pedido-header">
-                        <div class="pedido-info">
-                            <div class="pedido-principal">
-                                <span class="pedido-nombre">${pedido[1]}</span>
-                                <div class="pedido-detalles">
-                                    <span class="pedido-fecha"><i class="far fa-calendar"></i> ${pedido[0]}</span>
-                                    <span class="pedido-cantidad"><i class="fas fa-box"></i> ${pedido[2]}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="btn-eliminar" onclick="mostrarConfirmacionEliminar('${pedido[0]}', '${pedido[1]}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                    <div class="pedido-obs">
-                        <i class="far fa-comment-alt"></i> ${pedido[3] || 'Sin observaciones'}
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            container.innerHTML = '<p class="no-pedidos">No hay pedidos registrados</p>';
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar los pedidos', 'error');
-    } finally {
-        ocultarCarga();
-    }
-}
-export async function eliminarPedido(fecha, nombre) {
-    try {
-        mostrarCarga();
-        const response = await fetch('/eliminar-pedido', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ fecha, nombre })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            mostrarNotificacion('Pedido eliminado correctamente', 'success');
-            cargarPedidos();
-        } else {
-            mostrarNotificacion(data.error, 'error');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al eliminar el pedido', 'error');
-    } finally {
-        ocultarCarga();
-        cerrarFormularioPedido();
-    }
 }
 export function mostrarConfirmacionEliminar(fecha, nombre) {
     const anuncio = document.querySelector('.anuncio');
@@ -781,52 +661,4 @@ export function mostrarConfirmacionEliminar(fecha, nombre) {
     anuncio.querySelector('.cancelar').onclick = cerrarFormularioPedido;
     anuncio.querySelector('.confirmar').onclick = () => eliminarPedido(fecha, nombre);
     anuncio.style.display = 'flex';
-}
-export async function compartirPedido() {
-    try {
-        mostrarCarga();
-        const response = await fetch('/obtener-pedidos');
-        const data = await response.json();
-
-        if (!data.success || !data.pedidos.length) {
-            mostrarNotificacion('No hay pedidos para compartir', 'warning');
-            return;
-        }
-
-        // Format pedidos as text
-        const fecha = new Date().toLocaleDateString();
-        let mensaje = `*PEDIDOS DAMABRAVA ${fecha}*\n\n`;
-        
-        data.pedidos.slice(1).forEach(pedido => {
-            mensaje += `📦 *${pedido[1]}*\n`;
-            mensaje += `📏 Cantidad: ${pedido[2]}\n`;
-            if (pedido[3]) {
-                mensaje += `📝 Obs: ${pedido[3]}\n`;
-            }
-            mensaje += `\n`;
-        });
-
-        mensaje += '\n_Enviado desde App Damabrava_';
-
-        // Share via WhatsApp
-        const numero = "59169713972";
-        const enlaceWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
-        window.open(enlaceWhatsApp, '_blank');
-        
-        mostrarNotificacion('Abriendo WhatsApp...', 'success');
-    } catch (error) {
-        console.error('Error al compartir:', error);
-        mostrarNotificacion('Error al compartir los pedidos', 'error');
-    } finally {
-        ocultarCarga();
-    }
-}
-export function compartirEnWhatsApp(fileName) {
-    const numero = "59169713972";
-    const mensaje = `Hola, te comparto el archivo de pedidos: ${fileName}`;
-    
-    const enlaceWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
-    
-    // Open WhatsApp in a new window to maintain the current page
-    window.open(enlaceWhatsApp, '_blank');
 }
