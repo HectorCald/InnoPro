@@ -3,8 +3,9 @@ import { eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-import {togglePedidosRecibidos,mostrarPedidosRecibidos, mostrarFormularioIngreso, procesarIngreso,togglePedidosArchivados, mostrarPedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos,compartirEnWhatsApp, compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
+import {confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos,mostrarPedidosRecibidos, mostrarFormularioIngreso, procesarIngreso,togglePedidosArchivados, mostrarPedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos,compartirEnWhatsApp, compartirPedido, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
 import {mostrarHistorialTareas,toggleProcesos,mostrarProcesos,pausarProceso, finalizarProceso,inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, guardarTarea, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea} from './modules/newTarea.js';
+import {inicializarCompras} from './modules/compras.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -70,6 +71,10 @@ window.mostrarProcesos = mostrarProcesos;
 window.toggleProcesos = toggleProcesos;
 window.mostrarHistorialTareas = mostrarHistorialTareas;
 window.eliminarRegistro = eliminarRegistro;
+window.mostrarFormularioRechazo = mostrarFormularioRechazo;
+window.confirmarRechazo = confirmarRechazo;
+window.inicializarCompras = inicializarCompras;
+
 
 async function bienvenida() {
     try {
@@ -159,11 +164,10 @@ async function obtenerRolUsuario() {
         return null;
     }
 }
-
 async function iniciarApp() {
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
+    const vistas = document.querySelectorAll('.compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
     
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => {
@@ -234,6 +238,14 @@ async function iniciarApp() {
                 icono: 'fa-search',
                 texto: 'Consultar',
                 onclick: 'onclick="inicializarConsulta()"'
+            }
+            ,
+            {
+                clase: 'opcion-btn',
+                vista: 'compras-view',
+                icono: 'fa-shopping-cart fa-2x',
+                texto: 'Compras',
+                onclick: 'onclick="inicializarCompras()"'
             }
         ]
     };
@@ -317,13 +329,10 @@ async function iniciarApp() {
         });
     });
 }
-
-// Agregar esta función después de las importaciones
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'flex';
 }
-
 function ocultarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'none';

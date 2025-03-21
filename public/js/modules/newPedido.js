@@ -2,7 +2,7 @@ export function inicializarPedidos() {
     const container = document.querySelector('.newPedido-view');
     container.innerHTML = `
         <div class="title">
-            <h2 class="section-title">Gestión de Pedidos</h2>
+            <h2 class="section-title"><i class="fas fa-shopping-basket fa-2x"></i> Gestión de Pedidos</h2>
         </div>
         <div class="pedidos-container">
             <div class="pedidos-botones">
@@ -42,7 +42,6 @@ export function inicializarPedidos() {
     cargarPedidos();
     cargarPedidosArchivados();
 }
-// Nueva función para manejar pedidos recibidos
 export function togglePedidosRecibidos() {
     const listaRecibidos = document.querySelector('.lista-recibidos');
     const listaArchivados = document.querySelector('.lista-archivados');
@@ -58,7 +57,6 @@ export function togglePedidosRecibidos() {
         cargarPedidosRecibidos();
     }
 }
-
 export function togglePedidosArchivados() {
     const listaArchivados = document.querySelector('.lista-archivados');
     const listaRecibidos = document.querySelector('.lista-recibidos');
@@ -168,11 +166,18 @@ export async function mostrarPedidosRecibidos(hoja) {
                                 <div class="pedido-recibido-info">
                                     <span class="pedido-nombre">${pedido[1] || ''}</span>
                                     <span class="pedido-cantidad">${pedido[2] || ''}</span>
-                                    <span class="pedido-recibido">${pedido[4] || ''}</span>
-                                    <span class="pedido-proveedor">${pedido[5] || ''}</span>
-                                    <button class="btn-ingreso" onclick="mostrarFormularioIngreso('${pedido[1]}', '${hoja}', '${pedido[4]}')">
-                                        <i class="fas fa-warehouse"></i> Ingresar
-                                    </button>
+                                    <span class="pedido-recibido">Cantidad: ${pedido[4] || 'No recibido'}</span> <br>
+                                    <span class="pedido-proveedor">Proveedor: ${pedido[5] || 'Sin proveedor'}</span><br>
+                                    <span class="pedido-costo">Precio: ${pedido[6]+' Bs.' || 'Sin costo'}</span><br>
+                                    <div class="btn-recibido-pedido">
+                                        <button class="btn-ingreso-pedido" onclick="mostrarFormularioIngreso('${pedido[1]}', '${hoja}', '${pedido[4]}')">
+                                            <i class="fas fa-warehouse"></i> Ingresar
+                                        </button>
+                                        <button class="btn-rechazo-pedido" onclick="mostrarFormularioRechazo('${pedido[1]}', '${hoja}')">
+                                            <i class="fas fa-times-circle"></i> Rechazar
+                                        </button>
+                                    </div>
+                                    
                                 </div>
                                 <div class="pedido-obs">${pedido[3] || 'Sin observaciones'}</div>
                             </div>
@@ -194,21 +199,82 @@ export async function mostrarPedidosRecibidos(hoja) {
         ocultarCarga();
     }
 }
-export async function mostrarFormularioIngreso(producto, hoja) {
+export function mostrarFormularioRechazo(producto, hoja) {
     const anuncio = document.querySelector('.anuncio');
     anuncio.innerHTML = `
         <div class="anuncio-contenido">
-            <h2>Ingreso de Producto</h2>
-            <div class="form-ingreso">
-                <input type="text" id="producto-ingreso" value="${producto}" readonly>
-                <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+            <i class="fas fa-times-circle"></i>
+            <h2>Rechazar Pedido</h2>
+            <div class="form-rechazo">
+                <p>Producto: ${producto}</p>
+                <textarea id="razon-rechazo" placeholder="Razón del rechazo" required></textarea>
             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn cancelar" onclick="mostrarPedidosRecibidos('${hoja}')">Cancelar</button>
-                <button class="anuncio-btn confirmar" onclick="procesarIngreso('${producto}', '${hoja}')">Ingresar</button>
+                <button class="anuncio-btn confirmar" onclick="confirmarRechazo('${producto}', '${hoja}')">Confirmar</button>
             </div>
         </div>
     `;
+    anuncio.style.display = 'flex';
+}
+export async function confirmarRechazo(producto, hoja) {
+    try {
+        const razon = document.getElementById('razon-rechazo').value.trim();
+        
+        if (!razon) {
+            mostrarNotificacion('Por favor ingrese la razón del rechazo', 'warning');
+            return;
+        }
+
+        mostrarCarga();
+        const response = await fetch('/rechazar-pedido', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ producto, hoja, razon })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion('Pedido rechazado correctamente', 'success');
+            await mostrarPedidosRecibidos(hoja);
+        } else {
+            mostrarNotificacion(data.error || 'Error al rechazar el pedido', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al rechazar el pedido', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+export async function mostrarFormularioIngreso(producto, hoja) {
+    try {
+        // Get next lot number
+        const response = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
+        const data = await response.json();
+        const siguienteLote = data.success ? data.siguienteLote : '?';
+
+        const anuncio = document.querySelector('.anuncio');
+        anuncio.innerHTML = `
+            <div class="anuncio-contenido">
+                <h2>Ingreso de Producto</h2>
+                <div class="form-ingreso">
+                    <input type="text" id="producto-ingreso" value="${producto}" readonly>
+                    <div class="lote-info">Lote a asignar: ${siguienteLote}</div>
+                    <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+                </div>
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn cancelar" onclick="mostrarPedidosRecibidos('${hoja}')">Cancelar</button>
+                    <button class="anuncio-btn confirmar" onclick="procesarIngreso('${producto}', '${hoja}')">Ingresar</button>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al cargar el formulario de ingreso', 'error');
+    }
 }
 export async function cargarPedidosArchivados() {
     try {
@@ -383,39 +449,208 @@ export async function confirmarFinalizacionPedidos() {
         ocultarCarga();
     }
 }
-export function mostrarFormularioPedido() {
-    const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
-    
-    contenido.innerHTML = `
-        <i class="fas fa-shopping-basket fa-2x"></i>
-        <h2>Nuevo Pedido</h2>
-        <div class="form-pedido">
-            <input type="text" id="nombre-pedido" placeholder="Nombre del producto">
-            <div class="cantidad-container">
-                <input type="number" id="cantidad-pedido" placeholder="Cantidad">
-                <select id="unidad-medida">
-                    <option value="unid.">und.</option>
-                    <option value="cajas">cj.</option>
-                    <option value="bolsas">bls.</option>
-                    <option value="qq">qq</option>
-                    <option value="kg">kg</option>
-                    <option value="arroba">@</option>
-                </select>
+
+export async function mostrarFormularioPedido() {
+    try {
+        mostrarCarga();
+        const response = await fetch('/obtener-lista-pedidos');
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Error al cargar lista de pedidos');
+        }
+
+        const anuncio = document.querySelector('.anuncio');
+        const contenido = anuncio.querySelector('.anuncio-contenido');
+        
+        contenido.innerHTML = `
+            <i class="fas fa-shopping-basket fa-2x"></i>
+            <h2>Nuevo Pedido</h2>
+            <div class="form-pedido">
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="nombre-pedido" placeholder="Nombre del producto" autocomplete="off" required>
+                    <div id="sugerencias-pedido" class="sugerencias-lista"></div>
+                </div>
+                <div class="cantidad-container">
+                    <input type="number" id="cantidad-pedido" placeholder="Cantidad" required>
+                    <select id="unidad-medida">
+                        <option value="unid.">und.</option>
+                        <option value="cajas">cj.</option>
+                        <option value="bolsas">bls.</option>
+                        <option value="qq">qq</option>
+                        <option value="kg">kg</option>
+                        <option value="arroba">@</option>
+                    </select>
+                </div>
+                <textarea id="obs-pedido" placeholder="Observaciones"></textarea>
             </div>
-            <textarea id="obs-pedido" placeholder="Observaciones"></textarea>
-        </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn cancelar">Cancelar</button>
-            <button class="anuncio-btn confirmar">Añadir</button>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn cancelar">Cancelar</button>
+                <button class="anuncio-btn confirmar">Añadir</button>
+            </div>
+        `;
+
+        // Configurar autocompletado
+        const inputPedido = document.getElementById('nombre-pedido');
+        const sugerenciasList = document.getElementById('sugerencias-pedido');
+        const pedidos = data.pedidos;
+
+        // Agregar evento para verificar pedidos existentes
+        inputPedido.addEventListener('blur', async () => {
+            const nombre = inputPedido.value.trim();
+            if (nombre) {
+                await verificarPedidoExistente(nombre);
+            }
+        });
+
+        const normalizeText = (text) => {
+            return text.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s]/g, '');
+        };
+
+        inputPedido.addEventListener('input', () => {
+            const inputValue = normalizeText(inputPedido.value);
+            const sugerencias = pedidos.filter(pedido => 
+                normalizeText(pedido).includes(inputValue)
+            );
+
+            if (inputValue && sugerencias.length > 0) {
+                sugerenciasList.innerHTML = sugerencias
+                    .map(pedido => `<div class="sugerencia-item">${pedido}</div>`)
+                    .join('');
+                sugerenciasList.style.display = 'block';
+            } else {
+                sugerenciasList.style.display = 'none';
+            }
+        });
+
+        // Manejar clic en sugerencia
+        sugerenciasList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('sugerencia-item')) {
+                inputPedido.value = e.target.textContent;
+                sugerenciasList.style.display = 'none';
+                // Verificar pedidos existentes al seleccionar una sugerencia
+                verificarPedidoExistente(e.target.textContent);
+            }
+        });
+
+        // Ocultar sugerencias al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-wrapper')) {
+                sugerenciasList.style.display = 'none';
+            }
+        });
+
+        // Actualizar los event listeners
+        anuncio.querySelector('.cancelar').onclick = cerrarFormularioPedido;
+        anuncio.querySelector('.confirmar').onclick = guardarPedido;
+        anuncio.style.display = 'flex';
+
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al cargar el formulario de pedido', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+// Agregar esta función para verificar pedidos existentes
+async function verificarPedidoExistente(nombre) {
+    try {
+        const response = await fetch(`/buscar-pedido-existente/${encodeURIComponent(nombre)}`);
+        const data = await response.json();
+        
+        if (data.success && data.pedidoExistente) {
+            const { hoja, datos } = data.pedidoExistente;
+            mostrarSugerenciaPedido(hoja, datos);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error:', error);
+        return false;
+    }
+    finally {
+        ocultarCarga();
+    }
+}
+
+// Agregar esta función para mostrar la sugerencia
+// Modificar la función mostrarSugerenciaPedido
+function mostrarSugerenciaPedido(hoja, pedido) {
+    const sugerenciaDiv = document.createElement('div');
+    sugerenciaDiv.className = 'sugerencia-pedido-existente';
+    
+    // Extraer cantidad y unidad del pedido[2] (ejemplo: "5 kg" -> ["5", "kg"])
+    const [cantidad, unidad] = pedido[2].split(' ');
+    sugerenciaDiv.innerHTML = `
+        <div class="sugerencia-contenido">
+            <p>Ya existe un pedido sin recibir para "${pedido[1]}"</p>
+            <p>Cantidad: ${pedido[2]}</p>
+            <p>En la hoja: ${hoja}</p>
+            <div class="sugerencia-botones">
+                <button class="btn-usar-existente">Usar pedido existente</button>
+                <button class="btn-crear-nuevo">Crear nuevo pedido</button>
+            </div>
         </div>
     `;
+    mostrarCarga();
+    const formPedido = document.querySelector('.form-pedido');
+    formPedido.appendChild(sugerenciaDiv);
 
-    // Actualizar los event listeners
-    anuncio.querySelector('.cancelar').onclick = cerrarFormularioPedido;
-    anuncio.querySelector('.confirmar').onclick = guardarPedido;
-    anuncio.style.display = 'flex';
+    // Manejar la decisión del usuario
+    sugerenciaDiv.querySelector('.btn-usar-existente').onclick = async () => {
+        // Establecer valores en el formulario
+        document.getElementById('cantidad-pedido').value = cantidad;
+        const selectUnidad = document.getElementById('unidad-medida');
+        // Encontrar la opción que coincida con la unidad
+        const opcionUnidad = Array.from(selectUnidad.options)
+            .find(option => option.value === unidad || option.text === unidad);
+        if (opcionUnidad) {
+            selectUnidad.value = opcionUnidad.value;
+        }
+        
+        // Eliminar el pedido existente
+        await eliminarPedidoExistente(hoja, pedido[1]);
+        sugerenciaDiv.remove();
+    };
+
+    sugerenciaDiv.querySelector('.btn-crear-nuevo').onclick = () => {
+        sugerenciaDiv.remove();
+    };
 }
+
+// Agregar la función eliminarPedidoExistente
+async function eliminarPedidoExistente(hoja, nombre) {
+    try {
+        mostrarCarga();
+        const response = await fetch('/eliminar-pedido-existente', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ hoja, nombre })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion('Pedido existente eliminado correctamente', 'success');
+            if (data.hojaEliminada) {
+                mostrarNotificacion('Hoja de pedido eliminada', 'info');
+            }
+        } else {
+            mostrarNotificacion(data.error || 'Error al eliminar pedido existente', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al eliminar pedido existente', 'error');
+    }
+    finally {
+        ocultarCarga();
+    }
+}
+
 
 export async function guardarPedido() {
     try {
@@ -586,8 +821,6 @@ export async function compartirPedido() {
         ocultarCarga();
     }
 }
-
-// Remove or comment out the compartirEnWhatsApp function as it's no longer needed
 export function compartirEnWhatsApp(fileName) {
     const numero = "59169713972";
     const mensaje = `Hola, te comparto el archivo de pedidos: ${fileName}`;

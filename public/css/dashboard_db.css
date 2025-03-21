@@ -4,7 +4,7 @@
 @import 'styles/user.css';
 @import 'styles/consultarRegistros.css';
 @import 'styles/verificarRegistros.css';
-
+@import'styles/compras.css';
 @import 'styles/formProduccion.css';
 @import 'styles/misCuentasProduccion.css';
 @import'styles/registrarProduccion.css';
@@ -68,7 +68,7 @@
     padding: 0.6em 1.2em;
     border-radius: 12px;
     position: relative;
-    min-width: 80px;
+    min-width: 50px;
 }
 
 .opciones button i {

@@ -10,6 +10,7 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    overflow-y: auto;
 }
 
 .anuncio-contenido {
@@ -17,17 +18,18 @@
     padding: 2em;
     border-radius: 1em;
     text-align: center;
-    color: white;
+    color: white !important;
     animation: aparecer 0.3s ease-out;
     padding: 20px;
     border-radius: 8px;
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
-    overflow-y: auto;
+    overflow-y: auto !important;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    margin-bottom: 3em;
 }
 
 .anuncio-contenido i {
@@ -59,9 +61,10 @@
     cursor: pointer;
     font-weight: 500;
     transition: all 0.3s ease;
+    width: 100%;
 }
 
-.anuncio-btn.confirmar {
+.anuncio-btn .confirmar {
     background: #dc3545;
     color: white;
 }
@@ -70,7 +73,15 @@
     background: #6c757d;
     color: white;
 }
-
+.anuncio-btn .enviar {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1em;
+}
 .anuncio-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -79,22 +90,26 @@
 .form-group {
     margin-bottom: 15px;
 }
-
+.anuncio-contenido input, .anuncio-contenido textarea {
+    width: 100%;
+    padding: 0.8em;
+    border: 1px solid #404040 !important;
+    border-radius: 4px;
+    background: #353535 !important;
+    color: white !important;
+    margin-block: 10px;
+}
+.anuncio-contenido select{
+    width: auto;
+    background: #353535 !important;
+    color: white !important;
+    border: 1px solid #404040 !important;
+}
 .form-group label {
     display: block;
     color: #fff;
     margin-bottom: 5px;
     font-size: 14px;
-}
-
-.form-group input,
-.form-group textarea {
-    width: 100%;
-    padding: 0.8em;
-    border: 1px solid #404040;
-    border-radius: 4px;
-    background: #353535;
-    color: white;
 }
 @keyframes aparecer {
     from {

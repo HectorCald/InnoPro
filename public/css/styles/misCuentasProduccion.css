@@ -24,7 +24,9 @@
     margin-top: 0.5em;
     margin-bottom: 10px;
 }
-
+.section-title i{
+    font-size: 1rem;
+}
 .filters-section {
     display: flex;
     flex-direction: column;
