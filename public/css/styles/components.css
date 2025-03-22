@@ -28,7 +28,7 @@
     overflow-y: auto !important;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     margin-bottom: 3em;
 }
 
@@ -50,8 +50,9 @@
 
 .anuncio-botones {
     display: flex;
-    gap: 1em;
+    gap: 10px;
     justify-content: center;
+    margin-top: 10px;
 }
 
 .anuncio-btn {
@@ -62,9 +63,10 @@
     font-weight: 500;
     transition: all 0.3s ease;
     width: 100%;
+    margin-bottom: 10px;
 }
 
-.anuncio-btn .confirmar {
+.anuncio-btn.confirmar {
     background: #dc3545;
     color: white;
 }
@@ -73,14 +75,9 @@
     background: #6c757d;
     color: white;
 }
-.anuncio-btn .enviar {
+.anuncio-btn.enviar {
     background: #4CAF50;
     color: white;
-    border: none;
-    padding: 0.5em 1em;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 1em;
 }
 .anuncio-btn:hover {
     transform: translateY(-2px);

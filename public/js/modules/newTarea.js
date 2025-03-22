@@ -18,9 +18,10 @@ export function inicializarTareas() {
                 </button>
                     <p>Historial</p>
                 </div>
-                <div class="cuadro-btn"><button class="btn-toggle-programa btn-tarea">
-                    <i class="fas fa-calendar-alt"></i>
-                </button>
+                <div class="cuadro-btn">
+                    <button class="btn-toggle-programa btn-tarea" onclick="mostrarProgramaAcopio()">
+                        <i class="fas fa-calendar-alt"></i>
+                    </button>
                     <p>Programa</p>
                 </div> 
             </div>
@@ -110,7 +111,7 @@ function formatearTiempo(segundos) {
     const segs = segundos % 60;
     return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(segs).padStart(2, '0')}`;
 }
-export async function mostrarFormularioTarea() {
+export async function mostrarFormularioTarea(productoPreseleccionado = '') {
     try {
         mostrarCarga();
         const response = await fetch('/obtener-lista-tareas');
@@ -128,7 +129,9 @@ export async function mostrarFormularioTarea() {
             <h2>Nueva Tarea</h2>
             <div class="form-tarea">
                 <div class="autocomplete-wrapper">
-                    <input type="text" id="nombre-tarea" placeholder="Nombre de la tarea" autocomplete="off" required>
+                    <input type="text" id="nombre-tarea" value="${productoPreseleccionado}" 
+                           placeholder="Nombre de la tarea" autocomplete="off" required
+                           ${productoPreseleccionado ? 'readonly' : ''}>
                     <div id="sugerencias-tarea" class="sugerencias-lista"></div>
                 </div>
                 <select id="lote-tarea" class="form-input" disabled required>
@@ -176,36 +179,40 @@ export async function mostrarFormularioTarea() {
             }
         }
 
-        // Product input handler
-        inputTarea.addEventListener('input', () => {
-            const inputValue = inputTarea.value.toLowerCase();
-            const sugerencias = tareas.filter(tarea => 
-                tarea.toLowerCase().includes(inputValue)
-            );
+        // Product input handler (only if no preselected product)
+        if (!productoPreseleccionado) {
+            inputTarea.addEventListener('input', () => {
+                const inputValue = inputTarea.value.toLowerCase();
+                const sugerencias = tareas.filter(tarea => 
+                    tarea.toLowerCase().includes(inputValue)
+                );
 
-            if (inputValue && sugerencias.length > 0) {
-                sugerenciasList.innerHTML = sugerencias
-                    .map(tarea => `<div class="sugerencia-item">${tarea}</div>`)
-                    .join('');
-                sugerenciasList.style.display = 'block';
-            } else {
-                sugerenciasList.style.display = 'none';
-            }
-            
-            // Reset lot selection when product changes
-            selectLote.innerHTML = '<option value="">Seleccione un lote</option>';
-            selectLote.disabled = true;
-            pesoDisponible.textContent = '';
-        });
+                if (inputValue && sugerencias.length > 0) {
+                    sugerenciasList.innerHTML = sugerencias
+                        .map(tarea => `<div class="sugerencia-item">${tarea}</div>`)
+                        .join('');
+                    sugerenciasList.style.display = 'block';
+                } else {
+                    sugerenciasList.style.display = 'none';
+                }
+                
+                selectLote.innerHTML = '<option value="">Seleccione un lote</option>';
+                selectLote.disabled = true;
+                pesoDisponible.textContent = '';
+            });
 
-        // Handle suggestion click
-        sugerenciasList.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('sugerencia-item')) {
-                inputTarea.value = e.target.textContent;
-                sugerenciasList.style.display = 'none';
-                await cargarLotes(inputTarea.value);
-            }
-        });
+            // Handle suggestion click
+            sugerenciasList.addEventListener('click', async (e) => {
+                if (e.target.classList.contains('sugerencia-item')) {
+                    inputTarea.value = e.target.textContent;
+                    sugerenciasList.style.display = 'none';
+                    await cargarLotes(inputTarea.value);
+                }
+            });
+        } else {
+            // If product is preselected, load lots immediately
+            await cargarLotes(productoPreseleccionado);
+        }
 
         // Handle lot selection
         selectLote.addEventListener('change', () => {
@@ -220,7 +227,7 @@ export async function mostrarFormularioTarea() {
             }
         });
 
-        // Modify guardarTarea to include lot
+        // Save task handler
         anuncio.querySelector('.confirmar').onclick = () => {
             const loteSeleccionado = selectLote.value;
             if (!loteSeleccionado) {
@@ -759,4 +766,324 @@ function mostrarConfirmacion(titulo, mensaje) {
         anuncio.style.display = 'flex';
     });
 }
+export async function mostrarProgramaAcopio() {
+    try {
+        mostrarCarga();
+        
+        // First check if there's an existing program for the week
+        const verificacion = await fetch('/verificar-programa-semana');
+        const { existePrograma } = await verificacion.json();
 
+        if (existePrograma) {
+            await verProgramaciones();
+            return;
+        }
+
+        // If no program exists, show the interface to create one
+        const response = await fetch('/obtener-lista-tareas');
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Error al cargar lista de tareas');
+        }
+
+        const hoy = new Date();
+        const diasHastaDomingo = 7 - hoy.getDay();
+        const proximoDomingo = new Date(hoy);
+        proximoDomingo.setDate(hoy.getDate() + diasHastaDomingo);
+        
+        const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const tareasOptions = data.tareas.map(tarea => 
+            `<option value="${tarea}">${tarea}</option>`
+        ).join('');
+        
+        const anuncio = document.querySelector('.anuncio');
+        const contenido = anuncio.querySelector('.anuncio-contenido');
+        
+        contenido.innerHTML = `
+            <i class="fas fa-calendar-alt"></i>
+            <h2>Programa de Acopio</h2>
+            <p>Semana hasta el ${proximoDomingo.toLocaleDateString()}</p>
+            <div class="programa-form">
+                ${dias.map(dia => `
+                    <div class="dia-programa">
+                        <h3>${dia}</h3>
+                        <input type="date" id="fecha-${dia.toLowerCase()}" class="fecha-input" readonly>
+                        <div class="tareas-dia" id="tareas-${dia.toLowerCase()}">
+                            <div class="tarea-programa">
+                                <select class="producto-select">
+                                    <option value="">Seleccionar producto</option>
+                                    ${tareasOptions}
+                                </select>
+                                <button type="button" class="btn-eliminar-tarea anuncio-btn confirmar">
+                                    Eliminar
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-agregar-tarea-dia anuncio-btn enviar" data-dia="${dia.toLowerCase()}">
+                            Agregar Tarea
+                        </button>
+                    </div>
+                `).join('')}
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn cancelar">Cancelar</button>
+                    <button class="anuncio-btn confirmar guardar-programa">Guardar</button>
+                    <button class="anuncio-btn ver-programa">Ver</button>
+                </div>
+            </div>
+        `;
+
+        // Set dates automatically
+        dias.forEach((dia, index) => {
+            const fecha = new Date(proximoDomingo);
+            fecha.setDate(fecha.getDate() - (6 - index));
+            document.getElementById(`fecha-${dia.toLowerCase()}`).value = fecha.toISOString().split('T')[0];
+        });
+
+        // Add task button handlers
+        document.querySelectorAll('.btn-agregar-tarea-dia').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const dia = btn.dataset.dia;
+                const tareasContainer = document.getElementById(`tareas-${dia}`);
+                const nuevaTarea = document.createElement('div');
+                nuevaTarea.className = 'tarea-programa';
+                nuevaTarea.innerHTML = `
+                    <select class="producto-select">
+                        <option value="">Seleccionar producto</option>
+                        ${tareasOptions}
+                    </select>
+                    <button type="button" class="btn-eliminar-tarea anuncio-btn confirmar">
+                        Eliminar
+                    </button>
+                `;
+                tareasContainer.appendChild(nuevaTarea);
+
+                nuevaTarea.querySelector('.btn-eliminar-tarea').addEventListener('click', function() {
+                    if (tareasContainer.children.length > 1) {
+                        nuevaTarea.remove();
+                    } else {
+                        mostrarNotificacion('Debe haber al menos una tarea por día', 'error');
+                    }
+                });
+            });
+        });
+
+        // Initial delete button handlers
+        document.querySelectorAll('.btn-eliminar-tarea').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tareasContainer = this.closest('.tareas-dia');
+                if (tareasContainer.children.length > 1) {
+                    this.closest('.tarea-programa').remove();
+                } else {
+                    mostrarNotificacion('Debe haber al menos una tarea por día', 'error');
+                }
+            });
+        });
+
+        // Main button handlers
+        anuncio.querySelector('.cancelar').onclick = () => {
+            anuncio.style.display = 'none';
+        };
+
+        anuncio.querySelector('.guardar-programa').addEventListener('click', guardarProgramacion);
+        anuncio.querySelector('.ver-programa').onclick = verProgramaciones;
+
+        anuncio.style.display = 'flex';
+    } catch (error) {
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+
+export async function verProgramaciones() {
+    try {
+        mostrarCarga();
+        const response = await fetch('/obtener-programaciones');
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error);
+        }
+
+        const anuncio = document.querySelector('.anuncio');
+        const contenido = anuncio.querySelector('.anuncio-contenido');
+
+        contenido.innerHTML = `
+            <i class="fas fa-calendar-check"></i>
+            <h2>Programaciones Actuales</h2>
+            <div class="programaciones-lista">
+                ${data.programaciones.length > 0 ? 
+                    data.programaciones.map(prog => `
+                        <div class="programacion-item">
+                            <div class="programacion-fecha">
+                                <strong>${prog.dia}</strong> - ${new Date(prog.fecha).toLocaleDateString()}
+                            </div>
+                            <div class="programacion-producto">${prog.producto}</div>
+                            <div class="programacion-estado">${prog.estado || 'Pendiente'}</div>
+                            <div class="programacion-acciones">
+                                ${prog.estado === 'Pendiente' ? `
+                                    <button class="anuncio-btn iniciar-tarea" 
+                                            onclick="iniciarTareaProgramada('${prog.producto}')">
+                                        Iniciar
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('')
+                    : '<p class="no-programaciones">No hay programaciones registradas</p>'
+                }
+            </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn cancelar">Cerrar</button>
+            </div>
+            ${data.programaciones.length > 0 ? `
+                <button class="anuncio-btn confirmar eliminar-todo" onclick="eliminarProgramaCompleto()">
+                    Eliminar programa
+                </button>
+            ` : ''}
+        `;
+
+        anuncio.querySelector('.cancelar').onclick = () => {
+            anuncio.style.display = 'none';
+        };
+
+        anuncio.style.display = 'flex';
+    } catch (error) {
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+
+// Update the eliminarProgramaCompleto function
+window.eliminarProgramaCompleto = async function() {
+    try {
+        const confirmacion = await mostrarConfirmacion(
+            '¿Eliminar programa completo?',
+            'Esta acción eliminará todas las programaciones de la semana y no se puede deshacer.'
+        );
+
+        if (!confirmacion) return;
+
+        mostrarCarga();
+        const response = await fetch('/eliminar-programa-completo', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Error al eliminar el programa');
+        }
+
+        mostrarNotificacion('Programa eliminado completamente', 'success');
+        await verProgramaciones(); // Refresh the list
+    } catch (error) {
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+};
+
+// Function to start a scheduled task
+window.iniciarTareaProgramada = async function(producto) {
+    try {
+        const anuncio = document.querySelector('.anuncio');
+        anuncio.style.display = 'none';
+        await mostrarFormularioTarea(producto);
+    } catch (error) {
+        mostrarNotificacion(error.message, 'error');
+    }
+};
+
+export async function guardarProgramacion(event) {
+    if (event) event.preventDefault();
+    try {
+        mostrarCarga();
+        const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+        const programaciones = [];
+
+        for (const dia of dias) {
+            const tareasContainer = document.getElementById(`tareas-${dia}`);
+            if (!tareasContainer) {
+                console.error(`Container not found for ${dia}`);
+                continue;
+            }
+
+            const fechaInput = document.getElementById(`fecha-${dia}`);
+            if (!fechaInput) {
+                console.error(`Date input not found for ${dia}`);
+                continue;
+            }
+
+            const fecha = fechaInput.value;
+            const tareaSelects = tareasContainer.querySelectorAll('.producto-select');
+            
+            tareaSelects.forEach(select => {
+                if (select.value && select.value !== '') {
+                    programaciones.push({
+                        fecha: fecha,
+                        dia: dia.charAt(0).toUpperCase() + dia.slice(1),
+                        producto: select.value,
+                        estado: 'Pendiente'
+                    });
+                }
+            });
+        }
+
+        if (programaciones.length === 0) {
+            throw new Error('No hay programaciones para guardar');
+        }
+
+        const response = await fetch('/guardar-programa', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ programaciones })
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Error al guardar el programa');
+        }
+
+        mostrarNotificacion('Programa guardado correctamente', 'success');
+        document.querySelector('.anuncio').style.display = 'none';
+        await verProgramaciones();
+    } catch (error) {
+        console.error('Error en guardarProgramacion:', error);
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+
+// Función para agregar una nueva tarea al día
+window.agregarTareaDia = function(dia, tareas) {
+    const tareasContainer = document.getElementById(`tareas-${dia}`);
+    const nuevaTarea = document.createElement('div');
+    nuevaTarea.className = 'tarea-programa';
+    nuevaTarea.innerHTML = `
+        <select class="producto-select">
+            <option value="">Seleccionar producto</option>
+            ${tareas.map(tarea => `
+                <option value="${tarea}">${tarea}</option>
+            `).join('')}
+        </select>
+        <button class="btn-eliminar-tarea anuncio-btn" onclick="eliminarTareaDia(this)">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    tareasContainer.appendChild(nuevaTarea);
+};
+
+// Función para eliminar una tarea
+window.eliminarTareaDia = function(button) {
+    button.closest('.tarea-programa').remove();
+};

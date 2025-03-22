@@ -1758,6 +1758,157 @@ app.post('/pausar-tarea', requireAuth, async (req, res) => {
         });
     }
 });
+app.post('/guardar-programa', requireAuth, async (req, res) => {
+    try {
+        const { programaciones } = req.body;
+        
+        if (!programaciones || !Array.isArray(programaciones)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Datos de programación inválidos'
+            });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Format the data for Google Sheets
+        const values = programaciones.map(prog => [
+            prog.fecha,
+            prog.dia,
+            prog.producto,
+            prog.estado || 'Pendiente',
+            prog.usuario || req.user.nombre,
+            new Date().toISOString()  // Timestamp
+        ]);
+
+        // Append the new programaciones
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Programa acopio!A:F',
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: values
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Programación guardada correctamente',
+            count: values.length
+        });
+    } catch (error) {
+        console.error('Error en guardar-programa:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al guardar la programación: ' + error.message
+        });
+    }
+});
+app.get('/obtener-programaciones', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Programa acopio!A:D'
+        });
+
+        const rows = response.data.values || [];
+        const programaciones = rows.map(row => ({
+            fecha: row[0],
+            dia: row[1],
+            producto: row[2],
+            estado: row[3]
+        }));
+
+        res.json({ success: true, programaciones });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener programaciones: ' + error.message
+        });
+    }
+});
+// Add this endpoint before the server initialization
+app.get('/verificar-programa-semana', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get current week's dates
+        const today = new Date();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Programa acopio!A:D'
+        });
+
+        const rows = response.data.values || [];
+        const programasSemana = rows.filter(row => {
+            if (!row[0]) return false;
+            const fecha = new Date(row[0]);
+            return fecha >= startOfWeek && fecha <= endOfWeek;
+        });
+
+        res.json({
+            success: true,
+            existePrograma: programasSemana.length > 0,
+            programaciones: programasSemana.map(row => ({
+                fecha: row[0],
+                dia: row[1],
+                producto: row[2],
+                estado: row[3] || 'Pendiente'
+            }))
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al verificar programa'
+        });
+    }
+});
+// Add this new endpoint before the server initialization
+// Add this new endpoint
+app.delete('/eliminar-programa-completo', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get the sheet ID for Programa acopio sheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const programaSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Programa acopio'
+        );
+
+        if (!programaSheet) {
+            throw new Error('Hoja de Programa no encontrada');
+        }
+
+        // Clear all content except header
+        await sheets.spreadsheets.values.clear({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Programa acopio!A2:F'
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Programa eliminado completamente' 
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar el programa: ' + error.message
+        });
+    }
+});
 
 /* ==================== API DE COMPRAS ==================== */
 app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {

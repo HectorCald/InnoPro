@@ -4,7 +4,7 @@ import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpia
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
 import {confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso,togglePedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
-import {mostrarHistorialTareas,toggleProcesos,mostrarProcesos, finalizarProceso,inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea} from './modules/newTarea.js';
+import {mostrarProgramaAcopio, verProgramaciones,mostrarHistorialTareas,toggleProcesos,mostrarProcesos, finalizarProceso,inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea} from './modules/newTarea.js';
 import {inicializarCompras} from './modules/compras.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
@@ -68,6 +68,8 @@ window.mostrarFormularioRechazo = mostrarFormularioRechazo;
 window.mostrarFormularioIngreso = mostrarFormularioIngreso;
 window.confirmarRechazo = confirmarRechazo;
 window.inicializarCompras = inicializarCompras;
+window.verProgramaciones = verProgramaciones;
+window.mostrarProgramaAcopio = mostrarProgramaAcopio;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
