@@ -1,394 +1,3 @@
-/* ==================== MAIN CONTAINER STYLES ==================== */
-.newTarea-view {
-    width: 100%;
-    background: #1a1a1a;
-    height: calc(100vh - 7em);
-    color: white !important;
-    overflow-y: auto;
-    padding: 1em;
-    display: none;
-    flex-direction: column;
-    gap: 1em;
-    margin-bottom: 50px;
-}
-
-.tareas-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-}
-
-/* ==================== BUTTON STYLES ==================== */
-.tareas-botones {
-    display: flex;
-    gap: 1em;
-}
-
-.btn-agregar-tarea {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 1em;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    width: fit-content;
-}
-
-.btn-agregar-tarea:hover {
-    background: #45a049;
-}
-
-.btn-toggle-historial {
-    background: #607d8b;
-    color: white;
-    border: none;
-    padding: 1em;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-}
-
-.btn-toggle-programa {
-    background: #2196F3;
-    color: white;
-    border: none;
-    padding: 0.8em 1.2em;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-}
-
-/* ==================== TASK CARD STYLES ==================== */
-.lista-tareas {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1em;
-    padding: 1em 0;
-}
-
-.tarea-card {
-    background: #2c2c2c;
-    border-radius: 8px;
-    padding: 1em;
-    margin: 1em 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    transition: transform 0.2s ease;
-}
-
-.tarea-card:hover {
-    transform: translateY(-2px);
-}
-
-.tarea-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.tarea-info {
-    flex: 1;
-}
-
-.tarea-info h3 {
-    color: #fff;
-    margin-bottom: 0.5em;
-}
-
-.tarea-info p {
-    color: #aaa;
-    font-size: 0.9em;
-}
-
-.tarea-principal {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-}
-
-.tarea-nombre {
-    font-size: 1.2em;
-    font-weight: 600;
-    color: #fff;
-}
-
-.tarea-detalles {
-    display: flex;
-    gap: 1em;
-    font-size: 0.9em;
-    color: #aaa;
-}
-
-.tarea-fecha {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-}
-
-.tarea-descripcion {
-    color: #888;
-    font-size: 0.9em;
-    padding-top: 0.8em;
-    border-top: 1px solid #404040;
-}
-
-.tarea-tiempo {
-    color: #888;
-    font-size: 0.8em;
-}
-
-.tarea-cronometro {
-    font-size: 1.5em;
-    font-family: monospace;
-    color: #4CAF50;
-    margin: 0.5em 0;
-}
-.tarea-acciones{
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-}
-
-
-/* ==================== FORM STYLES ==================== */
-.form-tarea {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    margin: 1em 0;
-}
-
-.form-tarea input,
-.form-tarea textarea {
-    padding: 0.8em;
-    border-radius: 4px;
-    border: 1px solid #444;
-    background: #2c2c2c;
-    color: white;
-}
-
-.form-tarea textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
-/* ==================== PROCESS FORM STYLES ==================== */
-.form-proceso {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    margin: 1.5em 0;
-    width: 100%;
-}
-
-.form-proceso input {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 6px;
-    border: 1px solid #444;
-    background: #2c2c2c;
-    color: #fff;
-    font-size: 1em;
-    transition: all 0.3s ease;
-}
-
-.form-proceso input:focus {
-    outline: none;
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
-}
-
-.form-proceso input::placeholder {
-    color: #666;
-}
-
-/* ==================== PROCESS STYLES ==================== */
-.tarea-procesos {
-    margin-top: 1em;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8em;
-}
-
-.proceso-item {
-    background: #333;
-    border-radius: 6px;
-    padding: 1em;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-left: 4px solid #4CAF50;
-    margin-bottom: 1em;
-}
-
-.proceso-item.pausado {
-    border-left-color: #FFC107;
-}
-
-.proceso-item.finalizado {
-    border-left-color: #666;
-    opacity: 0.8;
-}
-
-.proceso-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8em;
-}
-
-.proceso-descripcion {
-    font-size: 1.1em;
-    color: #fff;
-}
-
-.proceso-estado {
-    display: inline-block;
-    padding: 0.3em 0.8em;
-    border-radius: 4px;
-    font-size: 0.8em;
-    background: #4CAF50;
-    color: white;
-    align-self: flex-start;
-}
-
-.proceso-item.pausado .proceso-estado {
-    background: #FFC107;
-    color: #000;
-}
-
-.proceso-item.finalizado .proceso-estado {
-    background: #666;
-}
-
-.proceso-tiempo {
-    color: #aaa;
-    font-size: 0.9em;
-}
-
-.tiempo-transcurrido {
-    color: #4CAF50;
-    font-weight: bold;
-    margin-top: 0.5em;
-}
-
-/* ==================== PROCESS CONTROLS ==================== */
-.proceso-controles {
-    display: flex;
-    gap: 0.5em;
-}
-
-.btn-proceso-control {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 0.5em;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-}
-
-.btn-proceso-control:hover {
-    background: #444;
-}
-
-.btn-proceso-pausar {
-    color: #FFC107;
-}
-
-.btn-proceso-finalizar {
-    background: #F44336;
-    color: white;
-    border: none;
-    padding: 0.5em 1em;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    margin-top: 1em;
-    transition: background-color 0.3s;
-}
-
-.btn-proceso-finalizar:hover {
-    background: #d32f2f;
-}
-
-/* ==================== ACCORDION STYLES ==================== */
-.procesos-acordeon {
-    background: #2a2a2a;
-    border-radius: 6px;
-    margin-top: 1em;
-    overflow: hidden;
-}
-
-.procesos-header {
-    background: #333;
-    padding: 1em;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.3s;
-}
-
-.procesos-header:hover {
-    background: #404040;
-}
-
-.procesos-contenido {
-    padding: 1em;
-    background: #2a2a2a;
-}
-
-/* ==================== TASK BUTTONS ==================== */
-.tarea-botones {
-    display: flex;
-    gap: 0.5em;
-    margin-top: 1em;
-}
-
-.btn-tarea-accion {
-    padding: 0.5em 1em;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    font-size: 0.9em;
-    transition: all 0.3s ease;
-}
-
-.btn-proceso {
-    background: #2196F3;
-    color: white;
-}
-
-.btn-pausar {
-    background: #FFC107;
-    color: black;
-}
-
-.btn-finalizar {
-    background: #F44336;
-    color: white;
-}
-
-.btn-tarea-accion:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
-}
-
 /* ==================== AUTOCOMPLETE STYLES ==================== */
 .autocomplete-wrapper {
     position: relative;
@@ -402,11 +11,11 @@
     right: 0;
     background: #2c2c2c;
     border: 1px solid #444;
-    border-radius: 6px;
+    border-radius: 4px;
     max-height: 200px;
     overflow-y: auto;
     z-index: 1000;
-    display: none;
+    margin-top: 4px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -416,197 +25,537 @@
     color: #fff;
     transition: background-color 0.2s;
     border-bottom: 1px solid #383838;
-}
 
-.sugerencia-item:last-child {
-    border-bottom: none;
-}
+    &:last-child {
+        border-bottom: none;
+    }
 
-.sugerencia-item:hover {
-    background: #383838;
+    &:hover {
+        background: #383838;
+    }
 }
-
-/* ==================== HISTORY STYLES ==================== */
-.historial-tareas {
-    max-height: 70vh;
+/* ==================== MAIN CONTAINER STYLES ==================== */
+.newTarea-view {
+    width: 100%;
+    background: #1a1a1a;
+    height: calc(100vh - 7em);
+    color: white !important;
     overflow-y: auto;
     padding: 1em;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5em;
-}
-
-.historial-tarea {
-    background: #2a2a2a;
-    border-radius: 8px;
-    padding: 1.5em;
-    border-left: 4px solid #607d8b;
-}
-
-.historial-tarea-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1em;
-}
-
-.historial-tarea-header h3 {
-    color: #fff;
-    font-size: 1.2em;
-}
-
-.historial-fecha {
-    color: #888;
-    font-size: 0.9em;
-}
-.historial-peso{
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-    color: #aaa;
-    justify-content: flex-start;
-    align-items: flex-start;
-}
-
-.historial-procesos {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8em;
-}
-
-.historial-procesos h4 {
-    color: #fff;
-    margin-bottom: 0.5em;
-}
-
-.historial-proceso {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.8em;
-    background: #333;
-    border-radius: 4px;
-}
-
-.proceso-nombre {
-    color: #fff;
-    flex: 1;
-}
-
-.proceso-tiempo {
-    color: #4CAF50;
-    margin: 0 1em;
-}
-
-.proceso-peso {
-    color: #2196F3;
-}
-/* Add these new styles for the collapsible history */
-.historial-mes {
-    background: #2a2a2a;
-    border-radius: 8px;
-    margin-bottom: 1em;
-    overflow: hidden;
-}
-
-.historial-mes-header {
-    background: #333;
-    padding: 1em;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.historial-mes-header:hover {
-    background: #404040;
-}
-
-.historial-mes-header h3 {
-    color: #fff;
-    text-transform: capitalize;
-    margin: 0;
-}
-
-.historial-dia {
-    border-left: 3px solid #4CAF50;
-    margin: 0.5em 0;
-    background: #2c2c2c;
-}
-
-.historial-dia-header {
-    padding: 0.8em 1em;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.historial-dia-header:hover {
-    background: #333;
-}
-
-.historial-dia-header h4 {
-    color: #fff;
-    text-transform: capitalize;
-    margin: 0;
-    font-size: 0.9em;
-}
-
-.historial-mes-contenido,
-.historial-dia-contenido {
-    padding: 0 1em;
     display: none;
-}
-
-.historial-tarea {
-    cursor: pointer;
-    padding: 1em;
-    border-radius: 6px;
-    margin: 0.5em 0;
-    background: #333;
-    transition: background-color 0.2s;
-}
-
-.historial-tarea:hover {
-    background: #383838;
-}
-
-.historial-tarea-detalles {
-    margin-top: 1em;
-    padding-top: 1em;
-    border-top: 1px solid #444;
-}
-
-/* Update existing styles */
-.historial-tareas {
-    max-height: 70vh;
-    overflow-y: auto;
-    padding: 1em;
-}
-
-.historial-peso {
-    display: flex;
     flex-direction: column;
-    gap: 0.5em;
-    color: #aaa;
-    margin-bottom: 1em;
+    gap: 1em;
+    margin-bottom: 50px;
+
+    .tareas-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+    }
+
+    .title h3 {
+        font-size: 16px;
+        margin-top: 20px;
+    }
+
+    /* ==================== BUTTON STYLES ==================== */
+    .tareas-botones {
+        display: flex;
+        gap: 1em;
+        justify-content: center;
+    }
+
+    .cuadro-btn {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+        gap: 5px;
+    }
+
+    .btn-tarea {
+        background: #3d3d3d;
+        color: white;
+        border: none;
+        padding: 1em;
+        border-radius: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        width: 50px;
+        height: 50px;
+        justify-content: center;
+        font-size: 15px;
+
+        &:hover {
+            background: #45a049;
+        }
+    }
+
+    /* ==================== TASK CARD STYLES ==================== */
+    .lista-tareas {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1em;
+        padding: 1em 0;
+    }
+
+    .tarea-card {
+        background: #2c2c2c;
+        border-radius: 8px;
+        padding: 1em;
+        margin: 1em 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+        transition: transform 0.2s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+        }
+    }
+
+    .tarea-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .tarea-info {
+        flex: 1;
+
+        h3 {
+            color: #fff;
+            margin-bottom: 0.5em;
+        }
+
+        p {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+    }
+
+    .tarea-principal {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+    }
+
+    .tarea-nombre {
+        font-size: 1.2em;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .tarea-detalles {
+        display: flex;
+        gap: 1em;
+        font-size: 0.9em;
+        color: #aaa;
+    }
+
+    .tarea-fecha {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+    }
+
+    .tarea-descripcion {
+        color: #888;
+        font-size: 0.9em;
+        padding-top: 0.8em;
+        border-top: 1px solid #404040;
+    }
+
+    .tarea-tiempo {
+        color: #888;
+        font-size: 0.8em;
+    }
+
+    .tarea-cronometro {
+        font-size: 1.5em;
+        font-family: monospace;
+        color: #4CAF50;
+        margin: 0.5em 0;
+    }
+
+    .tarea-acciones {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+    /* ==================== FORM STYLES ==================== */
+    .form-tarea {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+        margin: 1em 0;
+
+        input,
+        textarea {
+            padding: 0.8em;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background: #2c2c2c;
+            color: white;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+    }
+
+    /* ==================== PROCESS FORM STYLES ==================== */
+    .form-proceso {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+        margin: 1.5em 0;
+        width: 100%;
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #2c2c2c;
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+
+            &:focus {
+                outline: none;
+                border-color: #4CAF50;
+                box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+            }
+
+            &::placeholder {
+                color: #666;
+            }
+        }
+    }
+
+    /* ==================== PROCESS STYLES ==================== */
+    .tarea-procesos {
+        margin-top: 1em;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8em;
+    }
+
+    .proceso-item {
+        background: #333;
+        border-radius: 6px;
+        padding: 1em;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-left: 4px solid #4CAF50;
+        margin-bottom: 1em;
+
+        &.pausado {
+            border-left-color: #FFC107;
+
+            .proceso-estado {
+                background: #FFC107;
+                color: #000;
+            }
+        }
+
+        &.finalizado {
+            border-left-color: #666;
+            opacity: 0.8;
+
+            .proceso-estado {
+                background: #666;
+            }
+        }
+    }
+
+    .proceso-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8em;
+    }
+
+    .proceso-descripcion {
+        font-size: 1.1em;
+        color: #fff;
+    }
+
+    .proceso-estado {
+        display: inline-block;
+        padding: 0.3em 0.8em;
+        border-radius: 4px;
+        font-size: 0.8em;
+        background: #4CAF50;
+        color: white;
+        align-self: flex-start;
+    }
+
+    .proceso-tiempo {
+        color: #aaa;
+        font-size: 0.9em;
+    }
+
+    .tiempo-transcurrido {
+        color: #4CAF50;
+        font-weight: bold;
+        margin-top: 0.5em;
+    }
+
+    /* ==================== PROCESS CONTROLS ==================== */
+    .proceso-controles {
+        display: flex;
+        gap: 0.5em;
+    }
+
+    .btn-proceso-control {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 0.5em;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background: #444;
+        }
+    }
+
+    .btn-proceso-pausar {
+        color: #FFC107;
+    }
+
+    .btn-proceso-finalizar {
+        background: #F44336;
+        color: white;
+        border: none;
+        padding: 0.5em 1em;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        margin-top: 1em;
+        transition: background-color 0.3s;
+
+        &:hover {
+            background: #d32f2f;
+        }
+    }
+
+    /* ==================== ACCORDION STYLES ==================== */
+    .procesos-acordeon {
+        background: #2a2a2a;
+        border-radius: 6px;
+        margin-top: 1em;
+        overflow: hidden;
+    }
+
+    .procesos-header {
+        background: #333;
+        padding: 1em;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.3s;
+
+        &:hover {
+            background: #404040;
+        }
+    }
+
+    .procesos-contenido {
+        padding: 1em;
+        background: #2a2a2a;
+    }
+
+    /* ==================== TASK BUTTONS ==================== */
+    .tarea-botones {
+        display: flex;
+        gap: 0.5em;
+        margin-top: 1em;
+    }
+
+    .btn-tarea-accion {
+        padding: 0.5em 1em;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+    }
+
+    .btn-proceso {
+        background: #2196F3;
+        color: white;
+    }
+
+    .btn-pausar {
+        background: #FFC107;
+        color: black;
+    }
+
+    .btn-finalizar {
+        background: #F44336;
+        color: white;
+    }
+
+
+    /* ==================== HISTORY STYLES ==================== */
+    .historial-tareas {
+        max-height: 70vh;
+        overflow-y: auto;
+        padding: 1em;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5em;
+    }
+
+    .historial-tarea {
+        background: #2a2a2a;
+        border-radius: 8px;
+        padding: 1.5em;
+        border-left: 4px solid #607d8b;
+        cursor: pointer;
+
+        &:hover {
+            background: #383838;
+        }
+    }
+
+    .historial-tarea-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1em;
+
+        h3 {
+            color: #fff;
+            font-size: 1.2em;
+        }
+    }
+
+    .historial-fecha {
+        color: #888;
+        font-size: 0.9em;
+    }
+
+    .historial-peso {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+        color: #aaa;
+        margin-bottom: 1em;
+    }
+
+    .historial-procesos {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8em;
+
+        h4 {
+            color: #fff;
+            margin-bottom: 0.5em;
+        }
+    }
+
+    .historial-proceso {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8em;
+        background: #333;
+        border-radius: 4px;
+    }
+
+    .proceso-nombre {
+        color: #fff;
+        flex: 1;
+    }
+
+    .proceso-peso {
+        color: #2196F3;
+    }
+
+    /* ==================== COLLAPSIBLE HISTORY STYLES ==================== */
+    .historial-mes {
+        background: #2a2a2a;
+        border-radius: 8px;
+        margin-bottom: 1em;
+        overflow: hidden;
+    }
+
+    .historial-mes-header {
+        background: #333;
+        padding: 1em;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &:hover {
+            background: #404040;
+        }
+
+        h3 {
+            color: #fff;
+            text-transform: capitalize;
+            margin: 0;
+        }
+    }
+
+    .historial-dia {
+        border-left: 3px solid #4CAF50;
+        margin: 0.5em 0;
+        background: #2c2c2c;
+    }
+
+    .historial-dia-header {
+        padding: 0.8em 1em;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &:hover {
+            background: #333;
+        }
+
+        h4 {
+            color: #fff;
+            text-transform: capitalize;
+            margin: 0;
+            font-size: 0.9em;
+        }
+    }
+
+    .historial-mes-contenido,
+    .historial-dia-contenido {
+        padding: 0 1em;
+        display: none;
+    }
+
+    .historial-tarea-detalles {
+        margin-top: 1em;
+        padding-top: 1em;
+        border-top: 1px solid #444;
+    }
 }
 
-/* ==================== SCROLLBAR STYLES ==================== */
-.sugerencias-lista::-webkit-scrollbar {
-    width: 8px;
-}
-
-.sugerencias-lista::-webkit-scrollbar-track {
-    background: #1e1e1e;
-}
-
-.sugerencias-lista::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 4px;
-}
-
-.sugerencias-lista::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}

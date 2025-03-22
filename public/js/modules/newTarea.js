@@ -8,18 +8,25 @@ export function inicializarTareas() {
         </div>
         <div class="tareas-container">
             <div class="tareas-botones">
-                <button class="btn-agregar-tarea" onclick="mostrarFormularioTarea()">
-                    <i class="fas fa-plus"></i> Iniciar
+                <div class="cuadro-btn"><button class="btn-agregar-tarea btn-tarea" onclick="mostrarFormularioTarea()">
+                    <i class="fas fa-plus"></i>
                 </button>
-                <button class="btn-toggle-historial" onclick="mostrarHistorialTareas()">
-                    <i class="fas fa-history"></i> Historial
+                    <p>Iniciar</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-toggle-historial btn-tarea" onclick="mostrarHistorialTareas()">
+                    <i class="fas fa-history"></i>
                 </button>
-                <button class="btn-toggle-programa">
-                    <i class="fas fa-calendar-alt"></i> Programa
+                    <p>Historial</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-toggle-programa btn-tarea">
+                    <i class="fas fa-calendar-alt"></i>
                 </button>
+                    <p>Programa</p>
+                </div> 
             </div>
             <div class="lista-tareas"></div>
         </div>
+        
     `;
     cargarTareasEnProceso();
 }
@@ -106,8 +113,7 @@ function formatearTiempo(segundos) {
 export async function mostrarFormularioTarea() {
     try {
         mostrarCarga();
-        const response = 
-        await fetch('/obtener-lista-tareas');
+        const response = await fetch('/obtener-lista-tareas');
         const data = await response.json();
         
         if (!data.success) {
@@ -125,6 +131,10 @@ export async function mostrarFormularioTarea() {
                     <input type="text" id="nombre-tarea" placeholder="Nombre de la tarea" autocomplete="off" required>
                     <div id="sugerencias-tarea" class="sugerencias-lista"></div>
                 </div>
+                <select id="lote-tarea" class="form-input" disabled required>
+                    <option value="">Seleccione un lote</option>
+                </select>
+                <div class="peso-disponible" style="color: #666; margin: 5px 0;"></div>
                 <input type="number" id="peso-tarea" placeholder="Peso (kg)" step="0.01" required>
                 <textarea id="descripcion-tarea" placeholder="Descripción de la tarea"></textarea>
             </div>
@@ -134,11 +144,39 @@ export async function mostrarFormularioTarea() {
             </div>
         `;
 
-        // Setup autocomplete functionality
         const inputTarea = document.getElementById('nombre-tarea');
         const sugerenciasList = document.getElementById('sugerencias-tarea');
+        const selectLote = document.getElementById('lote-tarea');
+        const pesoInput = document.getElementById('peso-tarea');
+        const pesoDisponible = document.querySelector('.peso-disponible');
         const tareas = data.tareas;
 
+        // Handle product selection and load lots
+        async function cargarLotes(nombreProducto) {
+            try {
+                const response = await fetch(`/obtener-lotes/${encodeURIComponent(nombreProducto)}`);
+                const data = await response.json();
+                
+                if (data.success && data.lotes.length > 0) {
+                    selectLote.innerHTML = `
+                        <option value="">Seleccione un lote</option>
+                        ${data.lotes.map(lote => `
+                            <option value="${lote.lote}" data-peso="${lote.peso}">
+                                Lote ${lote.lote} - Disponible: ${lote.peso}kg
+                            </option>
+                        `).join('')}
+                    `;
+                    selectLote.disabled = false;
+                } else {
+                    selectLote.innerHTML = '<option value="">No hay lotes disponibles</option>';
+                    selectLote.disabled = true;
+                }
+            } catch (error) {
+                mostrarNotificacion('Error al cargar lotes', 'error');
+            }
+        }
+
+        // Product input handler
         inputTarea.addEventListener('input', () => {
             const inputValue = inputTarea.value.toLowerCase();
             const sugerencias = tareas.filter(tarea => 
@@ -153,48 +191,67 @@ export async function mostrarFormularioTarea() {
             } else {
                 sugerenciasList.style.display = 'none';
             }
+            
+            // Reset lot selection when product changes
+            selectLote.innerHTML = '<option value="">Seleccione un lote</option>';
+            selectLote.disabled = true;
+            pesoDisponible.textContent = '';
         });
 
         // Handle suggestion click
-        sugerenciasList.addEventListener('click', (e) => {
+        sugerenciasList.addEventListener('click', async (e) => {
             if (e.target.classList.contains('sugerencia-item')) {
                 inputTarea.value = e.target.textContent;
                 sugerenciasList.style.display = 'none';
+                await cargarLotes(inputTarea.value);
             }
         });
 
-        // Hide suggestions when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.autocomplete-wrapper')) {
-                sugerenciasList.style.display = 'none';
+        // Handle lot selection
+        selectLote.addEventListener('change', () => {
+            const selectedOption = selectLote.selectedOptions[0];
+            if (selectedOption.value) {
+                const pesoMax = selectedOption.dataset.peso;
+                pesoDisponible.textContent = `Peso disponible: ${pesoMax}kg`;
+                pesoInput.max = pesoMax;
+            } else {
+                pesoDisponible.textContent = '';
+                pesoInput.max = '';
             }
         });
+
+        // Modify guardarTarea to include lot
+        anuncio.querySelector('.confirmar').onclick = () => {
+            const loteSeleccionado = selectLote.value;
+            if (!loteSeleccionado) {
+                mostrarNotificacion('Por favor seleccione un lote', 'error');
+                return;
+            }
+            guardarTareaConLote(loteSeleccionado);
+        };
 
         anuncio.querySelector('.cancelar').onclick = () => {
             anuncio.style.display = 'none';
         };
 
-        anuncio.querySelector('.confirmar').onclick = guardarTarea;
         anuncio.style.display = 'flex';
     } catch (error) {
         mostrarNotificacion(error.message, 'error');
-    }
-    finally {
+    } finally {
         ocultarCarga();
     }
 }
-export async function guardarTarea() {
-    const nombreTarea = document.getElementById('nombre-tarea').value;
-    const pesoTarea = document.getElementById('peso-tarea').value;
-    const descripcionTarea = document.getElementById('descripcion-tarea').value;
-    const fechaInicio = new Date().toISOString();
-
-    if (!nombreTarea || !pesoTarea) {
-        mostrarNotificacion('Por favor ingrese el nombre y peso de la tarea', 'error');
-        return;
-    }
-
+async function guardarTareaConLote(lote) {
     try {
+        const nombreTarea = document.getElementById('nombre-tarea').value;
+        const pesoTarea = document.getElementById('peso-tarea').value;
+        const descripcionTarea = document.getElementById('descripcion-tarea').value;
+
+        if (!nombreTarea || !pesoTarea || !lote) {
+            mostrarNotificacion('Por favor complete todos los campos requeridos', 'error');
+            return;
+        }
+
         mostrarCarga();
         const response = await fetch('/crear-tarea', {
             method: 'POST',
@@ -205,8 +262,9 @@ export async function guardarTarea() {
                 nombre: nombreTarea,
                 peso: parseFloat(pesoTarea),
                 descripcion: descripcionTarea,
-                fechaInicio: fechaInicio,
-                estado: 'En proceso'
+                fechaInicio: new Date().toISOString(),
+                estado: 'En proceso',
+                lote: lote
             })
         });
 
@@ -227,6 +285,129 @@ export async function guardarTarea() {
 function calcularTiempoTranscurrido(tiempoInicial) {
     return Math.floor((Date.now() - parseInt(tiempoInicial)) / 1000);
 }
+export async function cargarTareasEnProceso() {
+    try {
+        const response = await fetch('/obtener-tareas-proceso');
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || 'Error al cargar tareas');
+        }
+
+        const listaTareas = document.querySelector('.lista-tareas');
+        if (!listaTareas) return;
+        
+        listaTareas.innerHTML = '';
+
+        data.tareas.forEach(tarea => {
+            const elementoTarea = document.createElement('div');
+            elementoTarea.className = 'tarea-item';
+            elementoTarea.innerHTML = `
+                <div class="tarea-info">
+                    <div class="tarea-header">
+                        <h4>${tarea.nombre}</h4>
+                        <span class="tarea-peso">${tarea.pesoInicial} kg</span>
+                    </div>
+                    <p class="tarea-descripcion">${tarea.descripcion || 'Sin descripción'}</p>
+                    <div class="tarea-detalles">
+                        <span>Inicio: ${new Date(tarea.fechaInicio).toLocaleString()}</span>
+                        <span>Usuario: ${tarea.usuario}</span>
+                        <span class="tarea-tiempo" data-tiempo-inicial="${tarea.tiempoInicial}">
+                            ${formatearTiempo(calcularTiempoTranscurrido(tarea.tiempoInicial))}
+                        </span>
+                    </div>
+                    <div class="tarea-acciones">
+                        <button class="btn-tarea-accion btn-agregar-proceso" onclick="agregarProceso('${tarea.nombre}')">
+                            <i class="fas fa-plus"></i> Proceso
+                        </button>
+                        <button class="btn-tarea-accion btn-pausar" id="btn-pausar-${tarea.nombre}" onclick="pausarTarea('${tarea.nombre}')">
+                            <i class="fas fa-pause"></i> Pausar
+                        </button>
+                        <button class="btn-tarea-accion btn-finalizar" onclick="finalizarTarea('${tarea.nombre}')">
+                            <i class="fas fa-check"></i> Finalizar
+                        </button>
+                    </div>
+                </div>
+                ${renderizarProcesos(tarea.procesos || [], tarea.nombre)}
+            `;
+
+            listaTareas.appendChild(elementoTarea);
+
+            if (cronometros[tarea.nombre]) {
+                clearInterval(cronometros[tarea.nombre]);
+            }
+
+            cronometros[tarea.nombre] = setInterval(() => {
+                const tiempoElement = elementoTarea.querySelector('.tarea-tiempo');
+                const tiempoInicial = parseInt(tarea.tiempoInicial);
+                const tiempoActual = calcularTiempoTranscurrido(tiempoInicial);
+                tiempoElement.textContent = formatearTiempo(tiempoActual);
+            }, 1000);
+        });
+    } catch (error) {
+        console.error('Error al cargar tareas:', error);
+        mostrarNotificacion(error.message, 'error');
+    }
+}
+export async function pausarTarea(tareaId) {
+    try {
+        const tareaElement = document.querySelector(`.tarea-item h4:contains("${tareaId}")`).closest('.tarea-item');
+        if (!tareaElement) {
+            throw new Error('Elemento de tarea no encontrado');
+        }
+
+        const btnPausar = tareaElement.querySelector('.btn-pausar');
+        const tiempoElement = tareaElement.querySelector('.tarea-tiempo');
+        const estaPausado = localStorage.getItem(`pausa-${tareaId}`) === 'true';
+
+        const response = await fetch('/pausar-tarea', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                tareaId, 
+                estado: estaPausado ? 'En proceso' : 'Pausada'
+            })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Error al actualizar el estado');
+        }
+
+        if (estaPausado) {
+            // Reanudar tarea
+            localStorage.setItem(`pausa-${tareaId}`, 'false');
+            btnPausar.innerHTML = '<i class="fas fa-pause"></i> Pausar';
+            
+            const tiempoInicial = parseInt(tiempoElement.dataset.tiempoInicial);
+            if (cronometros[tareaId]) {
+                clearInterval(cronometros[tareaId]);
+            }
+            cronometros[tareaId] = setInterval(() => {
+                const nuevoTiempo = calcularTiempoTranscurrido(tiempoInicial);
+                tiempoElement.textContent = formatearTiempo(nuevoTiempo);
+            }, 1000);
+        } else {
+            // Pausar tarea
+            localStorage.setItem(`pausa-${tareaId}`, 'true');
+            btnPausar.innerHTML = '<i class="fas fa-play"></i> Reanudar';
+            if (cronometros[tareaId]) {
+                clearInterval(cronometros[tareaId]);
+            }
+        }
+
+        await cargarTareasEnProceso(); // Recargar las tareas para actualizar el estado
+        mostrarNotificacion(
+            estaPausado ? 'Tarea reanudada' : 'Tarea pausada', 
+            'success'
+        );
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al actualizar el estado de la tarea', 'error');
+    }
+}
 export function iniciarCronometro(tareaId, tiempoInicial) {
     if (cronometros[tareaId]) {
         clearInterval(cronometros[tareaId]);
@@ -243,38 +424,7 @@ export function iniciarCronometro(tareaId, tiempoInicial) {
     actualizarCronometro();
     cronometros[tareaId] = setInterval(actualizarCronometro, 1000);
 }
-export async function pausarTarea(tareaId) {
-    const btnPausar = document.getElementById(`btn-pausar-${tareaId}`);
-    const estaPausado = localStorage.getItem(`pausa-${tareaId}`) === 'true';
 
-    try {
-        if (estaPausado) {
-            // Reanudar
-            localStorage.setItem(`pausa-${tareaId}`, 'false');
-            btnPausar.innerHTML = '<i class="fas fa-pause"></i> Pausa';
-            iniciarCronometro(tareaId, tiemposGuardados[tareaId], false);
-        } else {
-            // Pausar
-            localStorage.setItem(`pausa-${tareaId}`, 'true');
-            btnPausar.innerHTML = '<i class="fas fa-play"></i> Play';
-            if (cronometros[tareaId]) {
-                clearInterval(cronometros[tareaId]);
-            }
-        }
-
-        await fetch('/actualizar-estado-tarea', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                tareaId, 
-                estado: estaPausado ? 'En proceso' : 'Pausada',
-                tiempoTranscurrido: tiemposGuardados[tareaId]
-            })
-        });
-    } catch (error) {
-        mostrarNotificacion('Error al actualizar el estado de la tarea', 'error');
-    }
-}
 export async function agregarProceso(tareaId) {
     try {
         const response = await fetch('/obtener-lista-tareas2');
@@ -449,53 +599,6 @@ export async function finalizarProceso(tareaId, procesoId) {
         mostrarNotificacion(error.message, 'error');
     }
 }
-export async function cargarTareasEnProceso() {
-    try {
-        const response = await fetch('/obtener-tareas-proceso');
-        const data = await response.json();
-
-        const listaTareas = document.querySelector('.lista-tareas');
-        if (data.success && data.tareas) {
-            listaTareas.innerHTML = data.tareas.map(tarea => `
-                <div class="tarea-item" data-id="${tarea.id}">
-                    <div class="tarea-info">
-                        <div class="tarea-header">
-                            <h4>${tarea.nombre}</h4>
-                            <span class="tarea-peso">${tarea.peso} kg</span>
-                        </div>
-                        <p class="tarea-descripcion">${tarea.descripcion || 'Sin descripción'}</p>
-                        <div class="tarea-detalles">
-                            <span>Inicio: ${new Date(tarea.fechaInicio).toLocaleString()}</span>
-                            <span>Usuario: ${tarea.usuario}</span>
-                            <span id="cronometro-${tarea.id}">Tiempo: Calculando...</span>
-                        </div>
-                        <div class="tarea-acciones">
-                            <button class="btn-tarea-accion btn-agregar-proceso" onclick="agregarProceso('${tarea.id}')">
-                                <i class="fas fa-plus"></i> Proceso
-                            </button>
-                            <button class="btn-tarea-accion btn-pausar" onclick="pausarTarea('${tarea.id}')">
-                                <i class="fas fa-pause"></i> Pausar
-                            </button>
-                            <button class="btn-tarea-accion btn-finalizar" onclick="finalizarTarea('${tarea.id}')">
-                                <i class="fas fa-check"></i> Finalizar
-                            </button>
-                        </div>
-                    </div>
-                    ${renderizarProcesos(tarea.procesos, tarea.id)}
-                </div>
-            `).join('');
-
-            // Inicializar cronómetros
-            data.tareas.forEach(tarea => {
-                iniciarCronometro(tarea.id, tarea.tiempoInicial);
-            });
-        } else {
-            listaTareas.innerHTML = '<p>No hay tareas en proceso</p>';
-        }
-    } catch (error) {
-        mostrarNotificacion('Error al cargar las tareas', 'error');
-    }
-}
 export function renderizarProcesos(procesos, tareaId) {
     if (!procesos || procesos.length === 0) return '';
     
@@ -656,3 +759,4 @@ function mostrarConfirmacion(titulo, mensaje) {
         anuncio.style.display = 'flex';
     });
 }
+
