@@ -1455,7 +1455,6 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
         const { tareaId, tiempoCronometro } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
-
         // Get current task data
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -1472,43 +1471,37 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
         const tarea = rows[rowIndex];
         const procesos = tarea[7] ? JSON.parse(tarea[7]) : [];
         const pesoInicial = parseFloat(tarea[6] || 0);
-        
-        // Get only the last process weight
         const ultimoProceso = procesos[procesos.length - 1];
         const pesoFinal = ultimoProceso ? parseFloat(ultimoProceso.peso || 0) : 0;
 
-        // Actualizar Almacen Prima solo con el peso del último proceso
+        // Get next lot number for Almacen Prima
         const almacenPrimaResponse = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Prima!A:B'
+            range: 'Almacen Prima!A:C'
         });
 
         const almacenPrimaRows = almacenPrimaResponse.data.values || [];
-        const productoIndex = almacenPrimaRows.findIndex(row => row[0] === tareaId);
-
-        if (productoIndex >= 0) {
-            const pesoActual = parseFloat(almacenPrimaRows[productoIndex][1]) || 0;
-            await sheets.spreadsheets.values.update({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: `Almacen Prima!B${productoIndex + 1}`,
-                valueInputOption: 'RAW',
-                resource: {
-                    values: [[pesoActual + pesoFinal]]
-                }
-            });
-        } else {
-            await sheets.spreadsheets.values.append({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Almacen Prima!A:B',
-                valueInputOption: 'RAW',
-                insertDataOption: 'INSERT_ROWS',
-                resource: {
-                    values: [[tareaId, pesoFinal]]
-                }
-            });
+        const productoRows = almacenPrimaRows.filter(row => row[0] === tareaId);
+        
+        // Calculate next lot number
+        let siguienteLote = 1;
+        if (productoRows.length > 0) {
+            const lotes = productoRows.map(row => parseInt(row[2] || 0));
+            siguienteLote = Math.max(...lotes, 0) + 1;
         }
 
-        // Add to historial_tareas with the last process weight
+        // Add new entry to Almacen Prima with new lot number
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen Prima!A:C',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[tareaId, pesoFinal, siguienteLote]]
+            }
+        });
+
+        // Rest of the existing code...
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Historial_tareas!A2',
@@ -1520,7 +1513,7 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
                     tarea[1],
                     tarea[2],
                     new Date().toISOString(),
-                    tiempoCronometro, // Use the chronometer time instead of user name
+                    tiempoCronometro,
                     pesoInicial,
                     pesoFinal,
                     pesoInicial - pesoFinal,
@@ -1562,7 +1555,8 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
             success: true,
             message: 'Tarea finalizada correctamente',
             pesoRestante: pesoInicial - pesoFinal,
-            pesoProcesado: pesoFinal
+            pesoProcesado: pesoFinal,
+            loteAlmacenPrima: siguienteLote
         });
     } catch (error) {
         console.error('Error al finalizar tarea:', error);
