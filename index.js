@@ -1719,6 +1719,130 @@ app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
         });
     }
 });
+app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
+    try {
+        const { fecha, producto } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get all records from Pedidos sheet
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:I'  // Cambiado a la hoja de Pedidos
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === producto
+        );
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Pedido no encontrado' 
+            });
+        }
+
+        // Get the sheet ID for Pedidos sheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const pedidosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Pedidos'
+        );
+
+        if (!pedidosSheet) {
+            throw new Error('Hoja de Pedidos no encontrada');
+        }
+
+        // Delete the row
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: pedidosSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex,
+                            endIndex: rowIndex + 1
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true, message: 'Pedido eliminado correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar pedido:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el pedido: ' + (error.message || 'Error desconocido')
+        });
+    }
+});
+app.post('/entregar-pedido', requireAuth, async (req, res) => {
+    try {
+        const { fecha, producto, cantidad, proveedor, precio, observaciones } = req.body;
+        
+        if (!fecha || !producto) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Faltan datos necesarios' 
+            });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener registros actuales
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:J'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === producto
+        ) + 1; // +1 porque las filas en la API empiezan en 1
+
+        if (rowIndex <= 0) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Pedido no encontrado' 
+            });
+        }
+
+        // Actualizar las columnas E(cantidad), F(proveedor), G(costo), H(estado), J(observaciones)
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Pedidos!E${rowIndex}:J${rowIndex}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[
+                    cantidad,
+                    proveedor,
+                    precio,
+                    'Recibido',
+                    '',  // Columna I (vacía)
+                    observaciones
+                ]]
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Pedido actualizado correctamente' 
+        });
+    } catch (error) {
+        console.error('Error al entregar pedido:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al entregar el pedido: ' + error.message 
+        });
+    }
+});
 
 
 
