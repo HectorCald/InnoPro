@@ -106,23 +106,34 @@ async function bienvenida() {
                     </div>
                 `;
 
-                // Agregar event listeners
                 const profileSection = dashboard.querySelector('.profile-section');
                 const modal = dashboard.querySelector('.profile-modal');
+                const modalContent = modal.querySelector('.modal-content');
                 const closeBtn = modal.querySelector('.close-modal');
 
                 profileSection.addEventListener('click', () => {
                     modal.style.display = 'block';
+                    setTimeout(() => {
+                        modal.classList.add('show');
+                        modalContent.classList.add('show');
+                    }, 10);
                 });
 
-                closeBtn.addEventListener('click', () => {
-                    modal.style.display = 'none';
-                });
-
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
+                function cerrarModal() {
+                    modal.classList.remove('show');
+                    modalContent.classList.remove('show');
+                    modal.classList.add('hide');
+                    modalContent.classList.add('hide');
+                    setTimeout(() => {
                         modal.style.display = 'none';
-                    }
+                        modal.classList.remove('hide');
+                        modalContent.classList.remove('hide');
+                    }, 300);
+                }
+
+                closeBtn.addEventListener('click', cerrarModal);
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) cerrarModal();
                 });
             }
         }
