@@ -1,16 +1,16 @@
-@import 'styles/base.css';
 @import 'styles/layout.css';
+@import 'styles/base.css';
 @import 'styles/components.css';
 @import 'styles/user.css';
 @import 'styles/verificarRegistros.css';
 @import 'styles/consultarRegistros.css';
-
 @import'styles/compras.css';
 @import 'styles/formProduccion.css';
 @import 'styles/misCuentasProduccion.css';
 @import'styles/registrarProduccion.css';
 @import'styles/newPedido.css';
 @import 'styles/newTarea.css';
+
 
 /* ... imports existentes ... */
 
@@ -47,6 +47,7 @@
     display: flex;
     position: fixed;
     bottom: 0;
+    left: 0;
     justify-content: center;
     align-items: center;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
@@ -193,3 +194,5 @@
     from { opacity: 1; }
     to { opacity: 0; }
 }
+
+

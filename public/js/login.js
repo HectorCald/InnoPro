@@ -124,7 +124,6 @@ class LoginPin {
 /* ==================== INICIALIZACIÓN DE LA APLICACIÓN ==================== */
 document.addEventListener('DOMContentLoaded',async () => {
     const loginPin = new LoginPin();
-    bienvenida();
 
     const btnConsulta = document.querySelector('.consultarProducto');
     if (btnConsulta) {

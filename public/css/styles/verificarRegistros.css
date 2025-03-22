@@ -14,6 +14,13 @@
     }
     -ms-overflow-style: none;
     scrollbar-width: none;
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 1em;
+        margin-top: 20px;
+        font-size: 16px;
+    }
 
     .fecha-header {
         background: #353535;

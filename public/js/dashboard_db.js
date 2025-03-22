@@ -76,16 +76,54 @@ async function bienvenida() {
         const data = await response.json();
 
         if (data) {
-            const bienvenida = document.querySelector('.bienvenida');
-            if (bienvenida) {
-                bienvenida.innerHTML = `
-                    <div class="profile-section">
-                        <img src="/img/Logotipo-damabrava.png" alt="Perfil" class="profile-image">
-                        <div class="profile-info">
-                            <span class="profile-name">${data.rol || 'Usuario'} <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 0.8em;"></i></span>
+            const dashboard = document.querySelector('.dashboard');
+            if (dashboard) {
+                dashboard.innerHTML = `
+                    <div class="bienvenida">
+                        <div class="profile-section">
+                            <img src="/img/Logotipo-damabrava.png" alt="Perfil" class="profile-image">
+                            <div class="profile-info">
+                                <span class="profile-name">${data.nombre || 'Usuario'} <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 0.8em;"></i></span>
+                                <span class="profile-role">@${data.rol || 'Usuario'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opciones"></div>
+                    <button class="logout-btn" onclick="manejarCierreSesion()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                    <div class="profile-modal">
+                        <div class="modal-content">
+                            <button class="close-modal"><i class="fas fa-times"></i></button>
+                            <img src="/img/Logotipo-damabrava.png" alt="Perfil" class="modal-profile-image">
+                            <div class="modal-profile-name">
+                                ${data.nombre || 'Usuario'}
+                                <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                            </div>
+                            <div class="modal-profile-role">@${data.rol || 'Usuario'}</div>
                         </div>
                     </div>
                 `;
+
+                // Agregar event listeners
+                const profileSection = dashboard.querySelector('.profile-section');
+                const modal = dashboard.querySelector('.profile-modal');
+                const closeBtn = modal.querySelector('.close-modal');
+
+                profileSection.addEventListener('click', () => {
+                    modal.style.display = 'block';
+                });
+
+                closeBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
             }
         }
     } catch (error) {

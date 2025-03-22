@@ -781,28 +781,29 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
+            range: 'Usuarios!A:C'
         });
 
         const rows = response.data.values || [];
-        const usuario = rows.find(row => row[1] === req.user.nombre);
+        const usuario = rows.find(row => row[1] === req.user.nombre); // Buscar por nombre en columna B
 
         if (!usuario) {
-            return res.json({ success: true, rol: null });
+            return res.status(404).json({ 
+                error: 'Usuario no encontrado en la hoja de cálculo' 
+            });
         }
 
-        const rol = usuario[2]; // Obtener el rol de la columna C
-        
-        res.json({ success: true, rol: rol });
+        res.json({ 
+            nombre: usuario[1], // Columna B (nombre)
+            rol: usuario[2]     // Columna C (rol)
+        });
     } catch (error) {
         console.error('Error al obtener rol:', error);
         res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener rol' 
+            error: 'Error al obtener información del usuario' 
         });
     }
 });
-
 
 /* ==================== API DE PEDIDOS ==================== */
 
