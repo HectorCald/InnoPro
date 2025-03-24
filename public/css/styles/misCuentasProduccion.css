@@ -98,10 +98,11 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
-        background: var(--primary-dark) !important;
+        background: var(--background) !important;
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        color: var(--primary-text);
 
         &.active {
             height: auto;
@@ -131,7 +132,7 @@
     }
 
     .registro-card {
-        background: var(--primary-dark) !important;
+        background: var(--background) !important;
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
