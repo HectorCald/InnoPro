@@ -2112,17 +2112,7 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
             const lotes = productoRows.map(row => parseInt(row[2] || 0));
             siguienteLote = Math.max(...lotes, 0) + 1;
         }
-
-        // Agregar al Almacén Bruto
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen bruto!A:C',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[producto, cantidad, siguienteLote]]
-            }
-        });
+        
 
         // Registrar el movimiento en Movimientos alm-bruto
         const fechaActual = new Date().toLocaleDateString('es-ES', {
@@ -2234,7 +2224,7 @@ app.get('/obtener-detalle-producto/:nombre', requireAuth, async (req, res) => {
         // Obtener datos actuales del producto
         const productoResponse = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen bruto!A2:D'
+            range: 'Almacen Bruto!A2:C'
         });
 
         const rows = productoResponse.data.values || [];
@@ -2349,7 +2339,7 @@ app.get('/obtener-detalle-producto-prima/:nombre', requireAuth, async (req, res)
         // Obtener datos actuales del producto
         const productoResponse = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen prima!A2:D'
+            range: 'Almacen prima!A2:C'
         });
 
         const rows = productoResponse.data.values || [];
@@ -2385,7 +2375,7 @@ app.get('/obtener-detalle-producto-prima/:nombre', requireAuth, async (req, res)
         if (movimientosSheet) {
             const historialResponse = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Movimientos alm-bruto!A2:E'
+                range: 'Movimientos alm-prima!A2:E'
             });
 
             // Obtener y ordenar todos los movimientos por fecha

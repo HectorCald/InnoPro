@@ -28,12 +28,12 @@ export function inicializarAlmacen() {
         </div>
     `;
 
-    cargarProductosAlmacen();
+    cargarProductosAlmacenAcopio();
     initializeEventListeners();
 }
 // ... código existente ...
 
-async function cargarProductosAlmacen() {
+async function cargarProductosAlmacenAcopio() {
     try {
         mostrarCarga();
         const response = await fetch('/obtener-productos-almacen');
@@ -63,7 +63,7 @@ async function cargarProductosAlmacen() {
 
         const container = document.getElementById('productsContainer');
         container.innerHTML = Object.values(productosAgrupados).map(producto => `
-            <div class="product-card" onclick="mostrarDetalleProducto('${producto.nombre}')">
+            <div class="product-card" onclick="mostrarDetalleProductoAcopio('${producto.nombre}')">
                 <div class="product-info">
                     <div class="product-name">
                         <i class="fas fa-box"></i>
@@ -82,7 +82,7 @@ async function cargarProductosAlmacen() {
     }
 }
 
-window.mostrarDetalleProducto = async function (nombreProducto) {
+window.mostrarDetalleProductoAcopio = async function (nombreProducto) {
     try {
         mostrarCarga();
         const response = await fetch(`/obtener-detalle-producto/${encodeURIComponent(nombreProducto)}`);
@@ -225,7 +225,6 @@ window.mostrarDetalleProducto = async function (nombreProducto) {
     }
 };
 
-// Add this function to handle lot selection
 window.actualizarDetallesLote = function (loteSeleccionado) {
     const detallesLote = document.getElementById('detallesLote');
     const data = window.currentProductData;
