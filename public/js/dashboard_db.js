@@ -214,21 +214,31 @@ async function obtenerRolUsuario() {
 async function iniciarApp() {
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
+    const vistas = document.querySelectorAll('.compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
     
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => {
         vista.style.display = 'none';
         vista.style.opacity = '0';
+        vista.style.backgroundColor = '#1a1a1a';
+        vista.style.color = '#ffffff';
     });
 
-    // Limpiar botones existentes
-    opcionesDiv.innerHTML = '';
+    // Crear estructura del menú circular
+    opcionesDiv.innerHTML = `
+        <div class="menu-principal">
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="menu-secundario"></div>
+    `;
+
+    const menuPrincipal = opcionesDiv.querySelector('.menu-principal');
+    const menuSecundario = opcionesDiv.querySelector('.menu-secundario');
 
     // Dividir los roles si hay múltiples
     const roles = rol ? rol.split(',').map(r => r.trim()) : [];
 
-    // Objeto con la configuración de botones por rol
+    // Mantener la configuración de botones por rol
     const botonesRoles = {
         'Producción': [
             {
@@ -310,7 +320,7 @@ async function iniciarApp() {
             {
                 clase: 'opcion-btn',
                 vista: 'compras-view',
-                icono: 'fa-shopping-cart fa-2x',
+                icono: 'fa-shopping-cart',
                 texto: 'Compras',
                 onclick: 'onclick="inicializarCompras()"'
             }
@@ -318,7 +328,15 @@ async function iniciarApp() {
     };
 
     // Agregar botones para cada rol
+    let totalBotones = 0;
+    roles.forEach(rolActual => {
+        const botonesRol = botonesRoles[rolActual];
+        if (botonesRol) totalBotones += botonesRol.length;
+    });
+
+    let botonActual = 0;
     let esElPrimero = true;
+    
     roles.forEach(rolActual => {
         const botonesRol = botonesRoles[rolActual];
         if (botonesRol && botonesRol.length > 0) {
@@ -331,16 +349,13 @@ async function iniciarApp() {
                         <span>${boton.texto}</span>
                     </button>
                 `;
-                opcionesDiv.insertAdjacentHTML('beforeend', btnHTML);
+                menuSecundario.insertAdjacentHTML('beforeend', btnHTML);
                 
-                // Si es el primer botón, mostrar su vista y ejecutar su función
                 if (esElPrimero) {
                     const vistaInicial = document.querySelector(`.${boton.vista}`);
                     if (vistaInicial) {
                         vistaInicial.style.display = 'flex';
                         vistaInicial.style.opacity = '1';
-                        
-                        // Ejecutar la función del primer botón
                         const onclickFn = boton.onclick.replace('onclick="', '').replace('"', '');
                         if (window[onclickFn]) {
                             window[onclickFn]();
@@ -348,24 +363,45 @@ async function iniciarApp() {
                     }
                     esElPrimero = false;
                 }
+                botonActual++;
             });
         }
     });
 
-    // Agregar event listeners a los botones
-    const botones = opcionesDiv.querySelectorAll('.opcion-btn');
+    // Manejar click en menú principal
+    menuPrincipal.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menuPrincipal.classList.toggle('active');
+        menuSecundario.classList.toggle('active');
+    });
+
+    menuSecundario.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    // Add document click handler to close menu when clicking outside
+    document.addEventListener('click', () => {
+        if (menuPrincipal.classList.contains('active')) {
+            menuPrincipal.classList.remove('active');
+            menuSecundario.classList.remove('active');
+        }
+    });
+
+    // Manejar clicks en botones secundarios
+    const botones = menuSecundario.querySelectorAll('.opcion-btn');
     botones.forEach(boton => {
         boton.addEventListener('click', async (e) => {
             if (boton.classList.contains('active')) return;
+            
+            menuPrincipal.classList.remove('active');
+            menuSecundario.classList.remove('active');
             
             botones.forEach(b => b.classList.remove('active'));
             boton.classList.add('active');
             
             vistas.forEach(vista => {
                 vista.style.opacity = '0';
-                setTimeout(() => {
-                    vista.style.display = 'none';
-                }, 300);
+                setTimeout(() => vista.style.display = 'none', 300);
             });
             
             const vistaId = boton.dataset.vista;
@@ -383,16 +419,6 @@ async function iniciarApp() {
                     });
                 }, 300);
             }
-
-            const ripple = document.createElement('span');
-            ripple.classList.add('ripple');
-            const rect = boton.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            ripple.style.width = ripple.style.height = `${size}px`;
-            ripple.style.left = `${e.clientX - rect.left - size/2}px`;
-            ripple.style.top = `${e.clientY - rect.top - size/2}px`;
-            boton.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 600);
         });
     });
 }

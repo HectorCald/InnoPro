@@ -10,7 +10,7 @@ export function inicializarAlmacen() {
         <div class="almacen-container">
             <div class="almacen-header">
                 <div class="search-bar">
-                    <input type="text" id="searchProduct" placeholder="Buscar producto...">
+                    <input type="text" id="searchProductAcopio" placeholder="Buscar producto...">
                     <i class="fas fa-search"></i>
                 </div>
                 <div class="filter-options">
@@ -22,7 +22,7 @@ export function inicializarAlmacen() {
                     </button>
                 </div>
             </div>
-            <div class="products-grid" id="productsContainer">
+            <div class="products-grid" id="productsContainerAcopio">
                 <!-- Los productos se cargarán aquí dinámicamente -->
             </div>
         </div>
@@ -31,8 +31,6 @@ export function inicializarAlmacen() {
     cargarProductosAlmacenAcopio();
     initializeEventListeners();
 }
-// ... código existente ...
-
 async function cargarProductosAlmacenAcopio() {
     try {
         mostrarCarga();
@@ -61,7 +59,7 @@ async function cargarProductosAlmacenAcopio() {
             return acc;
         }, {});
 
-        const container = document.getElementById('productsContainer');
+        const container = document.getElementById('productsContainerAcopio');
         container.innerHTML = Object.values(productosAgrupados).map(producto => `
             <div class="product-card" onclick="mostrarDetalleProductoAcopio('${producto.nombre}')">
                 <div class="product-info">
@@ -274,7 +272,7 @@ function filterProducts(searchTerm = '') {
 }
 
 function initializeEventListeners() {
-    const searchInput = document.getElementById('searchProduct');
+    const searchInput = document.getElementById('searchProductAcopio');
     const filterButtons = document.querySelectorAll('.filter-btn');
 
     searchInput.addEventListener('keyup', (e) => {

@@ -1,5 +1,5 @@
 export function inicializarAlmacenPrima() {
-    const container = document.querySelector('.almAcopio-view');
+    const container = document.querySelector('.almPrima-view');
     // Asegurarnos que el contenedor esté visible
     container.style.display = 'flex';
 
@@ -31,8 +31,6 @@ export function inicializarAlmacenPrima() {
     cargarProductosAlmacen();
     initializeEventListeners();
 }
-// ... código existente ...
-
 async function cargarProductosAlmacen() {
     try {
         mostrarCarga();

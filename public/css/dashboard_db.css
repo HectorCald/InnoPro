@@ -11,6 +11,7 @@
 @import'styles/newPedido.css';
 @import 'styles/newTarea.css';
 @import'styles/almAcopio.css';
+@import'styles/almPrima.css';
 
 
 /* ... imports existentes ... */
@@ -38,82 +39,91 @@
 }
 
 .view-active {
-    display: flex !important;
+    display: flex;
     opacity: 1;
 }
-/* Update navigation styles */
 .opciones {
-    width: 100%;
-    background-color: #383838;
-    display: flex;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    bottom: 20px;
+    right: 20px;
     z-index: 1000;
-    gap: 1.5em;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.opciones button {
-    border: none;
-    background: none;
-    color: #808080;
-    font-size: 0.7em;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
+}
+
+.menu-principal {
+    width: 60px;
+    height: 60px;
+    background: #3498db;
+    border-radius: 60px;
+    display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 0.5em;
-    padding: 0.6em 1.2em;
-    border-radius: 12px;
-    position: relative;
-    min-width: 50px;
-}
-
-.opciones button i {
-    font-size: 2em;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
+    z-index: 2;
 }
 
-.opciones button span {
-    transition: all 0.3s ease;
-    font-size: 0.85em;
-    opacity: 0.7;
+.menu-principal i {
+    color: white;
+    font-size: 24px;
 }
 
-.opciones button.active {
-    color: #3498db;
-    transform: translateY(-2px);
+.menu-principal.active {
+    transform: rotate(45deg);
 }
 
-.opciones button.active i {
-    transform: scale(1.1);
-    color: #ffffff;
-}
-
-.opciones button.active span {
-    opacity: 1;
-    font-weight: 500;
-    color: #ffffff;
-}
-
-.opciones button:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #ffffff;
-}
-
-/* Add ripple effect styles */
-.ripple {
+.menu-secundario {
     position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(0);
-    animation: ripple 0.6s linear;
-    pointer-events: none;
+    bottom: 70px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    transform: translateY(20px);
+}
+.menu-secundario.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.menu-secundario.active .opcion-btn {
+    transform: translate(0, 0) scale(1);
+    
+    
+}
+
+.opcion-btn {
+    width: 150px;
+    height: 45px;
+    border-radius: 12px;
+    background: #3498db;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    border: none;
+    gap: 10px;
+}
+.opcion-btn:hover {
+    background: #3498db;
+    transform: translateX(-5px);
+}
+.opcion-btn i {
+    font-size: 18px;
+}
+
+
+.menu-secundario.active .opcion-btn {
+    transform: translate(0, 0) scale(1);
 }
 
 @keyframes ripple {
@@ -122,6 +132,7 @@
         opacity: 0;
     }
 }
+
 
 /* Update view transitions */
 .newTarea-view,
