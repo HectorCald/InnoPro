@@ -26,5 +26,5 @@ html,
 body {
     overflow: hidden;
     /* Evita scroll innecesario */
-    background: #212121;
+    background-color: var(--background) !important;
 }

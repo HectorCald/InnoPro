@@ -1,11 +1,12 @@
+@import'styles/colores.css';
 .compras-view {
     width: 100%;
-    background: #1a1a1a;
+    background-color: var(--background) !important;
     height: calc(100vh - 7em);
     color: white;
     overflow-y: auto;
     padding: 1em;
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 1em;
     display: none;
@@ -18,7 +19,7 @@
 }
 .compras-view {
     width: 100%;
-    background: #1a1a1a;
+    background-color: var(--background) !important;;
     height: calc(100vh - 7em);
     color: white;
     overflow-y: auto;

@@ -501,8 +501,8 @@ function mostrarSugerenciaPedido(hoja, pedido) {
             <p>Fecha: ${pedido[0]}</p>
             ${pedido[3] ? `<p>Observaciones: ${pedido[3]}</p>` : ''}
             <div class="sugerencia-botones">
-                <button class="btn-usar-existente">Usar pedido existente</button>
-                <button class="btn-crear-nuevo">Crear nuevo pedido</button>
+                <button class="btn-usar-existente anuncio-btn enviar">Usar pedido existente</button>
+                <button class="btn-crear-nuevo anuncio-btn cancelar">Crear nuevo pedido</button>
             </div>
         </div>
     `;

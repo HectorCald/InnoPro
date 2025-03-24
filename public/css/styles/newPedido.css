@@ -1,9 +1,10 @@
+@import'styles/colores.css';
 .newPedido-view {
     /* Main Container Styles */
     width: 100%;
-    background: #1a1a1a;
+    background: var(--background) !important;
     height: calc(100vh - 4em);
-    color: white;
+    color: var(--primary-text) !important;
     overflow-y: auto;
     padding: 1em;
     display: flex;
@@ -30,7 +31,6 @@
 
         h3 {
             font-size: 16px;
-            color: #fff;
             margin: 0;
         }
         i{
@@ -54,8 +54,8 @@
     }
 
     .btn-agregar-pedido {
-        background: #3d3d3d;
-        color: white;
+        background: var(--primary-color);
+        color: var(--primary-text);
         border: none;
         padding: 1em;
         border-radius: 40px;
@@ -66,10 +66,10 @@
         height: 50px;
         justify-content: center;
         font-size: 15px;
-
-        &:hover {
-            background: #45a049;
-        }
+    }
+    .btn-agregar-pedido:hover{
+        background-color: var(--second-button);
+        color: white;
     }
 
     /* Form Styles */
@@ -83,7 +83,7 @@
             padding: 0.5em;
             border-radius: 5px;
             border: 1px solid #ddd;
-            background: #2d2d2d;
+            background: var(--primary-color);
             color: white;
         }
     }
@@ -127,7 +127,7 @@
     }
 
     .pedido-card {
-        background: #333;
+        background: var(--primary-color);
         border-radius: 6px;
         padding: 1em;
         border-left: 4px solid #4CAF50;
@@ -150,13 +150,13 @@
     .pedido-info {
         h4 {
             margin: 0 0 0.5em 0;
-            color: #fff;
+            color: var(--primary-text);
             font-size: 1.1em;
         }
 
         .cantidad {
             font-size: 0.9em;
-            color: #ccc;
+            color: #a8a8a8;
             margin: 0.5em 0;
             display: flex;
             align-items: center;
@@ -183,7 +183,7 @@
     .pedido-nombre {
         font-size: 1.2em;
         font-weight: 600;
-        color: #fff;
+        color: var(--primary-text);
     }
 
     .pedido-detalles {
@@ -197,7 +197,7 @@
             display: flex;
             align-items: center;
             gap: 0.5em;
-            color: #ccc;
+            color: var(--primary-text);
             font-size: 0.9em;
 
             i {
@@ -233,7 +233,7 @@
     }
 
     .pedido-obs {
-        color: rgb(238, 238, 238);
+        color: var(--primary-text);
         font-size: 15px;
         padding-top: 0.8em;
         display: flex;
@@ -274,7 +274,7 @@
     }
 
     .pedido-archivado-card {
-        background: #333;
+        background: var(--primary-color);
         border-radius: 8px;
         padding: 1.2em;
         border-left: 4px solid #4CAF50;
@@ -298,7 +298,7 @@
         .pedido-nombre {
             font-size: 1.1em;
             font-weight: 500;
-            color: #fff;
+            color: var(--primary-text);
         }
 
         .pedido-fecha {
@@ -373,7 +373,7 @@
         overflow-y: auto;
         margin: 1em 0;
         padding: 1em;
-        background: #2a2a2a;
+        background: var(--background);
         border-radius: 5px;
     }
 
@@ -391,53 +391,6 @@
             color: #fff;
         }
     }
-
-    /* Suggestion Styles */
-    .sugerencia-pedido-existente {
-        background: #2d2d2d;
-        padding: 1em;
-        border-radius: 8px;
-        margin-top: 1em;
-        border: 1px solid #4d4d4d;
-    }
-
-    .sugerencia-contenido {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5em;
-    }
-
-    .sugerencia-botones {
-        display: flex;
-        gap: 1em;
-        margin-top: 1em;
-    }
-
-    .btn-usar-existente, .btn-crear-nuevo {
-        padding: 0.5em 1em;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    .btn-usar-existente {
-        background: #4CAF50;
-        color: white;
-
-        &:hover {
-            background: #45a049;
-        }
-    }
-
-    .btn-crear-nuevo {
-        background: #666;
-        color: white;
-
-        &:hover {
-            background: #555;
-        }
-    }
-
     /* Status Messages */
     .no-pedidos {
         text-align: center;

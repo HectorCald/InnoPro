@@ -1,7 +1,8 @@
 /* ==================== USUARIOS VIEW ==================== */
+@import'styles/colores.css';
 .usuarios-view {
     width: 100%;
-    background: #1a1a1a;
+    background: var(--background);
     height: 80vh;
     color: white;
     overflow: hidden;

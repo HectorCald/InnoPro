@@ -1,6 +1,7 @@
+@import'styles/colores.css';
 .consultarRegistros-view {
     width: 100%;
-    background: #1a1a1a;
+    background: var(--background);
     height: calc(100vh - 7em);
     color: white;
     overflow-y: auto;
