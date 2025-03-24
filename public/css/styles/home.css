@@ -79,7 +79,7 @@
 
     .timeline {
         background: var(--surface);
-        padding: 1.5em;
+        padding: 10px;
         border-radius: 15px;
     }
 
@@ -111,9 +111,9 @@
     .shortcuts-grid {
         display: flex;
         gap: 10px;
-        margin-top: 10px;
-        justify-content: center;
+        justify-content: space-around;
         align-items: center;
+        padding: 0;
     }
 
     .shortcut-card {
