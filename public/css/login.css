@@ -1,16 +1,4 @@
-/* Base Styles */
-:root {
-    --primary-text: #f90000;
-    --primary-color: #737373;
-    --primary-light: #aeaeae;
-    --primary-dark: #323232;
-    --primary-button: #575757;
-    --second-button: #339900;
-    --background: #1a1a1a;
-    --surface: #2a2a2a;
-    --error: #ff4d4d;
-    --success: #4CAF50;
-}
+@import'styles/colores.css';
 * {
     margin: 0;
     padding: 0;
@@ -23,7 +11,7 @@
 body {
     background: var(--background);
     min-height: 100vh;
-    color: white;
+    color: var(--primary-text)
 }
 
 .login-container {
@@ -77,12 +65,12 @@ body {
     height: 16px;
     border-radius: 50%;
     background: var(--surface);
-    border: 2px solid var(--primary-color);
+    border: 2px solid var(--primary-light);
     transition: all 0.3s ease;
 }
 
 .pin-dot.filled {
-    background: var(--primary-color);
+    background: var(--primary-light);
     transform: scale(1.1);
 }
 
@@ -103,8 +91,8 @@ body {
 .num-key {
     aspect-ratio: 1;
     border: none;
-    background: var(--surface);
-    color: white;
+    background: var(--primary-color);
+    color: var(--primary-text);
     font-size: 1.5rem;
     border-radius: 50%;
     cursor: pointer;
@@ -211,4 +199,66 @@ body {
 @keyframes fadeOut {
     from { opacity: 1; }
     to { opacity: 0; }
+}
+/* Estilos para el switch de tema */
+.theme-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--surface);
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+    width: auto;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--primary-color);
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--primary-text);
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--second-button);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.theme-icon {
+    font-size: 20px;
+    color: var(--primary-text);
 }

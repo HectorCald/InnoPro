@@ -123,12 +123,28 @@ class LoginPin {
 
 /* ==================== INICIALIZACIÓN DE LA APLICACIÓN ==================== */
 document.addEventListener('DOMContentLoaded',async () => {
-    const loginPin = new LoginPin();
+
 
     const btnConsulta = document.querySelector('.consultarProducto');
     if (btnConsulta) {
         btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
     }
+    const loginPin = new LoginPin();
+
+    // Manejo del tema
+    const themeToggle = document.querySelector('#themeToggle');
+    
+    // Verificar y aplicar el tema guardado
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    themeToggle.checked = currentTheme === 'light';
+
+    // Manejar cambios en el tema
+    themeToggle.addEventListener('change', function() {
+        const newTheme = this.checked ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    });
 });
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');

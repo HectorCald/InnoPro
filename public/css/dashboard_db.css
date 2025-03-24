@@ -139,6 +139,7 @@
     background: var(--primary-dark);
     transform: translateX(-5px);
     box-shadow: 0 0 15px var(--primary-color);
+    color: var(--primary-text2);
 }
 
 
