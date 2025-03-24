@@ -1,0 +1,180 @@
+@import'styles/colores.css';
+.home-view {
+    width: 100%;
+    background: var(--background) !important;
+    height: calc(100vh - 5em);
+    color: var(--primary-text) !important;
+    overflow-y: auto;
+    padding: 1em;
+    display: none;
+    flex-direction: column;
+    gap: 1em;
+    display: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.title {
+    padding: 1em 0;
+    border-bottom: 1px solid #2c2c2c;
+
+    h3 {
+        font-size: 16px;
+        margin: 0;
+    }
+}
+
+
+.home-header {
+    font-size: 1.8em;
+    font-weight: 600;
+    margin-bottom: 1em;
+}
+
+.highlights-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5em;
+}
+
+.highlight-card {
+    background: var(--surface);
+    padding: 1.5em;
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+
+.highlight-card:hover {
+    transform: translateY(-5px);
+}
+
+.highlight-value {
+    font-size: 2em;
+    font-weight: 700;
+    color: var(--second-button);
+}
+
+.highlight-label {
+    color: var(--primary-light);
+    margin-top: 0.5em;
+}
+
+.sections-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2em;
+}
+
+.timeline {
+    background: var(--surface);
+    padding: 1.5em;
+    border-radius: 15px;
+}
+
+.timeline-item {
+    padding: 1em;
+    border-left: 2px solid var(--primary-light);
+    margin-bottom: 1em;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--second-button);
+}
+
+/* Remove or update the conflicting shortcuts-container styles */
+.shortcuts-container {
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.shortcuts-grid {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.shortcut-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+    min-width: 120px;
+}
+
+.shortcut-card:hover {
+    transform: translateY(-2px);
+    background: var(--primary-dark);
+}
+
+.shortcut-icon {
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
+    color: var(--second-button);
+}
+.updates-section {
+    background: var(--background);
+    padding: 1.5em;
+    border-radius: 15px;
+    margin-top: 2em;
+}
+
+.update-card {
+    padding: 1em;
+    border-radius: 10px;
+    margin-bottom: 1em;
+    background: var(--primary-dark);
+}
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5em;
+}
+
+.delete-notification {
+    background: none;
+    border: none;
+    color: var(--primary-light);
+    cursor: pointer;
+    padding: 0.2em 0.5em;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.delete-notification:hover {
+    opacity: 1;
+    color: var(--error);
+}
+
+.timeline-item {
+    transition: opacity 0.3s ease;
+}
+
+.timeline-message {
+    color: var(--primary-text);
+}
+
+.no-notifications {
+    text-align: center;
+    color: var(--primary-light);
+    padding: 1em;
+    font-style: italic;
+}

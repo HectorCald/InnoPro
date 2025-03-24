@@ -2423,6 +2423,240 @@ app.get('/obtener-detalle-producto-prima/:nombre', requireAuth, async (req, res)
 });
 
 
+
+/* ==================== API DE HOME ==================== */
+// Agregar esta nueva ruta con las demás rutas API
+app.get('/obtener-estadisticas-usuario', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A2:L'
+        });
+
+        const rows = response.data.values || [];
+        const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
+        
+        // Calcular estadísticas básicas
+        const produccionesTotal = registrosUsuario.length;
+        const produccionesVerificadas = registrosUsuario.filter(row => 
+            row[9] && row[9].toString().trim() !== ''
+        ).length;
+
+        // Calcular el total en Bs
+        let totalBs = 0;
+        registrosUsuario.forEach(registro => {
+            const cantidad = registro[9] ? parseFloat(registro[9]) : parseFloat(registro[6]) || 0;
+            const gramaje = parseFloat(registro[3]) || 0;
+            const seleccion = registro[4] || '';
+            const nombre = registro[1] || '';
+            
+            // Calcular total usando la misma lógica de calcularTotal
+            const resultados = calcularTotal(nombre, cantidad, gramaje, seleccion);
+            totalBs += resultados.total;
+        });
+
+        // Calcular eficiencia
+        const eficiencia = produccionesTotal > 0 
+            ? Math.round((produccionesVerificadas / produccionesTotal) * 100) 
+            : 0;
+
+        res.json({
+            success: true,
+            estadisticas: {
+                produccionesTotal,
+                produccionesVerificadas,
+                totalBs,
+                eficiencia
+            }
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener estadísticas'
+        });
+    }
+});
+
+// Agregar la función calcularTotal al backend
+function calcularTotal(nombre, cantidad, gramaje, seleccion) {
+    nombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+    cantidad = parseFloat(cantidad) || 0;
+    gramaje = parseFloat(gramaje) || 0;
+
+    let resultado = cantidad;
+    let resultadoEtiquetado = cantidad;
+    let resultadoSellado = cantidad;
+    const kilos = (cantidad * gramaje) / 1000;
+    let resultadoSernido = 0;
+
+    // Lógica para envasado
+    if (nombre.includes('pipoca')) {
+        if (gramaje >= 1000) {
+            resultado = (cantidad * 5) * 0.048;
+        } else if (gramaje >= 500) {
+            resultado = (cantidad * 4) * 0.048;
+        } else {
+            resultado = (cantidad * 2) * 0.048;
+        }
+    } else if (
+        nombre.includes('bote') || 
+        (nombre.includes('clavo de olor entero') && gramaje === 12) || 
+        (nombre.includes('canela en rama') && gramaje === 4) || 
+        (nombre.includes('linaza') && gramaje === 50)
+    ) {
+        resultado = (cantidad * 2) * 0.048;
+    } else if (
+        nombre.includes('laurel') || 
+        nombre.includes('huacatay') || 
+        nombre.includes('albahaca') || 
+        (nombre.includes('canela') && gramaje === 14)
+    ) {
+        resultado = (cantidad * 3) * 0.048;
+    } else {
+        if (gramaje == 150) {
+            resultado = (cantidad * 3) * 0.048;
+        } else if (gramaje == 500) {
+            resultado = (cantidad * 4) * 0.048;
+        } else if (gramaje == 1000) {
+            resultado = (cantidad * 5) * 0.048;
+        } else {
+            resultado = (cantidad * 1) * 0.048;
+        }
+    }
+
+    // Lógica para etiquetado
+    if (nombre.includes('bote')) {
+        resultadoEtiquetado = (cantidad * 2) * 0.016;
+    } else {
+        resultadoEtiquetado = cantidad * 0.016;
+    }
+
+    // Lógica para sellado
+    if (nombre.includes('bote')) {
+        resultadoSellado = cantidad * 0.3 / 60 * 5;
+    } else if (gramaje > 150) {
+        resultadoSellado = (cantidad * 2) * 0.006;
+    } else {
+        resultadoSellado = (cantidad * 1) * 0.006;
+    }
+
+    // Lógica para cernido
+    if (seleccion === 'Cernido') {
+        if (nombre.includes('bote')) {
+            if (nombre.includes('canela') || nombre.includes('cebolla') || nombre.includes('locoto')) {
+                resultadoSernido = (kilos * 0.34) * 5;
+            } else {
+                resultadoSernido = (kilos * 0.1) * 5;
+            }
+        } else if (nombre.includes('canela') || nombre.includes('cebolla') ||
+            nombre.includes('aji amarillo dulce') || nombre.includes('locoto')) {
+            resultadoSernido = (kilos * 0.3) * 5;
+        } else {
+            if (!nombre.includes('tomillo')) {
+                resultadoSernido = (kilos * 0.08) * 5;
+            }
+        }
+    }
+
+    return {
+        total: resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido,
+        envasado: resultado,
+        etiquetado: resultadoEtiquetado,
+        sellado: resultadoSellado,
+        cernido: resultadoSernido
+    };
+}
+// Add this with other API routes
+app.get('/obtener-notificaciones-usuario', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A2:C'  // A:Fecha, B:Usuario, C:Notificación
+        });
+
+        const rows = response.data.values || [];
+        const notificacionesUsuario = rows
+            .filter(row => row[1] === req.user.nombre)  // Filter by current user
+            .map(row => ({
+                fecha: row[0],
+                mensaje: row[2]
+            }))
+            .sort((a, b) => {  // Sort by date, most recent first
+                const [diaA, mesA, anioA] = a.fecha.split('/');
+                const [diaB, mesB, anioB] = b.fecha.split('/');
+                const fechaA = new Date(20 + anioA, mesA - 1, diaA);
+                const fechaB = new Date(20 + anioB, mesB - 1, diaB);
+                return fechaB - fechaA;
+            })
+            .slice(0, 5);  // Get only the 5 most recent notifications
+
+        res.json({ success: true, notificaciones: notificacionesUsuario });
+    } catch (error) {
+        console.error('Error al obtener notificaciones:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener notificaciones' 
+        });
+    }
+});
+// Add this with other API routes
+app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
+    try {
+        const { fecha, mensaje } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get all notifications
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === req.user.nombre && 
+            row[2] === mensaje
+        );
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Notificación no encontrada' 
+            });
+        }
+
+        // Get the sheet ID
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const notificacionesSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Notificaciones'
+        );
+
+        if (!notificacionesSheet) {
+            throw new Error('Hoja de Notificaciones no encontrada');
+        }
+
+        // Delete the row (add 2 to account for header row and 0-based index)
+        await sheets.spreadsheets.values.clear({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Notificaciones!A${rowIndex + 2}:C${rowIndex + 2}`
+        });
+
+        res.json({ success: true, message: 'Notificación eliminada correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar notificación:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar la notificación: ' + error.message
+        });
+    }
+});
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);

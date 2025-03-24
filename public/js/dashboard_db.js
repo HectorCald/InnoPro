@@ -8,6 +8,7 @@ import { mostrarProgramaAcopio, verProgramaciones, mostrarHistorialTareas, toggl
 import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
 import { inicializarAlmacenPrima } from './modules/almPrima.js';
+import { inicializarHome } from './modules/home.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -74,6 +75,7 @@ window.verProgramaciones = verProgramaciones;
 window.mostrarProgramaAcopio = mostrarProgramaAcopio;
 window.inicializarAlmacen = inicializarAlmacen;
 window.inicializarAlmacenPrima = inicializarAlmacenPrima;
+window.inicializarHome = inicializarHome;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -235,7 +237,7 @@ async function obtenerRolUsuario() {
 async function iniciarApp() {
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
+    const vistas = document.querySelectorAll('.home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
 
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => {
@@ -264,6 +266,13 @@ async function iniciarApp() {
     // Mantener la configuración de botones por rol
     const botonesRoles = {
         'Producción': [
+            {
+                clase: 'opcion-btn',
+                vista: 'home-view',
+                icono: 'fa-history',
+                texto: 'Inicio',
+                onclick: 'onclick="inicializarHome()"'
+            },
             {
                 clase: 'opcion-btn',
                 vista: 'formProduccion-view',
@@ -460,13 +469,8 @@ function ocultarCarga() {
 }
 document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
-    cargarUsuarios();
-    cargarRegistros();
-    inicializarConsulta();
-    inicializarFormularioProduccion();
-    cargarRegistrosCuentas();
+    inicializarHome();
     iniciarApp();
-    inicializarPedidos();
 });
 
 
