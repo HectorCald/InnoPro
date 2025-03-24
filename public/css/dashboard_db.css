@@ -53,7 +53,6 @@
     flex-direction: column;
     align-items: flex-end;
 }
-
 .menu-principal {
     width: 60px;
     height: 60px;
@@ -68,13 +67,44 @@
     z-index: 999999;
 }
 
+.hamburger {
+    width: 24px;
+    height: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.hamburger span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background: white;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.menu-principal.active .hamburger span:nth-child(1) {
+    transform: translateY(8.5px) rotate(45deg);
+}
+
+.menu-principal.active .hamburger span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-principal.active .hamburger span:nth-child(3) {
+    transform: translateY(-8.5px) rotate(-45deg);
+}
+
+/* Remove this since we don't need the rotation of the entire button anymore */
+.menu-principal.active {
+    transform: none;
+}
+
 .menu-principal i {
     color: white;
     font-size: 24px;
-}
-
-.menu-principal.active {
-    transform: rotate(45deg);
 }
 
 .menu-secundario {

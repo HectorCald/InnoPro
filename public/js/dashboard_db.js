@@ -251,7 +251,11 @@ async function iniciarApp() {
     opcionesDiv.innerHTML = `
         <div class="overlay"></div>
         <div class="menu-principal">
-            <i class="fas fa-plus"></i>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
         <div class="menu-secundario"></div>
     `;
