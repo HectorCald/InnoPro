@@ -4,7 +4,7 @@ export function inicializarTareas() {
     const container = document.querySelector('.newTarea-view');
     container.innerHTML = `
         <div class="title">
-            <h3>Gestión de Tareas</h3>
+            <h3><i class="fas fa-tasks"></i> Gestión de Tareas</h3>
         </div>
         <div class="tareas-container">
             <div class="tareas-botones">

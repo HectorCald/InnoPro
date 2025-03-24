@@ -30,6 +30,12 @@
     flex-direction: column;
     justify-content: flex-start;
     margin-bottom: 3em;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .anuncio-contenido i {

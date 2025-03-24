@@ -3,7 +3,7 @@ export function inicializarPedidos() {
     const container = document.querySelector('.newPedido-view');
     container.innerHTML = `
         <div class="title">
-            <h2 class="section-title"><i class="fas fa-shopping-basket fa-2x"></i> Gestión de Pedidos</h2>
+            <h3><i class="fas fa-shopping-basket fa-2x"></i> Gestión de Pedidos</h3>
         </div>
         <div class="pedidos-container">
             <div class="pedidos-botones">

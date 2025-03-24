@@ -2102,9 +2102,8 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
 });
 
 
-
 /* ==================== API DE ALMACENES ==================== */
-// Agregar este endpoint para obtener productos del almacén
+
 app.get('/obtener-productos-almacen', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2167,6 +2166,121 @@ app.get('/obtener-detalle-producto/:nombre', requireAuth, async (req, res) => {
 
         const movimientosSheet = spreadsheet.data.sheets.find(sheet => 
             sheet.properties.title === 'Movimientos alm-bruto'
+        );
+
+        let movimientos = [];
+        let movimientosPorLote = {};
+        
+        if (movimientosSheet) {
+            const historialResponse = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: 'Movimientos alm-bruto!A2:E'
+            });
+
+            // Obtener y ordenar todos los movimientos por fecha
+            movimientos = (historialResponse.data.values || [])
+                .filter(row => row[1] === nombreProducto && row[0])
+                .sort((a, b) => {
+                    const [diaA, mesA, anioA] = a[0].split('/');
+                    const [diaB, mesB, anioB] = b[0].split('/');
+                    const fechaA = new Date(20 + anioA, mesA - 1, diaA);
+                    const fechaB = new Date(20 + anioB, mesB - 1, diaB);
+                    return fechaB - fechaA;
+                })
+                .slice(0, 5)
+                .map(row => ({
+                    fecha: row[0],
+                    cantidad: parseFloat(row[2]) || 0,
+                    tipo: row[3],
+                    lote: row[4]
+                }));
+
+            // Agrupar movimientos por lote
+            movimientosPorLote = lotes.reduce((acc, lote) => {
+                acc[lote.lote] = movimientos.filter(m => m.lote === lote.lote);
+                return acc;
+            }, {});
+        }
+
+        res.json({
+            success: true,
+            producto: {
+                nombre: nombreProducto,
+                cantidad: cantidadTotal,
+                lotes: lotes
+            },
+            movimientos,
+            movimientosPorLote
+        });
+    } catch (error) {
+        console.error('Error detallado:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener detalles del producto: ' + error.message
+        });
+    }
+});
+app.get('/obtener-productos-almacen-prima', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen prima!A2:D'
+        });
+
+        const rows = response.data.values || [];
+        const productos = rows.map(row => ({
+            nombre: row[0] || '',
+            cantidad: parseFloat(row[1]) || 0,
+            lote: row[2] || '',
+            ultimaActualizacion: row[3] || new Date().toISOString()
+        }));
+
+        res.json({ success: true, productos });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener productos del almacén'
+        });
+    }
+});
+app.get('/obtener-detalle-producto-prima/:nombre', requireAuth, async (req, res) => {
+    try {
+        const nombreProducto = decodeURIComponent(req.params.nombre);
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener datos actuales del producto
+        const productoResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen prima!A2:D'
+        });
+
+        const rows = productoResponse.data.values || [];
+        const productosConMismoNombre = rows.filter(row => row[0] === nombreProducto);
+
+        if (productosConMismoNombre.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Producto no encontrado'
+            });
+        }
+
+        // Calcular cantidad total y agrupar por lotes
+        const cantidadTotal = productosConMismoNombre.reduce((sum, row) => sum + (parseFloat(row[1]) || 0), 0);
+        const lotes = productosConMismoNombre.map(row => ({
+            lote: row[2],
+            cantidad: parseFloat(row[1]) || 0,
+            ultimaActualizacion: row[3] || new Date().toISOString()
+        }));
+
+        // Verificar si existe la hoja de movimientos
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+
+        const movimientosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Movimientos alm-prima'
         );
 
         let movimientos = [];

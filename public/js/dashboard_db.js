@@ -7,6 +7,7 @@ import {confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, most
 import {mostrarProgramaAcopio, verProgramaciones,mostrarHistorialTareas,toggleProcesos,mostrarProcesos, finalizarProceso,inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea} from './modules/newTarea.js';
 import {inicializarCompras} from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
+import { inicializarAlmacenPrima } from './modules/almPrima.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -72,6 +73,7 @@ window.inicializarCompras = inicializarCompras;
 window.verProgramaciones = verProgramaciones;
 window.mostrarProgramaAcopio = mostrarProgramaAcopio;
 window.inicializarAlmacen = inicializarAlmacen;
+window.inicializarAlmacenPrima = inicializarAlmacenPrima;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -255,17 +257,23 @@ async function iniciarApp() {
             {
                 clase: 'opcion-btn',
                 vista: 'newTarea-view',
-                icono: 'fa-clipboard-list',
+                icono: 'fa-tasks',
                 texto: 'Tarea',
                 onclick: 'onclick="inicializarTareas()"'
-            }
-            ,
+            },
             {
                 clase: 'opcion-btn',
                 vista: 'almAcopio-view',
-                icono: 'fa-clipboard-list',
-                texto: 'Almcen 1',
+                icono: 'fa-warehouse',
+                texto: 'Alm Bruto',
                 onclick: 'onclick="inicializarAlmacen()"'
+            },
+            {
+                clase: 'opcion-btn',
+                vista: 'almPrima-view',
+                icono: 'fa-warehouse',
+                texto: 'Alm Prima',
+                onclick: 'onclick="inicializarAlmacenPrima()"'
             }
         ],
         'Almacen': [
@@ -275,6 +283,13 @@ async function iniciarApp() {
                 icono: 'fa-check-double',
                 texto: 'Verificar',
                 onclick: 'onclick="cargarRegistros()"'
+            },
+            {
+                clase: 'opcion-btn',
+                vista: 'almPrima-view',
+                icono: 'fa-warehouse',
+                texto: 'Alm Prima',
+                onclick: 'onclick="inicializarAlmacenPrima()"'
             }
         ],
         'Administración': [
@@ -291,8 +306,7 @@ async function iniciarApp() {
                 icono: 'fa-search',
                 texto: 'Consultar',
                 onclick: 'onclick="inicializarConsulta()"'
-            }
-            ,
+            },
             {
                 clase: 'opcion-btn',
                 vista: 'compras-view',

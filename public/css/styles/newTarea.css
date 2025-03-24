@@ -54,9 +54,18 @@
         gap: 1em;
     }
 
-    .title h3 {
-        font-size: 16px;
-        margin-top: 20px;
+    .title {
+        padding: 1em 0;
+        border-bottom: 1px solid #2c2c2c;
+
+        h3 {
+            font-size: 16px;
+            color: #fff;
+            margin: 0;
+        }
+        i{
+            font-size: 16px;
+        }
     }
 
     /* ==================== BUTTON STYLES ==================== */

@@ -1,11 +1,11 @@
-export function inicializarAlmacen() {
+export function inicializarAlmacenPrima() {
     const container = document.querySelector('.almAcopio-view');
     // Asegurarnos que el contenedor esté visible
     container.style.display = 'flex';
 
     container.innerHTML = `
         <div class="title">
-            <h3><i class="fas fa-warehouse"></i>  Gestión de Almacén Bruto</h3>
+            <h3><i class="fas fa-warehouse"></i>  Gestión de Almacén Prima</h3>
         </div>
         <div class="almacen-container">
             <div class="almacen-header">
@@ -36,7 +36,7 @@ export function inicializarAlmacen() {
 async function cargarProductosAlmacen() {
     try {
         mostrarCarga();
-        const response = await fetch('/obtener-productos-almacen');
+        const response = await fetch('/obtener-productos-almacen-prima');
         const data = await response.json();
 
         if (!data.success) {
@@ -85,7 +85,7 @@ async function cargarProductosAlmacen() {
 window.mostrarDetalleProducto = async function (nombreProducto) {
     try {
         mostrarCarga();
-        const response = await fetch(`/obtener-detalle-producto/${encodeURIComponent(nombreProducto)}`);
+        const response = await fetch(`/obtener-detalle-producto-prima/${encodeURIComponent(nombreProducto)}`);
 
         if (!response.ok) {
             const errorData = await response.json();
