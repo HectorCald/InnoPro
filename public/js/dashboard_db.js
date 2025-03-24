@@ -6,6 +6,7 @@ import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from '.
 import {confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso,togglePedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
 import {mostrarProgramaAcopio, verProgramaciones,mostrarHistorialTareas,toggleProcesos,mostrarProcesos, finalizarProceso,inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea} from './modules/newTarea.js';
 import {inicializarCompras} from './modules/compras.js';
+import { inicializarAlmacen } from './modules/almAcopio.js';
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -70,6 +71,7 @@ window.confirmarRechazo = confirmarRechazo;
 window.inicializarCompras = inicializarCompras;
 window.verProgramaciones = verProgramaciones;
 window.mostrarProgramaAcopio = mostrarProgramaAcopio;
+window.inicializarAlmacen = inicializarAlmacen;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -256,6 +258,14 @@ async function iniciarApp() {
                 icono: 'fa-clipboard-list',
                 texto: 'Tarea',
                 onclick: 'onclick="inicializarTareas()"'
+            }
+            ,
+            {
+                clase: 'opcion-btn',
+                vista: 'almAcopio-view',
+                icono: 'fa-clipboard-list',
+                texto: 'Almcen 1',
+                onclick: 'onclick="inicializarAlmacen()"'
             }
         ],
         'Almacen': [

@@ -1566,34 +1566,6 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
         });
     }
 });
-app.get('/obtener-historial-tareas', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Historial_tareas!A2:I' // All columns including processes
-        });
-
-        const tareas = (response.data.values || []).map(row => ({
-            id: row[1],
-            nombre: row[0],
-            descripcion: row[1],
-            fechaInicio: row[2],
-            fechaFin: row[3],
-            pesoInicial: parseFloat(row[5] || 0),
-            pesoFinal: parseFloat(row[6] || 0),
-            merma: parseFloat(row[7] || 0),
-            procesos: row[8] ? JSON.parse(row[8]) : []
-        }));
-
-        res.json({ success: true, tareas });
-    } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener historial de tareas: ' + error.message 
-        });
-    }
-});
 app.get('/obtener-lista-pedidos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1784,7 +1756,7 @@ app.post('/guardar-programa', requireAuth, async (req, res) => {
         // Append the new programaciones
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Programa acopio!A:F',
+            range: 'Programa acopio!A2:F',
             valueInputOption: 'USER_ENTERED',
             insertDataOption: 'INSERT_ROWS',
             resource: {
@@ -1810,7 +1782,7 @@ app.get('/obtener-programaciones', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Programa acopio!A:D'
+            range: 'Programa acopio!A2:D'
         });
 
         const rows = response.data.values || [];
@@ -1830,7 +1802,6 @@ app.get('/obtener-programaciones', requireAuth, async (req, res) => {
         });
     }
 });
-// Add this endpoint before the server initialization
 app.get('/verificar-programa-semana', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1844,7 +1815,7 @@ app.get('/verificar-programa-semana', requireAuth, async (req, res) => {
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Programa acopio!A:D'
+            range: 'Programa acopio!A2:D'
         });
 
         const rows = response.data.values || [];
@@ -1872,8 +1843,6 @@ app.get('/verificar-programa-semana', requireAuth, async (req, res) => {
         });
     }
 });
-// Add this new endpoint before the server initialization
-// Add this new endpoint
 app.delete('/eliminar-programa-completo', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1906,6 +1875,70 @@ app.delete('/eliminar-programa-completo', requireAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Error al eliminar el programa: ' + error.message
+        });
+    }
+});
+// Add this new endpoint
+app.post('/actualizar-estado-programa', requireAuth, async (req, res) => {
+    try {
+        const { fecha, producto } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get all records from Programa acopio sheet
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Programa acopio!A:D'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[2] === producto
+        );
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Programa no encontrado' 
+            });
+        }
+
+        // Get the sheet ID for Programa acopio sheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const programaSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Programa acopio'
+        );
+
+        if (!programaSheet) {
+            throw new Error('Hoja de Programa no encontrada');
+        }
+
+        // Delete the row
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: programaSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex,
+                            endIndex: rowIndex + 1
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true, message: 'Programa actualizado correctamente' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el programa: ' + error.message
         });
     }
 });
@@ -2069,6 +2102,125 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
 });
 
 
+
+/* ==================== API DE ALMACENES ==================== */
+// Agregar este endpoint para obtener productos del almacén
+app.get('/obtener-productos-almacen', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen bruto!A2:D'
+        });
+
+        const rows = response.data.values || [];
+        const productos = rows.map(row => ({
+            nombre: row[0] || '',
+            cantidad: parseFloat(row[1]) || 0,
+            lote: row[2] || '',
+            ultimaActualizacion: row[3] || new Date().toISOString()
+        }));
+
+        res.json({ success: true, productos });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener productos del almacén'
+        });
+    }
+});
+
+app.get('/obtener-detalle-producto/:nombre', requireAuth, async (req, res) => {
+    try {
+        const nombreProducto = decodeURIComponent(req.params.nombre);
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener datos actuales del producto
+        const productoResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen bruto!A2:D'
+        });
+
+        const rows = productoResponse.data.values || [];
+        const productosConMismoNombre = rows.filter(row => row[0] === nombreProducto);
+
+        if (productosConMismoNombre.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Producto no encontrado'
+            });
+        }
+
+        // Calcular cantidad total y agrupar por lotes
+        const cantidadTotal = productosConMismoNombre.reduce((sum, row) => sum + (parseFloat(row[1]) || 0), 0);
+        const lotes = productosConMismoNombre.map(row => ({
+            lote: row[2],
+            cantidad: parseFloat(row[1]) || 0,
+            ultimaActualizacion: row[3] || new Date().toISOString()
+        }));
+
+        // Verificar si existe la hoja de movimientos
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+
+        const movimientosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Movimientos alm-bruto'
+        );
+
+        let movimientos = [];
+        let movimientosPorLote = {};
+        
+        if (movimientosSheet) {
+            const historialResponse = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: 'Movimientos alm-bruto!A2:E'
+            });
+
+            // Obtener y ordenar todos los movimientos por fecha
+            movimientos = (historialResponse.data.values || [])
+                .filter(row => row[1] === nombreProducto && row[0])
+                .sort((a, b) => {
+                    const [diaA, mesA, anioA] = a[0].split('/');
+                    const [diaB, mesB, anioB] = b[0].split('/');
+                    const fechaA = new Date(20 + anioA, mesA - 1, diaA);
+                    const fechaB = new Date(20 + anioB, mesB - 1, diaB);
+                    return fechaB - fechaA;
+                })
+                .slice(0, 5)
+                .map(row => ({
+                    fecha: row[0],
+                    cantidad: parseFloat(row[2]) || 0,
+                    tipo: row[3],
+                    lote: row[4]
+                }));
+
+            // Agrupar movimientos por lote
+            movimientosPorLote = lotes.reduce((acc, lote) => {
+                acc[lote.lote] = movimientos.filter(m => m.lote === lote.lote);
+                return acc;
+            }, {});
+        }
+
+        res.json({
+            success: true,
+            producto: {
+                nombre: nombreProducto,
+                cantidad: cantidadTotal,
+                lotes: lotes
+            },
+            movimientos,
+            movimientosPorLote
+        });
+    } catch (error) {
+        console.error('Error detallado:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener detalles del producto: ' + error.message
+        });
+    }
+});
 
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */

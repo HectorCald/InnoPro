@@ -780,7 +780,7 @@ export async function mostrarProgramaAcopio() {
         }
 
         // If no program exists, show the interface to create one
-        const response = await fetch('/obtener-lista-tareas');
+        const response = await fetch('/obtener-lista-tareas2');
         const data = await response.json();
         
         if (!data.success) {
@@ -792,7 +792,7 @@ export async function mostrarProgramaAcopio() {
         const proximoDomingo = new Date(hoy);
         proximoDomingo.setDate(hoy.getDate() + diasHastaDomingo);
         
-        const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
         const tareasOptions = data.tareas.map(tarea => 
             `<option value="${tarea}">${tarea}</option>`
         ).join('');
@@ -924,7 +924,7 @@ export async function verProgramaciones() {
                             <div class="programacion-acciones">
                                 ${prog.estado === 'Pendiente' ? `
                                     <button class="anuncio-btn iniciar-tarea" 
-                                            onclick="iniciarTareaProgramada('${prog.producto}')">
+                                            onclick="iniciarTareaProgramada('${prog.producto}', '${prog.fecha}')">
                                         Iniciar
                                     </button>
                                 ` : ''}
@@ -990,15 +990,34 @@ window.eliminarProgramaCompleto = async function() {
 };
 
 // Function to start a scheduled task
-window.iniciarTareaProgramada = async function(producto) {
+// Update the iniciarTareaProgramada function
+window.iniciarTareaProgramada = async function(producto, fecha) {
     try {
         const anuncio = document.querySelector('.anuncio');
         anuncio.style.display = 'none';
+        
+        // First update the program status
+        const updateResponse = await fetch('/actualizar-estado-programa', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ fecha, producto })
+        });
+
+        const updateData = await updateResponse.json();
+        if (!updateData.success) {
+            throw new Error(updateData.error || 'Error al actualizar el programa');
+        }
+
+        // Then show the task form
         await mostrarFormularioTarea(producto);
     } catch (error) {
         mostrarNotificacion(error.message, 'error');
     }
 };
+
+// Update the verProgramaciones function to include the fecha parameter
 
 export async function guardarProgramacion(event) {
     if (event) event.preventDefault();
