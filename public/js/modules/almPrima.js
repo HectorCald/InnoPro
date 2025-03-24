@@ -254,12 +254,20 @@ function filterProducts(searchTerm = '') {
     const products = document.querySelectorAll('.product-card');
     const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
 
+    // Función para normalizar texto (eliminar acentos)
+    const normalizeText = (text) => {
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    };
+
+    const normalizedSearchTerm = normalizeText(searchTerm);
+
     products.forEach(product => {
-        const name = product.querySelector('.product-name span').textContent.toLowerCase();
+        const name = product.querySelector('.product-name span').textContent;
+        const normalizedName = normalizeText(name);
         const quantity = parseFloat(product.querySelector('.product-quantity').textContent);
         const isLowStock = quantity < 100;
 
-        const matchesSearch = name.includes(searchTerm.toLowerCase());
+        const matchesSearch = normalizedName.includes(normalizedSearchTerm);
         const matchesFilter = activeFilter === 'all' || (activeFilter === 'low' && isLowStock);
 
         product.style.display = (matchesSearch && matchesFilter) ? 'flex' : 'none';
