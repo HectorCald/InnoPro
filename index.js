@@ -2657,6 +2657,7 @@ app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
     }
 });
 
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);

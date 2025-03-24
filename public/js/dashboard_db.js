@@ -269,7 +269,7 @@ async function iniciarApp() {
             {
                 clase: 'opcion-btn',
                 vista: 'home-view',
-                icono: 'fa-history',
+                icono: 'fa-home',
                 texto: 'Inicio',
                 onclick: 'onclick="inicializarHome()"'
             },
@@ -289,6 +289,13 @@ async function iniciarApp() {
             }
         ],
         'Acopio': [
+            {
+                clase: 'opcion-btn',
+                vista: 'home-view',
+                icono: 'fa-home',
+                texto: 'Inicio',
+                onclick: 'onclick="inicializarHome()"'
+            },
             {
                 clase: 'opcion-btn',
                 vista: 'newPedido-view',
@@ -321,6 +328,13 @@ async function iniciarApp() {
         'Almacen': [
             {
                 clase: 'opcion-btn',
+                vista: 'home-view',
+                icono: 'fa-home',
+                texto: 'Inicio',
+                onclick: 'onclick="inicializarHome()"'
+            },
+            {
+                clase: 'opcion-btn',
                 vista: 'verificarRegistros-view',
                 icono: 'fa-check-double',
                 texto: 'Verificar',
@@ -335,6 +349,13 @@ async function iniciarApp() {
             }
         ],
         'Administración': [
+            {
+                clase: 'opcion-btn',
+                vista: 'home-view',
+                icono: 'fa-home',
+                texto: 'Inicio',
+                onclick: 'onclick="inicializarHome()"'
+            },
             {
                 clase: 'opcion-btn',
                 vista: 'usuarios-view',
@@ -412,7 +433,7 @@ async function iniciarApp() {
         e.stopPropagation();
     });
 
-    // Add document click handler to close menu when clicking outside
+    // Cerrar menú al hacer click fuera
     document.addEventListener('click', () => {
         if (menuPrincipal.classList.contains('active')) {
             menuPrincipal.classList.remove('active');
@@ -421,9 +442,19 @@ async function iniciarApp() {
         }
     });
 
+    // Función para actualizar el botón activo en el menú
+    window.actualizarBotonActivo = (vistaId) => {
+        const botones = menuSecundario.querySelectorAll('.opcion-btn');
+        botones.forEach(b => {
+            b.classList.remove('active');
+            if (b.dataset.vista === vistaId) {
+                b.classList.add('active');
+            }
+        });
+    };
+
     // Manejar clicks en botones secundarios
     const botones = menuSecundario.querySelectorAll('.opcion-btn');
-    // In the iniciarApp function, update the botones.forEach section:
     botones.forEach(boton => {
         boton.addEventListener('click', async (e) => {
             if (boton.classList.contains('active')) return;
@@ -432,10 +463,11 @@ async function iniciarApp() {
             menuSecundario.classList.remove('active');
             overlay.classList.remove('active');
 
-            // Remove active class from all buttons and add to clicked button
+            // Remover clase active de todos los botones y agregar al clickeado
             botones.forEach(b => b.classList.remove('active'));
             boton.classList.add('active');
 
+            // Ocultar todas las vistas con transición
             vistas.forEach(vista => {
                 vista.style.opacity = '0';
                 setTimeout(() => vista.style.display = 'none', 300);
@@ -449,6 +481,7 @@ async function iniciarApp() {
                     await window[onclickFn]();
                 }
 
+                // Mostrar vista actual con transición
                 setTimeout(() => {
                     vistaActual.style.display = 'flex';
                     requestAnimationFrame(() => {
@@ -458,6 +491,34 @@ async function iniciarApp() {
             }
         });
     });
+
+    // Exponer función para cambiar vista desde otros módulos
+    window.cambiarVista = async (vistaId, accion) => {
+        const vistaActual = document.querySelector(`.${vistaId}`);
+        if (!vistaActual) return;
+
+        // Ocultar todas las vistas
+        vistas.forEach(vista => {
+            vista.style.opacity = '0';
+            setTimeout(() => vista.style.display = 'none', 300);
+        });
+
+        // Actualizar botón activo
+        actualizarBotonActivo(vistaId);
+
+        // Ejecutar acción si existe
+        if (window[accion]) {
+            await window[accion]();
+        }
+
+        // Mostrar nueva vista
+        setTimeout(() => {
+            vistaActual.style.display = 'flex';
+            requestAnimationFrame(() => {
+                vistaActual.style.opacity = '1';
+            });
+        }, 300);
+    };
 }
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');

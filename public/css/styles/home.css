@@ -1,4 +1,5 @@
 @import'styles/colores.css';
+
 .home-view {
     width: 100%;
     background: var(--background) !important;
@@ -17,164 +18,192 @@
 
     -ms-overflow-style: none;
     scrollbar-width: none;
-}
-.title {
-    padding: 1em 0;
-    border-bottom: 1px solid #2c2c2c;
 
-    h3 {
-        font-size: 16px;
-        margin: 0;
+
+    h2 {
+        font-size: 16px !important;
     }
-}
+
+    .title {
+        padding: 1em 0;
+        border-bottom: 1px solid #2c2c2c;
+
+        h3 {
+            font-size: 16px;
+            margin: 0;
+        }
+    }
 
 
-.home-header {
-    font-size: 1.8em;
-    font-weight: 600;
-    margin-bottom: 1em;
-}
+    .home-header {
+        font-size: 1.8em;
+        font-weight: 600;
+        margin-bottom: 1em;
+    }
 
-.highlights-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5em;
-}
+    .highlights-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
 
-.highlight-card {
-    background: var(--surface);
-    padding: 1.5em;
-    border-radius: 15px;
-    transition: transform 0.3s ease;
-}
+    .highlight-card {
+        min-width: 100px;
+        background: var(--surface);
+        padding: 10px;
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+    }
 
-.highlight-card:hover {
-    transform: translateY(-5px);
-}
+    .highlight-card:hover {
+        transform: translateY(-5px);
+    }
 
-.highlight-value {
-    font-size: 2em;
-    font-weight: 700;
-    color: var(--second-button);
-}
+    .highlight-value {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--second-button);
+    }
 
-.highlight-label {
-    color: var(--primary-light);
-    margin-top: 0.5em;
-}
+    .highlight-label {
+        color: var(--primary-light);
+        margin-top: 0.5em;
+        font-size: 12px;
+    }
 
-.sections-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2em;
-}
+    .sections-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2em;
+    }
 
-.timeline {
-    background: var(--surface);
-    padding: 1.5em;
-    border-radius: 15px;
-}
+    .timeline {
+        background: var(--surface);
+        padding: 1.5em;
+        border-radius: 15px;
+    }
 
-.timeline-item {
-    padding: 1em;
-    border-left: 2px solid var(--primary-light);
-    margin-bottom: 1em;
-    position: relative;
-}
+    .timeline-item {
+        padding: 1em;
+        border-left: 2px solid var(--primary-light);
+        margin-bottom: 1em;
+        position: relative;
+    }
 
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -6px;
-    top: 0;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--second-button);
-}
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--second-button);
+    }
 
-/* Remove or update the conflicting shortcuts-container styles */
-.shortcuts-container {
-    margin-bottom: 2rem;
-    width: 100%;
-}
+    /* Remove or update the conflicting shortcuts-container styles */
+    /* ... existing styles ... */
 
-.shortcuts-grid {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 1rem;
-}
+    .shortcuts-container {
+        margin-bottom: 10px;
+    }
 
-.shortcut-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem;
-    background: var(--surface);
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: transform 0.2s;
-    min-width: 120px;
-}
+    .shortcuts-grid {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        justify-content: center;
+        align-items: center;
+    }
 
-.shortcut-card:hover {
-    transform: translateY(-2px);
-    background: var(--primary-dark);
-}
+    .shortcut-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        background: var(--surface);
+        border: none;
+        border-radius: 15px;
+        color: var(--primary-text);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        gap: 0.8em;
+    }
 
-.shortcut-icon {
-    font-size: 2rem;
-    margin-bottom: 0.8rem;
-    color: var(--second-button);
-}
-.updates-section {
-    background: var(--background);
-    padding: 1.5em;
-    border-radius: 15px;
-    margin-top: 2em;
-}
+    .shortcut-card:hover {
+        transform: translateY(-5px);
+        background: var(--primary-dark);
+    }
 
-.update-card {
-    padding: 1em;
-    border-radius: 10px;
-    margin-bottom: 1em;
-    background: var(--primary-dark);
-}
-.timeline-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5em;
-}
+    .shortcut-card i {
+        font-size: 1.5em;
+        color: var(--second-button);
+    }
 
-.delete-notification {
-    background: none;
-    border: none;
-    color: var(--primary-light);
-    cursor: pointer;
-    padding: 0.2em 0.5em;
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
-}
+    .shortcut-card span {
+        font-size: 1em;
+        font-weight: 500;
+    }
 
-.delete-notification:hover {
-    opacity: 1;
-    color: var(--error);
-}
+    /* Add this if you want to style the shortcuts section title */
+    .shortcuts-container h2 {
+        color: var(--primary-text);
+        font-size: 1.2em;
+        margin-bottom: 0.5em;
+        text-transform: capitalize;
+    }
 
-.timeline-item {
-    transition: opacity 0.3s ease;
-}
+    .updates-section {
+        background: var(--background);
+        padding: 10px;
+        border-radius: 15px;
+        margin-top: 10px;
+        color: white;
+        width: 100%;
+    }
 
-.timeline-message {
-    color: var(--primary-text);
-}
+    .update-card {
+        padding: 1em;
+        border-radius: 10px;
+        margin-bottom: 1em;
+        background: var(--primary-dark);
+    }
 
-.no-notifications {
-    text-align: center;
-    color: var(--primary-light);
-    padding: 1em;
-    font-style: italic;
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5em;
+    }
+
+    .delete-notification {
+        background: none;
+        border: none;
+        color: var(--primary-light);
+        cursor: pointer;
+        padding: 0.2em 0.5em;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+    }
+
+    .delete-notification:hover {
+        opacity: 1;
+        color: var(--error);
+    }
+
+    .timeline-item {
+        transition: opacity 0.3s ease;
+    }
+
+    .timeline-message {
+        color: var(--primary-text);
+    }
+
+    .no-notifications {
+        text-align: center;
+        color: var(--primary-light);
+        padding: 1em;
+        font-style: italic;
+    }
 }

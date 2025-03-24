@@ -2,41 +2,58 @@ export async function inicializarHome() {
     const homeView = document.querySelector('.home-view');
     if (!homeView) return;
 
-    const highlights = await obtenerHighlights();
-    const notificaciones = await obtenerNotificaciones();
-    const atajos = await obtenerAtajos();  // Cambiado a async
-    const novedades = await obtenerNovedades();
+    try {
+        mostrarCarga();
+        const highlights = await obtenerHighlights();
+        const notificaciones = await obtenerNotificaciones();
+        const atajos = await obtenerAtajos();
+        const novedades = await obtenerNovedades();
 
-    homeView.innerHTML = `
-        <div class="title">
-            <h3><i class="fas fa-warehouse"></i>  Pagina principal</h3>
-        </div>
-        
-        <div class="shortcuts-container">
-            ${generarAtajos(atajos)}
-        </div>
+        // Add view class to all views
+        document.querySelectorAll('.home-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .newTarea-view, .almAcopio-view, .verificarRegistros-view, .almPrima-view, .usuarios-view, .consultarRegistros-view, .compras-view')
+            .forEach(v => v.classList.add('view'));
 
-        <div class="highlights-container">
-            ${generarHighlights(highlights)}
-        </div>
-
-        <div class="sections-grid">
-            <div class="timeline">
-                <h2>Notificaciones Recientes</h2>
-                ${generarTimeline(notificaciones)}
+        homeView.innerHTML = `
+            <div class="title">
+                <h3><i class="fas fa-home"></i> Página principal</h3>
             </div>
-        </div>
+            
+            <div class="shortcuts-container">
+                <div class="timeline">
+                    <h2>tus atajos</h2>
+                    ${generarAtajos(atajos)}
+                </div>
+                
+            </div>
 
-        <div class="updates-section">
-            <h2>Novedades del Sistema</h2>
-            ${generarNovedades(novedades)}
-        </div>
-    `;
+            <div class="highlights-container">
+                ${generarHighlights(highlights)}
+            </div>
 
-    inicializarEventos();
+            <div class="sections-grid">
+                <div class="timeline">
+                    <h2>Notificaciones Recientes</h2>
+                    ${generarTimeline(notificaciones)}
+                </div>
+            </div>
+
+            <div class="updates-section">
+                <h2>Novedades del Sistema</h2>
+                ${generarNovedades(novedades)}
+            </div>
+        `;
+
+        inicializarEventos();
+    } catch (error) {
+        console.error('Error:', error);
+        homeView.innerHTML = '<p>Error al cargar la página principal</p>';
+    } finally {
+        ocultarCarga();
+    }
 }
 async function obtenerHighlights() {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-estadisticas-usuario');
         const data = await response.json();
 
@@ -65,6 +82,8 @@ async function obtenerHighlights() {
             { valor: '0', etiqueta: 'Verificadas (0%)' },
             { valor: '0 Bs.', etiqueta: 'Total Ganado' }
         ];
+    }finally{
+        ocultarCarga();
     }
 }
 function generarHighlights(highlights) {
@@ -96,6 +115,7 @@ function generarTimeline(notificaciones) {
 
 async function obtenerNotificaciones() {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-notificaciones-usuario');
         const data = await response.json();
 
@@ -113,6 +133,8 @@ async function obtenerNotificaciones() {
         return [
             { tiempo: 'Error', mensaje: 'No se pudieron cargar las notificaciones' }
         ];
+    }finally{
+        ocultarCarga();
     }
 }
 function calcularTiempo(fecha) {
@@ -231,6 +253,7 @@ async function obtenerNovedades() {
 }
 async function obtenerAtajos() {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-mi-rol');
         const data = await response.json();
         const roles = data.rol ? data.rol.split(',').map(r => r.trim()) : [];
@@ -238,6 +261,7 @@ async function obtenerAtajos() {
         // Define available shortcuts by role using the same structure as dashboard_db.js
         const atajosPorRol = {
             'Producción': [
+
                 { 
                     clase: 'opcion-btn',
                     vista: 'formProduccion-view',
@@ -332,27 +356,56 @@ async function obtenerAtajos() {
     } catch (error) {
         console.error('Error al obtener atajos:', error);
         return [];
+    }finally{
+        ocultarCarga();
     }
 }
 
 function generarAtajos(atajos) {
-    if (!atajos || atajos.length === 0) {
-        return '';
-    }
+    if (!atajos || atajos.length === 0) return '';
 
-    // Hide all views initially
-    const vistas = document.querySelectorAll('.formProduccion-view, .cuentasProduccion-view, .newPedido-view, .newTarea-view, .almAcopio-view, .verificarRegistros-view, .almPrima-view, .usuarios-view, .consultarRegistros-view, .compras-view');
-    vistas.forEach(vista => vista.style.display = 'none');
-    
     return `
-    <h2>Tus atajos</h2>
         <div class="shortcuts-grid">
             ${atajos.map(a => `
-                <div class="shortcut-card" data-vista="${a.vista}" ${a.onclick}>
-                    <i class="fas ${a.icono} shortcut-icon"></i>
-                    <span style="color: var(--primary-text);">${a.texto}</span>
-                </div>
+                <button class="shortcut-card" onclick="manejarAtajo('${a.vista}', '${a.onclick.replace('onclick="', '').replace('"', '')}')">
+                    <i class="fas ${a.icono}"></i>
+                    <span>${a.texto}</span>
+                </button>
             `).join('')}
         </div>
     `;
 }
+
+function manejarAtajo(vista, accion) {
+    // Hide all views
+    document.querySelectorAll('.view').forEach(v => {
+        v.style.display = 'none';
+        v.style.opacity = '0';
+    });
+
+    // Show selected view
+    const vistaSeleccionada = document.querySelector(`.${vista}`);
+    if (vistaSeleccionada) {
+        vistaSeleccionada.style.display = 'flex';
+        setTimeout(() => {
+            vistaSeleccionada.style.opacity = '1';
+        }, 0);
+    }
+
+    // Actualizar botón activo en el menú
+    document.querySelectorAll('.opcion-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.vista === vista) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Execute the action
+    const cleanAction = accion.replace('window.', '').replace('()', '');
+    if (window[cleanAction]) {
+        window[cleanAction]();
+    }
+}
+
+// Add to window object
+window.manejarAtajo = manejarAtajo;
