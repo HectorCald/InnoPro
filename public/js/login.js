@@ -62,7 +62,7 @@ class LoginPin {
         this.errorMessage.textContent = '';
     }
 
-        async validatePin() {
+    async validatePin() {
         try {
             mostrarCarga();
             const response = await fetch('/verificar-pin', {
@@ -122,13 +122,7 @@ class LoginPin {
 }
 
 /* ==================== INICIALIZACIÓN DE LA APLICACIÓN ==================== */
-document.addEventListener('DOMContentLoaded',async () => {
-
-
-    const btnConsulta = document.querySelector('.consultarProducto');
-    if (btnConsulta) {
-        btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
-    }
+document.addEventListener('DOMContentLoaded', async () => {
     const loginPin = new LoginPin();
 
     // Manejo del tema
@@ -145,7 +139,13 @@ document.addEventListener('DOMContentLoaded',async () => {
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
     });
+
+    const btnConsulta = document.querySelector('.consultarProducto');
+    if (btnConsulta) {
+        btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
+    }
 });
+
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'flex';
@@ -155,3 +155,16 @@ function ocultarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'none';
 }
+
+// Función para aplicar el tema al cargar la página
+function aplicarTemaGuardado() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const themeToggle = document.querySelector('#themeToggle');
+    if (themeToggle) {
+        themeToggle.checked = savedTheme === 'light';
+    }
+}
+
+// Aplicar tema al cargar
+aplicarTemaGuardado();
