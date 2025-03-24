@@ -1,8 +1,9 @@
+@import'styles/colores.css';
 .formProduccion-view {
     width: 100%;
-    background: #1a1a1a;
+    background: var(--background) !important;
     height: calc(100vh - 4em);
-    color: white;
+    color: var(--primary-text);
     overflow-y: auto;
     padding: 1em;
     display: flex;
@@ -22,17 +23,17 @@
     align-items: center;
     gap: 1em;
     margin-top: 0.5em;
+    color: var(--primary-text);
 }
 
 .formProduccion-view .title h2 {
     font-size: 16px;
-    color: white;
     font-weight: 500;
     margin: 0;
 }
 
 .formProduccion-view .form1 {
-    background: #2a2a2a;
+    background: var(--primary-color);
     border-radius: 16px;
     padding: 2em;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -51,18 +52,18 @@
 }
 
 .formProduccion-view .form1 p {
-    color: #aaa;
+    color: var(--primary-light);
     font-size: 0.9em;
     margin-bottom: 0.3em;
 }
 
 .formProduccion-view .form1 input,
 .formProduccion-view .form1 select {
-    background: #333;
-    border: 1px solid #444;
+    background: none;
+    border: 1px solid var(--primary-light);
     border-radius: 8px;
     padding: 0.8em 1em;
-    color: white;
+    color: var(--primary-text);
     font-size: 1em;
     transition: all 0.3s ease;
     width: 100%;
@@ -70,7 +71,7 @@
 
 .formProduccion-view .form1 input:focus,
 .formProduccion-view .form1 select:focus {
-    border-color: #3498db;
+    border-color: var(--second-button);
     outline: none;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
@@ -94,8 +95,8 @@
 }
 
 .formProduccion-view .radio-group label {
-    background: #333;
-    color: white;
+    background: var(--primary-light);
+    color: var(--primary-text);
     padding: 0.8em 1.5em;
     border-radius: 8px;
     cursor: pointer;
@@ -114,7 +115,8 @@
 }
 
 .formProduccion-view .radio-group input[type="radio"]:checked + label {
-    background: #3498db;
+    background: var(--second-button);
+    color: white;
 }
 
 .formProduccion-view .microondas-tiempo input {
@@ -125,12 +127,12 @@
     display: flex;
     align-items: center;
     gap: 0.5em;
-    color: #ff6b6b;
+    color: var(--error);
     margin: 1em 0;
 }
 
 .formProduccion-view .form1 button {
-    background: #3498db;
+    background: var(--second-button);
     color: white;
     border: none;
     padding: 1em;
@@ -145,6 +147,6 @@
 }
 
 .formProduccion-view .form1 button:hover {
-    background: #2980b9;
+    background: var(--primary-button);
     transform: translateY(-2px);
 }

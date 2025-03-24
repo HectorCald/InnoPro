@@ -12,6 +12,7 @@
 @import 'styles/newTarea.css';
 @import'styles/almAcopio.css';
 @import'styles/almPrima.css';
+@import'styles/colores.css';
 
 
 /* ... imports existentes ... */
@@ -55,7 +56,7 @@
 .menu-principal {
     width: 60px;
     height: 60px;
-    background: #3498db;
+    background: var(--second-button);
     border-radius: 60px;
     display: flex;
     justify-content: center;
@@ -103,11 +104,11 @@
     width: 150px;
     height: 45px;
     border-radius: 12px;
-    background: #2d2d2d;
+    background: var(--primary-color);
     display: flex;
     justify-content: center;
     align-items: center;
-    color: white;
+    color: var(--primary-text);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -116,7 +117,7 @@
     z-index: 999999;
 }
 .opcion-btn:hover {
-    background: #3498db;
+    background: #a6a6a6;
     transform: translateX(-5px);
 }
 .opcion-btn i {
@@ -133,6 +134,11 @@
         transform: scale(4);
         opacity: 0;
     }
+}
+.opcion-btn.active {
+    background: var(--primary-dark);
+    transform: translateX(-5px);
+    box-shadow: 0 0 15px var(--primary-color);
 }
 
 
@@ -157,7 +163,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.727);
+    background-color: rgba(0, 0, 0, 0.67);
     backdrop-filter: blur(2px);
     z-index: 999;
     opacity: 0;
@@ -196,12 +202,12 @@
 .carga h1 {
     font-size: 2em;
     font-family: 'Arial', sans-serif;
-    color: #fff;
+    color: var(--primary-text);
 }
 
 .carga h1 span {
     display: inline-block;
-    color: white;
+    color: var(--primary-text);
     animation: bounce 1s ease infinite;
     opacity: 0;
 }

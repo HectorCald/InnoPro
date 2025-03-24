@@ -1,14 +1,16 @@
 /* Base Styles */
 :root {
-    --primary-color: #ffffff;
-    --primary-light: #ffffff;
-    --primary-dark: #489328;
+    --primary-text: #f90000;
+    --primary-color: #737373;
+    --primary-light: #aeaeae;
+    --primary-dark: #323232;
+    --primary-button: #575757;
+    --second-button: #339900;
     --background: #1a1a1a;
     --surface: #2a2a2a;
     --error: #ff4d4d;
     --success: #4CAF50;
 }
-
 * {
     margin: 0;
     padding: 0;

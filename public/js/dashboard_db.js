@@ -3,9 +3,9 @@ import { eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-import {confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso,togglePedidosArchivados, finalizarPedidos,confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar} from './modules/newPedido.js';
-import {mostrarProgramaAcopio, verProgramaciones,mostrarHistorialTareas,toggleProcesos,mostrarProcesos, finalizarProceso,inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea} from './modules/newTarea.js';
-import {inicializarCompras} from './modules/compras.js';
+import { confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso, togglePedidosArchivados, finalizarPedidos, confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar } from './modules/newPedido.js';
+import { mostrarProgramaAcopio, verProgramaciones, mostrarHistorialTareas, toggleProcesos, mostrarProcesos, finalizarProceso, inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea } from './modules/newTarea.js';
+import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
 import { inicializarAlmacenPrima } from './modules/almPrima.js';
 window.mostrarNotificacion = mostrarNotificacion;
@@ -106,6 +106,14 @@ async function bienvenida() {
                                 <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
                             </div>
                             <div class="modal-profile-role">@${data.rol || 'Usuario'}</div>
+                            <div class="theme-switch">
+                                <i class="fas fa-sun theme-icon"></i>
+                                <label class="switch">
+                                    <input type="checkbox" id="themeToggle">
+                                    <span class="slider"></span>
+                                </label>
+                                <i class="fas fa-moon theme-icon"></i>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -114,6 +122,19 @@ async function bienvenida() {
                 const modal = dashboard.querySelector('.profile-modal');
                 const modalContent = modal.querySelector('.modal-content');
                 const closeBtn = modal.querySelector('.close-modal');
+                const themeToggle = modal.querySelector('#themeToggle');
+
+                // Verificar y aplicar el tema guardado
+                const currentTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                themeToggle.checked = currentTheme === 'light';
+
+                // Manejar cambios en el tema
+                themeToggle.addEventListener('change', function() {
+                    const newTheme = this.checked ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
 
                 profileSection.addEventListener('click', () => {
                     modal.style.display = 'block';
@@ -215,7 +236,7 @@ async function iniciarApp() {
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
     const vistas = document.querySelectorAll('.compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
-    
+
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => {
         vista.style.display = 'none';
@@ -338,7 +359,7 @@ async function iniciarApp() {
 
     let botonActual = 0;
     let esElPrimero = true;
-    
+
     roles.forEach(rolActual => {
         const botonesRol = botonesRoles[rolActual];
         if (botonesRol && botonesRol.length > 0) {
@@ -352,7 +373,7 @@ async function iniciarApp() {
                     </button>
                 `;
                 menuSecundario.insertAdjacentHTML('beforeend', btnHTML);
-                
+
                 if (esElPrimero) {
                     const vistaInicial = document.querySelector(`.${boton.vista}`);
                     if (vistaInicial) {
@@ -393,22 +414,24 @@ async function iniciarApp() {
 
     // Manejar clicks en botones secundarios
     const botones = menuSecundario.querySelectorAll('.opcion-btn');
+    // In the iniciarApp function, update the botones.forEach section:
     botones.forEach(boton => {
         boton.addEventListener('click', async (e) => {
             if (boton.classList.contains('active')) return;
-            
+
             menuPrincipal.classList.remove('active');
             menuSecundario.classList.remove('active');
             overlay.classList.remove('active');
-            
+
+            // Remove active class from all buttons and add to clicked button
             botones.forEach(b => b.classList.remove('active'));
             boton.classList.add('active');
-            
+
             vistas.forEach(vista => {
                 vista.style.opacity = '0';
                 setTimeout(() => vista.style.display = 'none', 300);
             });
-            
+
             const vistaId = boton.dataset.vista;
             const vistaActual = document.querySelector(`.${vistaId}`);
             if (vistaActual) {
@@ -416,7 +439,7 @@ async function iniciarApp() {
                 if (window[onclickFn]) {
                     await window[onclickFn]();
                 }
-                
+
                 setTimeout(() => {
                     vistaActual.style.display = 'flex';
                     requestAnimationFrame(() => {

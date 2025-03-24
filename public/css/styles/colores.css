@@ -1,0 +1,25 @@
+:root {
+    --primary-text: #ffffff;
+    --primary-color: #333333;
+    --primary-light: #919191;
+    --primary-dark: #1f1f1f;
+    --primary-button: #575757;
+    --second-button: #339900;
+    --background: #1a1a1a;
+    --surface: #2a2a2a;
+    --error: #ff4d4d;
+    --success: #4CAF50;
+}
+/* Tema claro */
+:root[data-theme="light"] {
+    --primary-text: #333333;
+    --primary-color: #ffffff;
+    --primary-light: #b3b3b3;
+    --primary-dark: #f5f5f5;
+    --primary-button: #339900;
+    --second-button: #4CAF50;
+    --background: #efefef;
+    --surface: #f5f5f5;
+    --error: #ff4d4d;
+    --success: #4CAF50;
+}
