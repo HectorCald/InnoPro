@@ -155,8 +155,8 @@ window.mostrarDetalleProducto = async function (nombreProducto) {
                     type: 'line',
                     data: {
                         labels: ultimosMovimientos.map(m => {
-                            const [day, month, year] = m.fecha.split('/');
-                            return new Date(`${month}/${day}/${year}`).toLocaleDateString();
+                            const [day, month] = m.fecha.split('/');
+                            return `${day}/${month}`; // Solo día y mes
                         }),
                         datasets: [{
                             label: 'Stock Acumulado',
@@ -187,7 +187,11 @@ window.mostrarDetalleProducto = async function (nombreProducto) {
                             },
                             x: {
                                 grid: { color: '#2c2c2c' },
-                                ticks: { color: '#fff' }
+                                ticks: { 
+                                    color: '#fff',
+                                    maxRotation: 45,  // Rotación diagonal
+                                    minRotation: 45   // Mantener ángulo consistente
+                                }
                             }
                         },
                         plugins: {
