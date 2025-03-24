@@ -1501,7 +1501,30 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
             }
         });
 
-        // Rest of the existing code...
+        // Registrar el movimiento en Movimientos alm-prima
+        const fechaActual = new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit'
+        });
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-prima!A:E',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[
+                    fechaActual,
+                    tareaId,
+                    pesoFinal,
+                    'Ingreso',
+                    siguienteLote
+                ]]
+            }
+        });
+
+        // Add to Historial_tareas
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Historial_tareas!A2',
@@ -1648,6 +1671,29 @@ app.post('/crear-tarea', requireAuth, async (req, res) => {
             valueInputOption: 'RAW',
             resource: {
                 values: [[pesoActual - peso]]
+            }
+        });
+
+        // Registrar el movimiento en Movimientos alm-bruto
+        const fechaActual = new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit'
+        });
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-bruto!A:E',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[
+                    fechaActual,
+                    nombre,
+                    peso,
+                    'Salida',
+                    lote
+                ]]
             }
         });
 
@@ -1878,7 +1924,6 @@ app.delete('/eliminar-programa-completo', requireAuth, async (req, res) => {
         });
     }
 });
-// Add this new endpoint
 app.post('/actualizar-estado-programa', requireAuth, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
@@ -2052,17 +2097,67 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
 
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Obtener registros actuales
-        const response = await sheets.spreadsheets.values.get({
+        // Obtener el siguiente número de lote para Almacén Bruto
+        const almacenResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen bruto!A:C'
+        });
+
+        const almacenRows = almacenResponse.data.values || [];
+        const productoRows = almacenRows.filter(row => row[0] === producto);
+        
+        // Calcular siguiente número de lote
+        let siguienteLote = 1;
+        if (productoRows.length > 0) {
+            const lotes = productoRows.map(row => parseInt(row[2] || 0));
+            siguienteLote = Math.max(...lotes, 0) + 1;
+        }
+
+        // Agregar al Almacén Bruto
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen bruto!A:C',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[producto, cantidad, siguienteLote]]
+            }
+        });
+
+        // Registrar el movimiento en Movimientos alm-bruto
+        const fechaActual = new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit'
+        });
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-bruto!A:E',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[
+                    fechaActual,
+                    producto,
+                    cantidad,
+                    'Ingreso',
+                    siguienteLote
+                ]]
+            }
+        });
+
+        // Actualizar el pedido en la hoja Pedidos
+        const pedidosResponse = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Pedidos!A:J'
         });
 
-        const rows = response.data.values || [];
+        const rows = pedidosResponse.data.values || [];
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
             row[1] === producto
-        ) + 1; // +1 porque las filas en la API empiezan en 1
+        ) + 1;
 
         if (rowIndex <= 0) {
             return res.status(404).json({ 
@@ -2090,7 +2185,8 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
 
         res.json({ 
             success: true, 
-            message: 'Pedido actualizado correctamente' 
+            message: 'Pedido actualizado y registrado en almacén correctamente',
+            lote: siguienteLote
         });
     } catch (error) {
         console.error('Error al entregar pedido:', error);
