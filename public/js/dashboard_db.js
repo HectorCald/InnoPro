@@ -224,8 +224,9 @@ async function iniciarApp() {
         vista.style.color = '#ffffff';
     });
 
-    // Crear estructura del menú circular
+    // Crear estructura del menú circular y overlay
     opcionesDiv.innerHTML = `
+        <div class="overlay"></div>
         <div class="menu-principal">
             <i class="fas fa-plus"></i>
         </div>
@@ -234,6 +235,7 @@ async function iniciarApp() {
 
     const menuPrincipal = opcionesDiv.querySelector('.menu-principal');
     const menuSecundario = opcionesDiv.querySelector('.menu-secundario');
+    const overlay = opcionesDiv.querySelector('.overlay');
 
     // Dividir los roles si hay múltiples
     const roles = rol ? rol.split(',').map(r => r.trim()) : [];
@@ -373,6 +375,7 @@ async function iniciarApp() {
         e.stopPropagation();
         menuPrincipal.classList.toggle('active');
         menuSecundario.classList.toggle('active');
+        overlay.classList.toggle('active');
     });
 
     menuSecundario.addEventListener('click', (e) => {
@@ -384,6 +387,7 @@ async function iniciarApp() {
         if (menuPrincipal.classList.contains('active')) {
             menuPrincipal.classList.remove('active');
             menuSecundario.classList.remove('active');
+            overlay.classList.remove('active');
         }
     });
 
@@ -395,6 +399,7 @@ async function iniciarApp() {
             
             menuPrincipal.classList.remove('active');
             menuSecundario.classList.remove('active');
+            overlay.classList.remove('active');
             
             botones.forEach(b => b.classList.remove('active'));
             boton.classList.add('active');
