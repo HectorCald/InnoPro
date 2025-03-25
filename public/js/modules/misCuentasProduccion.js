@@ -283,7 +283,7 @@ function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     ) {
         resultado = (cantidad * 3) * 0.048;
     } else {
-        if (gramaje == 150) {
+        if (gramaje >= 135 && gramaje <= 150) {
             resultado = (cantidad * 3) * 0.048;
         } else if (gramaje == 500) {
             resultado = (cantidad * 4) * 0.048;

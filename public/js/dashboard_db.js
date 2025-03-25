@@ -10,6 +10,7 @@ import { inicializarAlmacen } from './modules/almAcopio.js';
 import { inicializarAlmacenPrima } from './modules/almPrima.js';
 import { inicializarHome } from './modules/home.js';
 import { initializeMenu } from './modules/menu.js';
+import { initializePreciosPro } from './modules/preciosPro.js';
 window.initializeMenu = initializeMenu;
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
@@ -81,7 +82,7 @@ window.inicializarHome = inicializarHome;
 window.cargarUsuarios = cargarUsuarios;
 window.inicializarConsulta = inicializarConsulta;
 window.pagarRegistro = pagarRegistro;
-
+window.initializePreciosPro = initializePreciosPro;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');

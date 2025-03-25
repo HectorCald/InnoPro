@@ -24,7 +24,6 @@ function crearOperarioCard(nombre, registros) {
 
     return { operarioCard, registrosContainer };
 }
-
 export async function cargarRegistros() {
     try {
         mostrarCarga();
@@ -75,7 +74,6 @@ export async function cargarRegistros() {
         ocultarCarga();
     }
 }
-
 function crearRegistroCard(registro, esAdmin) {
     const [dia, mes] = registro[0].split('/');
     const fechaFormateada = `${dia}/${mes}`;
@@ -208,7 +206,6 @@ export async function pagarRegistro(fecha, producto, lote, operario) {
         mostrarNotificacion('Error al registrar el pago', 'error');
     }
 }
-
 function configurarEventosRegistro(registroCard) {
     registroCard.querySelector('.registro-header').addEventListener('click', (e) => {
         if (!e.target.classList.contains('info-icon')) {
@@ -224,7 +221,6 @@ function configurarEventosRegistro(registroCard) {
         }
     });
 }
-
 function ordenarRegistrosPorFecha(registros) {
     return registros.sort((a, b) => {
         const [diaA, mesA, yearA] = a[0].split('/');
@@ -234,8 +230,6 @@ function ordenarRegistrosPorFecha(registros) {
         return fechaB - fechaA;
     });
 }
-
-
 export function verificarRegistro(fecha, producto, lote, operario) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -363,7 +357,7 @@ function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     ) {
         resultado = (cantidad * 3) * 0.048;
     } else {
-        if (gramaje == 150) {
+        if (gramaje >= 135 && gramaje <= 150) {
             resultado = (cantidad * 3) * 0.048;
         } else if (gramaje == 500) {
             resultado = (cantidad * 4) * 0.048;

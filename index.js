@@ -2697,6 +2697,90 @@ app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
 });
 
 
+/* ==================== API DE PRECIOS DE PRODUCCIÓN ==================== */
+app.get('/obtener-precios-base', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Precios produccion!A2:D2'
+        });
+
+        if (!response.data.values || response.data.values.length === 0) {
+            throw new Error('No se encontraron precios base');
+        }
+
+        const valores = response.data.values[0];
+        const preciosBase = {
+            etiquetado: valores[0].replace(',', '.'),
+            sellado: valores[1].replace(',', '.'),
+            envasado: valores[2].replace(',', '.'),
+            cernidoBolsa: valores[3].replace(',', '.'),
+        };
+
+        res.json({ success: true, preciosBase });
+    } catch (error) {
+        console.error('Error al obtener precios base:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener precios base: ' + error.message 
+        });
+    }
+});
+app.post('/actualizar-precios-base', requireAuth, async (req, res) => {
+    try {
+        const { etiquetado, sellado, envasado, cernidoBolsa, cernidoBotes } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Precios produccion!A2:E2',
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[etiquetado, sellado, envasado, cernidoBolsa, cernidoBotes]]
+            }
+        });
+
+        res.json({ success: true, message: 'Precios actualizados correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar precios:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar los precios base: ' + error.message 
+        });
+    }
+});
+app.post('/guardar-producto-especial', requireAuth, async (req, res) => {
+    try {
+        const { producto, base, multiplicador } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        const nuevaFila = [
+            base === 'etiquetado' ? multiplicador : '1',
+            base === 'sellado' ? multiplicador : '1',
+            base === 'envasado' ? multiplicador : '1',
+            base === 'cernido' ? multiplicador : '1',
+            producto
+        ];
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Precios produccion!A3',
+            valueInputOption: 'USER_ENTERED', // Importante: mantener este valor
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [nuevaFila]
+            }
+        });
+
+        res.json({ success: true, message: 'Producto especial guardado correctamente' });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error al guardar producto especial: ' + error.message
+        });
+    }
+});
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);
