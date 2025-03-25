@@ -1,16 +1,16 @@
 <!-- ==================== HEADER Y NAVEGACIÓN ==================== -->
 <%- include('partials/header') %>
     <link rel="stylesheet" href="./css/dashboard_db.css">
-    <div class="container">
-        <div class="dashboard">
-            <div class="bienvenida">
-                <!-- El contenido se llenará dinámicamente desde JavaScript -->
-            </div>
-            <button class="logout-btn" onclick="manejarCierreSesion()">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Cerrar Sesión</span>
-            </button>
+    <div class="dashboard">
+        <div class="bienvenida">
+            <!-- El contenido se llenará dinámicamente desde JavaScript -->
         </div>
+        <button class="logout-btn" onclick="manejarCierreSesion()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Cerrar Sesión</span>
+        </button>
+    </div>
+    <div class="container">
         <div class="anuncio">
             <div class="anuncio-contenido">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -33,24 +33,16 @@
         <div class="almAcopio-view"></div>
         <div class="almPrima-view"></div>
         <div class="home-view"></div>
+        <div class="carga">
+            <div class="loader"></div>
+        </div>
+        
     </div>
-    <div class="overlay"></div>
-    <div class="opciones">
-    </div>
-    <div class="notificador">
-    </div>
-    <!-- ==================== DIÁLOGO DE CONFIRMACIÓN ==================== -->
     
-    <!-- Modificar la sección de carga -->
-    <!-- Reemplazar la sección de carga -->
-<div class="carga">
-    <div class="loader"></div>
-</div>
-    <!-- Corregir la clase 'contetido' a 'contenido' -->
 
-
-    <!-- ==================== COMPONENTES DE NOTIFICACIÓN ==================== -->
-
+        <div class="opciones"></div>
+        <div class="notificador"></div>
+        <div class="overlay"></div>
     <!-- ==================== FOOTER ==================== -->
     <script type="module" src="./js/dashboard_db.js"></script>
     <%- include('partials/footer') %>

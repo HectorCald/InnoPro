@@ -27,7 +27,7 @@ export function inicializarFormularioProduccion() {
 
                 <div class="form-group">
                     <p>Selección/Cernido *</p>
-                    <select name="seleccion" required>
+                    <select name="seleccion" required id="seleccion">
                         <option value="">Seleccione una opción</option>
                         <option value="Cernido">Cernido</option>
                         <option value="Seleccionado">Seleccionado</option>

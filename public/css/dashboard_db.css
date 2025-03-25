@@ -1,3 +1,4 @@
+
 @import 'styles/layout.css';
 @import 'styles/base.css';
 @import 'styles/components.css';
@@ -14,6 +15,9 @@
 @import'styles/almPrima.css';
 @import'styles/colores.css';
 @import'styles/home.css';
+@import'styles/menu.css';
+
+
 
 
 /* ... imports existentes ... */
@@ -44,186 +48,14 @@
     display: flex;
     opacity: 1;
 }
-.opciones {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-.menu-principal {
-    width: 60px;
-    height: 60px;
-    background: var(--second-button);
-    border-radius: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    z-index: 999999;
-}
-
-.hamburger {
-    width: 24px;
-    height: 20px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.hamburger span {
-    display: block;
-    width: 100%;
-    height: 3px;
-    background: white;
-    border-radius: 3px;
-    transition: all 0.3s ease;
-}
-
-.menu-principal.active .hamburger span:nth-child(1) {
-    transform: translateY(8.5px) rotate(45deg);
-}
-
-.menu-principal.active .hamburger span:nth-child(2) {
-    opacity: 0;
-}
-
-.menu-principal.active .hamburger span:nth-child(3) {
-    transform: translateY(-8.5px) rotate(-45deg);
-}
-
-/* Remove this since we don't need the rotation of the entire button anymore */
-.menu-principal.active {
-    transform: none;
-}
-
-.menu-principal i {
-    color: white;
-    font-size: 24px;
-}
-
-.menu-secundario {
-    position: absolute;
-    bottom: 70px;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    transform: translateY(20px);
-    z-index: 99999;
-}
-.menu-secundario.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-.menu-secundario.active .opcion-btn {
-    transform: translate(0, 0) scale(1);
-    
-    
-}
-
-.opcion-btn {
-    width: 150px;
-    height: 45px;
-    border-radius: 12px;
-    background: var(--primary-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--primary-text);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    border: none;
-    gap: 10px;
-    z-index: 999999;
-}
-.opcion-btn:hover {
-    background: #a6a6a6;
-    transform: translateX(-5px);
-    color: white;
-}
-.opcion-btn i {
-    font-size: 18px;
-}
 
 
-.menu-secundario.active .opcion-btn {
-    transform: translate(0, 0) scale(1);
-}
-
-@keyframes ripple {
-    to {
-        transform: scale(4);
-        opacity: 0;
-    }
-}
-.opcion-btn.active {
-    background: gray;
-    transform: translateX(-5px);
-    color: white;
-}
-
-
-/* Update view transitions */
-.newTarea-view,
-.usuarios-view,
-.verificarRegistros-view,
-.consultarRegistros-view,
-.formProduccion-view,
-.cuentasProduccion-view,
-.newPedido-view {
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    background-color: var(--background) !important;
-}
-
-.view-active {
-    opacity: 1;
-}
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.67);
-    backdrop-filter: blur(2px);
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Update z-index for menu to be above overlay */
-.opciones {
-    z-index: 1000;
-}
-
-
-/* ... código existente ... */
-
-/* Reemplazar los estilos de carga existentes */
 .carga {
-    position: fixed;
-    top: 0;
+    position: absolute;
+    top: 70px;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: calc(100vh - 70px);
     background-color: rgba(0, 0, 0, 0.352);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);

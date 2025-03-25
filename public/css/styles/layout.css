@@ -5,6 +5,13 @@
     flex-direction: column;
     min-height: 100vh;
     padding-top: 56px;
+    position: relative;
+}
+@media (min-width: 1024px){
+    .container {
+        margin-left: 250px;
+        width: auto;
+    }
 }
 
 .dashboard {

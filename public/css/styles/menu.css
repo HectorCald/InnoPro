@@ -1,0 +1,191 @@
+/* Mobile Styles (below 1024px) */
+.opciones {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+
+    .menu-principal {
+        width: 60px;
+        height: 60px;
+        background: var(--second-button);
+        border-radius: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        z-index: 999999;
+    }
+
+    .hamburger {
+        width: 24px;
+        height: 20px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .hamburger span {
+        display: block;
+        width: 100%;
+        height: 3px;
+        background: white;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+    }
+
+    .menu-principal.active .hamburger span:nth-child(1) {
+        transform: translateY(8.5px) rotate(45deg);
+    }
+
+    .menu-principal.active .hamburger span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .menu-principal.active .hamburger span:nth-child(3) {
+        transform: translateY(-8.5px) rotate(-45deg);
+    }
+
+    .menu-principal i {
+        color: white;
+        font-size: 24px;
+    }
+
+    .menu-secundario {
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        transform: translateY(20px);
+        z-index: 99999;
+    }
+
+    .menu-secundario.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .opcion-btn {
+        width: 150px;
+        height: 45px;
+        border-radius: 12px;
+        background: var(--primary-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--primary-text);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        border: none;
+        gap: 10px;
+        z-index: 999999;
+    }
+
+    .opcion-btn:hover {
+        background: #a6a6a6;
+        transform: translateX(-5px);
+        color: white;
+    }
+
+    .opcion-btn i {
+        font-size: 18px;
+    }
+
+    .opcion-btn.active {
+        background: gray;
+        transform: translateX(-5px);
+        color: white;
+    }
+
+    .overlay{
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.692);
+        z-index: 999;
+        display: none;
+    }
+}
+
+/* Desktop Styles (1024px and above) */
+@media (min-width: 1024px) {
+    .opciones {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        bottom: 0;
+        width: 250px;
+        background: var(--surface);
+        padding: 1em;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        display: flex !important;
+        flex-direction: column;
+        z-index: 1000;
+
+
+        .menu-principal {
+            display: none !important;
+        }
+
+        .menu-secundario {
+            position: static !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+            margin-top: 0;
+            display: flex !important;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            height: auto;
+            bottom: auto;
+            right: auto;
+        }
+
+        .opcion-btn {
+            width: 100% !important;
+            height: 45px;
+            border-radius: 8px;
+            background: var(--primary-color);
+            display: flex !important;
+            justify-content: flex-start !important;
+            align-items: center;
+            color: var(--primary-text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            gap: 10px;
+            padding-left: 1.5em;
+        }
+
+        .opcion-btn:hover {
+            transform: translateX(5px) !important;
+            background: #a6a6a6;
+            color: white;
+        }
+
+        .opcion-btn i {
+            font-size: 18px;
+        }
+    }
+
+    .overlay {
+        display: none;
+    }
+}

@@ -1,5 +1,5 @@
 import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario, mostrarPermisos, agregarPermiso, eliminarPermiso } from './modules/users.js';
-import { eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
+import { pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
@@ -9,6 +9,8 @@ import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
 import { inicializarAlmacenPrima } from './modules/almPrima.js';
 import { inicializarHome } from './modules/home.js';
+import { initializeMenu } from './modules/menu.js';
+window.initializeMenu = initializeMenu;
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
@@ -76,6 +78,10 @@ window.mostrarProgramaAcopio = mostrarProgramaAcopio;
 window.inicializarAlmacen = inicializarAlmacen;
 window.inicializarAlmacenPrima = inicializarAlmacenPrima;
 window.inicializarHome = inicializarHome;
+window.cargarUsuarios = cargarUsuarios;
+window.inicializarConsulta = inicializarConsulta;
+window.pagarRegistro = pagarRegistro;
+
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -115,7 +121,6 @@ async function bienvenida() {
                                     <span class="slider"></span>
                                 </label>
                                 <i class="fas fa-sun theme-icon"></i>
-                                
                             </div>
                         </div>
                     </div>
@@ -126,6 +131,7 @@ async function bienvenida() {
                 const modalContent = modal.querySelector('.modal-content');
                 const closeBtn = modal.querySelector('.close-modal');
                 const themeToggle = modal.querySelector('#themeToggle');
+                const menuSecundario = dashboard.querySelector('.menu-secundario');
 
                 // Verificar y aplicar el tema guardado
                 const currentTheme = localStorage.getItem('theme') || 'dark';
@@ -163,6 +169,7 @@ async function bienvenida() {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) cerrarModal();
                 });
+               
             }
         }
     } catch (error) {
@@ -248,281 +255,11 @@ async function iniciarApp() {
         vista.style.color = '#ffffff';
     });
 
-    opcionesDiv.innerHTML = `
-        <div class="overlay"></div>
-        <div class="menu-principal">
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-        <div class="menu-secundario"></div>
-    `;
-
-    const menuPrincipal = opcionesDiv.querySelector('.menu-principal');
-    const menuSecundario = opcionesDiv.querySelector('.menu-secundario');
-    const overlay = opcionesDiv.querySelector('.overlay');
-
     // Dividir los roles si hay múltiples
     const roles = rol ? rol.split(',').map(r => r.trim()) : [];
 
-    // Mantener la configuración de botones por rol
-    const botonesRoles = {
-        'Producción': [
-            {
-                clase: 'opcion-btn',
-                vista: 'home-view',
-                icono: 'fa-home',
-                texto: 'Inicio',
-                onclick: 'onclick="inicializarHome()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'formProduccion-view',
-                icono: 'fa-clipboard-list',
-                texto: 'Formulario',
-                onclick: 'onclick="inicializarFormularioProduccion()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'cuentasProduccion-view',
-                icono: 'fa-history',
-                texto: 'Registros',
-                onclick: 'onclick="cargarRegistrosCuentas()"'
-            }
-        ],
-        'Acopio': [
-            {
-                clase: 'opcion-btn',
-                vista: 'home-view',
-                icono: 'fa-home',
-                texto: 'Inicio',
-                onclick: 'onclick="inicializarHome()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'newPedido-view',
-                icono: 'fa-clipboard-list',
-                texto: 'Pedido',
-                onclick: 'onclick="inicializarPedidos()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'newTarea-view',
-                icono: 'fa-tasks',
-                texto: 'Tarea',
-                onclick: 'onclick="inicializarTareas()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'almAcopio-view',
-                icono: 'fa-warehouse',
-                texto: 'Alm Bruto',
-                onclick: 'onclick="inicializarAlmacen()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'almPrima-view',
-                icono: 'fa-warehouse',
-                texto: 'Alm Prima',
-                onclick: 'onclick="inicializarAlmacenPrima()"'
-            }
-        ],
-        'Almacen': [
-            {
-                clase: 'opcion-btn',
-                vista: 'home-view',
-                icono: 'fa-home',
-                texto: 'Inicio',
-                onclick: 'onclick="inicializarHome()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'verificarRegistros-view',
-                icono: 'fa-check-double',
-                texto: 'Verificar',
-                onclick: 'onclick="cargarRegistros()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'almPrima-view',
-                icono: 'fa-warehouse',
-                texto: 'Alm Prima',
-                onclick: 'onclick="inicializarAlmacenPrima()"'
-            }
-        ],
-        'Administración': [
-            {
-                clase: 'opcion-btn',
-                vista: 'home-view',
-                icono: 'fa-home',
-                texto: 'Inicio',
-                onclick: 'onclick="inicializarHome()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'usuarios-view',
-                icono: 'fa-users-cog',
-                texto: 'Usuarios',
-                onclick: 'onclick="cargarUsuarios()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'consultarRegistros-view',
-                icono: 'fa-search',
-                texto: 'Consultar',
-                onclick: 'onclick="inicializarConsulta()"'
-            },
-            {
-                clase: 'opcion-btn',
-                vista: 'compras-view',
-                icono: 'fa-shopping-cart',
-                texto: 'Compras',
-                onclick: 'onclick="inicializarCompras()"'
-            }
-        ]
-    };
-
-    // Agregar botones para cada rol
-    let totalBotones = 0;
-    roles.forEach(rolActual => {
-        const botonesRol = botonesRoles[rolActual];
-        if (botonesRol) totalBotones += botonesRol.length;
-    });
-
-    let botonActual = 0;
-    let esElPrimero = true;
-
-    roles.forEach(rolActual => {
-        const botonesRol = botonesRoles[rolActual];
-        if (botonesRol && botonesRol.length > 0) {
-            botonesRol.forEach(boton => {
-                const btnHTML = `
-                    <button class="${boton.clase}${esElPrimero ? ' active' : ''}" 
-                            data-vista="${boton.vista}" 
-                            ${boton.onclick}>
-                        <i class="fas ${boton.icono}"></i>
-                        <span>${boton.texto}</span>
-                    </button>
-                `;
-                menuSecundario.insertAdjacentHTML('beforeend', btnHTML);
-
-                if (esElPrimero) {
-                    const vistaInicial = document.querySelector(`.${boton.vista}`);
-                    if (vistaInicial) {
-                        vistaInicial.style.display = 'flex';
-                        vistaInicial.style.opacity = '1';
-                        const onclickFn = boton.onclick.replace('onclick="', '').replace('"', '');
-                        if (window[onclickFn]) {
-                            window[onclickFn]();
-                        }
-                    }
-                    esElPrimero = false;
-                }
-                botonActual++;
-            });
-        }
-    });
-
-    // Manejar click en menú principal
-    menuPrincipal.addEventListener('click', (e) => {
-        e.stopPropagation();
-        menuPrincipal.classList.toggle('active');
-        menuSecundario.classList.toggle('active');
-        overlay.classList.toggle('active');
-    });
-
-    menuSecundario.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-
-    // Cerrar menú al hacer click fuera
-    document.addEventListener('click', () => {
-        if (menuPrincipal.classList.contains('active')) {
-            menuPrincipal.classList.remove('active');
-            menuSecundario.classList.remove('active');
-            overlay.classList.remove('active');
-        }
-    });
-
-    // Función para actualizar el botón activo en el menú
-    window.actualizarBotonActivo = (vistaId) => {
-        const botones = menuSecundario.querySelectorAll('.opcion-btn');
-        botones.forEach(b => {
-            b.classList.remove('active');
-            if (b.dataset.vista === vistaId) {
-                b.classList.add('active');
-            }
-        });
-    };
-
-    // Manejar clicks en botones secundarios
-    const botones = menuSecundario.querySelectorAll('.opcion-btn');
-    botones.forEach(boton => {
-        boton.addEventListener('click', async (e) => {
-            if (boton.classList.contains('active')) return;
-
-            menuPrincipal.classList.remove('active');
-            menuSecundario.classList.remove('active');
-            overlay.classList.remove('active');
-
-            // Remover clase active de todos los botones y agregar al clickeado
-            botones.forEach(b => b.classList.remove('active'));
-            boton.classList.add('active');
-
-            // Ocultar todas las vistas con transición
-            vistas.forEach(vista => {
-                vista.style.opacity = '0';
-                setTimeout(() => vista.style.display = 'none', 300);
-            });
-
-            const vistaId = boton.dataset.vista;
-            const vistaActual = document.querySelector(`.${vistaId}`);
-            if (vistaActual) {
-                const onclickFn = boton.getAttribute('onclick')?.replace('onclick="', '').replace('"', '');
-                if (window[onclickFn]) {
-                    await window[onclickFn]();
-                }
-
-                // Mostrar vista actual con transición
-                setTimeout(() => {
-                    vistaActual.style.display = 'flex';
-                    requestAnimationFrame(() => {
-                        vistaActual.style.opacity = '1';
-                    });
-                }, 300);
-            }
-        });
-    });
-
-    // Exponer función para cambiar vista desde otros módulos
-    window.cambiarVista = async (vistaId, accion) => {
-        const vistaActual = document.querySelector(`.${vistaId}`);
-        if (!vistaActual) return;
-
-        // Ocultar todas las vistas
-        vistas.forEach(vista => {
-            vista.style.opacity = '0';
-            setTimeout(() => vista.style.display = 'none', 300);
-        });
-
-        // Actualizar botón activo
-        actualizarBotonActivo(vistaId);
-
-        // Ejecutar acción si existe
-        if (window[accion]) {
-            await window[accion]();
-        }
-
-        // Mostrar nueva vista
-        setTimeout(() => {
-            vistaActual.style.display = 'flex';
-            requestAnimationFrame(() => {
-                vistaActual.style.opacity = '1';
-            });
-        }, 300);
-    };
+    // Inicializar el menú
+    initializeMenu(roles, opcionesDiv, vistas);
 }
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
@@ -533,9 +270,10 @@ function ocultarCarga() {
     cargaDiv.style.display = 'none';
 }
 document.addEventListener('DOMContentLoaded', () => {
+    iniciarApp();
     bienvenida();
     inicializarHome();
-    iniciarApp();
+    
 });
 
 

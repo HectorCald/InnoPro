@@ -517,6 +517,45 @@ app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
         });
     }
 });
+app.post('/registrar-pago', requireAuth, async (req, res) => {
+    try {
+        const { fecha, producto, lote, operario, total } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Buscar la fila correspondiente
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A2:M'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === producto && 
+            row[2] === lote && 
+            row[8] === operario
+        );
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
+        }
+
+        // Actualizar el pago en la columna M
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Produccion!M${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[total]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al registrar pago:', error);
+        res.status(500).json({ success: false, error: 'Error al registrar el pago' });
+    }
+});
 
 
 /* ==================== API DE VERIFICACION ==================== */
