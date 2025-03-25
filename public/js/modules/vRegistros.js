@@ -38,7 +38,7 @@ export async function cargarRegistros() {
 
         if (data.success) {
             const container = document.querySelector('.verificarRegistros-view');
-            container.innerHTML = '<h2 class="section-title"><i class="fas fa-check-double verificado-icon"></i> Verificar Registros</h2>';
+            container.innerHTML = '<h2 class="section-title"><i class="fas fa-check-double verificado-icon"></i> Registros</h2>';
 
             const registrosPorOperario = {};
             data.registros.slice(1).forEach(registro => {
