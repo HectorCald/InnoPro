@@ -109,12 +109,13 @@ async function bienvenida() {
                             </div>
                             <div class="modal-profile-role">@${data.rol || 'Usuario'}</div>
                             <div class="theme-switch">
-                                <i class="fas fa-sun theme-icon"></i>
+                                <i class="fas fa-moon theme-icon"></i>
                                 <label class="switch">
                                     <input type="checkbox" id="themeToggle">
                                     <span class="slider"></span>
                                 </label>
-                                <i class="fas fa-moon theme-icon"></i>
+                                <i class="fas fa-sun theme-icon"></i>
+                                
                             </div>
                         </div>
                     </div>
@@ -247,7 +248,6 @@ async function iniciarApp() {
         vista.style.color = '#ffffff';
     });
 
-    // Crear estructura del menú circular y overlay
     opcionesDiv.innerHTML = `
         <div class="overlay"></div>
         <div class="menu-principal">
