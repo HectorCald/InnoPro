@@ -165,8 +165,6 @@ function setupFilters() {
         loadMoreBtn.addEventListener('click', () => mostrarRegistros());
     }
 }
-
-
 function parsearFecha(fechaStr) {
     const [dia, mes, año] = fechaStr.split('/');
     return new Date(2000 + parseInt(año), parseInt(mes) - 1, parseInt(dia));
@@ -209,23 +207,12 @@ export function crearTarjetaRegistro(registro) {
     const fechaFormateada = `${dia}/${mes}`;
     // Determinar qué cantidad usar basado en si está verificado
     const cantidadAUsar = registro[10] ? registro[9] : registro[6];
-    const resultados = calcularTotal(registro[1], cantidadAUsar, registro[3], registro[4]);
 
     div.innerHTML = `
         <div class="registro-header">
                 ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
                 <div class="registro-fecha">${fechaFormateada}</div>
                 <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
-                <div class="registro-total ${!registro[10] ? 'no-verificado' : ''}">${resultados.total.toFixed(2)} Bs.</div>
-                <i class="fas fa-info-circle info-icon"></i>
-                <div class="panel-info">
-                    <h4>Desglose de Costos</h4>
-                    <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
-                    <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
-                    <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
-                    <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
-                    <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
-                </div>
         </div>
         </div>
         <div class="registro-detalles">
@@ -244,141 +231,6 @@ export function crearTarjetaRegistro(registro) {
 
     const header = div.querySelector('.registro-header');
     header.addEventListener('click', () => mostrarDetalles(div));
-    configurarPanelInfo(div);
     return div;
 
-}
-function calcularTotal(nombre, cantidad, gramaje, seleccion) {
-    nombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-    cantidad = parseFloat(cantidad) || 0;
-    gramaje = parseFloat(gramaje) || 0;
-
-    let resultado = cantidad;
-    let resultadoEtiquetado = cantidad;
-    let resultadoSellado = cantidad;
-    const kilos = (cantidad * gramaje) / 1000;
-    let resultadoSernido = 0;
-
-    // Lógica para envasado
-    if (nombre.includes('pipoca')) {
-        if (gramaje >= 1000) {
-            resultado = (cantidad * 5) * 0.048;
-        } else if (gramaje >= 500) {
-            resultado = (cantidad * 4) * 0.048;
-        } else {
-            resultado = (cantidad * 2) * 0.048;
-        }
-    } else if (
-        nombre.includes('bote') || 
-        (nombre.includes('clavo de olor entero') && gramaje === 12) || 
-        (nombre.includes('canela en rama') && gramaje === 4) || 
-        (nombre.includes('linaza') && gramaje === 50)
-    ) {
-        resultado = (cantidad * 2) * 0.048;
-    } else if (
-        nombre.includes('laurel') || 
-        nombre.includes('huacatay') || 
-        nombre.includes('albahaca') || 
-        (nombre.includes('canela') && gramaje === 14)
-    ) {
-        resultado = (cantidad * 3) * 0.048;
-    } else {
-        if (gramaje >= 135 && gramaje <= 150) {
-            resultado = (cantidad * 3) * 0.048;
-        } else if (gramaje == 500) {
-            resultado = (cantidad * 4) * 0.048;
-        } else if (gramaje == 1000) {
-            resultado = (cantidad * 5) * 0.048;
-        } else {
-            resultado = (cantidad * 1) * 0.048;
-        }
-    }
-
-    // Lógica para etiquetado
-    if (nombre.includes('bote')) {
-        resultadoEtiquetado = (cantidad * 2) * 0.016;
-    } else {
-        resultadoEtiquetado = cantidad * 0.016;
-    }
-
-    // Lógica para sellado
-    if (nombre.includes('bote')) {
-        resultadoSellado = cantidad * 0.3 / 60 * 5;
-    } else if (gramaje > 150) {
-        resultadoSellado = (cantidad * 2) * 0.006;
-    } else {
-        resultadoSellado = (cantidad * 1) * 0.006;
-    }
-
-    // Lógica para cernido
-    if (seleccion !== 'Cernido') {
-        resultadoSernido = 0;
-    } else {
-        if (nombre.includes('bote')) {
-            if (nombre.includes('canela') || nombre.includes('cebolla') || nombre.includes('locoto')) {
-                resultadoSernido = (kilos * 0.34) * 5;
-            } else {
-                resultadoSernido = (kilos * 0.1) * 5;
-            }
-        } else if (nombre.includes('canela') || nombre.includes('cebolla') ||
-            nombre.includes('aji amarillo dulce') || nombre.includes('locoto')) {
-            resultadoSernido = (kilos * 0.3) * 5;
-        } else {
-            if (nombre.includes('tomillo')) {
-                resultadoSernido = 0;
-            } else {
-                resultadoSernido = (kilos * 0.08) * 5;
-            }
-        }
-    }
-
-    return {
-        total: resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido,
-        envasado: resultado,
-        etiquetado: resultadoEtiquetado,
-        sellado: resultadoSellado,
-        cernido: resultadoSernido
-    };
-}
-
-// Update the configurarPanelInfo function
-function configurarPanelInfo(card) {
-    const infoIcon = card.querySelector('.info-icon');
-    const panelInfo = card.querySelector('.panel-info');
-    const header = card.querySelector('.registro-header');
-    
-    if (!infoIcon || !panelInfo) return;
-
-    infoIcon.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent event from bubbling up
-        
-        // Close all other panels first
-        document.querySelectorAll('.panel-info.active').forEach(panel => {
-            if (panel !== panelInfo) {
-                panel.classList.remove('active');
-            }
-        });
-        
-        // Toggle current panel
-        panelInfo.classList.toggle('active');
-    });
-
-    // Prevent panel from closing when clicking inside it
-    panelInfo.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-
-    // Close panel when clicking anywhere else in the document
-    document.addEventListener('click', (e) => {
-        if (!infoIcon.contains(e.target) && !panelInfo.contains(e.target)) {
-            panelInfo.classList.remove('active');
-        }
-    });
-
-    // Prevent header click from triggering details when clicking info icon
-    header.addEventListener('click', (e) => {
-        if (infoIcon.contains(e.target)) {
-            e.stopPropagation();
-        }
-    });
 }

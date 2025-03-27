@@ -2818,7 +2818,6 @@ app.get('/obtener-reglas-especiales', requireAuth, async (req, res) => {
             gramajeMin: row[5] || '',
             gramajeMax: row[6] || ''
         }));
-        console.log(reglas);
         res.json({ success: true, reglas });
     } catch (error) {
         console.error('Error al obtener reglas:', error);
