@@ -149,28 +149,27 @@ function crearRegistroCard(registro, esAdmin) {
     registroCard.dataset.lote = registro[2];
     registroCard.dataset.operario = registro[8];
 
-    const cantidadAUsar = registro[10] ? registro[9] : registro[6];
-    const resultados = estaPagado ? {
+    // Solo calcular resultados si es admin
+    const resultados = esAdmin ? (estaPagado ? {
         total: parseFloat(registro[12]),
         envasado: 0,
         etiquetado: 0,
         sellado: 0,
         cernido: 0
-    } : calcularTotal(registro[1], cantidadAUsar, registro[3], registro[4]);
+    } : calcularTotal(registro[1], registro[10] ? registro[9] : registro[6], registro[3], registro[4])) : null;
 
     // Botones para administradores
-    // En la función crearRegistroCard, modificar la parte de botonesAdmin
     const botonesAdmin = esAdmin ? `
-    <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
-        <i class="fas fa-trash"></i> Eliminar
-    </button>
-    ${registro[10] ? `
-        <button onclick="pagarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[9]}')" 
-            class="btn-pagar-registro"
-            ${estaPagado ? 'disabled style="background-color: #888; cursor: not-allowed;"' : ''}>
-            <i class="fas fa-dollar-sign"></i> Pagar
+        <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
+            <i class="fas fa-trash"></i> Eliminar
         </button>
-    ` : ''}` : '';
+        ${registro[10] ? `
+            <button onclick="pagarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[9]}')" 
+                class="btn-pagar-registro"
+                ${estaPagado ? 'disabled style="background-color: #888; cursor: not-allowed;"' : ''}>
+                <i class="fas fa-dollar-sign"></i> Pagar
+            </button>
+        ` : ''}` : '';
 
     // Botón de eliminar para usuarios normales (solo si no está verificado)
     const botonEliminarUsuario = !esAdmin && !registro[10] ? `
@@ -184,17 +183,19 @@ function crearRegistroCard(registro, esAdmin) {
             ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
             <div class="registro-fecha">${fechaFormateada}</div>
             <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
-            <div class="registro-total ${!registro[10] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
-                 style="${estaPagado ? 'color: #888;' : ''}">${resultados.total.toFixed(2)} Bs.</div>
-            <i class="fas fa-info-circle info-icon"></i>
-            <div class="panel-info" ${estaPagado ? 'style="color: #888;"' : ''}>
-                <h4>Desglose de Costos</h4>
-                <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
-                <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
-                <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
-                <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
-                <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
-            </div>
+            ${esAdmin ? `
+                <div class="registro-total ${!registro[10] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
+                     style="${estaPagado ? 'color: #888;' : ''}">${resultados.total.toFixed(2)} Bs.</div>
+                <i class="fas fa-info-circle info-icon"></i>
+                <div class="panel-info" ${estaPagado ? 'style="color: #888;"' : ''}>
+                    <h4>Desglose de Costos</h4>
+                    <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
+                    <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
+                    <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
+                    <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
+                    <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
+                </div>
+            ` : ''}
         </div>
         <div class="registro-detalles">
             <p><span>Lote:</span> ${registro[2] || '-'}</p>
@@ -224,7 +225,10 @@ function crearRegistroCard(registro, esAdmin) {
         </div>
     `;
 
-    configurarPanelInfo(registroCard);
+    // Solo configurar el panel de información si es administrador
+    if (esAdmin) {
+        configurarPanelInfo(registroCard);
+    }
     configurarEventosRegistro(registroCard);
 
     return registroCard;

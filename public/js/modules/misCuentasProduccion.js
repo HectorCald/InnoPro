@@ -205,8 +205,6 @@ export function crearTarjetaRegistro(registro) {
 
     const [dia, mes] = registro[0].split('/');
     const fechaFormateada = `${dia}/${mes}`;
-    // Determinar qué cantidad usar basado en si está verificado
-    const cantidadAUsar = registro[10] ? registro[9] : registro[6];
 
     div.innerHTML = `
         <div class="registro-header">
