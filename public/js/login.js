@@ -145,7 +145,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
     }
 });
+// ... código existente ...
 
+async function initializeFirebaseMessaging() {
+    try {
+        // Importar módulos de Firebase
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
+        const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js');
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbfR1fpCDIsE8R_9RAN9lG0H9bsk2WQeQ",
+            authDomain: "damabravaapp.firebaseapp.com",
+            projectId: "damabravaapp",
+            storageBucket: "damabravaapp.firebasestorage.app",
+            messagingSenderId: "36776613676",
+            appId: "1:36776613676:web:f031d9435399a75a9afe89",
+            measurementId: "G-NX0Z9ZPC5R"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        // Resto del código...
+    } catch (error) {
+        console.error('Error al inicializar Firebase:', error);
+    }
+}
+
+// ... resto del código ...
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'flex';

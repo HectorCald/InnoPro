@@ -1,5 +1,84 @@
-
 <script src="./js/login.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js';
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbfR1fpCDIsE8R_9RAN9lG0H9bsk2WQeQ",
+        authDomain: "damabravaapp.firebaseapp.com",
+        projectId: "damabravaapp",
+        storageBucket: "damabravaapp.firebasestorage.app",
+        messagingSenderId: "36776613676",
+        appId: "1:36776613676:web:f031d9435399a75a9afe89",
+        measurementId: "G-NX0Z9ZPC5R"
+    };
+
+    async function initNotifications() {
+        try {
+            const app = initializeApp(firebaseConfig);
+            console.log('Firebase initialized:', app);
+            
+            const messaging = getMessaging(app);
+            
+            // Manejar mensajes en primer plano
+            onMessage(messaging, (payload) => {
+                console.log('Mensaje recibido en primer plano:', payload);
+                
+                let title = 'Nueva notificación';
+                let body = 'Tienes un nuevo mensaje';
+                
+                if (payload.notification && payload.notification.title) {
+                    title = payload.notification.title;
+                    body = payload.notification.body || body;
+                } else if (payload.data && payload.data.title) {
+                    title = payload.data.title;
+                    body = payload.data.body || body;
+                }
+                
+                if (Notification.permission === 'granted') {
+                    new Notification(title, {
+                        body: body,
+                        icon: '/icon.png',
+                        badge: '/badge.png',
+                        silent: false
+                    });
+                }
+            });
+
+            // Registrar el Service Worker
+            const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            await navigator.serviceWorker.ready;
+
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                // Obtener token FCM con tu clave VAPID
+                const currentToken = await getToken(messaging, {
+                    vapidKey: 'BPeyAQuzecxcE6GsmdeYnTVwi1x4ULPDkaMOv_CQ0Mryu0jW0A8PD-n7kcjvBNis14-HEAncrq1LYcqY6vwFgTU',
+                    serviceWorkerRegistration: registration
+                });
+
+                if (currentToken) {
+                    console.log('Token FCM obtenido:', currentToken);
+                    // Registrar token en el servidor
+                    await fetch('/register-fcm-token', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: currentToken })
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error al inicializar notificaciones:', error);
+        }
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            initNotifications();
+        });
+    }
+</script>
 </body>
+
 </html>

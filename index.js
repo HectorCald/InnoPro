@@ -7,6 +7,70 @@ import { dirname, join } from 'path';
 import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
+import admin from 'firebase-admin';
+
+const serviceAccount = {
+  "type": "service_account",
+  "project_id": "damabravaapp",
+  "private_key_id": "0ae22c3aa77b9e0ebdf44adaf222df2de6b153fd",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDNyOHRv0FShMaa\nuw5sn4onljM8XqoNne2hmcLyya71vrwCKYLjSt+VeIYR25L7wNf1s2EigwhwBgBB\nPI+8qJfmdwx3E/J8Xq6tvt/NbixrhFSVC/oCqGp5psr4SqvcIbeUwVJlvcH5E8VL\nuDoMujz3AALqcUCCydhCV16Yt9zbsC4nlS0Tt/TeNRmjGk+wG0hbWOIQu+1rSuAl\naiEKf27CszSqGvfvySwd7GaV4ONjJvS11mG5xPw9CxACForeV84WGwk81WLkS75m\ncCbEzOmc+/DqPFzuoEVPNIxfF7ukS3qmmMYUBGE7MiPkmejAFL/dumUKdqZoL3vx\nXQD1yj7DAgMBAAECggEAXVRdLn6aRq2XUXfCy/rzco7Jf/jDEVft/Vu6MdjMtAGk\nTSq8hQ9hJe46iADYwbstdu67ACcDfaMLHIs1+W9RLSITEjKGyGc8u+oUoJv2I3Ep\n10tOQURWvgOqjD95gGX+V8Xx89jDD48q7POJyFny6mcj62YfxvF6VmQ/r+27ihqm\nMhoQcbsQRppdnKiOlaXto/e2reZDinkFPuGgmM3AFj1rTtzxZbuv757tWjWrIc7P\nSI947Ayxfkf+YEoybvcPBZW/4XovxxpwMHEY5MPVVprhYQU3Nydq9kHj9dsBhDMq\n9PoON3JkZPeOCQfmQvcmqQPQzPq68uj2HnV+aEHYEQKBgQDmPyykDTLKpu+Mi+zp\nh5iyq50Bek6LDBgs9Gpau599eUNTpI/OZwlmglKNm0rtfk806YDdFoVR68BuVNB3\n+Sg2vphm9Hel7rL9/AYMvO7cnKEpdy0UeElSRKp0y1e7IYuTLO3bYaoapRbxzusp\nf+g0xzwGXLj+pIlKuh0ICFq6mwKBgQDkzURZEiJxuzlI2cQl2CFnQWQ6LpC4EnPg\nOphN41TlwRu8OZ+W9p0vfdyoYkjP7KEZjuaQKD4/hLBaNHTK1rQVOMpJ9LNFLYbX\nzPXXqUZTZiyHNzH5PyJmvZFMl2tcN/vvOcBjENAv59WGtaiNSeT02jMT67tLyDKS\nrxV8fbUa+QKBgDZxz9OHD3CeIt0AJWhfWPs+22SDEFmO5ZSTwyZrYV5hM0tvCVZM\nRQvJW04C36fjC0W+xWsCLUpezeUJBzanYxv228DUpApHtGmck62la3IdU3qjpLRH\ncUcT157AiqFEYGXP5PrQUFH2ocNSI4dvqG/6gLYcbN5B9/kEo2LH3vRrAoGBAJ8I\nsnY67agh27pway9m4Cj2QeVTEpJveQ2ljNGurwcXx+B4KR50gmNNV7/OuQ+VSZEL\nS+Vto37hCvdYOMn4nKmXlLv9E1KFR5HeTA9AALrdbRv7WIgHwzComUMkiKJL45iv\nirMRL7Psr/V3dRXoA/XRaOly0/fjyos8mXGzqtt5AoGAcUXTdOLzx5/A/dt8ejOY\n+xFH0YeDtzAtU/mvHVCWtQ7HJooASZLJZusXjUX8HBsDd5HJJbeIcDwO6WllCQwf\ngvyqppH1tggXdssunQ1GoV6+qv7MGOruEjeHVlGyTAnlO0eVgdH5TolnsY7RZw1v\nM30HRQfApVDjfXHCSa2QHII=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@damabravaapp.iam.gserviceaccount.com",
+  "client_id": "111415888636290705656",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40damabravaapp.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+// ... existing code ...
+
+async function enviarNotificacion(token, titulo, mensaje) {
+    // Verifica que los parámetros no sean undefined
+    console.log('Parámetros recibidos:', { token, titulo, mensaje });
+    
+    if (!titulo || !mensaje) {
+        console.error('Título o mensaje indefinidos');
+        return false;
+    }
+
+    try {
+        const mensajeNotificacion = {
+            token: token,
+            notification: {
+                title: titulo,
+                body: mensaje
+            },
+            data: {
+                title: titulo,
+                body: mensaje
+            }
+        };
+
+        console.log('Enviando notificación:', mensajeNotificacion);
+        const response = await admin.messaging().send(mensajeNotificacion);
+        console.log('Respuesta de Firebase:', response);
+        return true;
+    } catch (error) {
+        console.error('Error al enviar notificación:', error);
+        return false;
+    }
+}
+
+// ... rest of the code ...
+const firebaseConfig = {
+    apiKey: "AIzaSyCbfR1fpCDIsE8R_9RAN9lG0H9bsk2WQeQ",
+    authDomain: "damabravaapp.firebaseapp.com",
+    projectId: "damabravaapp",
+    storageBucket: "damabravaapp.firebasestorage.app",
+    messagingSenderId: "36776613676",
+    appId: "1:36776613676:web:f031d9435399a75a9afe89",
+    measurementId: "G-NX0Z9ZPC5R"
+  };
+
+export default firebaseConfig;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -2888,6 +2952,48 @@ app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
         });
     }
 });
+
+
+
+
+/* ==================== RUTAS DE API - NOTIFICACIONES ==================== */
+app.post('/register-fcm-token', async (req, res) => {
+    try {
+        const { token } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Guardar el token en Google Sheets
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'FCMTokens!A:B',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[new Date().toISOString(), token]]
+            }
+        });
+
+        // Enviar notificación de prueba con valores específicos
+        const resultado = await enviarNotificacion(
+            token,
+            'Bienvenido a Damabrava',
+            'Las notificaciones se han activado correctamente'
+        );
+
+        if (!resultado) {
+            throw new Error('Error al enviar la notificación de prueba');
+        }
+
+        res.json({ success: true, message: 'Token FCM registrado correctamente' });
+    } catch (error) {
+        console.error('Error al registrar token FCM:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al registrar token FCM: ' + error.message 
+        });
+    }
+});
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);
