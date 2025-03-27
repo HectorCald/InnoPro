@@ -9,22 +9,28 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import admin from 'firebase-admin';
 
+// ... imports existentes ...
+dotenv.config();
+
 const serviceAccount = {
-  "type": "service_account",
-  "project_id": "damabravaapp",
-  "private_key_id": "0ae22c3aa77b9e0ebdf44adaf222df2de6b153fd",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDNyOHRv0FShMaa\nuw5sn4onljM8XqoNne2hmcLyya71vrwCKYLjSt+VeIYR25L7wNf1s2EigwhwBgBB\nPI+8qJfmdwx3E/J8Xq6tvt/NbixrhFSVC/oCqGp5psr4SqvcIbeUwVJlvcH5E8VL\nuDoMujz3AALqcUCCydhCV16Yt9zbsC4nlS0Tt/TeNRmjGk+wG0hbWOIQu+1rSuAl\naiEKf27CszSqGvfvySwd7GaV4ONjJvS11mG5xPw9CxACForeV84WGwk81WLkS75m\ncCbEzOmc+/DqPFzuoEVPNIxfF7ukS3qmmMYUBGE7MiPkmejAFL/dumUKdqZoL3vx\nXQD1yj7DAgMBAAECggEAXVRdLn6aRq2XUXfCy/rzco7Jf/jDEVft/Vu6MdjMtAGk\nTSq8hQ9hJe46iADYwbstdu67ACcDfaMLHIs1+W9RLSITEjKGyGc8u+oUoJv2I3Ep\n10tOQURWvgOqjD95gGX+V8Xx89jDD48q7POJyFny6mcj62YfxvF6VmQ/r+27ihqm\nMhoQcbsQRppdnKiOlaXto/e2reZDinkFPuGgmM3AFj1rTtzxZbuv757tWjWrIc7P\nSI947Ayxfkf+YEoybvcPBZW/4XovxxpwMHEY5MPVVprhYQU3Nydq9kHj9dsBhDMq\n9PoON3JkZPeOCQfmQvcmqQPQzPq68uj2HnV+aEHYEQKBgQDmPyykDTLKpu+Mi+zp\nh5iyq50Bek6LDBgs9Gpau599eUNTpI/OZwlmglKNm0rtfk806YDdFoVR68BuVNB3\n+Sg2vphm9Hel7rL9/AYMvO7cnKEpdy0UeElSRKp0y1e7IYuTLO3bYaoapRbxzusp\nf+g0xzwGXLj+pIlKuh0ICFq6mwKBgQDkzURZEiJxuzlI2cQl2CFnQWQ6LpC4EnPg\nOphN41TlwRu8OZ+W9p0vfdyoYkjP7KEZjuaQKD4/hLBaNHTK1rQVOMpJ9LNFLYbX\nzPXXqUZTZiyHNzH5PyJmvZFMl2tcN/vvOcBjENAv59WGtaiNSeT02jMT67tLyDKS\nrxV8fbUa+QKBgDZxz9OHD3CeIt0AJWhfWPs+22SDEFmO5ZSTwyZrYV5hM0tvCVZM\nRQvJW04C36fjC0W+xWsCLUpezeUJBzanYxv228DUpApHtGmck62la3IdU3qjpLRH\ncUcT157AiqFEYGXP5PrQUFH2ocNSI4dvqG/6gLYcbN5B9/kEo2LH3vRrAoGBAJ8I\nsnY67agh27pway9m4Cj2QeVTEpJveQ2ljNGurwcXx+B4KR50gmNNV7/OuQ+VSZEL\nS+Vto37hCvdYOMn4nKmXlLv9E1KFR5HeTA9AALrdbRv7WIgHwzComUMkiKJL45iv\nirMRL7Psr/V3dRXoA/XRaOly0/fjyos8mXGzqtt5AoGAcUXTdOLzx5/A/dt8ejOY\n+xFH0YeDtzAtU/mvHVCWtQ7HJooASZLJZusXjUX8HBsDd5HJJbeIcDwO6WllCQwf\ngvyqppH1tggXdssunQ1GoV6+qv7MGOruEjeHVlGyTAnlO0eVgdH5TolnsY7RZw1v\nM30HRQfApVDjfXHCSa2QHII=\n-----END PRIVATE KEY-----\n",
-  "client_email": "firebase-adminsdk-fbsvc@damabravaapp.iam.gserviceaccount.com",
-  "client_id": "111415888636290705656",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40damabravaapp.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
-}
+    type: process.env.FIREBASE_TYPE,
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: process.env.FIREBASE_AUTH_URI,
+    token_uri: process.env.FIREBASE_TOKEN_URI,
+    auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+    universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN
+};
+
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
+
+// ... resto del código ...
 // ... existing code ...
 
 async function enviarNotificacion(token, titulo, mensaje) {
