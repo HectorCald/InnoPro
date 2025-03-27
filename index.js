@@ -561,60 +561,65 @@ app.post('/registrar-pago', requireAuth, async (req, res) => {
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
-
-        const { fecha, producto, lote, operario, verificacion, fechaVerificacion, observaciones } = req.body;
-        
-        if (!fecha || !producto || !lote || !operario) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Faltan datos necesarios para la verificación' 
-            });
-        }
-
+        const { fecha, producto, lote, operario, verificacion, fechaVerificacion, observaciones, gramaje, seleccion, microondas, envases, vencimiento } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Obtener todos los registros
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A:L'
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A2:L'
         });
 
         const rows = response.data.values || [];
-        // Buscar el registro específico usando todos los campos identificativos
+        
+        // Encontrar el índice exacto verificando todos los campos
         const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[1] === producto &&
-            String(row[2]) === String(lote) &&
-            row[8] === operario
-        ) + 1;
+            row[0] === fecha &&           // Fecha
+            row[1] === producto &&        // Producto
+            row[2] === lote &&           // Lote
+            row[3] === gramaje &&        // Gramaje
+            row[4] === seleccion &&      // Selección
+            row[5] === microondas &&     // Microondas
+            row[6] === envases &&       // Cantidad
+            row[7] === vencimiento &&    // Vencimiento
+            row[8] === operario &&       // Operario
+            !row[9] &&                   // Verificación vacía
+            !row[10]                     // Fecha verificación vacía
+        );
 
-        if (rowIndex <= 0) {
+        if (rowIndex === -1) {
             return res.status(404).json({ 
                 success: false, 
-                error: 'Registro no encontrado' 
+                error: 'Registro no encontrado o ya verificado' 
             });
         }
 
-        // Actualizar las columnas J, K y L (verificación, fecha y observaciones)
+        // Actualizar la verificación
         await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: `Produccion!J${rowIndex}:L${rowIndex}`,
-            valueInputOption: 'RAW',
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Produccion!J${rowIndex + 2}:L${rowIndex + 2}`,
+            valueInputOption: 'USER_ENTERED',
             resource: {
-                values: [[verificacion, fechaVerificacion, observaciones]]
+                values: [[
+                    verificacion,
+                    fechaVerificacion,
+                    observaciones || ''
+                ]]
             }
         });
 
-        res.json({ success: true, message: 'Registro actualizado correctamente' });
+        res.json({ 
+            success: true,
+            mensaje: 'Verificación actualizada correctamente'
+        });
     } catch (error) {
         console.error('Error al actualizar verificación:', error);
         res.status(500).json({ 
             success: false, 
-            error: 'Error al actualizar el registro: ' + (error.message || 'Error desconocido')
+            error: 'Error al actualizar la verificación' 
         });
     }
 });
-
 
 /* ==================== API DE PERMISOS ==================== */
 app.put('/actualizar-permisos', requireAuth, async (req, res) => {
@@ -2752,21 +2757,27 @@ app.post('/actualizar-precios-base', requireAuth, async (req, res) => {
 });
 app.post('/guardar-producto-especial', requireAuth, async (req, res) => {
     try {
-        const { producto, base, multiplicador } = req.body;
+        const { producto, base, multiplicador, gramajeMin, gramajeMax } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
+        const multiplicadorFormateado = base === 'cernido' 
+            ? parseFloat(multiplicador).toFixed(4).replace('.', ',')
+            : multiplicador;
+
         const nuevaFila = [
-            base === 'etiquetado' ? multiplicador : '1',
-            base === 'sellado' ? multiplicador : '1',
-            base === 'envasado' ? multiplicador : '1',
-            base === 'cernido' ? multiplicador : '1',
-            producto
+            base === 'etiquetado' ? multiplicadorFormateado : '1',
+            base === 'sellado' ? multiplicadorFormateado : '1',
+            base === 'envasado' ? multiplicadorFormateado : '1',
+            base === 'cernido' ? multiplicadorFormateado : '1',
+            producto,
+            gramajeMin || '',
+            gramajeMax || ''
         ];
 
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Precios produccion!A3',
-            valueInputOption: 'USER_ENTERED', // Importante: mantener este valor
+            valueInputOption: 'USER_ENTERED',
             insertDataOption: 'INSERT_ROWS',
             resource: {
                 values: [nuevaFila]
@@ -2778,6 +2789,94 @@ app.post('/guardar-producto-especial', requireAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Error al guardar producto especial: ' + error.message
+        });
+    }
+});
+app.get('/obtener-reglas-especiales', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Precios produccion!A4:G'
+        });
+
+        const rows = response.data.values || [];
+        const reglas = rows.map(row => ({
+            etiquetado: row[0] || '1',
+            sellado: row[1] || '1',
+            envasado: row[2] || '1',
+            cernido: row[3] || '1',
+            producto: row[4] || '',
+            gramajeMin: row[5] || '',
+            gramajeMax: row[6] || ''
+        }));
+
+        res.json({ success: true, reglas });
+    } catch (error) {
+        console.error('Error al obtener reglas:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener reglas especiales: ' + error.message
+        });
+    }
+});
+app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
+    try {
+        const { producto } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get current rules
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Precios produccion!A4:G'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[4] === producto);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                error: 'Regla no encontrada'
+            });
+        }
+
+        // Get the sheet ID
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const preciosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Precios produccion'
+        );
+
+        if (!preciosSheet) {
+            throw new Error('Hoja de Precios produccion no encontrada');
+        }
+
+        // Delete the rule row (rowIndex + 4 because our range starts at A4)
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: preciosSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 3, // +3 because we start at A4
+                            endIndex: rowIndex + 4
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true, message: 'Regla eliminada correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar regla:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar regla: ' + error.message
         });
     }
 });

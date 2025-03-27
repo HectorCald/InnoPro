@@ -63,7 +63,6 @@ export async function cargarRegistros() {
                 container.appendChild(operarioCard);
             }
 
-            mostrarNotificacion('Registros cargados correctamente');
         } else {
             throw new Error(data.error || 'Error al obtener los registros');
         }
@@ -142,7 +141,7 @@ function crearRegistroCard(registro, esAdmin) {
             ` : `
                 <div class="acciones">
                     ${!esAdmin ? `
-                        <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-editar">
+                        <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[4]}', '${registro[5]}', '${registro[6]}', '${registro[7]}')" class="btn-editar">
                             <i class="fas fa-check-circle"></i> Verificar
                         </button>
                         ${botonEliminarUsuario}
@@ -230,44 +229,52 @@ function ordenarRegistrosPorFecha(registros) {
         return fechaB - fechaA;
     });
 }
-export function verificarRegistro(fecha, producto, lote, operario) {
+export function verificarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento) {
     const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
-    const btnConfirmar = anuncio.querySelector('.confirmar');
-    const btnCancelar = anuncio.querySelector('.cancelar');
-    const fondo = document.querySelector('.overlay').style.display = 'flex';
-
-    // Configurar el estilo del anuncio como modal
-    btnConfirmar.textContent = 'Verificar';
-    btnConfirmar.style.backgroundColor = '#4CAF50';
-    btnCancelar.style.display = 'block';
-
-    // Establecer la fecha actual por defecto
-    const fechaHoy = new Date().toISOString().split('T')[0];
-
-    // Personalizar el contenido del anuncio
-    mostrarCarga();
-    contenido.querySelector('h2').textContent = 'Verificar Registro';
-    contenido.querySelector('p').innerHTML = `
-        <form id="form-verificacion">
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+    
+    // Configurar el contenido del anuncio
+    anuncioContenido.innerHTML = `
+        <h2>Verificar Registro</h2>
+        <div class="detalles-verificacion">
             <div class="form-group">
-                <label for="cantidad-real">Cantidad Real:</label>
-                <input type="number" id="cantidad-real" required>
+                <label>Fecha: <span>${fecha}</span></label>
+                <label>Producto: <span>${producto}</span></label>
+                <label>Envases terminados: <span>${envases}</span></label>
             </div>
-            <div class="form-group">
-                <label for="fecha-verificacion">Fecha de Verificación:</label>
-                <input type="date" id="fecha-verificacion" value="${fechaHoy}" required onlyread>
-            </div>
-            <div class="form-group">
-                <label for="observaciones">Observaciones:</label>
-                <textarea id="observaciones" rows="3"></textarea>
-            </div>
-        </form>
+            <form id="form-verificacion">
+                <div class="form-group">
+                    <label for="cantidad-real">Cantidad Real:</label>
+                    <input type="number" id="cantidad-real" required min="0" step="1">
+                </div>
+                <div class="form-group">
+                    <label for="fecha-verificacion">Fecha de Verificación:</label>
+                    <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="observaciones">Observaciones:</label>
+                    <textarea id="observaciones" rows="3"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn confirmar">Verificar</button>
+            <button class="anuncio-btn cancelar">Cancelar</button>
+        </div>
     `;
-    ocultarCarga();
-    // Mostrar el anuncio
+
+    // Mostrar el anuncio y el overlay
     anuncio.style.display = 'flex';
+    document.querySelector('.overlay').style.display = 'block';
     document.querySelector('.container').classList.add('no-touch');
+
+    // Obtener referencias a los botones después de crear el contenido
+    const btnConfirmar = anuncioContenido.querySelector('.confirmar');
+    const btnCancelar = anuncioContenido.querySelector('.cancelar');
+
+    // Configurar estilos de los botones
+    btnConfirmar.style.backgroundColor = '#4CAF50';
+    btnCancelar.style.backgroundColor = '#6c757d';
 
     // Manejar la confirmación
     btnConfirmar.onclick = async () => {
@@ -275,8 +282,8 @@ export function verificarRegistro(fecha, producto, lote, operario) {
         const fechaVerificacion = document.getElementById('fecha-verificacion').value;
         const observaciones = document.getElementById('observaciones').value;
 
-        if (!cantidadReal || !fechaVerificacion) {
-            mostrarNotificacion('Por favor complete los campos requeridos', 'error');
+        if (!cantidadReal || cantidadReal < 0) {
+            mostrarNotificacion('Por favor ingrese una cantidad real válida', 'error');
             return;
         }
 
@@ -291,6 +298,11 @@ export function verificarRegistro(fecha, producto, lote, operario) {
                     fecha,
                     producto,
                     lote,
+                    gramaje,
+                    seleccion,
+                    microondas,
+                    envases,
+                    vencimiento,
                     operario,
                     verificacion: cantidadReal,
                     fechaVerificacion,
@@ -300,18 +312,18 @@ export function verificarRegistro(fecha, producto, lote, operario) {
 
             const data = await response.json();
             if (data.success) {
-                mostrarNotificacion('Verificación guardada correctamente');
+                mostrarNotificacion(data.mensaje || 'Verificación guardada correctamente');
                 anuncio.style.display = 'none';
+                document.querySelector('.overlay').style.display = 'none';
                 document.querySelector('.container').classList.remove('no-touch');
-                cargarRegistros(); // Recargar los registros
+                await cargarRegistros();
             } else {
-                mostrarNotificacion(data.error || 'Error al guardar la verificación', 'error');
+                throw new Error(data.error || 'Error al guardar la verificación');
             }
         } catch (error) {
             console.error('Error:', error);
-            mostrarNotificacion('Error al guardar la verificación', 'error');
-        }
-        finally {
+            mostrarNotificacion(error.message || 'Error al guardar la verificación', 'error');
+        } finally {
             ocultarCarga();
         }
     };
@@ -319,6 +331,7 @@ export function verificarRegistro(fecha, producto, lote, operario) {
     // Manejar la cancelación
     btnCancelar.onclick = () => {
         anuncio.style.display = 'none';
+        document.querySelector('.overlay').style.display = 'none';
         document.querySelector('.container').classList.remove('no-touch');
     };
 }

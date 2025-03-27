@@ -1,24 +1,33 @@
 export async function initializePreciosPro() {
     const view = document.querySelector('.preciosPro-view');
-    
+
     try {
-        const response = await fetch('/obtener-precios-base');
-        if (!response.ok) {
+        mostrarCarga();
+        const [responsePrecios, responseReglas] = await Promise.all([
+            fetch('/obtener-precios-base'),
+            fetch('/obtener-reglas-especiales')
+        ]);
+
+        if (!responsePrecios.ok || !responseReglas.ok) {
             throw new Error('Error en la petición al servidor');
         }
 
-        const data = await response.json();
-        
-        if (!data.success || !data.preciosBase) {
-            throw new Error(data.error || 'No se recibieron los precios base');
+        const [dataPrecios, dataReglas] = await Promise.all([
+            responsePrecios.json(),
+            responseReglas.json()
+        ]);
+
+        if (!dataPrecios.success || !dataPrecios.preciosBase) {
+            throw new Error(dataPrecios.error || 'No se recibieron los precios base');
         }
 
-        const preciosBase = data.preciosBase;
+        const preciosBase = dataPrecios.preciosBase;
+        const reglas = dataReglas.reglas || [];
 
         view.innerHTML = `
-            <h2 class="section-title">
+            <h3 class="title">
                 <i class="fas fa-calculator"></i> Configuración de Precios
-            </h2>
+            </h3>
             
             <div class="precios-container">
                 <div class="precios-section">
@@ -39,20 +48,80 @@ export async function initializePreciosPro() {
                         <label>Cernido:</label>
                         <input type="number" id="cernido-bolsa-base" value="${preciosBase.cernidoBolsa}" step="any">
                     </div>
-                    <button id="guardar-precios" class="btn-guardar">
-                        <i class="fas fa-save"></i> Guardar Cambios
-                    </button>
-                    <button id="agregar-regla" class="btn-guardar">
-                        <i class="fas fa-plus"></i> Agregar regla
-                    </button>
+                    <div class ="btn-precioPro">
+                        <button id="guardar-precios" class="btn-guardar">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                        <button id="agregar-regla" class="btn-guardar">
+                            <i class="fas fa-plus"></i> Agregar regla
+                        </button>
+                    </div>
+                </div>
+
+                <div class="reglas-section">
+                    <h3>Reglas Especiales</h3>
+                    <div class="tabla-reglas">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Reglas Activas</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${reglas.map(regla => {
+                                    const reglasActivas = [];
+                                    if (regla.etiquetado !== '1') reglasActivas.push('Etiquetado');
+                                    if (regla.sellado !== '1') reglasActivas.push('Sellado');
+                                    if (regla.envasado !== '1') reglasActivas.push('Envasado');
+                                    if (regla.cernido !== '1') reglasActivas.push('Cernido');
+                                    if (regla.gramajeMin && regla.gramajeMax) reglasActivas.push('Gramaje');
+                                    
+                                    return `
+                                    <tr>
+                                        <td>
+                                            <button class="btn-ver-detalles" data-producto="${regla.producto}">
+                                                ${regla.producto}
+                                            </button>
+                                        </td>
+                                        <td>${reglasActivas.join(', ') || 'Sin reglas'}</td>
+                                        <td>
+                                            <button class="btn-eliminar" data-producto="${regla.producto}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `}).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         `;
 
-        // Agregar evento al botón de guardar
+        // Add event listeners
         document.getElementById('guardar-precios').addEventListener('click', guardarPreciosBase);
-        // Agregar evento al botón de agregar regla
         document.getElementById('agregar-regla').addEventListener('click', mostrarFormularioRegla);
+        
+        // Add event listeners for delete buttons
+        document.querySelectorAll('.btn-eliminar').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const producto = e.currentTarget.dataset.producto;
+                if (confirm(`¿Está seguro de eliminar la regla para ${producto}?`)) {
+                    await eliminarRegla(producto);
+                }
+            });
+        });
+
+        // Add event listeners for detail buttons
+        document.querySelectorAll('.btn-ver-detalles').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const producto = e.currentTarget.dataset.producto;
+                const regla = reglas.find(r => r.producto === producto);
+                mostrarDetallesRegla(regla);
+            });
+        });
 
     } catch (error) {
         console.error('Error al inicializar:', error);
@@ -65,11 +134,104 @@ export async function initializePreciosPro() {
                 </button>
             </div>
         `;
+    } finally {
+        ocultarCarga();
+    }
+}
+
+function mostrarDetallesRegla(regla) {
+    const anuncio = document.querySelector('.anuncio');
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+    
+    anuncioContenido.innerHTML = `
+        <h2>Detalles de Regla Especial</h2>
+        <div class="detalles-regla">
+            <div class="detalle-grupo">
+                <label>Producto:</label>
+                <span>${regla.producto}</span>
+            </div>
+            ${regla.etiquetado !== '1' ? `
+                <div class="detalle-grupo">
+                    <label>Etiquetado:</label>
+                    <span>${regla.etiquetado}x</span>
+                </div>
+            ` : ''}
+            ${regla.sellado !== '1' ? `
+                <div class="detalle-grupo">
+                    <label>Sellado:</label>
+                    <span>${regla.sellado}x</span>
+                </div>
+            ` : ''}
+            ${regla.envasado !== '1' ? `
+                <div class="detalle-grupo">
+                    <label>Envasado:</label>
+                    <span>${regla.envasado}x</span>
+                </div>
+            ` : ''}
+            ${regla.cernido !== '1' ? `
+                <div class="detalle-grupo">
+                    <label>Cernido:</label>
+                    <span>${regla.cernido}</span>
+                </div>
+            ` : ''}
+            ${regla.gramajeMin && regla.gramajeMax ? `
+                <div class="detalle-grupo">
+                    <label>Rango de Gramaje:</label>
+                    <span>${regla.gramajeMin} - ${regla.gramajeMax}</span>
+                </div>
+            ` : ''}
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn cancelar">Cerrar</button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+    document.querySelector('.overlay').style.display = 'block';
+
+    // Add close button event listener
+    anuncio.querySelector('.cancelar').addEventListener('click', () => {
+        anuncio.style.display = 'none';
+        document.querySelector('.overlay').style.display = 'none';
+    });
+}
+
+// Add this new function for deleting rules
+async function eliminarRegla(producto) {
+    try {
+        mostrarCarga();
+        const response = await fetch('/eliminar-regla-especial', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ producto })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error en la petición al servidor');
+        }
+
+        const result = await response.json();
+        if (result.success) {
+            mostrarNotificacion('Regla eliminada correctamente', 'success', 3000);
+            // Reload the page to refresh the rules
+            window.location.reload();
+        } else {
+            throw new Error(result.error || 'Error al eliminar la regla');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al eliminar la regla: ' + error.message);
+    } finally {
+        ocultarCarga();
     }
 }
 
 async function guardarPreciosBase() {
     try {
+        mostrarCarga();
         const nuevosPrecios = {
             etiquetado: document.getElementById('etiquetado-base').value,
             sellado: document.getElementById('sellado-base').value,
@@ -95,11 +257,14 @@ async function guardarPreciosBase() {
     } catch (error) {
         console.error('Error:', error);
         alert('Error al guardar los cambios: ' + error.message);
+    }finally{
+
     }
 }
 
 async function mostrarFormularioRegla() {
     try {
+        mostrarCarga();
         const responseProductos = await fetch('/obtener-productos');
         const dataProductos = await responseProductos.json();
         
@@ -122,13 +287,12 @@ async function mostrarFormularioRegla() {
                 <option value="envasado">Envasado</option>
                 <option value="cernido">Cernido especial</option>
             </select>
-                
-    <div id="precio-cernido-container" style="display: none;">
-        <label>Precio base cernido:</label>
-        <input type="text" id="precio-cernido-especial" 
-               pattern="[0-9]*[.,]?[0-9]*" 
-               placeholder="Ejemplo: 0,016">
-    </div>
+            <div id="precio-cernido-container" style="display: none;">
+                <label>Precio base cernido:</label>
+                <input type="text" id="precio-cernido-especial" 
+                       pattern="[0-9]*[.,]?[0-9]*" 
+                       placeholder="Ejemplo: 0,016">
+            </div>
             <div id="multiplicador-container">
                 <select id="multiplicador">
                     <option value="">Seleccione multiplicador</option>
@@ -136,6 +300,14 @@ async function mostrarFormularioRegla() {
                         `<option value="${num}">x${num}</option>`
                     ).join('')}
                 </select>
+            </div>
+            <div id="rango-gramaje-container">
+                <label>Rango de gramaje (opcional):</label>
+                <div class="rango-inputs">
+                    <input type="number" id="gramaje-min" placeholder="Mínimo" min="0">
+                    <span>a</span>
+                    <input type="number" id="gramaje-max" placeholder="Máximo" min="0">
+                </div>
             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn cancelar">Cancelar</button>
@@ -150,6 +322,8 @@ async function mostrarFormularioRegla() {
     } catch (error) {
         console.error('Error:', error);
         alert('Error al cargar productos: ' + error.message);
+    } finally {
+        ocultarCarga();
     }
 }
 
@@ -174,14 +348,32 @@ function configurarEventosFormulario(anuncio) {
     const precioCernidoInput = document.getElementById('precio-cernido-especial');
     precioCernidoInput.addEventListener('input', (e) => {
         let valor = e.target.value;
-        // Solo permitir números y una coma o punto
         valor = valor.replace(/[^\d,.]/, '');
-        // Asegurar solo un separador decimal
         const partes = valor.split(/[,.]/);
         if (partes.length > 2) {
             valor = partes[0] + ',' + partes[1];
         }
         e.target.value = valor;
+    });
+
+    // Validación de rango de gramaje
+    const gramajeMin = document.getElementById('gramaje-min');
+    const gramajeMax = document.getElementById('gramaje-max');
+
+    gramajeMin.addEventListener('input', () => {
+        if (gramajeMin.value && gramajeMax.value) {
+            if (parseInt(gramajeMin.value) >= parseInt(gramajeMax.value)) {
+                gramajeMin.value = parseInt(gramajeMax.value) - 1;
+            }
+        }
+    });
+
+    gramajeMax.addEventListener('input', () => {
+        if (gramajeMin.value && gramajeMax.value) {
+            if (parseInt(gramajeMax.value) <= parseInt(gramajeMin.value)) {
+                gramajeMax.value = parseInt(gramajeMin.value) + 1;
+            }
+        }
     });
 
     // Implementar búsqueda
@@ -208,16 +400,16 @@ function configurarEventosFormulario(anuncio) {
     // Evento para agregar
     anuncio.querySelector('.confirmar').addEventListener('click', async () => {
         try {
+            mostrarCarga();
             const producto = document.getElementById('producto-select').value;
             const base = document.getElementById('tipo-base').value;
             const multiplicador = base === 'cernido' ? '1' : document.getElementById('multiplicador').value;
+            const gramajeMin = document.getElementById('gramaje-min').value;
+            const gramajeMax = document.getElementById('gramaje-max').value;
             
-            // Manejar el valor del cernido especial
             let precioCernido = document.getElementById('precio-cernido-especial').value;
             if (base === 'cernido' && precioCernido) {
-                // Asegurar formato decimal con punto
                 precioCernido = precioCernido.replace(',', '.');
-                // Validar que sea un número válido
                 if (isNaN(parseFloat(precioCernido))) {
                     throw new Error('Por favor ingrese un precio válido para cernido');
                 }
@@ -236,6 +428,14 @@ function configurarEventosFormulario(anuncio) {
                 throw new Error('Por favor seleccione un multiplicador');
             }
 
+            if ((gramajeMin && !gramajeMax) || (!gramajeMin && gramajeMax)) {
+                throw new Error('Si especifica un rango de gramaje, debe completar ambos valores');
+            }
+
+            if (gramajeMin && gramajeMax && parseInt(gramajeMin) >= parseInt(gramajeMax)) {
+                throw new Error('El gramaje mínimo debe ser menor que el máximo');
+            }
+
             const response = await fetch('/guardar-producto-especial', {
                 method: 'POST',
                 headers: {
@@ -245,7 +445,8 @@ function configurarEventosFormulario(anuncio) {
                     producto,
                     base,
                     multiplicador: base === 'cernido' ? precioCernido : multiplicador,
-                    precioCernido: null
+                    gramajeMin: gramajeMin || null,
+                    gramajeMax: gramajeMax || null
                 })
             });
 
@@ -256,7 +457,7 @@ function configurarEventosFormulario(anuncio) {
 
             const result = await response.json();
             if (result.success) {
-                alert('Regla especial agregada correctamente');
+                mostrarNotificacion('Regla especial agregada correctamente', 'success', 3000);
                 anuncio.style.display = 'none';
                 document.querySelector('.overlay').style.display = 'none';
             } else {
@@ -265,6 +466,8 @@ function configurarEventosFormulario(anuncio) {
         } catch (error) {
             console.error('Error:', error);
             alert(error.message);
+        } finally {
+            ocultarCarga();
         }
     });
 }
