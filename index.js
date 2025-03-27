@@ -2738,6 +2738,7 @@ app.get('/obtener-precios-base', requireAuth, async (req, res) => {
             success: false, 
             error: 'Error al obtener precios base: ' + error.message 
         });
+        
     }
 });
 app.post('/actualizar-precios-base', requireAuth, async (req, res) => {
