@@ -50,7 +50,7 @@ export async function initializePreciosPro() {
                     </div>
                     <div class ="btn-precioPro">
                         <button id="guardar-precios" class="btn-guardar">
-                            <i class="fas fa-save"></i> Guardar Cambios
+                            <i class="fas fa-save"></i> Guardar
                         </button>
                         <button id="agregar-regla" class="btn-guardar">
                             <i class="fas fa-plus"></i> Agregar regla
@@ -60,41 +60,17 @@ export async function initializePreciosPro() {
 
                 <div class="reglas-section">
                     <h3>Reglas Especiales</h3>
-                    <div class="tabla-reglas">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Reglas Activas</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${reglas.map(regla => {
-                                    const reglasActivas = [];
-                                    if (regla.etiquetado !== '1') reglasActivas.push('Etiquetado');
-                                    if (regla.sellado !== '1') reglasActivas.push('Sellado');
-                                    if (regla.envasado !== '1') reglasActivas.push('Envasado');
-                                    if (regla.cernido !== '1') reglasActivas.push('Cernido');
-                                    if (regla.gramajeMin && regla.gramajeMax) reglasActivas.push('Gramaje');
-                                    
-                                    return `
-                                    <tr>
-                                        <td>
-                                            <button class="btn-ver-detalles" data-producto="${regla.producto}">
-                                                ${regla.producto}
-                                            </button>
-                                        </td>
-                                        <td>${reglasActivas.join(', ') || 'Sin reglas'}</td>
-                                        <td>
-                                            <button class="btn-eliminar" data-producto="${regla.producto}">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                `}).join('')}
-                            </tbody>
-                        </table>
+                    <div class="reglas-container">
+                        ${reglas.map(regla => `
+                            <div class="regla-item">
+                                <button class="btn-ver-detalles" data-producto="${regla.producto}">
+                                    ${regla.producto}
+                                </button>
+                                <button class="btn-eliminar" data-producto="${regla.producto}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
             </div>
@@ -138,7 +114,6 @@ export async function initializePreciosPro() {
         ocultarCarga();
     }
 }
-
 function mostrarDetallesRegla(regla) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
@@ -195,8 +170,6 @@ function mostrarDetallesRegla(regla) {
         document.querySelector('.overlay').style.display = 'none';
     });
 }
-
-// Add this new function for deleting rules
 async function eliminarRegla(producto) {
     try {
         mostrarCarga();
@@ -228,7 +201,6 @@ async function eliminarRegla(producto) {
         ocultarCarga();
     }
 }
-
 async function guardarPreciosBase() {
     try {
         mostrarCarga();
@@ -261,7 +233,6 @@ async function guardarPreciosBase() {
 
     }
 }
-
 async function mostrarFormularioRegla() {
     try {
         mostrarCarga();
@@ -326,7 +297,6 @@ async function mostrarFormularioRegla() {
         ocultarCarga();
     }
 }
-
 function configurarEventosFormulario(anuncio) {
     // Evento para mostrar/ocultar campos según tipo
     document.getElementById('tipo-base').addEventListener('change', (e) => {
@@ -362,16 +332,16 @@ function configurarEventosFormulario(anuncio) {
 
     gramajeMin.addEventListener('input', () => {
         if (gramajeMin.value && gramajeMax.value) {
-            if (parseInt(gramajeMin.value) >= parseInt(gramajeMax.value)) {
-                gramajeMin.value = parseInt(gramajeMax.value) - 1;
+            if (parseInt(gramajeMin.value) > parseInt(gramajeMax.value)) {
+                gramajeMin.value = parseInt(gramajeMax.value);
             }
         }
     });
 
     gramajeMax.addEventListener('input', () => {
         if (gramajeMin.value && gramajeMax.value) {
-            if (parseInt(gramajeMax.value) <= parseInt(gramajeMin.value)) {
-                gramajeMax.value = parseInt(gramajeMin.value) + 1;
+            if (parseInt(gramajeMax.value) < parseInt(gramajeMin.value)) {
+                gramajeMax.value = parseInt(gramajeMin.value);
             }
         }
     });
@@ -401,7 +371,8 @@ function configurarEventosFormulario(anuncio) {
     anuncio.querySelector('.confirmar').addEventListener('click', async () => {
         try {
             mostrarCarga();
-            const producto = document.getElementById('producto-select').value;
+            const productoSeleccionado = document.getElementById('producto-select').value;
+            const busquedaProducto = document.getElementById('buscador-producto').value.trim();
             const base = document.getElementById('tipo-base').value;
             const multiplicador = base === 'cernido' ? '1' : document.getElementById('multiplicador').value;
             const gramajeMin = document.getElementById('gramaje-min').value;
@@ -415,9 +386,9 @@ function configurarEventosFormulario(anuncio) {
                 }
             }
 
-            // Validaciones
-            if (!producto || !base) {
-                throw new Error('Por favor complete todos los campos');
+            // Validaciones modificadas
+            if (!base) {
+                throw new Error('Por favor seleccione un tipo');
             }
 
             if (base === 'cernido' && !precioCernido) {
@@ -432,8 +403,14 @@ function configurarEventosFormulario(anuncio) {
                 throw new Error('Si especifica un rango de gramaje, debe completar ambos valores');
             }
 
-            if (gramajeMin && gramajeMax && parseInt(gramajeMin) >= parseInt(gramajeMax)) {
-                throw new Error('El gramaje mínimo debe ser menor que el máximo');
+            if (gramajeMin && gramajeMax && parseInt(gramajeMin) > parseInt(gramajeMax)) {
+                throw new Error('El gramaje mínimo debe ser menor o igual que el máximo');
+            }
+
+            // Usar el producto seleccionado o el término de búsqueda
+            const producto = productoSeleccionado || busquedaProducto;
+            if (!producto) {
+                throw new Error('Por favor ingrese un nombre de producto o seleccione uno de la lista');
             }
 
             const response = await fetch('/guardar-producto-especial', {

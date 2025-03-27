@@ -1,3 +1,66 @@
+// Agregar al inicio del archivo
+let reglasEspeciales = null;
+let preciosBase = null;
+
+// Función para obtener las reglas
+async function inicializarReglas() {
+    try {
+        const [responseReglas, responsePrecios] = await Promise.all([
+            fetch('/obtener-reglas-especiales'),
+            fetch('/obtener-precios-base')
+        ]);
+        const dataReglas = await responseReglas.json();
+        const dataPrecios = await responsePrecios.json();
+        
+        
+        reglasEspeciales = dataReglas.reglas || [];
+        preciosBase = dataPrecios.preciosBase;
+    } catch (error) {
+        console.error('Error al cargar reglas:', error);
+    }
+}
+
+export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
+    nombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+    cantidad = parseFloat(cantidad) || 0;
+    gramaje = parseFloat(gramaje) || 0;
+
+    // Buscar si existe una regla especial para este producto
+    const regla = reglasEspeciales?.find(r => {
+        const nombreCoincide = nombre.includes(r.producto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""));
+        const gramajeCumple = r.gramajeMin && r.gramajeMax ? 
+            (gramaje >= parseFloat(r.gramajeMin) && gramaje <= parseFloat(r.gramajeMax)) : 
+            true;
+        return nombreCoincide && gramajeCumple;
+    });
+
+    // Obtener multiplicadores y precios base
+    const multiplicadores = {
+        etiquetado: regla?.etiquetado || '1',
+        sellado: regla?.sellado || '1',
+        envasado: regla?.envasado || '1',
+        cernido: regla?.cernido || preciosBase?.cernidoBolsa || 0
+    };
+
+    // Calcular resultados usando los multiplicadores y precios base
+    let resultado = cantidad * preciosBase.envasado * parseFloat(multiplicadores.envasado);
+    let resultadoEtiquetado = cantidad * preciosBase.etiquetado * parseFloat(multiplicadores.etiquetado);
+    let resultadoSellado = cantidad * preciosBase.sellado * parseFloat(multiplicadores.sellado);
+    
+    let resultadoSernido = 0;
+    if (seleccion === 'Cernido') {
+        const kilos = (cantidad * gramaje) / 1000;
+        resultadoSernido = kilos * parseFloat(multiplicadores.cernido) * 5;
+    }
+
+    return {
+        total: resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido,
+        envasado: resultado,
+        etiquetado: resultadoEtiquetado,
+        sellado: resultadoSellado,
+        cernido: resultadoSernido
+    };
+}
 function crearOperarioCard(nombre, registros) {
     const operarioCard = document.createElement('div');
     operarioCard.className = 'fecha-card';
@@ -27,6 +90,7 @@ function crearOperarioCard(nombre, registros) {
 export async function cargarRegistros() {
     try {
         mostrarCarga();
+        await inicializarReglas(); // Agregar esta línea
         // Obtener el rol una sola vez al inicio
         const rolResponse = await fetch('/obtener-mi-rol');
         const userData = await rolResponse.json();
@@ -76,6 +140,7 @@ export async function cargarRegistros() {
 function crearRegistroCard(registro, esAdmin) {
     const [dia, mes] = registro[0].split('/');
     const fechaFormateada = `${dia}/${mes}`;
+    const estaPagado = registro[12];
 
     const registroCard = document.createElement('div');
     registroCard.className = 'registro-card';
@@ -85,7 +150,13 @@ function crearRegistroCard(registro, esAdmin) {
     registroCard.dataset.operario = registro[8];
 
     const cantidadAUsar = registro[10] ? registro[9] : registro[6];
-    const resultados = calcularTotal(registro[1], cantidadAUsar, registro[3], registro[4]);
+    const resultados = estaPagado ? {
+        total: parseFloat(registro[12]),
+        envasado: 0,
+        etiquetado: 0,
+        sellado: 0,
+        cernido: 0
+    } : calcularTotal(registro[1], cantidadAUsar, registro[3], registro[4]);
 
     // Botones para administradores
     // En la función crearRegistroCard, modificar la parte de botonesAdmin
@@ -94,11 +165,12 @@ function crearRegistroCard(registro, esAdmin) {
         <i class="fas fa-trash"></i> Eliminar
     </button>
     ${registro[10] ? `
-        <button onclick="pagarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-pagar-registro">
+        <button onclick="pagarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[9]}')" 
+            class="btn-pagar-registro"
+            ${estaPagado ? 'disabled style="background-color: #888; cursor: not-allowed;"' : ''}>
             <i class="fas fa-dollar-sign"></i> Pagar
         </button>
-    ` : ''}
-` : '';
+    ` : ''}` : '';
 
     // Botón de eliminar para usuarios normales (solo si no está verificado)
     const botonEliminarUsuario = !esAdmin && !registro[10] ? `
@@ -112,9 +184,10 @@ function crearRegistroCard(registro, esAdmin) {
             ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
             <div class="registro-fecha">${fechaFormateada}</div>
             <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
-            <div class="registro-total ${!registro[10] ? 'no-verificado' : ''}">${resultados.total.toFixed(2)} Bs.</div>
+            <div class="registro-total ${!registro[10] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
+                 style="${estaPagado ? 'color: #888;' : ''}">${resultados.total.toFixed(2)} Bs.</div>
             <i class="fas fa-info-circle info-icon"></i>
-            <div class="panel-info">
+            <div class="panel-info" ${estaPagado ? 'style="color: #888;"' : ''}>
                 <h4>Desglose de Costos</h4>
                 <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
                 <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
@@ -156,17 +229,11 @@ function crearRegistroCard(registro, esAdmin) {
 
     return registroCard;
 }
-export async function pagarRegistro(fecha, producto, lote, operario) {
+export async function pagarRegistro(fecha, producto, lote, operario, gramaje, cantidadReal) {
     try {
+        mostrarCarga();
         const registroCard = document.querySelector(`.registro-card[data-fecha="${fecha}"][data-producto="${producto}"][data-lote="${lote}"][data-operario="${operario}"]`);
         if (!registroCard) return;
-
-        // Verificar si el registro está verificado
-        const estaVerificado = registroCard.querySelector('.verificado-icon');
-        if (!estaVerificado) {
-            mostrarNotificacion('El registro debe estar verificado antes de poder pagarlo', 'error');
-            return;
-        }
 
         const total = registroCard.querySelector('.registro-total').textContent.replace(' Bs.', '');
 
@@ -180,6 +247,8 @@ export async function pagarRegistro(fecha, producto, lote, operario) {
                 producto,
                 lote,
                 operario,
+                gramaje,
+                cantidadReal,
                 total
             })
         });
@@ -187,14 +256,22 @@ export async function pagarRegistro(fecha, producto, lote, operario) {
         const data = await response.json();
         if (data.success) {
             // Actualizar la UI
-            registroCard.querySelector('.registro-total').classList.add('pagado');
-            registroCard.querySelector('.btn-pagar-registro').disabled = true;
-            registroCard.querySelector('.btn-pagar-registro').style.backgroundColor = '#888';
+            const totalElement = registroCard.querySelector('.registro-total');
+            totalElement.classList.add('pagado');
+            totalElement.style.color = '#888';
+
+            const btnPagar = registroCard.querySelector('.btn-pagar-registro');
+            if (btnPagar) {
+                btnPagar.disabled = true;
+                btnPagar.style.backgroundColor = '#888';
+                btnPagar.style.cursor = 'not-allowed';
+            }
 
             // Fijar los valores del panel de información
             const panelInfo = registroCard.querySelector('.panel-info');
-            const valoresActuales = panelInfo.innerHTML;
-            panelInfo.innerHTML = valoresActuales;
+            if (panelInfo) {
+                panelInfo.style.color = '#888';
+            }
 
             mostrarNotificacion('Pago registrado correctamente');
         } else {
@@ -203,6 +280,9 @@ export async function pagarRegistro(fecha, producto, lote, operario) {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al registrar el pago', 'error');
+    } finally {
+        ocultarCarga();
+        cargarRegistros();
     }
 }
 function configurarEventosRegistro(registroCard) {
@@ -333,98 +413,6 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
         anuncio.style.display = 'none';
         document.querySelector('.overlay').style.display = 'none';
         document.querySelector('.container').classList.remove('no-touch');
-    };
-}
-function calcularTotal(nombre, cantidad, gramaje, seleccion) {
-    nombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-    cantidad = parseFloat(cantidad) || 0;
-    gramaje = parseFloat(gramaje) || 0;
-
-    let resultado = cantidad;
-    let resultadoEtiquetado = cantidad;
-    let resultadoSellado = cantidad;
-    const kilos = (cantidad * gramaje) / 1000;
-    let resultadoSernido = 0;
-
-    // Lógica para envasado
-    if (nombre.includes('pipoca')) {
-        if (gramaje >= 1000) {
-            resultado = (cantidad * 5) * 0.048;
-        } else if (gramaje >= 500) {
-            resultado = (cantidad * 4) * 0.048;
-        } else {
-            resultado = (cantidad * 2) * 0.048;
-        }
-    } else if (
-        nombre.includes('bote') ||
-        (nombre.includes('clavo de olor entero') && gramaje === 12) ||
-        (nombre.includes('canela en rama') && gramaje === 4) ||
-        (nombre.includes('linaza') && gramaje === 50)
-    ) {
-        resultado = (cantidad * 2) * 0.048;
-    } else if (
-        nombre.includes('laurel') ||
-        nombre.includes('huacatay') ||
-        nombre.includes('albahaca') ||
-        (nombre.includes('canela') && gramaje === 14)
-    ) {
-        resultado = (cantidad * 3) * 0.048;
-    } else {
-        if (gramaje >= 135 && gramaje <= 150) {
-            resultado = (cantidad * 3) * 0.048;
-        } else if (gramaje == 500) {
-            resultado = (cantidad * 4) * 0.048;
-        } else if (gramaje == 1000) {
-            resultado = (cantidad * 5) * 0.048;
-        } else {
-            resultado = (cantidad * 1) * 0.048;
-        }
-    }
-
-    // Lógica para etiquetado
-    if (nombre.includes('bote')) {
-        resultadoEtiquetado = (cantidad * 2) * 0.016;
-    } else {
-        resultadoEtiquetado = cantidad * 0.016;
-    }
-
-    // Lógica para sellado
-    if (nombre.includes('bote')) {
-        resultadoSellado = cantidad * 0.3 / 60 * 5;
-    } else if (gramaje > 150) {
-        resultadoSellado = (cantidad * 2) * 0.006;
-    } else {
-        resultadoSellado = (cantidad * 1) * 0.006;
-    }
-
-    // Lógica para cernido
-    if (seleccion !== 'Cernido') {
-        resultadoSernido = 0;
-    } else {
-        if (nombre.includes('bote')) {
-            if (nombre.includes('canela') || nombre.includes('cebolla') || nombre.includes('locoto')) {
-                resultadoSernido = (kilos * 0.34) * 5;
-            } else {
-                resultadoSernido = (kilos * 0.1) * 5;
-            }
-        } else if (nombre.includes('canela') || nombre.includes('cebolla') ||
-            nombre.includes('aji amarillo dulce') || nombre.includes('locoto')) {
-            resultadoSernido = (kilos * 0.3) * 5;
-        } else {
-            if (nombre.includes('tomillo')) {
-                resultadoSernido = 0;
-            } else {
-                resultadoSernido = (kilos * 0.08) * 5;
-            }
-        }
-    }
-
-    return {
-        total: resultado + resultadoEtiquetado + resultadoSellado + resultadoSernido,
-        envasado: resultado,
-        etiquetado: resultadoEtiquetado,
-        sellado: resultadoSellado,
-        cernido: resultadoSernido
     };
 }
 function configurarPanelInfo(card) {

@@ -70,7 +70,7 @@
     }
     .btn-precioPro{
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 10px;
         justify-content: center;
         align-items: center;
@@ -94,160 +94,47 @@
     }
 
 
-    .tabla-reglas {
-        overflow-x: auto;
-        margin-top: 1rem;
-        border-radius: 10px;
-        background: var(--background);
-    }
+    .reglas-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
 
-    .tabla-reglas table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        min-width: 600px;
-    }
+.regla-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--primary-color);
+    border-radius: 5px;
+    gap: 10px;
+    border: 1px solid gray;
+}
+.regla-item:hover{
+    background-color: gray;
+}
 
-    .tabla-reglas th,
-    .tabla-reglas td {
-        padding: 1rem;
-        text-align: left;
-        border-bottom: 1px solid var(--border-color);
-    }
+.btn-ver-detalles {
+    flex-grow: 1;
+    text-align: left;
+    padding: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--primary-text);
+    font-size: 14px;
+}
 
-    .tabla-reglas th {
-        background-color: var(--primary-color);
-        color: var(--primary-text);
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.9rem;
-        letter-spacing: 0.5px;
-    }
+.btn-eliminar {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    padding: 8px;
+}
 
-    .tabla-reglas th:first-child {
-        border-top-left-radius: 10px;
-    }
-
-    .tabla-reglas th:last-child {
-        border-top-right-radius: 10px;
-    }
-
-    .tabla-reglas tr:hover {
-        background-color: var(--hover-color);
-    }
-
-    .tabla-reglas td {
-        color: var(--secondary-text);
-    }
-
-    .tabla-reglas tr:hover {
-        background-color: #f9f9f9;
-    }
-
-    /* Update the existing styles */
-    .reglas-section {
-        margin-top: 2rem;
-        padding: 2rem;
-        background: var(--card-background);
-        border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .tabla-reglas {
-        overflow-x: auto;
-        margin-top: 1rem;
-        border-radius: 10px;
-        background: var(--background);
-    }
-
-    .tabla-reglas table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        min-width: 600px;
-    }
-
-    .tabla-reglas th,
-    .tabla-reglas td {
-        padding: 1rem;
-        text-align: left;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .tabla-reglas th {
-        background-color: var(--primary-color);
-        color: var(--primary-text);
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.9rem;
-        letter-spacing: 0.5px;
-    }
-
-    .tabla-reglas th:first-child {
-        border-top-left-radius: 10px;
-    }
-
-    .tabla-reglas th:last-child {
-        border-top-right-radius: 10px;
-    }
-
-    .tabla-reglas tr:hover {
-        background-color: var(--hover-color);
-    }
-
-    .tabla-reglas td {
-        color: var(--secondary-text);
-    }
-
-    .btn-ver-detalles {
-        background: none;
-        border: none;
-        color: var(--accent-color);
-        cursor: pointer;
-        font-weight: 500;
-        padding: 0.5rem 1rem;
-        transition: all 0.3s ease;
-        border-radius: 5px;
-        text-align: left;
-        width: 100%;
-    }
-
-    .btn-ver-detalles:hover {
-        background: var(--accent-color-light);
-        color: var(--accent-color-dark);
-    }
-
-    .reglas-activas {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
-
-    .regla-tag {
-        background: var(--accent-color-light);
-        color: var(--accent-color);
-        padding: 0.3rem 0.8rem;
-        border-radius: 15px;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-
-    .btn-eliminar {
-        background-color: var(--danger-color);
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .btn-eliminar:hover {
-        background-color: var(--danger-color-dark);
-        transform: translateY(-1px);
-    }
-
-    .btn-eliminar i {
-        margin-right: 0.3rem;
-    }
+.btn-eliminar:hover {
+    color: #c82333;
+}
 }

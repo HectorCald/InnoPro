@@ -435,7 +435,7 @@ app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A:L'
+            range: 'Produccion!A:M'
         });
 
         const rows = response.data.values || [];
@@ -519,7 +519,7 @@ app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
 });
 app.post('/registrar-pago', requireAuth, async (req, res) => {
     try {
-        const { fecha, producto, lote, operario, total } = req.body;
+        const { fecha, producto, lote, operario, gramaje, cantidadReal, total } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Buscar la fila correspondiente
@@ -532,15 +532,20 @@ app.post('/registrar-pago', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
             row[1] === producto && 
-            row[2] === lote && 
-            row[8] === operario
+            row[2] === lote &&
+            row[8] === operario &&
+            row[3] === gramaje &&
+            row[9] === cantidadReal
         );
 
         if (rowIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Registro no encontrado' 
+            });
         }
 
-        // Actualizar el pago en la columna M
+        // Actualizar el total en la columna M
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: `Produccion!M${rowIndex + 2}`,
@@ -550,10 +555,13 @@ app.post('/registrar-pago', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ success: true });
+        res.json({ success: true, message: 'Pago registrado correctamente' });
     } catch (error) {
         console.error('Error al registrar pago:', error);
-        res.status(500).json({ success: false, error: 'Error al registrar el pago' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al registrar el pago: ' + error.message 
+        });
     }
 });
 
@@ -2810,7 +2818,7 @@ app.get('/obtener-reglas-especiales', requireAuth, async (req, res) => {
             gramajeMin: row[5] || '',
             gramajeMax: row[6] || ''
         }));
-
+        console.log(reglas);
         res.json({ success: true, reglas });
     } catch (error) {
         console.error('Error al obtener reglas:', error);
