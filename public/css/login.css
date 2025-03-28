@@ -178,11 +178,8 @@ body {
 }
 
 .loader-logo {
-    width: auto;
-    height: 50px;
-    position: absolute;
-    animation: counter-rotation 1s linear infinite;
-    padding: 5px;
+    font-size: 24px;
+    text-align: center;
 }
 
 @keyframes rotation {

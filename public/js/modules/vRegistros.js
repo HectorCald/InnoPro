@@ -182,16 +182,14 @@ export async function cargarRegistros() {
     }
 }
 function crearRegistroCard(registro, esAdmin) {
-    const [dia, mes] = registro[0].split('/');
-    const fechaFormateada = `${dia}/${mes}`;
+    const [dia, mes, año] = registro[0].split('/');
+    // Keep the full date format for display
+    const fechaFormateada = `${dia}/${mes}/${año}`;
     const estaPagado = registro[12];
 
     const registroCard = document.createElement('div');
     registroCard.className = 'registro-card';
-    registroCard.dataset.fecha = registro[0];
-    registroCard.dataset.producto = registro[1];
-    registroCard.dataset.lote = registro[2];
-    registroCard.dataset.operario = registro[8];
+    registroCard.dataset.fecha = `20${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
 
     // Solo calcular resultados si es admin
     const resultados = esAdmin ? (estaPagado ? {
@@ -225,7 +223,7 @@ function crearRegistroCard(registro, esAdmin) {
     registroCard.innerHTML = `
         <div class="registro-header">
             ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
-            <div class="registro-fecha">${fechaFormateada}</div>
+            <div class="registro-fecha">${dia}/${mes}</div>
             <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
             ${esAdmin ? `
                 <div class="registro-total ${!registro[10] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
@@ -352,9 +350,9 @@ function ordenarRegistrosPorFecha(registros) {
     return registros.sort((a, b) => {
         const [diaA, mesA, yearA] = a[0].split('/');
         const [diaB, mesB, yearB] = b[0].split('/');
-        const fechaA = new Date(`${yearA}-${mesA}-${diaA}`);
-        const fechaB = new Date(`${yearB}-${mesB}-${diaB}`);
-        return fechaB - fechaA;
+        const fechaA = `20${yearA}-${mesA.padStart(2, '0')}-${diaA.padStart(2, '0')}`;
+        const fechaB = `20${yearB}-${mesB.padStart(2, '0')}-${diaB.padStart(2, '0')}`;
+        return fechaB.localeCompare(fechaA);
     });
 }
 export function verificarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento) {
@@ -597,6 +595,9 @@ function configurarFiltros() {
 
 function aplicarFiltros() {
     const registrosCards = document.querySelectorAll('.registro-card');
+    const fechaCards = document.querySelectorAll('.fecha-card');
+    
+    fechaCards.forEach(card => card.style.display = 'none');
     
     registrosCards.forEach(card => {
         let mostrar = true;
@@ -609,12 +610,14 @@ function aplicarFiltros() {
 
         // Filtro por fechas
         if (mostrar && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta)) {
-            const fecha = convertirFecha(card.dataset.fecha);
+            const fechaRegistro = card.dataset.fecha; // Ya está en formato YYYY-MM-DD
+
             if (filtrosActivos.fechaDesde) {
-                mostrar = fecha >= new Date(filtrosActivos.fechaDesde);
+                mostrar = fechaRegistro >= filtrosActivos.fechaDesde;
             }
-            if (filtrosActivos.fechaHasta) {
-                mostrar = mostrar && fecha <= new Date(filtrosActivos.fechaHasta);
+            
+            if (mostrar && filtrosActivos.fechaHasta) {
+                mostrar = fechaRegistro <= filtrosActivos.fechaHasta;
             }
         }
 
@@ -624,11 +627,24 @@ function aplicarFiltros() {
             mostrar = (filtrosActivos.estado === 'verificados') === estaVerificado;
         }
 
+        // Actualizar visibilidad
         card.style.display = mostrar ? 'block' : 'none';
+        
+        if (mostrar) {
+            const fechaCard = card.closest('.fecha-card');
+            if (fechaCard) {
+                fechaCard.style.display = 'block';
+            }
+        }
     });
-}
-
-function convertirFecha(fecha) {
-    const [dia, mes, año] = fecha.split('/');
-    return new Date(`20${año}-${mes}-${dia}`);
+    fechaCards.forEach(fechaCard => {
+        if (fechaCard.style.display === 'block') {
+            const registrosVisibles = Array.from(fechaCard.querySelectorAll('.registro-card'))
+                .filter(r => r.style.display === 'block').length;
+            const contador = fechaCard.querySelector('.contador');
+            if (contador) {
+                contador.textContent = `${registrosVisibles} registros`;
+            }
+        }
+    });
 }
