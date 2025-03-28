@@ -222,7 +222,7 @@ async function obtenerNovedades() {
     return [
         {
             titulo: 'Nueva Actualización',
-            descripcion: 'Se agrego el sistema de Notifiaciones',
+            descripcion: 'Se agregó el sistema de notificaciones. Ahora recibirás una notificación al iniciar sesión sobre temas como producción, edición de registros, eliminación de registros, entre otros.',
             fecha: '2025-03-28'
         }
     ];

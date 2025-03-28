@@ -100,3 +100,8 @@
 .btn-aceptar:hover {
     background-color: var(--accent-color-hover);
 }
+.consejo{
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
