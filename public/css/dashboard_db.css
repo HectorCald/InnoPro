@@ -67,8 +67,8 @@
 }
 
 .loader {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     border: 5px solid var(--primary-light);
     border-bottom-color: var(--second-button);
     border-radius: 50%;
@@ -80,7 +80,7 @@
     position: relative;
 }
 .loader-logo {
-    font-size: 24px;
+    font-size: 20px;
     text-align: center;
 }
 
