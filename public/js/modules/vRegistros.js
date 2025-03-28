@@ -431,7 +431,8 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
                     seleccion,
                     microondas,
                     envases,
-                    vencimiento
+                    vencimiento,
+                    cantidadDeclarada: envases
                 })
             });
 
@@ -441,7 +442,6 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
                 anuncio.style.display = 'none';
                 document.querySelector('.overlay').style.display = 'none';
                 document.querySelector('.container').classList.remove('no-touch');
-                // Refresh the page to show updated data
                 await cargarRegistros();
             } else {
                 throw new Error(data.error);

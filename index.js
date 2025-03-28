@@ -629,7 +629,7 @@ app.post('/registrar-pago', requireAuth, async (req, res) => {
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
-        const { fecha, producto, lote, operario, verificacion, fechaVerificacion, observaciones, gramaje, seleccion, microondas, envases, vencimiento } = req.body;
+        const { fecha, producto, lote, operario, verificacion, fechaVerificacion, observaciones, gramaje, seleccion, microondas, envases, vencimiento, cantidadDeclarada } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Obtener todos los registros
@@ -676,8 +676,15 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
             }
         });
 
-        // Agregar notificación si hay observaciones
-        if (observaciones) {
+        // Agregar notificación si hay observaciones o si hay diferencia en las cantidades
+        const diferenciaCantidad = parseInt(cantidadDeclarada) !== parseInt(verificacion);
+        if (observaciones || diferenciaCantidad) {
+            let mensajeNotificacion = `Verificación de ${producto} (Lote: ${lote}): `;
+            mensajeNotificacion += `Cantidad declarada: ${cantidadDeclarada}, Cantidad real: ${verificacion}`;
+            if (observaciones) {
+                mensajeNotificacion += `. Observaciones: ${observaciones}`;
+            }
+
             await sheets.spreadsheets.values.append({
                 spreadsheetId: process.env.SPREADSHEET_ID,
                 range: 'Notificaciones!A:D',
@@ -688,7 +695,7 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
                         fechaVerificacion,
                         req.user.nombre,
                         operario,
-                        `Verificación de ${producto} (Lote: ${lote}): Observaciones: ${observaciones}`
+                        mensajeNotificacion
                     ]]
                 }
             });
