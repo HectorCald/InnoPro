@@ -1,18 +1,20 @@
 export async function cargarNotificaciones() {
     try {
-        // Primero obtener el usuario actual
+        // Primero obtener el usuario actual y su rol
         const userResponse = await fetch('/obtener-mi-rol');
         const userData = await userResponse.json();
         const nombreUsuarioActual = userData.nombre;
+        const rolUsuarioActual = userData.rol;
 
         // Luego obtener las notificaciones
         const response = await fetch('/obtener-notificaciones');
         const data = await response.json();
         
         if (data.success) {
-            // Filtrar notificaciones solo para el usuario actual
-            const notificacionesFiltradas = data.notificaciones.filter(
-                notif => notif.destino === nombreUsuarioActual
+            // Filtrar notificaciones para el usuario actual o su rol
+            const notificacionesFiltradas = data.notificaciones.filter(notif => 
+                notif.destino === nombreUsuarioActual || // Si el destino coincide con el nombre
+                notif.destino === rolUsuarioActual       // Si el destino coincide con el rol
             );
             mostrarAdvertencias(notificacionesFiltradas);
         }
@@ -28,6 +30,28 @@ function mostrarAdvertencias(notificaciones) {
         return;
     }
 
+    // Filtrar y procesar notificaciones del desarrollador
+    notificaciones.forEach(notif => {
+        if (notif.origen === 'Desarrollador') {
+            const fechaNotif = new Date(notif.fecha);
+            const dosDiasDespues = new Date(fechaNotif);
+            dosDiasDespues.setDate(dosDiasDespues.getDate() + 2);
+            
+            if (new Date() > dosDiasDespues) {
+                // Eliminar automáticamente si han pasado 2 días
+                fetch('/eliminar-notificacion-advertencia', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        fecha: notif.fecha, 
+                        origen: notif.origen, 
+                        mensaje: notif.notificacion 
+                    })
+                });
+            }
+        }
+    });
+
     advertenciaDiv.innerHTML = `
         <div class="advertencia-contenido">
             <h2><i class="fas fa-exclamation-triangle"></i> Notificaciones</h2>
@@ -39,9 +63,11 @@ function mostrarAdvertencias(notificaciones) {
                                 <span class="fecha">${notif.fecha}</span>
                                 <span class="origen">De: ${notif.origen}</span>
                             </div>
-                            <button class="btn-eliminar-notif" title="Eliminar notificación">
-                                <i class="fas fa-times"></i>
-                            </button>
+                            ${notif.origen !== 'Desarrollador' ? `
+                                <button class="btn-eliminar-notif" title="Eliminar notificación">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            ` : ''}
                         </div>
                         <p class="mensaje">${notif.notificacion}</p>
                     </div>
@@ -50,6 +76,8 @@ function mostrarAdvertencias(notificaciones) {
             <button class="btn-aceptar">Aceptar</button>
         </div>
     `;
+
+    // ... rest of the function remains the same ...
 
     advertenciaDiv.style.display = 'flex';
     document.querySelector('.container').classList.add('no-touch');

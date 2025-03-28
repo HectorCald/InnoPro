@@ -222,8 +222,8 @@ async function obtenerNovedades() {
     return [
         {
             titulo: 'Nueva Actualización',
-            descripcion: 'Esta actualizacion incluye nuevas funcionalidades y mejoras. (modo dia y noche, Pantalla de inicio, nueva forma de navegacion entre pestañas, correccion de errores y de diseño)',
-            fecha: '2025-03-24'
+            descripcion: 'Se agrego el sistema de Notifiaciones',
+            fecha: '2025-03-28'
         }
     ];
 }
