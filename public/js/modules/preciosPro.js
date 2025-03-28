@@ -293,6 +293,7 @@ async function mostrarFormularioRegla() {
         document.querySelector('.overlay').style.display = 'block';
 
         configurarEventosFormulario(anuncio);
+        await initializePreciosPro();
     } catch (error) {
         console.error('Error:', error);
         alert('Error al cargar productos: ' + error.message);

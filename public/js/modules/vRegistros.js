@@ -29,24 +29,32 @@ export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     cantidad = parseFloat(cantidad) || 0;
     gramaje = parseFloat(gramaje) || 0;
 
-    // Buscar si existe una regla especial para este producto
-    const regla = reglasEspeciales?.find(r => {
+    // Encontrar todas las reglas que aplican para este producto
+    const reglasAplicables = reglasEspeciales?.filter(r => {
         const nombreCoincide = nombre.includes(r.producto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""));
         const gramajeCumple = r.gramajeMin && r.gramajeMax ? 
             (gramaje >= parseFloat(r.gramajeMin) && gramaje <= parseFloat(r.gramajeMax)) : 
             true;
         return nombreCoincide && gramajeCumple;
-    });
+    }) || [];
 
-    // Obtener multiplicadores y precios base
+    // Obtener los multiplicadores más altos para cada operación
     const multiplicadores = {
-        etiquetado: regla?.etiquetado || '1',
-        sellado: regla?.sellado || '1',
-        envasado: regla?.envasado || '1',
-        cernido: regla?.cernido || preciosBase?.cernidoBolsa || 0
+        etiquetado: '1',
+        sellado: '1',
+        envasado: '1',
+        cernido: preciosBase?.cernidoBolsa || '0'
     };
 
-    // Calcular resultados usando los multiplicadores y precios base
+    // Revisar todas las reglas aplicables y usar el multiplicador más alto para cada operación
+    reglasAplicables.forEach(regla => {
+        multiplicadores.etiquetado = Math.max(parseFloat(multiplicadores.etiquetado), parseFloat(regla.etiquetado || '1')).toString();
+        multiplicadores.sellado = Math.max(parseFloat(multiplicadores.sellado), parseFloat(regla.sellado || '1')).toString();
+        multiplicadores.envasado = Math.max(parseFloat(multiplicadores.envasado), parseFloat(regla.envasado || '1')).toString();
+        multiplicadores.cernido = Math.max(parseFloat(multiplicadores.cernido), parseFloat(regla.cernido || preciosBase?.cernidoBolsa || '0')).toString();
+    });
+
+    // Calcular resultados usando los multiplicadores más altos encontrados
     let resultado = cantidad * preciosBase.envasado * parseFloat(multiplicadores.envasado);
     let resultadoEtiquetado = cantidad * preciosBase.etiquetado * parseFloat(multiplicadores.etiquetado);
     let resultadoSellado = cantidad * preciosBase.sellado * parseFloat(multiplicadores.sellado);
