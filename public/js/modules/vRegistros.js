@@ -2,7 +2,6 @@
 let reglasEspeciales = null;
 let preciosBase = null;
 
-// Función para obtener las reglas
 async function inicializarReglas() {
     try {
         const [responseReglas, responsePrecios] = await Promise.all([
@@ -328,16 +327,14 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
             </div>
             <form id="form-verificacion">
                 <div class="form-group">
-                    <label for="cantidad-real">Cantidad Real:</label>
-                    <input type="number" id="cantidad-real" required min="0" step="1">
+                    <input type="number" id="cantidad-real" required min="0" step="1" placeholder="Cantidad Real">
                 </div>
                 <div class="form-group">
                     <label for="fecha-verificacion">Fecha de Verificación:</label>
                     <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly>
                 </div>
                 <div class="form-group">
-                    <label for="observaciones">Observaciones:</label>
-                    <textarea id="observaciones" rows="3"></textarea>
+                    <textarea id="observaciones" rows="3" placeholder="Observaciones"></textarea>
                 </div>
             </form>
         </div>

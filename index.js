@@ -29,13 +29,7 @@ const serviceAccount = {
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
-
-// ... resto del código ...
-// ... existing code ...
-
 async function enviarNotificacion(token, titulo, mensaje) {
-    // Verifica que los parámetros no sean undefined
-    console.log('Parámetros recibidos:', { token, titulo, mensaje });
     
     if (!titulo || !mensaje) {
         console.error('Título o mensaje indefinidos');
@@ -55,17 +49,13 @@ async function enviarNotificacion(token, titulo, mensaje) {
             }
         };
 
-        console.log('Enviando notificación:', mensajeNotificacion);
         const response = await admin.messaging().send(mensajeNotificacion);
-        console.log('Respuesta de Firebase:', response);
         return true;
     } catch (error) {
         console.error('Error al enviar notificación:', error);
         return false;
     }
 }
-
-// ... rest of the code ...
 const firebaseConfig = {
     apiKey: "AIzaSyCbfR1fpCDIsE8R_9RAN9lG0H9bsk2WQeQ",
     authDomain: "damabravaapp.firebaseapp.com",
@@ -2912,9 +2902,6 @@ app.post('/register-fcm-token', async (req, res) => {
 });
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
-// ... resto del código ...
-
-// En lugar de app.listen() para desarrollo local
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);

@@ -197,3 +197,15 @@ function aplicarTemaGuardado() {
 
 // Aplicar tema al cargar
 aplicarTemaGuardado();
+// Suponiendo que tienes un botón con el id "enable-notifications"
+document.getElementById("permiso").addEventListener("click", function() {
+    if (Notification.permission === 'default') {
+        Notification.requestPermission().then(function(permission) {
+            if (permission === 'granted') {
+                console.log('Permiso concedido');
+            } else {
+                console.log('Permiso denegado');
+            }
+        });
+    }
+});

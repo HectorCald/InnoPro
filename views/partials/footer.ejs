@@ -78,6 +78,15 @@
             initNotifications();
         });
     }
+    if (Notification.permission === 'default') {
+    Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+            console.log('Permiso concedido');
+        } else {
+            console.log('Permiso denegado');
+        }
+    });
+}
 </script>
 </body>
 
