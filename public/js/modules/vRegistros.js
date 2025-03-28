@@ -1,7 +1,12 @@
 // Agregar al inicio del archivo
 let reglasEspeciales = null;
 let preciosBase = null;
-
+let filtrosActivos = {
+    nombre: '',
+    fechaDesde: '',
+    fechaHasta: '',
+    estado: 'todos' // 'todos', 'verificados', 'no_verificados'
+};
 async function inicializarReglas() {
     try {
         const [responseReglas, responsePrecios] = await Promise.all([
@@ -89,8 +94,7 @@ function crearOperarioCard(nombre, registros) {
 export async function cargarRegistros() {
     try {
         mostrarCarga();
-        await inicializarReglas(); // Agregar esta línea
-        // Obtener el rol una sola vez al inicio
+        await inicializarReglas();
         const rolResponse = await fetch('/obtener-mi-rol');
         const userData = await rolResponse.json();
         const esAdmin = userData.rol === 'Administración';
@@ -100,7 +104,45 @@ export async function cargarRegistros() {
 
         if (data.success) {
             const container = document.querySelector('.verificarRegistros-view');
-            container.innerHTML = '<h2 class="section-title"><i class="fas fa-check-double verificado-icon"></i> Registros</h2>';
+            
+            // Agregar header con título y botón de filtro
+            container.innerHTML = `
+                <div class="filtros-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-check-double verificado-icon"></i> Registros
+                    </h2>
+                    <button class="btn-filtro">
+                        <i class="fas fa-filter"></i> Filtros
+                    </button>
+                </div>
+                <div class="panel-filtros">
+                    <form class="filtros-form">
+                        <div class="filtro-grupo">
+                            <label>Nombre del operario</label>
+                            <input type="text" id="filtro-nombre" placeholder="Buscar por nombre">
+                        </div>
+                        <div class="filtro-grupo">
+                            <label>Fecha desde</label>
+                            <input type="date" id="filtro-fecha-desde">
+                        </div>
+                        <div class="filtro-grupo">
+                            <label>Fecha hasta</label>
+                            <input type="date" id="filtro-fecha-hasta">
+                        </div>
+                        <div class="filtro-grupo">
+                            <label>Estado</label>
+                            <select id="filtro-estado">
+                                <option value="todos">Todos</option>
+                                <option value="verificados">Verificados</option>
+                                <option value="no_verificados">No verificados</option>
+                            </select>
+                        </div>
+                        <div class="filtros-acciones">
+                            <button type="button" class="aplicar">Aplicar filtros</button>
+                            <button type="button" class="limpiar">Limpiar filtros</button>
+                        </div>
+                    </form>
+                </div>`;
 
             const registrosPorOperario = {};
             data.registros.slice(1).forEach(registro => {
@@ -125,6 +167,9 @@ export async function cargarRegistros() {
                 operarioCard.appendChild(registrosContainer);
                 container.appendChild(operarioCard);
             }
+
+            // Configurar los eventos de filtrado después de cargar los registros
+            configurarFiltros();
 
         } else {
             throw new Error(data.error || 'Error al obtener los registros');
@@ -512,4 +557,78 @@ export async function eliminarRegistro(fecha, producto, lote, operario) {
         anuncio.style.display = 'none';
         document.querySelector('.container').classList.remove('no-touch');
     };
+}
+
+
+function configurarFiltros() {
+    const btnFiltro = document.querySelector('.btn-filtro');
+    const panelFiltros = document.querySelector('.panel-filtros');
+    const form = document.querySelector('.filtros-form');
+    
+    btnFiltro.addEventListener('click', () => {
+        panelFiltros.classList.toggle('active');
+    });
+
+    form.querySelector('.aplicar').addEventListener('click', () => {
+        filtrosActivos = {
+            nombre: document.getElementById('filtro-nombre').value,
+            fechaDesde: document.getElementById('filtro-fecha-desde').value,
+            fechaHasta: document.getElementById('filtro-fecha-hasta').value,
+            estado: document.getElementById('filtro-estado').value
+        };
+        aplicarFiltros();
+        panelFiltros.classList.remove('active');
+    });
+
+    form.querySelector('.limpiar').addEventListener('click', () => {
+        document.getElementById('filtro-nombre').value = '';
+        document.getElementById('filtro-fecha-desde').value = '';
+        document.getElementById('filtro-fecha-hasta').value = '';
+        document.getElementById('filtro-estado').value = 'todos';
+        filtrosActivos = {
+            nombre: '',
+            fechaDesde: '',
+            fechaHasta: '',
+            estado: 'todos'
+        };
+        aplicarFiltros();
+    });
+}
+
+function aplicarFiltros() {
+    const registrosCards = document.querySelectorAll('.registro-card');
+    
+    registrosCards.forEach(card => {
+        let mostrar = true;
+        
+        // Filtro por nombre
+        if (filtrosActivos.nombre) {
+            const operario = card.dataset.operario.toLowerCase();
+            mostrar = operario.includes(filtrosActivos.nombre.toLowerCase());
+        }
+
+        // Filtro por fechas
+        if (mostrar && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta)) {
+            const fecha = convertirFecha(card.dataset.fecha);
+            if (filtrosActivos.fechaDesde) {
+                mostrar = fecha >= new Date(filtrosActivos.fechaDesde);
+            }
+            if (filtrosActivos.fechaHasta) {
+                mostrar = mostrar && fecha <= new Date(filtrosActivos.fechaHasta);
+            }
+        }
+
+        // Filtro por estado
+        if (mostrar && filtrosActivos.estado !== 'todos') {
+            const estaVerificado = card.querySelector('.verificado-icon') !== null;
+            mostrar = (filtrosActivos.estado === 'verificados') === estaVerificado;
+        }
+
+        card.style.display = mostrar ? 'block' : 'none';
+    });
+}
+
+function convertirFecha(fecha) {
+    const [dia, mes, año] = fecha.split('/');
+    return new Date(`20${año}-${mes}-${dia}`);
 }

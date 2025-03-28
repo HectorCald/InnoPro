@@ -23,7 +23,6 @@
         display: flex;
         align-items: center;
         gap: 1em;
-        margin-top: 20px;
         font-size: 16px;
     }
 
@@ -319,6 +318,96 @@
 
             span:first-child {
                 color: #aaa;
+            }
+        }
+    }
+    .filtros-header {
+        display: flex;
+        align-items: center;
+        gap: 1em;
+        margin-bottom: 1em;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+    .btn-filtro {
+        background: var(--primary-color);
+        border: none;
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+        color: var(--primary-text);
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: #252525;
+        }
+
+        i {
+            color: #3498db;
+        }
+    }
+
+    .panel-filtros {
+        background: var(--primary-color);
+        padding: 1.2rem;
+        border-radius: 8px;
+        margin-bottom: 1em;
+        display: none;
+        
+        &.active {
+            display: block;
+        }
+
+        .filtros-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+
+            .filtro-grupo {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5em;
+
+                label {
+                    color: var(--primary-text);
+                    font-size: 14px;
+                }
+
+                input, select {
+                    padding: 8px;
+                    border-radius: 4px;
+                    border: 1px solid #444;
+                    background: var(--background);
+                    color: var(--primary-text);
+                }
+            }
+
+            .filtros-acciones {
+                display: flex;
+                gap: 1em;
+                margin-top: 1em;
+
+                button {
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    flex: 1;
+                    
+                    &.aplicar {
+                        background: #4CAF50;
+                        color: white;
+                    }
+
+                    &.limpiar {
+                        background: #6c757d;
+                        color: white;
+                    }
+                }
             }
         }
     }
