@@ -213,6 +213,25 @@
             transform: translateY(-2px);
         }
     }
+    .btn-editar-registro {
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        background: #2196F3;
+        color: white;
+        width: 100%;
+
+        &:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+    }
 
     .btn-pagar-registro {
         padding: 10px;
@@ -257,6 +276,7 @@
             transform: translateY(-2px);
         }
     }
+    
 
     .fa-chevron-down {
         transition: transform 0.3s ease;
@@ -414,4 +434,9 @@
             }
         }
     }
+    .btn-calcular-total:hover {
+    background-color: #45a049 !important;
+    transform: translateY(2px);
+    transition: all 0.3s ease;
+}
 }

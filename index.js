@@ -624,6 +624,92 @@ app.post('/registrar-pago', requireAuth, async (req, res) => {
         });
     }
 });
+app.put('/actualizar-registro', requireAuth, async (req, res) => {
+    try {
+        const { 
+            fechaOriginal, productoOriginal, loteOriginal, operarioOriginal,
+            fecha, producto, lote, gramaje, seleccion, microondas, envases, 
+            vencimiento, razonEdicion 
+        } = req.body;
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener registros actuales
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A2:L'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fechaOriginal &&
+            row[1] === productoOriginal &&
+            row[2] === loteOriginal &&
+            row[8] === operarioOriginal
+        );
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Registro no encontrado' 
+            });
+        }
+
+        // Actualizar registro
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Produccion!A${rowIndex + 2}:H${rowIndex + 2}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[
+                    fecha,
+                    producto,
+                    lote,
+                    gramaje,
+                    seleccion,
+                    microondas,
+                    envases,
+                    vencimiento
+                ]]
+            }
+        });
+
+        // Crear notificaciones para gerencia y operario
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A:D',
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [
+                    [
+                        new Date().toLocaleDateString(),
+                        req.user.nombre,
+                        'Gerencia',
+                        `Edición de registro - ${producto} (Lote: ${lote}): ${razonEdicion}`
+                    ],
+                    [
+                        new Date().toLocaleDateString(),
+                        req.user.nombre,
+                        operarioOriginal,
+                        `Se ha modificado tu registro de ${productoOriginal} (Lote: ${loteOriginal}). Por favor, ten más cuidado al registrar los datos. Razón: ${razonEdicion}`
+                    ]
+                ]
+            }
+        });
+
+        res.json({ 
+            success: true,
+            mensaje: 'Registro actualizado correctamente'
+        });
+    } catch (error) {
+        console.error('Error al actualizar registro:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar el registro' 
+        });
+    }
+});
 
 
 /* ==================== API DE VERIFICACION ==================== */

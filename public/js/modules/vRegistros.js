@@ -7,6 +7,8 @@ let filtrosActivos = {
     fechaHasta: '',
     estado: 'todos' // 'todos', 'verificados', 'no_verificados'
 };
+window.editarRegistro = editarRegistro;
+window.formatearFecha = formatearFecha;
 async function inicializarReglas() {
     try {
         const [responseReglas, responsePrecios] = await Promise.all([
@@ -23,7 +25,6 @@ async function inicializarReglas() {
         console.error('Error al cargar reglas:', error);
     }
 }
-
 export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     nombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
     cantidad = parseFloat(cantidad) || 0;
@@ -212,6 +213,9 @@ function crearRegistroCard(registro, esAdmin) {
     const botonesAdmin = esAdmin ? `
         <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
             <i class="fas fa-trash"></i> Eliminar
+        </button>
+        <button onclick="editarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[4]}', '${registro[5]}', '${registro[6]}', '${registro[7]}', '${registro[9] || ''}', '${registro[10] || ''}')" class="btn-editar-registro">
+            <i class="fas fa-edit"></i> Editar
         </button>
         ${registro[10] ? `
             <button onclick="pagarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[9]}')" 
@@ -557,8 +561,6 @@ export async function eliminarRegistro(fecha, producto, lote, operario) {
         document.querySelector('.container').classList.remove('no-touch');
     };
 }
-
-
 function configurarFiltros() {
     const btnFiltro = document.querySelector('.btn-filtro');
     const panelFiltros = document.querySelector('.panel-filtros');
@@ -600,18 +602,29 @@ function aplicarFiltros() {
     
     fechaCards.forEach(card => card.style.display = 'none');
     
+    // Remover botón existente si hay
+    const botonExistente = document.querySelector('.btn-calcular-total');
+    if (botonExistente) {
+        botonExistente.remove();
+    }
+
+    let registrosFiltrados = [];
+    
     registrosCards.forEach(card => {
         let mostrar = true;
         
-        // Filtro por nombre
+        // Filtro por nombre del operario
         if (filtrosActivos.nombre) {
-            const operario = card.dataset.operario.toLowerCase();
-            mostrar = operario.includes(filtrosActivos.nombre.toLowerCase());
+            const nombreOperario = card.closest('.fecha-card').querySelector('h3').textContent.toLowerCase();
+            mostrar = nombreOperario.includes(filtrosActivos.nombre.toLowerCase());
         }
 
         // Filtro por fechas
         if (mostrar && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta)) {
-            const fechaRegistro = card.dataset.fecha; // Ya está en formato YYYY-MM-DD
+            const fechaTexto = card.querySelector('.registro-fecha').textContent;
+            const [dia, mes] = fechaTexto.split('/');
+            const año = new Date().getFullYear();
+            const fechaRegistro = `${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
 
             if (filtrosActivos.fechaDesde) {
                 mostrar = fechaRegistro >= filtrosActivos.fechaDesde;
@@ -622,10 +635,15 @@ function aplicarFiltros() {
             }
         }
 
-        // Filtro por estado
-        if (mostrar && filtrosActivos.estado !== 'todos') {
-            const estaVerificado = card.querySelector('.verificado-icon') !== null;
-            mostrar = (filtrosActivos.estado === 'verificados') === estaVerificado;
+        // Si el registro es visible y tiene un total, agregarlo a la lista
+        if (mostrar) {
+            const totalElement = card.querySelector('.registro-total');
+            if (totalElement) {
+                registrosFiltrados.push({
+                    total: parseFloat(totalElement.textContent.replace(' Bs.', '')),
+                    element: card
+                });
+            }
         }
 
         // Actualizar visibilidad
@@ -638,6 +656,36 @@ function aplicarFiltros() {
             }
         }
     });
+
+    // Si hay filtros activos de nombre y fechas, mostrar el botón
+    if (filtrosActivos.nombre && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta) && registrosFiltrados.length > 0) {
+        const container = document.querySelector('.verificarRegistros-view');
+        const botonCalcular = document.createElement('button');
+        botonCalcular.className = 'btn-calcular-total';
+        botonCalcular.innerHTML = '<i class="fas fa-calculator"></i> Calcular Total a Pagar';
+        botonCalcular.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        `;
+
+        botonCalcular.addEventListener('click', () => {
+            const totalGeneral = registrosFiltrados.reduce((sum, reg) => sum + reg.total, 0);
+            mostrarNotificacion(`Total a pagar: ${totalGeneral.toFixed(2)} Bs.`, 'success', 5000);
+        });
+
+        container.appendChild(botonCalcular);
+    }
+
+    // Actualizar contadores
     fechaCards.forEach(fechaCard => {
         if (fechaCard.style.display === 'block') {
             const registrosVisibles = Array.from(fechaCard.querySelectorAll('.registro-card'))
@@ -648,4 +696,174 @@ function aplicarFiltros() {
             }
         }
     });
+}
+export function editarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento, verificacion, fechaVerificacion) {
+    const anuncio = document.querySelector('.anuncio');
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+    
+    anuncioContenido.innerHTML = `
+        <h2>Editar Registro</h2>
+        <div class="detalles-verificacion">
+            <form id="form-edicion">
+                <div class="form-group">
+                    <label for="edit-fecha">Fecha:</label>
+                    <input type="text" id="edit-fecha" value="${fecha}" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-producto">Producto:</label>
+                    <input type="text" id="edit-producto" value="${producto}" 
+                           list="productos-list" placeholder="Buscar producto..." 
+                           autocomplete="off" required>
+                    <datalist id="productos-list"></datalist>
+                </div>
+                <div class="form-group">
+                    <label for="edit-lote">Lote:</label>
+                    <input type="text" id="edit-lote" value="${lote}" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-gramaje">Gramaje:</label>
+                    <input type="number" id="edit-gramaje" value="${gramaje}" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-seleccion">Selección:</label>
+                    <select id="edit-seleccion" required>
+                        <option value="Normal" ${seleccion === 'Normal' ? 'selected' : ''}>Normal</option>
+                        <option value="Cernido" ${seleccion === 'Cernido' ? 'selected' : ''}>Cernido</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-microondas">Microondas:</label>
+                    <input type="text" id="edit-microondas" value="${microondas}">
+                </div>
+                <div class="form-group">
+                    <label for="edit-envases">Envases:</label>
+                    <input type="number" id="edit-envases" value="${envases}" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-vencimiento">Vencimiento:</label>
+                    <input type="text" id="edit-vencimiento" value="${vencimiento}" required>
+                </div>
+                <div class="form-group">
+                    <label for="razon-edicion">Razón de la edición:</label>
+                    <textarea id="razon-edicion" rows="3" required placeholder="Explique el motivo de la edición"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn confirmar">Actualizar</button>
+            <button class="anuncio-btn cancelar">Cancelar</button>
+        </div>
+    `;
+
+    // Initialize product suggestions
+    const productoInput = anuncio.querySelector('#edit-producto');
+    const productosList = anuncio.querySelector('#productos-list');
+    
+    // Initial load of products
+    fetch('/obtener-productos')
+        .then(response => response.json())
+        .then(data => {
+            productosList.innerHTML = '';
+            data.productos.forEach(producto => {
+                const option = document.createElement('option');
+                option.value = producto;
+                productosList.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error al cargar productos:', error));
+
+    // Real-time search with debounce
+    let timeoutId;
+    productoInput.addEventListener('input', () => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(async () => {
+            try {
+                const response = await fetch('/buscar-productos?query=' + encodeURIComponent(productoInput.value));
+                const data = await response.json();
+                
+                productosList.innerHTML = '';
+                data.productos.forEach(producto => {
+                    const option = document.createElement('option');
+                    option.value = producto;
+                    productosList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al buscar productos:', error);
+            }
+        }, 300); // Debounce delay of 300ms
+    });
+
+    anuncio.style.display = 'flex';
+    document.querySelector('.overlay').style.display = 'block';
+    document.querySelector('.container').classList.add('no-touch');
+
+    const confirmarBtn = anuncio.querySelector('.confirmar');
+    const cancelarBtn = anuncio.querySelector('.cancelar');
+
+    confirmarBtn.addEventListener('click', async () => {
+        const razonEdicion = document.getElementById('razon-edicion').value;
+        if (!razonEdicion) {
+            alert('Por favor, ingrese la razón de la edición');
+            return;
+        }
+
+        const datosActualizados = {
+            fechaOriginal: fecha,
+            productoOriginal: producto,
+            loteOriginal: lote,
+            operarioOriginal: operario,
+            fecha: document.getElementById('edit-fecha').value,
+            producto: document.getElementById('edit-producto').value,
+            lote: document.getElementById('edit-lote').value,
+            gramaje: document.getElementById('edit-gramaje').value,
+            seleccion: document.getElementById('edit-seleccion').value,
+            microondas: document.getElementById('edit-microondas').value,
+            envases: document.getElementById('edit-envases').value,
+            vencimiento: document.getElementById('edit-vencimiento').value,
+            razonEdicion
+        };
+
+        try {
+            mostrarCarga();
+            const response = await fetch('/actualizar-registro', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datosActualizados)
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Registro actualizado correctamente');
+                anuncio.style.display = 'none';
+                document.querySelector('.overlay').style.display = 'none';
+                document.querySelector('.container').classList.remove('no-touch');
+                await cargarRegistros();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al actualizar el registro: ' + error.message, 'error');
+        } finally {
+            ocultarCarga();
+        }
+    });
+
+    cancelarBtn.addEventListener('click', () => {
+        anuncio.style.display = 'none';
+        document.querySelector('.overlay').style.display = 'none';
+        document.querySelector('.container').classList.remove('no-touch');
+    });
+}
+function formatearFecha(fecha) {
+    if (!fecha) {
+        const hoy = new Date();
+        const año = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        return `${año}-${mes}-${dia}`;
+    }
+    return fecha;
 }

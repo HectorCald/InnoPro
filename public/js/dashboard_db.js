@@ -1,5 +1,5 @@
 import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario, mostrarPermisos, agregarPermiso, eliminarPermiso } from './modules/users.js';
-import { calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
+import {editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
@@ -86,6 +86,7 @@ window.pagarRegistro = pagarRegistro;
 window.initializePreciosPro = initializePreciosPro;
 window.calcularTotal = calcularTotal;
 window.cargarNotificaciones = cargarNotificaciones;
+window.editarRegistro = editarRegistro;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
