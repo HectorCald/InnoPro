@@ -30,13 +30,6 @@ export async function inicializarHome() {
                 ${generarHighlights(highlights)}
             </div>
 
-            <div class="sections-grid">
-                <div class="timeline">
-                    <h2>Notificaciones Recientes</h2>
-                    ${generarTimeline(notificaciones)}
-                </div>
-            </div>
-
             <div class="updates-section">
                 <h2>Novedades del Sistema</h2>
                 ${generarNovedades(novedades)}
@@ -95,23 +88,6 @@ function generarHighlights(highlights) {
     `).join('');
 }
 
-function generarTimeline(notificaciones) {
-    return notificaciones.map(n => `
-        <div class="timeline-item">
-            <div class="timeline-content">
-                <div class="timeline-header">
-                    <div class="timeline-time">${n.tiempo}</div>
-                    <button class="delete-notification" 
-                            data-fecha="${n.fecha}" 
-                            data-mensaje="${n.mensaje}">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="timeline-message">${n.mensaje}</div>
-            </div>
-        </div>
-    `).join('');
-}
 
 async function obtenerNotificaciones() {
     try {

@@ -2740,9 +2740,13 @@ app.post('/guardar-producto-especial', requireAuth, async (req, res) => {
         const { producto, base, multiplicador, gramajeMin, gramajeMax } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
-        const multiplicadorFormateado = base === 'cernido' 
-            ? parseFloat(multiplicador).toFixed(4).replace('.', ',')
-            : multiplicador;
+        // Formatear el multiplicador correctamente
+        let multiplicadorFormateado = multiplicador;
+        if (base === 'cernido' && multiplicador) {
+            // Convertir la coma a punto y asegurar formato decimal correcto
+            const numero = parseFloat(multiplicador.toString().replace(',', '.'));
+            multiplicadorFormateado = numero.toString(); // Mantener el formato con punto decimal
+        }
 
         const nuevaFila = [
             base === 'etiquetado' ? multiplicadorFormateado : '1',
@@ -2900,6 +2904,101 @@ app.post('/register-fcm-token', async (req, res) => {
         });
     }
 });
+
+
+/* ==================== RUTAS DE API DE ADVERTENCIA ==================== */
+// Agregar esta ruta junto con las demás rutas de API
+app.get('/obtener-notificaciones', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A2:D'
+        });
+
+        const rows = response.data.values || [];
+        const notificaciones = rows.map(row => ({
+            fecha: row[0] || '',
+            origen: row[1] || '',
+            destino: row[2] || '',
+            notificacion: row[3] || ''
+        }));
+
+        res.json({ success: true, notificaciones });
+    } catch (error) {
+        console.error('Error al obtener notificaciones:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener notificaciones' 
+        });
+    }
+});
+app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) => {
+    try {
+        const { fecha, origen, mensaje } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener todas las notificaciones
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A2:D'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === origen &&
+            row[3] === mensaje  // Agregar comparación del mensaje
+        );
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Notificación no encontrada' 
+            });
+        }
+
+        // Obtener el ID de la hoja
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const notificacionesSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Notificaciones'
+        );
+
+        if (!notificacionesSheet) {
+            throw new Error('Hoja de Notificaciones no encontrada');
+        }
+
+        // Eliminar la fila
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: notificacionesSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1, // +1 porque empezamos desde A2
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true, message: 'Notificación eliminada correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar notificación:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar la notificación: ' + error.message
+        });
+    }
+});
+
+
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {

@@ -60,13 +60,17 @@ export async function initializePreciosPro() {
 
                 <div class="reglas-section">
                     <h3>Reglas Especiales</h3>
-                    <div class="reglas-container">
-                        ${reglas.map(regla => `
+                   <div class="reglas-container">
+                        ${reglas.map((regla, index) => `
                             <div class="regla-item">
-                                <button class="btn-ver-detalles" data-producto="${regla.producto}">
+                                <button class="btn-ver-detalles" 
+                                    data-producto="${regla.producto}"
+                                    data-index="${index}">
                                     ${regla.producto}
                                 </button>
-                                <button class="btn-eliminar" data-producto="${regla.producto}">
+                                <button class="btn-eliminar" 
+                                    data-producto="${regla.producto}"
+                                    data-index="${index}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -81,23 +85,22 @@ export async function initializePreciosPro() {
         document.getElementById('agregar-regla').addEventListener('click', mostrarFormularioRegla);
         
         // Add event listeners for delete buttons
-        document.querySelectorAll('.btn-eliminar').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const producto = e.currentTarget.dataset.producto;
-                if (confirm(`¿Está seguro de eliminar la regla para ${producto}?`)) {
-                    await eliminarRegla(producto);
-                }
-            });
-        });
-
-        // Add event listeners for detail buttons
         document.querySelectorAll('.btn-ver-detalles').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const producto = e.currentTarget.dataset.producto;
-                const regla = reglas.find(r => r.producto === producto);
+                const index = parseInt(e.currentTarget.dataset.index);
+                const regla = reglas[index]; // Usar el índice para obtener la regla específica
                 mostrarDetallesRegla(regla);
             });
         });
+        document.querySelectorAll('.btn-eliminar').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const producto = e.currentTarget.dataset.producto;
+                const index = parseInt(e.currentTarget.dataset.index);
+                mostrarAnuncioEliminar(producto, index);
+            });
+        });
+        
 
     } catch (error) {
         console.error('Error al inicializar:', error);
@@ -189,8 +192,8 @@ async function eliminarRegla(producto) {
         const result = await response.json();
         if (result.success) {
             mostrarNotificacion('Regla eliminada correctamente', 'success', 3000);
-            // Reload the page to refresh the rules
-            window.location.reload();
+            // En lugar de recargar la página, reinicializamos PreciosPro
+            await initializePreciosPro();
         } else {
             throw new Error(result.error || 'Error al eliminar la regla');
         }
@@ -262,7 +265,7 @@ async function mostrarFormularioRegla() {
                 <label>Precio base cernido:</label>
                 <input type="text" id="precio-cernido-especial" 
                        pattern="[0-9]*[.,]?[0-9]*" 
-                       placeholder="Ejemplo: 0,016">
+                       placeholder="Ejemplo: 0.3">
             </div>
             <div id="multiplicador-container">
                 <select id="multiplicador">
@@ -446,5 +449,36 @@ function configurarEventosFormulario(anuncio) {
         } finally {
             ocultarCarga();
         }
+    });
+}
+// Add this new function
+function mostrarAnuncioEliminar(producto, index) {
+    const anuncio = document.querySelector('.anuncio');
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+    
+    anuncioContenido.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>¿Eliminar regla?</h2>
+        <p>¿Está seguro de eliminar la regla para "${producto}"?</p>
+        <p>Esta acción no se puede deshacer</p>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn cancelar">Cancelar</button>
+            <button class="anuncio-btn confirmar">Eliminar</button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+    document.querySelector('.overlay').style.display = 'block';
+
+    // Add event listeners for buttons
+    anuncio.querySelector('.cancelar').addEventListener('click', () => {
+        anuncio.style.display = 'none';
+        document.querySelector('.overlay').style.display = 'none';
+    });
+
+    anuncio.querySelector('.confirmar').addEventListener('click', async () => {
+        await eliminarRegla(producto, index);
+        anuncio.style.display = 'none';
+        document.querySelector('.overlay').style.display = 'none';
     });
 }

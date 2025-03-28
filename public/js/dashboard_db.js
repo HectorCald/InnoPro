@@ -11,6 +11,7 @@ import { inicializarAlmacenPrima } from './modules/almPrima.js';
 import { inicializarHome } from './modules/home.js';
 import { initializeMenu } from './modules/menu.js';
 import { initializePreciosPro } from './modules/preciosPro.js';
+import { cargarNotificaciones } from './modules/advertencia.js';
 window.initializeMenu = initializeMenu;
 window.mostrarNotificacion = mostrarNotificacion;
 window.mostrarPermisos = mostrarPermisos;
@@ -84,6 +85,7 @@ window.inicializarConsulta = inicializarConsulta;
 window.pagarRegistro = pagarRegistro;
 window.initializePreciosPro = initializePreciosPro;
 window.calcularTotal = calcularTotal;
+window.cargarNotificaciones = cargarNotificaciones;
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -262,6 +264,7 @@ async function iniciarApp() {
 
     // Inicializar el menú
     initializeMenu(roles, opcionesDiv, vistas);
+    await cargarNotificaciones();
 }
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
