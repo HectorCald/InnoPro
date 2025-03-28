@@ -1,14 +1,26 @@
 export async function cargarNotificaciones() {
     try {
+        // Primero obtener el usuario actual
+        const userResponse = await fetch('/obtener-mi-rol');
+        const userData = await userResponse.json();
+        const nombreUsuarioActual = userData.nombre;
+
+        // Luego obtener las notificaciones
         const response = await fetch('/obtener-notificaciones');
         const data = await response.json();
+        
         if (data.success) {
-            mostrarAdvertencias(data.notificaciones);
+            // Filtrar notificaciones solo para el usuario actual
+            const notificacionesFiltradas = data.notificaciones.filter(
+                notif => notif.destino === nombreUsuarioActual
+            );
+            mostrarAdvertencias(notificacionesFiltradas);
         }
     } catch (error) {
         console.error('Error al cargar notificaciones:', error);
     }
 }
+
 function mostrarAdvertencias(notificaciones) {
     const advertenciaDiv = document.querySelector('.advertencia');
     if (!notificaciones || notificaciones.length === 0) {

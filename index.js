@@ -676,6 +676,24 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
             }
         });
 
+        // Agregar notificación si hay observaciones
+        if (observaciones) {
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: 'Notificaciones!A:D',
+                valueInputOption: 'USER_ENTERED',
+                insertDataOption: 'INSERT_ROWS',
+                resource: {
+                    values: [[
+                        fechaVerificacion,
+                        req.user.nombre,
+                        operario,
+                        `Verificación de ${producto} (Lote: ${lote}): Observaciones: ${observaciones}`
+                    ]]
+                }
+            });
+        }
+
         res.json({ 
             success: true,
             mensaje: 'Verificación actualizada correctamente'

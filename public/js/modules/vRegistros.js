@@ -367,13 +367,13 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
     
-    // Configurar el contenido del anuncio
     anuncioContenido.innerHTML = `
         <h2>Verificar Registro</h2>
         <div class="detalles-verificacion">
             <div class="form-group">
                 <label>Fecha: <span>${fecha}</span></label>
                 <label>Producto: <span>${producto}</span></label>
+                <label>Operario: <span>${operario}</span></label>
                 <label>Envases terminados: <span>${envases}</span></label>
             </div>
             <form id="form-verificacion">
@@ -385,7 +385,7 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
                     <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly>
                 </div>
                 <div class="form-group">
-                    <textarea id="observaciones" rows="3" placeholder="Observaciones"></textarea>
+                    <textarea id="observaciones" rows="3" placeholder="Observaciones (se enviará como notificación al operario)"></textarea>
                 </div>
             </form>
         </div>
@@ -395,27 +395,20 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
         </div>
     `;
 
-    // Mostrar el anuncio y el overlay
     anuncio.style.display = 'flex';
     document.querySelector('.overlay').style.display = 'block';
     document.querySelector('.container').classList.add('no-touch');
 
-    // Obtener referencias a los botones después de crear el contenido
-    const btnConfirmar = anuncioContenido.querySelector('.confirmar');
-    const btnCancelar = anuncioContenido.querySelector('.cancelar');
+    const confirmarBtn = anuncio.querySelector('.confirmar');
+    const cancelarBtn = anuncio.querySelector('.cancelar');
 
-    // Configurar estilos de los botones
-    btnConfirmar.style.backgroundColor = '#4CAF50';
-    btnCancelar.style.backgroundColor = '#6c757d';
-
-    // Manejar la confirmación
-    btnConfirmar.onclick = async () => {
+    confirmarBtn.addEventListener('click', async () => {
         const cantidadReal = document.getElementById('cantidad-real').value;
         const fechaVerificacion = document.getElementById('fecha-verificacion').value;
         const observaciones = document.getElementById('observaciones').value;
 
-        if (!cantidadReal || cantidadReal < 0) {
-            mostrarNotificacion('Por favor ingrese una cantidad real válida', 'error');
+        if (!cantidadReal) {
+            alert('Por favor, ingrese la cantidad real');
             return;
         }
 
@@ -424,21 +417,21 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
             const response = await fetch('/actualizar-verificacion', {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     fecha,
                     producto,
                     lote,
+                    operario,
+                    verificacion: cantidadReal,
+                    fechaVerificacion,
+                    observaciones,
                     gramaje,
                     seleccion,
                     microondas,
                     envases,
-                    vencimiento,
-                    operario,
-                    verificacion: cantidadReal,
-                    fechaVerificacion,
-                    observaciones
+                    vencimiento
                 })
             });
 
@@ -448,24 +441,24 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
                 anuncio.style.display = 'none';
                 document.querySelector('.overlay').style.display = 'none';
                 document.querySelector('.container').classList.remove('no-touch');
+                // Refresh the page to show updated data
                 await cargarRegistros();
             } else {
-                throw new Error(data.error || 'Error al guardar la verificación');
+                throw new Error(data.error);
             }
         } catch (error) {
             console.error('Error:', error);
-            mostrarNotificacion(error.message || 'Error al guardar la verificación', 'error');
+            alert('Error al guardar la verificación: ' + error.message);
         } finally {
             ocultarCarga();
         }
-    };
+    });
 
-    // Manejar la cancelación
-    btnCancelar.onclick = () => {
+    cancelarBtn.addEventListener('click', () => {
         anuncio.style.display = 'none';
         document.querySelector('.overlay').style.display = 'none';
         document.querySelector('.container').classList.remove('no-touch');
-    };
+    });
 }
 function configurarPanelInfo(card) {
     const infoIcon = card.querySelector('.info-icon');
