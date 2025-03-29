@@ -849,6 +849,12 @@ function aplicarFiltros() {
             }
         }
 
+        // Filtro por estado (verificado/no verificado)
+        if (mostrar && filtrosActivos.estado !== 'todos') {
+            const esVerificado = card.querySelector('.verificado-icon') !== null;
+            mostrar = filtrosActivos.estado === 'verificados' ? esVerificado : !esVerificado;
+        }
+
         // Si el registro es visible y tiene un total, agregarlo a la lista
         if (mostrar) {
             const totalElement = card.querySelector('.registro-total');
