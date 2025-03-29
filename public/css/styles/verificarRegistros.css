@@ -373,28 +373,48 @@
 
     .panel-filtros {
         background: var(--primary-color);
-        padding: 1.2rem;
         border-radius: 10px;
         margin-bottom: 1em;
-        display: none;
+        position: relative;
+        z-index: 1000;
+        max-height: 0;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease-in-out;
+        overflow: visible;
         
         &.active {
+            max-height: 1000px;
+            opacity: 1;
+            visibility: visible;
+            transform: ease-in-out translateY(0);
+            padding: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: block;
+            transition: all 0.3s ease;
         }
 
         .filtros-form {
             display: flex;
             flex-direction: column;
             gap: 1em;
+            position: relative;
+            z-index: 1001;
+            height: 100%;
 
             .filtro-grupo {
                 display: flex;
                 flex-direction: column;
                 gap: 0.5em;
+                position: relative;
+                z-index: 1002;
+                width: 100%;
 
                 label {
                     color: var(--primary-text);
                     font-size: 14px;
+                    margin-bottom: 0.5em;
                 }
 
                 input, select {
@@ -406,6 +426,8 @@
                     height: 50px;
                     font-size: 16px;
                     width: 100% !important;
+                    position: relative;
+                    z-index: 1003;
                 }
             }
 
@@ -413,22 +435,37 @@
                 display: flex;
                 gap: 1em;
                 margin-top: 1em;
+                position: relative;
+                z-index: 1004;
+                width: 100%;
 
                 button {
-                    padding: 8px 16px;
+                    padding: 12px 20px;
                     border: none;
                     border-radius: 4px;
                     cursor: pointer;
                     flex: 1;
+                    position: relative;
+                    z-index: 1005;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
                     
                     &.aplicar {
                         background: #4CAF50;
                         color: white;
+
+                        &:hover {
+                            background: #45a049;
+                        }
                     }
 
                     &.limpiar {
                         background: #6c757d;
                         color: white;
+
+                        &:hover {
+                            background: #5a6268;
+                        }
                     }
                 }
             }

@@ -300,34 +300,6 @@ export async function cargarRegistros() {
                     <button class="btn-filtro">
                         <i class="fas fa-filter"></i> Filtros
                     </button>
-                </div>
-                <div class="panel-filtros">
-                    <form class="filtros-form">
-                        <div class="filtro-grupo">
-                            <label>Nombre del operario</label>
-                            <input type="text" id="filtro-nombre" placeholder="Buscar por nombre">
-                        </div>
-                        <div class="filtro-grupo">
-                            <label>Fecha desde</label>
-                            <input type="date" id="filtro-fecha-desde">
-                        </div>
-                        <div class="filtro-grupo">
-                            <label>Fecha hasta</label>
-                            <input type="date" id="filtro-fecha-hasta">
-                        </div>
-                        <div class="filtro-grupo">
-                            <label>Estado</label>
-                            <select id="filtro-estado">
-                                <option value="todos">Todos</option>
-                                <option value="verificados">Verificados</option>
-                                <option value="no_verificados">No verificados</option>
-                            </select>
-                        </div>
-                        <div class="filtros-acciones">
-                            <button type="button" class="aplicar">Aplicar filtros</button>
-                            <button type="button" class="limpiar">Limpiar filtros</button>
-                        </div>
-                    </form>
                 </div>`;
 
             const registrosPorOperario = {};
@@ -356,6 +328,13 @@ export async function cargarRegistros() {
 
             // Configurar los eventos de filtrado después de cargar los registros
             configurarFiltros();
+
+            // Aplicar filtros guardados si existen
+            const filtrosGuardados = localStorage.getItem('filtrosRegistros');
+            if (filtrosGuardados) {
+                filtrosActivos = JSON.parse(filtrosGuardados);
+                aplicarFiltros();
+            }
 
         } else {
             throw new Error(data.error || 'Error al obtener los registros');
@@ -777,36 +756,99 @@ export function editarRegistro(fecha, producto, lote, operario, gramaje, selecci
 /* ==================== FUNCIONES DE FILTRADO ==================== */
 function configurarFiltros() {
     const btnFiltro = document.querySelector('.btn-filtro');
-    const panelFiltros = document.querySelector('.panel-filtros');
-    const form = document.querySelector('.filtros-form');
+    const anuncio = document.querySelector('.anuncio');
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+    
+    // Cargar filtros guardados al inicio
+    const filtrosGuardados = localStorage.getItem('filtrosRegistros');
+    if (filtrosGuardados) {
+        filtrosActivos = JSON.parse(filtrosGuardados);
+    }
     
     btnFiltro.addEventListener('click', () => {
-        panelFiltros.classList.toggle('active');
-    });
-
-    form.querySelector('.aplicar').addEventListener('click', () => {
-        filtrosActivos = {
-            nombre: document.getElementById('filtro-nombre').value,
-            fechaDesde: document.getElementById('filtro-fecha-desde').value,
-            fechaHasta: document.getElementById('filtro-fecha-hasta').value,
-            estado: document.getElementById('filtro-estado').value
-        };
-        aplicarFiltros();
-        panelFiltros.classList.remove('active');
-    });
-
-    form.querySelector('.limpiar').addEventListener('click', () => {
-        document.getElementById('filtro-nombre').value = '';
-        document.getElementById('filtro-fecha-desde').value = '';
-        document.getElementById('filtro-fecha-hasta').value = '';
-        document.getElementById('filtro-estado').value = 'todos';
-        filtrosActivos = {
+        // Cargar valores guardados en los inputs
+        const filtrosGuardados = localStorage.getItem('filtrosRegistros');
+        const valoresGuardados = filtrosGuardados ? JSON.parse(filtrosGuardados) : {
             nombre: '',
             fechaDesde: '',
             fechaHasta: '',
             estado: 'todos'
         };
-        aplicarFiltros();
+
+        anuncioContenido.innerHTML = `
+            <h2>Filtros de Registros</h2>
+            <div class="detalles-verificacion">
+                <form id="filtros-form">
+                    <div class="form-group">
+                        <label>Nombre del operario</label>
+                        <input type="text" id="filtro-nombre" placeholder="Buscar por nombre" value="${valoresGuardados.nombre}">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha desde</label>
+                        <input type="date" id="filtro-fecha-desde" value="${valoresGuardados.fechaDesde}">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha hasta</label>
+                        <input type="date" id="filtro-fecha-hasta" value="${valoresGuardados.fechaHasta}">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="filtro-estado">
+                            <option value="todos" ${valoresGuardados.estado === 'todos' ? 'selected' : ''}>Todos</option>
+                            <option value="verificados" ${valoresGuardados.estado === 'verificados' ? 'selected' : ''}>Verificados</option>
+                            <option value="no_verificados" ${valoresGuardados.estado === 'no_verificados' ? 'selected' : ''}>No verificados</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn aplicar">Aplicar</button>
+                <button class="anuncio-btn limpiar">Limpiar</button>
+                <button class="anuncio-btn cancelar">Cancelar</button>
+            </div>
+        `;
+
+        anuncio.style.display = 'flex';
+        document.querySelector('.overlay').style.display = 'block';
+        document.querySelector('.container').classList.add('no-touch');
+
+        const cerrarModal = () => {
+            anuncio.style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+            document.querySelector('.container').classList.remove('no-touch');
+        };
+
+        anuncioContenido.querySelector('.aplicar').addEventListener('click', () => {
+            filtrosActivos = {
+                nombre: document.getElementById('filtro-nombre').value,
+                fechaDesde: document.getElementById('filtro-fecha-desde').value,
+                fechaHasta: document.getElementById('filtro-fecha-hasta').value,
+                estado: document.getElementById('filtro-estado').value
+            };
+            // Guardar filtros en localStorage
+            localStorage.setItem('filtrosRegistros', JSON.stringify(filtrosActivos));
+            aplicarFiltros();
+            cerrarModal();
+        });
+
+        anuncioContenido.querySelector('.limpiar').addEventListener('click', () => {
+            document.getElementById('filtro-nombre').value = '';
+            document.getElementById('filtro-fecha-desde').value = '';
+            document.getElementById('filtro-fecha-hasta').value = '';
+            document.getElementById('filtro-estado').value = 'todos';
+            filtrosActivos = {
+                nombre: '',
+                fechaDesde: '',
+                fechaHasta: '',
+                estado: 'todos'
+            };
+            // Eliminar filtros del localStorage
+            localStorage.removeItem('filtrosRegistros');
+            aplicarFiltros();
+            cerrarModal();
+        });
+
+        anuncioContenido.querySelector('.cancelar').addEventListener('click', cerrarModal);
     });
 }
 
