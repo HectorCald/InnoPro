@@ -507,15 +507,8 @@ function configurarPanelInfo(card) {
 export async function eliminarRegistro(fecha, producto, lote, operario) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
-    // Problema: No se está verificando si estos elementos existen
-    const btnConfirmar = anuncio.querySelector('.confirmar');
-    const btnCancelar = anuncio.querySelector('.cancelar');
 
-    // Problema: Se intenta acceder a elementos que podrían no existir
-    contenido.querySelector('h2').textContent = '¿Eliminar registro?';
-    contenido.querySelector('p').textContent = 'Esta acción no se puede deshacer';
-
-    // Solución propuesta:
+    // Limpiar completamente el contenido anterior
     contenido.innerHTML = `
         <h2>¿Eliminar registro?</h2>
         <p>Esta acción no se puede deshacer</p>
@@ -525,22 +518,27 @@ export async function eliminarRegistro(fecha, producto, lote, operario) {
         </div>
     `;
 
-    const btnConfirmarNew = contenido.querySelector('.confirmar');
-    const btnCancelarNew = contenido.querySelector('.cancelar');
+    // Obtener referencias a los nuevos botones
+    const btnConfirmar = contenido.querySelector('.confirmar');
+    const btnCancelar = contenido.querySelector('.cancelar');
 
-    // Show the dialog
+    // Mostrar el diálogo
     anuncio.style.display = 'flex';
     document.querySelector('.overlay').style.display = 'block';
     document.querySelector('.container').classList.add('no-touch');
 
-    // Limpiar listeners anteriores si existen
-    const nuevoConfirmar = btnConfirmarNew.cloneNode(true);
-    const nuevoCancelar = btnCancelarNew.cloneNode(true);
-    btnConfirmarNew.parentNode.replaceChild(nuevoConfirmar, btnConfirmarNew);
-    btnCancelarNew.parentNode.replaceChild(nuevoCancelar, btnCancelarNew);
+    // Función para limpiar y cerrar el modal
+    const cerrarModal = () => {
+        anuncio.style.display = 'none';
+        document.querySelector('.overlay').style.display = 'none';
+        document.querySelector('.container').classList.remove('no-touch');
+        // Remover los event listeners
+        btnConfirmar.removeEventListener('click', handleConfirmar);
+        btnCancelar.removeEventListener('click', handleCancelar);
+    };
 
-    // Handle confirmation
-    nuevoConfirmar.onclick = async () => {
+    // Definir las funciones manejadoras
+    const handleConfirmar = async () => {
         try {
             mostrarCarga();
             const response = await fetch('/eliminar-registro', {
@@ -568,18 +566,17 @@ export async function eliminarRegistro(fecha, producto, lote, operario) {
             mostrarNotificacion('Error al eliminar el registro', 'error');
         } finally {
             ocultarCarga();
-            anuncio.style.display = 'none';
-            document.querySelector('.overlay').style.display = 'none';
-            document.querySelector('.container').classList.remove('no-touch');
+            cerrarModal();
         }
     };
 
-    // Handle cancellation
-    nuevoCancelar.onclick = () => {
-        anuncio.style.display = 'none';
-        document.querySelector('.overlay').style.display = 'none';
-        document.querySelector('.container').classList.remove('no-touch');
+    const handleCancelar = () => {
+        cerrarModal();
     };
+
+    // Agregar los event listeners a los nuevos botones
+    btnConfirmar.addEventListener('click', handleConfirmar);
+    btnCancelar.addEventListener('click', handleCancelar);
 }
 function configurarFiltros() {
     const btnFiltro = document.querySelector('.btn-filtro');
