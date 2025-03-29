@@ -12,15 +12,20 @@ import { inicializarHome } from './modules/home.js';
 import { initializeMenu } from './modules/menu.js';
 import { initializePreciosPro } from './modules/preciosPro.js';
 import { cargarNotificaciones } from './modules/advertencia.js';
+
+// Funciones del menú y navegación
 window.initializeMenu = initializeMenu;
-window.mostrarNotificacion = mostrarNotificacion;
+window.initializePreciosPro = initializePreciosPro;
+window.inicializarHome = inicializarHome;
+
+// Funciones de gestión de usuarios y permisos
 window.mostrarPermisos = mostrarPermisos;
 window.agregarPermiso = agregarPermiso;
 window.eliminarPermiso = eliminarPermiso;
 window.editarUsuario = editarUsuario;
 window.eliminarUsuario = eliminarUsuario;
 window.agregarUsuario = agregarUsuario;
-window.manejarCierreSesion = manejarCierreSesion;
+window.cargarUsuarios = cargarUsuarios;
 window.toggleAcciones = (pin) => {
     const acciones = document.getElementById(`acciones-${pin}`);
     if (acciones) {
@@ -34,18 +39,33 @@ window.toggleAcciones = (pin) => {
         acciones.classList.toggle('active');
     }
 };
+
+// Funciones de gestión de registros y pagos
 window.cargarRegistros = cargarRegistros;
 window.verificarRegistro = verificarRegistro;
+window.editarRegistro = editarRegistro;
+window.eliminarRegistro = eliminarRegistro;
+window.pagarRegistro = pagarRegistro;
+window.calcularTotal = calcularTotal;
+
+// Funciones de búsqueda y consulta de registros
 window.buscarRegistros = buscarRegistros;
 window.mostrarResultadosBusqueda = mostrarResultadosBusqueda;
+window.inicializarConsulta = inicializarConsulta;
+window.limpiarFiltros = limpiarFiltros;
+
+// Funciones de gestión de producción
 window.inicializarFormulario = inicializarFormulario;
 window.resetearFormulario = resetearFormulario;
 window.inicializarFormularioProduccion = inicializarFormularioProduccion;
 window.cargarProductos = cargarProductos;
+
+// Funciones de gestión de cuentas
 window.cargarRegistrosCuentas = cargarRegistrosCuentas;
 window.mostrarDetalles = mostrarDetalles;
 window.crearTarjetaRegistro = crearTarjetaRegistro;
-window.limpiarFiltros = limpiarFiltros;
+
+// Funciones de gestión de pedidos
 window.inicializarPedidos = inicializarPedidos;
 window.mostrarFormularioPedido = mostrarFormularioPedido;
 window.cargarPedidos = cargarPedidos;
@@ -58,6 +78,8 @@ window.finalizarPedidos = finalizarPedidos;
 window.togglePedidosArchivados = togglePedidosArchivados;
 window.togglePedidosRecibidos = togglePedidosRecibidos;
 window.procesarIngreso = procesarIngreso;
+
+// Funciones de gestión de tareas y procesos
 window.inicializarTareas = inicializarTareas;
 window.mostrarFormularioTarea = mostrarFormularioTarea;
 window.cargarTareasEnProceso = cargarTareasEnProceso;
@@ -65,28 +87,30 @@ window.iniciarCronometro = iniciarCronometro;
 window.agregarProceso = agregarProceso;
 window.pausarTarea = pausarTarea;
 window.finalizarTarea = finalizarTarea;
-window.agregarProceso = agregarProceso;
 window.finalizarProceso = finalizarProceso;
 window.mostrarProcesos = mostrarProcesos;
 window.toggleProcesos = toggleProcesos;
 window.mostrarHistorialTareas = mostrarHistorialTareas;
-window.eliminarRegistro = eliminarRegistro;
+
+// Funciones de gestión de almacén
+window.inicializarAlmacen = inicializarAlmacen;
+window.inicializarAlmacenPrima = inicializarAlmacenPrima;
 window.mostrarFormularioRechazo = mostrarFormularioRechazo;
 window.mostrarFormularioIngreso = mostrarFormularioIngreso;
 window.confirmarRechazo = confirmarRechazo;
+
+// Funciones de gestión de compras
 window.inicializarCompras = inicializarCompras;
+
+// Funciones de programación y acopio
 window.verProgramaciones = verProgramaciones;
 window.mostrarProgramaAcopio = mostrarProgramaAcopio;
-window.inicializarAlmacen = inicializarAlmacen;
-window.inicializarAlmacenPrima = inicializarAlmacenPrima;
-window.inicializarHome = inicializarHome;
-window.cargarUsuarios = cargarUsuarios;
-window.inicializarConsulta = inicializarConsulta;
-window.pagarRegistro = pagarRegistro;
-window.initializePreciosPro = initializePreciosPro;
-window.calcularTotal = calcularTotal;
+
+// Funciones de notificaciones y sesión
+window.mostrarNotificacion = mostrarNotificacion;
+window.manejarCierreSesion = manejarCierreSesion;
 window.cargarNotificaciones = cargarNotificaciones;
-window.editarRegistro = editarRegistro;
+
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -278,8 +302,7 @@ function ocultarCarga() {
 document.addEventListener('DOMContentLoaded', () => {
     iniciarApp();
     bienvenida();
-    inicializarHome();
-    
+    inicializarHome(); 
 });
 
 

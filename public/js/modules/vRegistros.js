@@ -1,4 +1,4 @@
-// Agregar al inicio del archivo
+/* ==================== VARIABLES GLOBALES Y CONFIGURACIÓN INICIAL ==================== */
 let reglasEspeciales = null;
 let preciosBase = null;
 let filtrosActivos = {
@@ -7,8 +7,12 @@ let filtrosActivos = {
     fechaHasta: '',
     estado: 'todos' // 'todos', 'verificados', 'no_verificados'
 };
+
+// Exportar funciones al scope global
 window.editarRegistro = editarRegistro;
 window.formatearFecha = formatearFecha;
+
+/* ==================== FUNCIONES DE INICIALIZACIÓN ==================== */
 async function inicializarReglas() {
     try {
         const [responseReglas, responsePrecios] = await Promise.all([
@@ -18,13 +22,14 @@ async function inicializarReglas() {
         const dataReglas = await responseReglas.json();
         const dataPrecios = await responsePrecios.json();
         
-        
         reglasEspeciales = dataReglas.reglas || [];
         preciosBase = dataPrecios.preciosBase;
     } catch (error) {
         console.error('Error al cargar reglas:', error);
     }
 }
+
+/* ==================== FUNCIONES DE CÁLCULO Y UTILIDAD ==================== */
 export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     nombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
     cantidad = parseFloat(cantidad) || 0;
@@ -74,6 +79,8 @@ export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
         cernido: resultadoSernido
     };
 }
+
+/* ==================== FUNCIONES DE MANIPULACIÓN DE UI ==================== */
 function crearOperarioCard(nombre, registros) {
     const operarioCard = document.createElement('div');
     operarioCard.className = 'fecha-card';
@@ -100,6 +107,176 @@ function crearOperarioCard(nombre, registros) {
 
     return { operarioCard, registrosContainer };
 }
+
+function crearRegistroCard(registro, esAdmin) {
+    const [dia, mes, año] = registro[0].split('/');
+    // Keep the full date format for display
+    const fechaFormateada = `${dia}/${mes}/${año}`;
+    const estaPagado = registro[12];
+
+    const registroCard = document.createElement('div');
+    registroCard.className = 'registro-card';
+    registroCard.dataset.fecha = `20${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+    registroCard.dataset.producto = registro[1];
+    registroCard.dataset.lote = registro[2];
+    registroCard.dataset.operario = registro[8];
+
+    // Solo calcular resultados si es admin
+    const resultados = esAdmin ? (estaPagado ? {
+        total: parseFloat(registro[12]),
+        envasado: 0,
+        etiquetado: 0,
+        sellado: 0,
+        cernido: 0
+    } : calcularTotal(registro[1], registro[10] ? registro[9] : registro[6], registro[3], registro[4])) : null;
+
+    // Botones para administradores
+    const botonesAdmin = esAdmin ? `
+        <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
+            <i class="fas fa-trash"></i> Eliminar
+        </button>
+        <button onclick="editarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[4]}', '${registro[5]}', '${registro[6]}', '${registro[7]}', '${registro[9] || ''}', '${registro[10] || ''}')" class="btn-editar-registro">
+            <i class="fas fa-edit"></i> Editar
+        </button>
+        ${registro[10] ? `
+            <button onclick="pagarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[9]}')" 
+                class="btn-pagar-registro"
+                ${estaPagado ? 'disabled style="background-color: #888; cursor: not-allowed;"' : ''}>
+                <i class="fas fa-dollar-sign"></i> Pagar
+            </button>
+        ` : ''}` : '';
+
+    // Botón de eliminar para usuarios normales (solo si no está verificado)
+    const botonEliminarUsuario = !esAdmin && !registro[10] ? `
+        <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
+            <i class="fas fa-trash"></i> Eliminar
+        </button>
+    ` : '';
+
+    registroCard.innerHTML = `
+        <div class="registro-header">
+            ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
+            <div class="registro-fecha">${dia}/${mes}</div>
+            <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
+            ${esAdmin ? `
+                <div class="registro-total ${!registro[10] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
+                     style="${estaPagado ? 'color: #888;' : ''}">${resultados.total.toFixed(2)} Bs.</div>
+                <i class="fas fa-info-circle info-icon"></i>
+                <div class="panel-info" ${estaPagado ? 'style="color: #888;"' : ''}>
+                    <h4>Desglose de Costos</h4>
+                    <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
+                    <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
+                    <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
+                    <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
+                    <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
+                </div>
+            ` : ''}
+        </div>
+        <div class="registro-detalles">
+            <p><span>Lote:</span> ${registro[2] || '-'}</p>
+            <p><span>Gramaje:</span> ${registro[3] || '-'}</p>
+            <p><span>Selección:</span> ${registro[4] || '-'}</p>
+            <p><span>Microondas:</span> ${registro[5] || '-'}</p>
+            <p><span>Envases:</span> ${registro[6] || '-'}</p>
+            <p><span>Vencimiento:</span> ${registro[7] || '-'}</p>
+            
+            ${registro[10] ? `
+                <p><span>Fecha Verificación:</span> ${registro[10]}</p>
+                <p><span>Cantidad Real:</span> ${registro[9] || '-'}</p>
+                <p><span>Observaciones:</span> ${registro[11] || '-'}</p>
+                <div class="acciones">
+                    ${botonesAdmin}
+                </div>
+            ` : `
+                <div class="acciones">
+                    ${!esAdmin ? `
+                        <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[4]}', '${registro[5]}', '${registro[6]}', '${registro[7]}')" class="btn-editar">
+                            <i class="fas fa-check-circle"></i> Verificar
+                        </button>
+                        ${botonEliminarUsuario}
+                    ` : botonesAdmin}
+                </div>
+            `}
+        </div>
+    `;
+
+    // Solo configurar el panel de información si es administrador
+    if (esAdmin) {
+        configurarPanelInfo(registroCard);
+    }
+    configurarEventosRegistro(registroCard);
+
+    return registroCard;
+}
+
+function configurarPanelInfo(card) {
+    const infoIcon = card.querySelector('.info-icon');
+    const panelInfo = card.querySelector('.panel-info');
+    const header = card.querySelector('.registro-header');
+
+    if (!infoIcon || !panelInfo) return;
+
+    infoIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+
+        // Cerrar todos los otros paneles primero
+        document.querySelectorAll('.panel-info.active').forEach(panel => {
+            if (panel !== panelInfo) {
+                panel.classList.remove('active');
+            }
+        });
+
+        // Toggle del panel actual
+        panelInfo.classList.toggle('active');
+    });
+
+    // Evitar que el panel se cierre al hacer clic dentro
+    panelInfo.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    // Cerrar panel al hacer clic en cualquier otro lugar
+    document.addEventListener('click', (e) => {
+        if (!infoIcon.contains(e.target) && !panelInfo.contains(e.target)) {
+            panelInfo.classList.remove('active');
+        }
+    });
+
+    // Evitar que el clic en el icono de info active los detalles
+    header.addEventListener('click', (e) => {
+        if (infoIcon.contains(e.target)) {
+            e.stopPropagation();
+        }
+    });
+}
+
+function configurarEventosRegistro(registroCard) {
+    registroCard.querySelector('.registro-header').addEventListener('click', (e) => {
+        if (!e.target.classList.contains('info-icon')) {
+            const detalles = registroCard.querySelector('.registro-detalles');
+            const infoIcon = registroCard.querySelector('.info-icon');
+            detalles.classList.toggle('active');
+
+            // Mostrar/ocultar icono de info
+            infoIcon.style.display = detalles.classList.contains('active') ? 'inline-block' : 'none';
+
+            const icono = registroCard.querySelector('.fa-chevron-down');
+            icono.style.transform = detalles.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
+        }
+    });
+}
+
+function ordenarRegistrosPorFecha(registros) {
+    return registros.sort((a, b) => {
+        const [diaA, mesA, yearA] = a[0].split('/');
+        const [diaB, mesB, yearB] = b[0].split('/');
+        const fechaA = `20${yearA}-${mesA.padStart(2, '0')}-${diaA.padStart(2, '0')}`;
+        const fechaB = `20${yearB}-${mesB.padStart(2, '0')}-${diaB.padStart(2, '0')}`;
+        return fechaB.localeCompare(fechaA);
+    });
+}
+
+/* ==================== FUNCIONES DE GESTIÓN DE REGISTROS ==================== */
 export async function cargarRegistros() {
     try {
         mostrarCarga();
@@ -190,111 +367,32 @@ export async function cargarRegistros() {
         ocultarCarga();
     }
 }
-function crearRegistroCard(registro, esAdmin) {
-    const [dia, mes, año] = registro[0].split('/');
-    // Keep the full date format for display
-    const fechaFormateada = `${dia}/${mes}/${año}`;
-    const estaPagado = registro[12];
 
-    const registroCard = document.createElement('div');
-    registroCard.className = 'registro-card';
-    registroCard.dataset.fecha = `20${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-
-    // Solo calcular resultados si es admin
-    const resultados = esAdmin ? (estaPagado ? {
-        total: parseFloat(registro[12]),
-        envasado: 0,
-        etiquetado: 0,
-        sellado: 0,
-        cernido: 0
-    } : calcularTotal(registro[1], registro[10] ? registro[9] : registro[6], registro[3], registro[4])) : null;
-
-    // Botones para administradores
-    const botonesAdmin = esAdmin ? `
-        <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
-            <i class="fas fa-trash"></i> Eliminar
-        </button>
-        <button onclick="editarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[4]}', '${registro[5]}', '${registro[6]}', '${registro[7]}', '${registro[9] || ''}', '${registro[10] || ''}')" class="btn-editar-registro">
-            <i class="fas fa-edit"></i> Editar
-        </button>
-        ${registro[10] ? `
-            <button onclick="pagarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[9]}')" 
-                class="btn-pagar-registro"
-                ${estaPagado ? 'disabled style="background-color: #888; cursor: not-allowed;"' : ''}>
-                <i class="fas fa-dollar-sign"></i> Pagar
-            </button>
-        ` : ''}` : '';
-
-    // Botón de eliminar para usuarios normales (solo si no está verificado)
-    const botonEliminarUsuario = !esAdmin && !registro[10] ? `
-        <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
-            <i class="fas fa-trash"></i> Eliminar
-        </button>
-    ` : '';
-
-    registroCard.innerHTML = `
-        <div class="registro-header">
-            ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
-            <div class="registro-fecha">${dia}/${mes}</div>
-            <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
-            ${esAdmin ? `
-                <div class="registro-total ${!registro[10] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
-                     style="${estaPagado ? 'color: #888;' : ''}">${resultados.total.toFixed(2)} Bs.</div>
-                <i class="fas fa-info-circle info-icon"></i>
-                <div class="panel-info" ${estaPagado ? 'style="color: #888;"' : ''}>
-                    <h4>Desglose de Costos</h4>
-                    <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
-                    <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
-                    <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
-                    <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
-                    <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
-                </div>
-            ` : ''}
-        </div>
-        <div class="registro-detalles">
-            <p><span>Lote:</span> ${registro[2] || '-'}</p>
-            <p><span>Gramaje:</span> ${registro[3] || '-'}</p>
-            <p><span>Selección:</span> ${registro[4] || '-'}</p>
-            <p><span>Microondas:</span> ${registro[5] || '-'}</p>
-            <p><span>Envases:</span> ${registro[6] || '-'}</p>
-            <p><span>Vencimiento:</span> ${registro[7] || '-'}</p>
-            
-            ${registro[10] ? `
-                <p><span>Fecha Verificación:</span> ${registro[10]}</p>
-                <p><span>Cantidad Real:</span> ${registro[9] || '-'}</p>
-                <p><span>Observaciones:</span> ${registro[11] || '-'}</p>
-                <div class="acciones">
-                    ${botonesAdmin}
-                </div>
-            ` : `
-                <div class="acciones">
-                    ${!esAdmin ? `
-                        <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[4]}', '${registro[5]}', '${registro[6]}', '${registro[7]}')" class="btn-editar">
-                            <i class="fas fa-check-circle"></i> Verificar
-                        </button>
-                        ${botonEliminarUsuario}
-                    ` : botonesAdmin}
-                </div>
-            `}
-        </div>
-    `;
-
-    // Solo configurar el panel de información si es administrador
-    if (esAdmin) {
-        configurarPanelInfo(registroCard);
-    }
-    configurarEventosRegistro(registroCard);
-
-    return registroCard;
-}
-export async function pagarRegistro(fecha, producto, lote, operario, gramaje, cantidadReal) {
+export async function pagarRegistro(fecha, producto, lote, operario) {
     try {
         mostrarCarga();
-        const registroCard = document.querySelector(`.registro-card[data-fecha="${fecha}"][data-producto="${producto}"][data-lote="${lote}"][data-operario="${operario}"]`);
-        if (!registroCard) return;
+        
+        // Buscar el registro card sin depender de la fecha
+        const selector = `.registro-card[data-producto="${producto}"][data-lote="${lote}"][data-operario="${operario}"]`;
+        
+        const registroCard = document.querySelector(selector);
+        if (!registroCard) {
+            console.error('No se encontró el registro card. Datos:', { producto, lote, operario });
+            mostrarNotificacion('No se encontró el registro', 'error');
+            return;
+        }
 
-        const total = registroCard.querySelector('.registro-total').textContent.replace(' Bs.', '');
+        // Obtener el total del registro
+        const totalElement = registroCard.querySelector('.registro-total');
+        if (!totalElement) {
+            console.error('No se encontró el elemento total en el registro card');
+            mostrarNotificacion('No se encontró el total del registro', 'error');
+            return;
+        }
 
+        const total = totalElement.textContent.replace(' Bs.', '');
+        
+        // Enviar la petición al servidor
         const response = await fetch('/registrar-pago', {
             method: 'POST',
             headers: {
@@ -305,16 +403,14 @@ export async function pagarRegistro(fecha, producto, lote, operario, gramaje, ca
                 producto,
                 lote,
                 operario,
-                gramaje,
-                cantidadReal,
                 total
             })
         });
 
         const data = await response.json();
+        
         if (data.success) {
             // Actualizar la UI
-            const totalElement = registroCard.querySelector('.registro-total');
             totalElement.classList.add('pagado');
             totalElement.style.color = '#888';
 
@@ -331,42 +427,19 @@ export async function pagarRegistro(fecha, producto, lote, operario, gramaje, ca
                 panelInfo.style.color = '#888';
             }
 
-            mostrarNotificacion('Pago registrado correctamente');
+            mostrarNotificacion('Pago registrado correctamente', 'success');
         } else {
-            mostrarNotificacion(data.error || 'Error al registrar el pago', 'error');
+            throw new Error(data.error || 'Error al registrar el pago');
         }
     } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al registrar el pago', 'error');
+        console.error('Error en el proceso de pago:', error);
+        mostrarNotificacion('Error al registrar el pago: ' + error.message, 'error');
     } finally {
         ocultarCarga();
-        cargarRegistros();
+        await cargarRegistros(); // Recargar los registros para actualizar la vista
     }
 }
-function configurarEventosRegistro(registroCard) {
-    registroCard.querySelector('.registro-header').addEventListener('click', (e) => {
-        if (!e.target.classList.contains('info-icon')) {
-            const detalles = registroCard.querySelector('.registro-detalles');
-            const infoIcon = registroCard.querySelector('.info-icon');
-            detalles.classList.toggle('active');
 
-            // Mostrar/ocultar icono de info
-            infoIcon.style.display = detalles.classList.contains('active') ? 'inline-block' : 'none';
-
-            const icono = registroCard.querySelector('.fa-chevron-down');
-            icono.style.transform = detalles.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
-        }
-    });
-}
-function ordenarRegistrosPorFecha(registros) {
-    return registros.sort((a, b) => {
-        const [diaA, mesA, yearA] = a[0].split('/');
-        const [diaB, mesB, yearB] = b[0].split('/');
-        const fechaA = `20${yearA}-${mesA.padStart(2, '0')}-${diaA.padStart(2, '0')}`;
-        const fechaB = `20${yearB}-${mesB.padStart(2, '0')}-${diaB.padStart(2, '0')}`;
-        return fechaB.localeCompare(fechaA);
-    });
-}
 export function verificarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
@@ -464,46 +537,7 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
         document.querySelector('.container').classList.remove('no-touch');
     });
 }
-function configurarPanelInfo(card) {
-    const infoIcon = card.querySelector('.info-icon');
-    const panelInfo = card.querySelector('.panel-info');
-    const header = card.querySelector('.registro-header');
 
-    if (!infoIcon || !panelInfo) return;
-
-    infoIcon.addEventListener('click', (e) => {
-        e.stopPropagation();
-
-        // Cerrar todos los otros paneles primero
-        document.querySelectorAll('.panel-info.active').forEach(panel => {
-            if (panel !== panelInfo) {
-                panel.classList.remove('active');
-            }
-        });
-
-        // Toggle del panel actual
-        panelInfo.classList.toggle('active');
-    });
-
-    // Evitar que el panel se cierre al hacer clic dentro
-    panelInfo.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-
-    // Cerrar panel al hacer clic en cualquier otro lugar
-    document.addEventListener('click', (e) => {
-        if (!infoIcon.contains(e.target) && !panelInfo.contains(e.target)) {
-            panelInfo.classList.remove('active');
-        }
-    });
-
-    // Evitar que el clic en el icono de info active los detalles
-    header.addEventListener('click', (e) => {
-        if (infoIcon.contains(e.target)) {
-            e.stopPropagation();
-        }
-    });
-}
 export async function eliminarRegistro(fecha, producto, lote, operario) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -578,142 +612,7 @@ export async function eliminarRegistro(fecha, producto, lote, operario) {
     btnConfirmar.addEventListener('click', handleConfirmar);
     btnCancelar.addEventListener('click', handleCancelar);
 }
-function configurarFiltros() {
-    const btnFiltro = document.querySelector('.btn-filtro');
-    const panelFiltros = document.querySelector('.panel-filtros');
-    const form = document.querySelector('.filtros-form');
-    
-    btnFiltro.addEventListener('click', () => {
-        panelFiltros.classList.toggle('active');
-    });
 
-    form.querySelector('.aplicar').addEventListener('click', () => {
-        filtrosActivos = {
-            nombre: document.getElementById('filtro-nombre').value,
-            fechaDesde: document.getElementById('filtro-fecha-desde').value,
-            fechaHasta: document.getElementById('filtro-fecha-hasta').value,
-            estado: document.getElementById('filtro-estado').value
-        };
-        aplicarFiltros();
-        panelFiltros.classList.remove('active');
-    });
-
-    form.querySelector('.limpiar').addEventListener('click', () => {
-        document.getElementById('filtro-nombre').value = '';
-        document.getElementById('filtro-fecha-desde').value = '';
-        document.getElementById('filtro-fecha-hasta').value = '';
-        document.getElementById('filtro-estado').value = 'todos';
-        filtrosActivos = {
-            nombre: '',
-            fechaDesde: '',
-            fechaHasta: '',
-            estado: 'todos'
-        };
-        aplicarFiltros();
-    });
-}
-
-function aplicarFiltros() {
-    const registrosCards = document.querySelectorAll('.registro-card');
-    const fechaCards = document.querySelectorAll('.fecha-card');
-    
-    fechaCards.forEach(card => card.style.display = 'none');
-    
-    // Remover botón existente si hay
-    const botonExistente = document.querySelector('.btn-calcular-total');
-    if (botonExistente) {
-        botonExistente.remove();
-    }
-
-    let registrosFiltrados = [];
-    
-    registrosCards.forEach(card => {
-        let mostrar = true;
-        
-        // Filtro por nombre del operario
-        if (filtrosActivos.nombre) {
-            const nombreOperario = card.closest('.fecha-card').querySelector('h3').textContent.toLowerCase();
-            mostrar = nombreOperario.includes(filtrosActivos.nombre.toLowerCase());
-        }
-
-        // Filtro por fechas
-        if (mostrar && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta)) {
-            const fechaTexto = card.querySelector('.registro-fecha').textContent;
-            const [dia, mes] = fechaTexto.split('/');
-            const año = new Date().getFullYear();
-            const fechaRegistro = `${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-
-            if (filtrosActivos.fechaDesde) {
-                mostrar = fechaRegistro >= filtrosActivos.fechaDesde;
-            }
-            
-            if (mostrar && filtrosActivos.fechaHasta) {
-                mostrar = fechaRegistro <= filtrosActivos.fechaHasta;
-            }
-        }
-
-        // Si el registro es visible y tiene un total, agregarlo a la lista
-        if (mostrar) {
-            const totalElement = card.querySelector('.registro-total');
-            if (totalElement) {
-                registrosFiltrados.push({
-                    total: parseFloat(totalElement.textContent.replace(' Bs.', '')),
-                    element: card
-                });
-            }
-        }
-
-        // Actualizar visibilidad
-        card.style.display = mostrar ? 'block' : 'none';
-        
-        if (mostrar) {
-            const fechaCard = card.closest('.fecha-card');
-            if (fechaCard) {
-                fechaCard.style.display = 'block';
-            }
-        }
-    });
-
-    // Si hay filtros activos de nombre y fechas, mostrar el botón
-    if (filtrosActivos.nombre && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta) && registrosFiltrados.length > 0) {
-        const container = document.querySelector('.verificarRegistros-view');
-        const botonCalcular = document.createElement('button');
-        botonCalcular.className = 'btn-calcular-total';
-        botonCalcular.innerHTML = '<i class="fas fa-calculator"></i> Calcular Total a Pagar';
-        botonCalcular.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 1000;
-        `;
-
-        botonCalcular.addEventListener('click', () => {
-            const totalGeneral = registrosFiltrados.reduce((sum, reg) => sum + reg.total, 0);
-            mostrarNotificacion(`Total a pagar: ${totalGeneral.toFixed(2)} Bs.`, 'success', 5000);
-        });
-
-        container.appendChild(botonCalcular);
-    }
-
-    // Actualizar contadores
-    fechaCards.forEach(fechaCard => {
-        if (fechaCard.style.display === 'block') {
-            const registrosVisibles = Array.from(fechaCard.querySelectorAll('.registro-card'))
-                .filter(r => r.style.display === 'block').length;
-            const contador = fechaCard.querySelector('.contador');
-            if (contador) {
-                contador.textContent = `${registrosVisibles} registros`;
-            }
-        }
-    });
-}
 export function editarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento, verificacion, fechaVerificacion) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
@@ -874,6 +773,146 @@ export function editarRegistro(fecha, producto, lote, operario, gramaje, selecci
         document.querySelector('.container').classList.remove('no-touch');
     });
 }
+
+/* ==================== FUNCIONES DE FILTRADO ==================== */
+function configurarFiltros() {
+    const btnFiltro = document.querySelector('.btn-filtro');
+    const panelFiltros = document.querySelector('.panel-filtros');
+    const form = document.querySelector('.filtros-form');
+    
+    btnFiltro.addEventListener('click', () => {
+        panelFiltros.classList.toggle('active');
+    });
+
+    form.querySelector('.aplicar').addEventListener('click', () => {
+        filtrosActivos = {
+            nombre: document.getElementById('filtro-nombre').value,
+            fechaDesde: document.getElementById('filtro-fecha-desde').value,
+            fechaHasta: document.getElementById('filtro-fecha-hasta').value,
+            estado: document.getElementById('filtro-estado').value
+        };
+        aplicarFiltros();
+        panelFiltros.classList.remove('active');
+    });
+
+    form.querySelector('.limpiar').addEventListener('click', () => {
+        document.getElementById('filtro-nombre').value = '';
+        document.getElementById('filtro-fecha-desde').value = '';
+        document.getElementById('filtro-fecha-hasta').value = '';
+        document.getElementById('filtro-estado').value = 'todos';
+        filtrosActivos = {
+            nombre: '',
+            fechaDesde: '',
+            fechaHasta: '',
+            estado: 'todos'
+        };
+        aplicarFiltros();
+    });
+}
+
+function aplicarFiltros() {
+    const registrosCards = document.querySelectorAll('.registro-card');
+    const fechaCards = document.querySelectorAll('.fecha-card');
+    
+    fechaCards.forEach(card => card.style.display = 'none');
+    
+    // Remover botón existente si hay
+    const botonExistente = document.querySelector('.btn-calcular-total');
+    if (botonExistente) {
+        botonExistente.remove();
+    }
+
+    let registrosFiltrados = [];
+    
+    registrosCards.forEach(card => {
+        let mostrar = true;
+        
+        // Filtro por nombre del operario
+        if (filtrosActivos.nombre) {
+            const nombreOperario = card.closest('.fecha-card').querySelector('h3').textContent.toLowerCase();
+            mostrar = nombreOperario.includes(filtrosActivos.nombre.toLowerCase());
+        }
+
+        // Filtro por fechas
+        if (mostrar && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta)) {
+            const fechaTexto = card.querySelector('.registro-fecha').textContent;
+            const [dia, mes] = fechaTexto.split('/');
+            const año = new Date().getFullYear();
+            const fechaRegistro = `${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+
+            if (filtrosActivos.fechaDesde) {
+                mostrar = fechaRegistro >= filtrosActivos.fechaDesde;
+            }
+            
+            if (mostrar && filtrosActivos.fechaHasta) {
+                mostrar = fechaRegistro <= filtrosActivos.fechaHasta;
+            }
+        }
+
+        // Si el registro es visible y tiene un total, agregarlo a la lista
+        if (mostrar) {
+            const totalElement = card.querySelector('.registro-total');
+            if (totalElement) {
+                registrosFiltrados.push({
+                    total: parseFloat(totalElement.textContent.replace(' Bs.', '')),
+                    element: card
+                });
+            }
+        }
+
+        // Actualizar visibilidad
+        card.style.display = mostrar ? 'block' : 'none';
+        
+        if (mostrar) {
+            const fechaCard = card.closest('.fecha-card');
+            if (fechaCard) {
+                fechaCard.style.display = 'block';
+            }
+        }
+    });
+
+    // Si hay filtros activos de nombre y fechas, mostrar el botón
+    if (filtrosActivos.nombre && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta) && registrosFiltrados.length > 0) {
+        const container = document.querySelector('.verificarRegistros-view');
+        const botonCalcular = document.createElement('button');
+        botonCalcular.className = 'btn-calcular-total';
+        botonCalcular.innerHTML = '<i class="fas fa-calculator"></i> Calcular Total a Pagar';
+        botonCalcular.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        `;
+
+        botonCalcular.addEventListener('click', () => {
+            const totalGeneral = registrosFiltrados.reduce((sum, reg) => sum + reg.total, 0);
+            mostrarNotificacion(`Total a pagar: ${totalGeneral.toFixed(2)} Bs.`, 'success', 5000);
+        });
+
+        container.appendChild(botonCalcular);
+    }
+
+    // Actualizar contadores
+    fechaCards.forEach(fechaCard => {
+        if (fechaCard.style.display === 'block') {
+            const registrosVisibles = Array.from(fechaCard.querySelectorAll('.registro-card'))
+                .filter(r => r.style.display === 'block').length;
+            const contador = fechaCard.querySelector('.contador');
+            if (contador) {
+                contador.textContent = `${registrosVisibles} registros`;
+            }
+        }
+    });
+}
+
+/* ==================== FUNCIONES DE UTILIDAD ==================== */
 function formatearFecha(fecha) {
     if (!fecha) {
         const hoy = new Date();

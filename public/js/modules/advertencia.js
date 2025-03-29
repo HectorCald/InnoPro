@@ -55,7 +55,7 @@ function mostrarAdvertencias(notificaciones) {
     advertenciaDiv.innerHTML = `
         <div class="advertencia-contenido">
             <h2><i class="fas fa-exclamation-triangle"></i> Notificaciones</h2>
-            <p class="consejo">Presiona (x) para elimnar una notificación</p>
+            <p class="consejo">Presiona (x) para eliminar una notificación</p>
             <div class="notificaciones-lista">
                 ${notificaciones.map(notif => `
                     <div class="notificacion-item" data-fecha="${notif.fecha}" data-origen="${notif.origen}" data-mensaje="${notif.notificacion}">

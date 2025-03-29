@@ -9,9 +9,15 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import admin from 'firebase-admin';
 
-// ... imports existentes ...
+// Configuración inicial
 dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const app = express();
+const port = process.env.PORT || 3000;
+const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';
 
+/* ==================== CONFIGURACIÓN DE FIREBASE ==================== */
 const serviceAccount = {
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
@@ -29,8 +35,40 @@ const serviceAccount = {
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCbfR1fpCDIsE8R_9RAN9lG0H9bsk2WQeQ",
+    authDomain: "damabravaapp.firebaseapp.com",
+    projectId: "damabravaapp",
+    storageBucket: "damabravaapp.firebasestorage.app",
+    messagingSenderId: "36776613676",
+    appId: "1:36776613676:web:f031d9435399a75a9afe89",
+    measurementId: "G-NX0Z9ZPC5R"
+};
+
+/* ==================== CONFIGURACIÓN DE GOOGLE SHEETS ==================== */
+const auth = new google.auth.GoogleAuth({
+    credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || 'damabrava@producciondb.iam.gserviceaccount.com',
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+    },
+    scopes: [
+        "https://www.googleapis.com/auth/spreadsheets.readonly",
+        "https://www.googleapis.com/auth/spreadsheets"
+    ]
+});
+
+/* ==================== MIDDLEWARES Y CONFIGURACIÓN DE APP ==================== */
+app.use(cors());
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.static(join(__dirname, 'public')));
+app.set('view engine', 'ejs');
+app.set('views', join(__dirname, 'views'));
+
+/* ==================== FUNCIONES DE UTILIDAD ==================== */
+// Función para enviar notificaciones push
 async function enviarNotificacion(token, titulo, mensaje) {
-    
     if (!titulo || !mensaje) {
         console.error('Título o mensaje indefinidos');
         return false;
@@ -56,52 +94,8 @@ async function enviarNotificacion(token, titulo, mensaje) {
         return false;
     }
 }
-const firebaseConfig = {
-    apiKey: "AIzaSyCbfR1fpCDIsE8R_9RAN9lG0H9bsk2WQeQ",
-    authDomain: "damabravaapp.firebaseapp.com",
-    projectId: "damabravaapp",
-    storageBucket: "damabravaapp.firebasestorage.app",
-    messagingSenderId: "36776613676",
-    appId: "1:36776613676:web:f031d9435399a75a9afe89",
-    measurementId: "G-NX0Z9ZPC5R"
-  };
 
- firebaseConfig;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-dotenv.config();
-
-
-/* ==================== CONFIGURACIÓN DE EXPRESS ==================== */
-const app = express();
-const port = process.env.PORT || 3000;
-
-
-/* ==================== CONFIGURACIÓN DE GOOGLE SHEETS ==================== */
-const auth = new google.auth.GoogleAuth({
-    credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || 'damabrava@producciondb.iam.gserviceaccount.com',
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDpmxOYH4Hun2HR\nb3mGRKyVlcsHURdC7kDpcvD+Wo5m91Z/VRJXImlw2Oe65R0uef1O3oQzIYZu9wvi\nAD7zlZxACPxrzRtIIwF4Laf4VHvCnaGKm27qeP0V7z5S61Rg+Lo1ZTc3GV717rEH\nkAfIXNDhxKi9G0D4ja97uqdfbP9atdIcCQdLlTtSmlSI0geBC2PE99Oyc2Zq4Qxv\nw4u6UwyaB75xkdUUyOBMrfxnk09vtKd0Q3xxS4sR1h+X3OiSSg1GNSxhmBnk/bcN\n/8+5k3hp+vruIVTSRgeq3FZo1LGEjqNWEcHPbjb0y8q2YT3tsJXu5UNrvbVFURIV\n6zd0p31FAgMBAAECggEAOhDD5BIg19FiHQ7aZBd51oyvNJhhcc+K7vwVDwQvVUSx\niWD5+BKjptsjbn84q67C2fHRZmw04CwkFf79pspPVlNlet42o82fteGTWNSXFp7b\n4noULc/5CJS5Jx87kAcDMfaArP9vbS3xbvHMHW+EtDmPv8GgeqetMNIKfFu5dTA3\nARn/XCtCI/njKPYlL0jA4oPDvDcT6OmHhGJLdgid0K4/A/8mcoPfFzBYGABuMaRW\nRU0JNW/oiJ5ZITRk7ZAjifAgozzL7XNUe+y6bXs9OFvUPmRmTYKwuwqb4eseU/NC\nEZIzWDIloJAK/NZtkLG8j216nRBTjRyEJz51ToMcmQKBgQD1U0/YzmyUBVd/Y4Wg\ngoNQXpJASY1KOHFqnw+XFQackZY6O9+kuLjmZKCjXoI+xMHxL7P+gv1ZG8uOdX1e\nxXmYgYybzQ6L6uOZTs44CTgcOCmzUoQTFvoMy252O3aV2yakYBylhimbbmJk4P98\nN+OyfA+jE5mgeETdsC/jOk5jfwKBgQDzxTgG8mpmoVY1DsYZJnr/hB6iNrkprkfF\njYoPu8Uh6IJeLNyMzSzV3uIkcnG94RARvFo1ojn8ZUJkIhD954NnMGgnrP++6Pvx\nsXiWjdoDaQYq4Ifnl0MU1qObZj2i++LLPq7ZbXvVWH9HxbUSd+zNTabbfNY3+vdg\nv9U4DRTxOwKBgQDC93cZotP/v08OWpW0PoUFtmMc3FeBiOH6DndhZsBeZgWyOis+\nyd+ImqhfrZhtMgnAGF1AA/I8gy5/BTihvOcqIKsSlyDcacx/5nVVa15AbxIVBZsZ\nYMVQrcwYAqH37rcDI68gjUM717oy2e2xVumKy7XRsJ4DPhHc7UzhlVD/GQKBgDBr\n6ncmzA/a2F7tslfoluIOgm9CY4FuBv+s39HEQKI9pzfBvYWSc+d/wHfw67sF68U6\nHskskkwaaReu1KU6yZVDvkyzRpHLgdA+qm9tefLXd8wokZZlK4QGJrWFl5S6aBBr\nQRwbbU+xpobBNPiYLceSNyS+JWc1SNJFCLt7jb9lAoGAcdgtuGjG640TRXHIgtry\nIvAGvdpuTezE6SrlVAi7H1i5O44vR6MB8OWlHCSzuXggInKpe9IB7itYVUDZKF0B\nXYijLlG0fk8k+LFi08A9EHrNXIHNzJW6+ESNEv9dWgM2ztCmqtaS1ZolfBdbl9Km\nGMidWNEDpUZUSaSyepJtGiM=\n-----END PRIVATE KEY-----\n"'?.replace(/\\n/g, '\n')
-    },
-    scopes: [
-        "https://www.googleapis.com/auth/spreadsheets.readonly",
-        "https://www.googleapis.com/auth/spreadsheets"
-    ]
-});
-
-
-/* ==================== MIDDLEWARES Y CONFIGURACIÓN DE APP ==================== */
-app.use(cors());
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.static(join(__dirname, 'public')));
-app.set('view engine', 'ejs');
-app.set('views', join(__dirname, 'views'));
-
-
-/* ==================== CONFIGURACIÓN DE AUTENTICACIÓN ==================== */
-const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';
+// Middleware de autenticación
 function requireAuth(req, res, next) {
     const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
     if (!token) {
@@ -116,8 +110,7 @@ function requireAuth(req, res, next) {
     }
 }
 
-
-/* ==================== FUNCIONES DE UTILIDAD ==================== */
+// Función para verificar PIN de usuario
 async function verificarPin(pin) {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -146,21 +139,22 @@ async function verificarPin(pin) {
     }
 }
 
-
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
     res.render('login');
 });
+
 app.get('/dashboard', requireAuth, (req, res) => {
     res.redirect('/dashboard_db')
 });
+
 app.get('/dashboard_alm', requireAuth, (req, res) => {
     res.redirect('dashboard_db')
 });
-app.get('/dashboard_db', requireAuth, (req, res) => {
-        res.render('dashboard_db');
-});
 
+app.get('/dashboard_db', requireAuth, (req, res) => {
+    res.render('dashboard_db');
+});
 
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
 app.post('/verificar-pin', async (req, res) => {
@@ -194,25 +188,53 @@ app.post('/verificar-pin', async (req, res) => {
         res.status(500).json({ error: 'Error al verificar el PIN' });
     }
 });
+
 app.post('/cerrar-sesion', (req, res) => {
     res.clearCookie('token');
     res.json({ mensaje: 'Sesión cerrada correctamente' });
 });
 
-
-/* ==================== RUTAS DE API - DATOS ==================== */
+/* ==================== RUTAS DE API - DATOS DE USUARIO ==================== */
 app.get('/obtener-nombre', requireAuth, (req, res) => {
     res.json({ nombre: req.user.nombre });
 });
 
+app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A:C'
+        });
 
-/* ==================== API DE PRODUCTOS ==================== */
+        const rows = response.data.values || [];
+        const usuario = rows.find(row => row[1] === req.user.nombre);
+
+        if (!usuario) {
+            return res.status(404).json({ 
+                error: 'Usuario no encontrado en la hoja de cálculo' 
+            });
+        }
+
+        res.json({ 
+            nombre: usuario[1],
+            rol: usuario[2]
+        });
+    } catch (error) {
+        console.error('Error al obtener rol:', error);
+        res.status(500).json({ 
+            error: 'Error al obtener información del usuario' 
+        });
+    }
+});
+
+/* ==================== RUTAS DE API - PRODUCTOS ==================== */
 app.get('/obtener-productos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Productos!A2:A' // Obtener solo la primera columna, excluyendo el título
+            range: 'Productos!A2:A'
         });
 
         const productos = response.data.values ? response.data.values.map(row => row[0]) : [];
@@ -226,11 +248,9 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
     }
 });
 
-
-/* ==================== API DE USUARIO ==================== */
+/* ==================== RUTAS DE API - GESTIÓN DE USUARIOS ==================== */
 app.post('/crear-usuario', requireAuth, async (req, res) => {
     try {
-
         const { nombre, pin, rol } = req.body;
 
         if (!nombre || !pin || !rol) {
@@ -267,18 +287,19 @@ app.post('/crear-usuario', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
-            success: true, 
-            message: 'Usuario creado exitosamente' 
+        res.json({
+            success: true,
+            message: 'Usuario creado exitosamente'
         });
     } catch (error) {
         console.error('Error al crear usuario:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al crear usuario: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al crear usuario: ' + error.message
         });
     }
 });
+
 app.get('/obtener-usuarios', requireAuth, async (req, res) => {
     try {
 
@@ -303,6 +324,7 @@ app.get('/obtener-usuarios', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
     try {
 
@@ -364,6 +386,7 @@ app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.put('/actualizar-usuario', requireAuth, async (req, res) => {
     try {
 
@@ -422,6 +445,228 @@ app.put('/actualizar-usuario', requireAuth, async (req, res) => {
     }
 });
 
+/* ==================== RUTAS DE API - DATOS ==================== */
+app.get('/obtener-nombre', requireAuth, (req, res) => {
+    res.json({ nombre: req.user.nombre });
+});
+
+/* ==================== API DE PRODUCTOS ==================== */
+app.get('/obtener-productos', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Productos!A2:A' // Obtener solo la primera columna, excluyendo el título
+        });
+
+        const productos = response.data.values ? response.data.values.map(row => row[0]) : [];
+        res.json({ success: true, productos });
+    } catch (error) {
+        console.error('Error al obtener productos:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener lista de productos' 
+        });
+    }
+});
+
+/* ==================== API DE USUARIO ==================== */
+app.post('/crear-usuario', requireAuth, async (req, res) => {
+    try {
+
+        const { nombre, pin, rol } = req.body;
+
+        if (!nombre || !pin || !rol) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Faltan datos requeridos' 
+            });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Verificar si el PIN ya existe
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        if (rows.some(row => row[0] === pin)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'El PIN ya está en uso' 
+            });
+        }
+
+        // Agregar nuevo usuario
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[pin, nombre, rol]]
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Usuario creado exitosamente' 
+        });
+    } catch (error) {
+        console.error('Error al crear usuario:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al crear usuario: ' + error.message 
+        });
+    }
+});
+
+app.get('/obtener-usuarios', requireAuth, async (req, res) => {
+    try {
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const usuarios = rows.map(row => ({
+            pin: row[0] || '',
+            nombre: row[1] || '',
+            rol: row[2] || ''  // Cambiamos de permisos a rol
+        }));
+
+        res.json({ success: true, usuarios });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener usuarios: ' + error.message 
+        });
+    }
+});
+
+app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
+    try {
+
+        const { pin } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener todos los usuarios
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pin);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Usuario no encontrado' 
+            });
+        }
+
+        // Get the sheet ID for Usuarios sheet
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw'
+        });
+        
+        const usuariosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Usuarios'
+        );
+
+        if (!usuariosSheet) {
+            throw new Error('Hoja de Usuarios no encontrada');
+        }
+
+        // Delete the user row
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: usuariosSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1, // +1 because we skip header
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true, message: 'Usuario eliminado correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar usuario: ' + (error.message || 'Error desconocido') 
+        });
+    }
+});
+
+app.put('/actualizar-usuario', requireAuth, async (req, res) => {
+    try {
+
+        const { pinActual, pinNuevo } = req.body;
+
+        if (!pinActual || !pinNuevo) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'PIN actual y nuevo son requeridos' 
+            });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener usuarios actuales
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pinActual);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Usuario no encontrado' 
+            });
+        }
+
+        // Verificar si el nuevo PIN ya existe
+        if (rows.some(row => row[0] === pinNuevo)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'El nuevo PIN ya está en uso' 
+            });
+        }
+
+        // Actualizar PIN
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Usuarios!A${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[pinNuevo]]
+            }
+        });
+
+        res.json({ success: true, message: 'PIN actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar PIN:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar PIN: ' + (error.message || 'Error desconocido') 
+        });
+    }
+});
 
 /* ==================== API DE REGISTRO ==================== */
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
@@ -488,6 +733,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
     try {
         
@@ -505,6 +751,7 @@ app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener registros' });
     }
 });
+
 app.get('/obtener-registros', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -520,6 +767,7 @@ app.get('/obtener-registros', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener registros' });
     }
 });
+
 app.post('/registrar-produccion', requireAuth, async (req, res) => {
     try {
         const nombreUsuario = req.user.nombre;
@@ -559,6 +807,7 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
     try {
 
@@ -577,53 +826,53 @@ app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
         });
     }
 });
-app.post('/registrar-pago', requireAuth, async (req, res) => {
-    try {
-        const { fecha, producto, lote, operario, gramaje, cantidadReal, total } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
 
-        // Buscar la fila correspondiente
+app.post('/registrar-pago', async (req, res) => {
+    try {
+        const { fecha, producto, lote, operario, total } = req.body;
+        
+        // Obtener registros de la hoja
+        const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Produccion!A2:M'
+            range: 'Produccion!A:M'
         });
 
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
+        const registros = response.data.values;
+        if (!registros || registros.length < 2) {
+            console.error('No se encontraron registros en la hoja');
+            return res.status(404).json({ success: false, error: 'No se encontraron registros' });
+        }
+
+        // Buscar el registro específico
+        const rowIndex = registros.findIndex(row => 
             row[1] === producto && 
-            row[2] === lote &&
-            row[8] === operario &&
-            row[3] === gramaje &&
-            row[9] === cantidadReal
+            row[2] === lote && 
+            row[8] === operario
         );
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Registro no encontrado' 
-            });
+            console.error('Registro no encontrado. Datos buscados:', { producto, lote, operario });
+            return res.status(404).json({ success: false, error: 'No se encontró el registro' });
         }
 
         // Actualizar el total en la columna M
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Produccion!M${rowIndex + 2}`,
+            range: `Produccion!M${rowIndex + 1}`,
             valueInputOption: 'RAW',
             resource: {
                 values: [[total]]
             }
         });
 
-        res.json({ success: true, message: 'Pago registrado correctamente' });
+        res.json({ success: true });
     } catch (error) {
         console.error('Error al registrar pago:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al registrar el pago: ' + error.message 
-        });
+        res.status(500).json({ success: false, error: 'Error al registrar el pago: ' + error.message });
     }
 });
+
 app.put('/actualizar-registro', requireAuth, async (req, res) => {
     try {
         const { 
@@ -710,7 +959,6 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
         });
     }
 });
-
 
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
@@ -841,6 +1089,7 @@ app.put('/actualizar-permisos', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-permisos/:pin', requireAuth, async (req, res) => {
     try {
 
@@ -868,6 +1117,7 @@ app.get('/obtener-permisos/:pin', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/agregar-permiso', requireAuth, async (req, res) => {
     try {
 
@@ -910,6 +1160,7 @@ app.post('/agregar-permiso', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al agregar permiso' });
     }
 });
+
 app.delete('/eliminar-permiso', requireAuth, async (req, res) => {
     try {
 
@@ -948,6 +1199,7 @@ app.delete('/eliminar-permiso', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al eliminar permiso' });
     }
 });
+
 app.get('/obtener-mis-permisos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -981,6 +1233,7 @@ app.get('/obtener-mis-permisos', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-lista-roles', requireAuth, async (req, res) => {
     try {
 
@@ -999,6 +1252,7 @@ app.get('/obtener-lista-roles', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1036,6 +1290,7 @@ app.get('/obtener-usuario-actual', requireAuth, (req, res) => {
         rol: req.user.rol 
     });
 });
+
 app.get('/obtener-detalles-pedidos/:hoja', requireAuth, async (req, res) => {
     try {
         const { hoja } = req.params;
@@ -1060,6 +1315,7 @@ app.get('/obtener-detalles-pedidos/:hoja', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-pedidos-pendientes', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1088,6 +1344,7 @@ app.get('/obtener-pedidos-pendientes', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-pedidos-recibidos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1119,6 +1376,7 @@ app.get('/obtener-pedidos-recibidos', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/procesar-ingreso', requireAuth, async (req, res) => {
     try {
         const { producto, peso, hoja, observaciones } = req.body;
@@ -1192,6 +1450,7 @@ app.post('/procesar-ingreso', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/rechazar-pedido', requireAuth, async (req, res) => {
     try {
         const { hoja, producto, razon } = req.body;
@@ -1235,6 +1494,7 @@ app.post('/rechazar-pedido', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/buscar-producto-pendiente/:nombre', requireAuth, async (req, res) => {
     try {
         const { nombre } = req.params;
@@ -1272,6 +1532,7 @@ app.get('/buscar-producto-pendiente/:nombre', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-siguiente-lote/:producto', requireAuth, async (req, res) => {
     try {
         const { producto } = req.params;
@@ -1302,6 +1563,7 @@ app.get('/obtener-siguiente-lote/:producto', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
     try {
         const { fecha, nombre } = req.body;
@@ -1369,6 +1631,7 @@ app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/finalizar-pedidos', requireAuth, async (req, res) => {
     try {
         const { pedidos } = req.body;
@@ -1411,6 +1674,7 @@ app.post('/finalizar-pedidos', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
     try {
         const { fecha, nombre } = req.body;
@@ -1511,6 +1775,7 @@ app.get('/obtener-tareas-proceso', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/actualizar-estado-tarea', requireAuth, async (req, res) => {
     try {
         const { tareaId, estado, tiempoTranscurrido } = req.body;
@@ -1544,6 +1809,7 @@ app.post('/actualizar-estado-tarea', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
 app.post('/agregar-proceso-tarea', requireAuth, async (req, res) => {
     try {
         const { tareaId, descripcion } = req.body;
@@ -1589,6 +1855,7 @@ app.post('/agregar-proceso-tarea', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
 app.post('/actualizar-proceso', requireAuth, async (req, res) => {
     try {
         const { tareaId, procesoId, estado, fin, peso } = req.body;
@@ -1639,6 +1906,7 @@ app.post('/actualizar-proceso', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
 app.get('/obtener-lista-tareas', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1656,6 +1924,7 @@ app.get('/obtener-lista-tareas', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-lista-tareas2', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1673,6 +1942,7 @@ app.get('/obtener-lista-tareas2', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/finalizar-tarea', requireAuth, async (req, res) => {
     try {
         const { tareaId, tiempoCronometro } = req.body;
@@ -1812,6 +2082,7 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-lista-pedidos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1827,6 +2098,7 @@ app.get('/obtener-lista-pedidos', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener la lista de pedidos' });
     }
 });
+
 app.get('/obtener-lotes/:producto', requireAuth, async (req, res) => {
     try {
         const { producto } = req.params;
@@ -1855,6 +2127,7 @@ app.get('/obtener-lotes/:producto', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/crear-tarea', requireAuth, async (req, res) => {
     try {
         const { nombre, peso, descripcion, fechaInicio, estado, lote } = req.body;
@@ -1953,6 +2226,7 @@ app.post('/crear-tarea', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/pausar-tarea', requireAuth, async (req, res) => {
     try {
         const { tareaId, estado, tiempoTranscurrido } = req.body;
@@ -1999,6 +2273,7 @@ app.post('/pausar-tarea', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/guardar-programa', requireAuth, async (req, res) => {
     try {
         const { programaciones } = req.body;
@@ -2046,6 +2321,7 @@ app.post('/guardar-programa', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-programaciones', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2071,6 +2347,7 @@ app.get('/obtener-programaciones', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/verificar-programa-semana', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2112,6 +2389,7 @@ app.get('/verificar-programa-semana', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.delete('/eliminar-programa-completo', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2147,6 +2425,7 @@ app.delete('/eliminar-programa-completo', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/actualizar-estado-programa', requireAuth, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
@@ -2244,6 +2523,7 @@ app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
@@ -2307,6 +2587,7 @@ app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/entregar-pedido', requireAuth, async (req, res) => {
     try {
         const { fecha, producto, cantidad, proveedor, precio, observaciones } = req.body;
@@ -2529,6 +2810,7 @@ app.get('/obtener-detalle-producto/:nombre', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-productos-almacen-prima', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2554,6 +2836,7 @@ app.get('/obtener-productos-almacen-prima', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-detalle-producto-prima/:nombre', requireAuth, async (req, res) => {
     try {
         const nombreProducto = decodeURIComponent(req.params.nombre);
@@ -2702,7 +2985,6 @@ app.get('/obtener-estadisticas-usuario', requireAuth, async (req, res) => {
     }
 });
 
-// Add this with other API routes
 app.get('/obtener-notificaciones-usuario', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2736,7 +3018,7 @@ app.get('/obtener-notificaciones-usuario', requireAuth, async (req, res) => {
         });
     }
 });
-// Add this with other API routes
+
 app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
     try {
         const { fecha, mensaje } = req.body;
@@ -2823,6 +3105,7 @@ app.get('/obtener-precios-base', requireAuth, async (req, res) => {
         
     }
 });
+
 app.post('/actualizar-precios-base', requireAuth, async (req, res) => {
     try {
         const { etiquetado, sellado, envasado, cernidoBolsa, cernidoBotes } = req.body;
@@ -2846,6 +3129,7 @@ app.post('/actualizar-precios-base', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.post('/guardar-producto-especial', requireAuth, async (req, res) => {
     try {
         const { producto, base, multiplicador, gramajeMin, gramajeMax } = req.body;
@@ -2887,6 +3171,7 @@ app.post('/guardar-producto-especial', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.get('/obtener-reglas-especiales', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2914,6 +3199,7 @@ app.get('/obtener-reglas-especiales', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
     try {
         const { producto } = req.body;
@@ -3044,6 +3330,7 @@ app.get('/obtener-notificaciones', requireAuth, async (req, res) => {
         });
     }
 });
+
 app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) => {
     try {
         const { fecha, origen, mensaje } = req.body;
