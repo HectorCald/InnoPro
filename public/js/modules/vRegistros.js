@@ -507,22 +507,40 @@ function configurarPanelInfo(card) {
 export async function eliminarRegistro(fecha, producto, lote, operario) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
+    // Problema: No se está verificando si estos elementos existen
     const btnConfirmar = anuncio.querySelector('.confirmar');
     const btnCancelar = anuncio.querySelector('.cancelar');
 
-    // Configure dialog for delete confirmation
+    // Problema: Se intenta acceder a elementos que podrían no existir
     contenido.querySelector('h2').textContent = '¿Eliminar registro?';
     contenido.querySelector('p').textContent = 'Esta acción no se puede deshacer';
-    btnConfirmar.textContent = 'Eliminar';
-    btnConfirmar.style.backgroundColor = '#dc3545';
-    btnCancelar.style.display = 'block';
+
+    // Solución propuesta:
+    contenido.innerHTML = `
+        <h2>¿Eliminar registro?</h2>
+        <p>Esta acción no se puede deshacer</p>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn confirmar">Eliminar</button>
+            <button class="anuncio-btn cancelar">Cancelar</button>
+        </div>
+    `;
+
+    const btnConfirmarNew = contenido.querySelector('.confirmar');
+    const btnCancelarNew = contenido.querySelector('.cancelar');
 
     // Show the dialog
     anuncio.style.display = 'flex';
+    document.querySelector('.overlay').style.display = 'block';
     document.querySelector('.container').classList.add('no-touch');
 
+    // Limpiar listeners anteriores si existen
+    const nuevoConfirmar = btnConfirmarNew.cloneNode(true);
+    const nuevoCancelar = btnCancelarNew.cloneNode(true);
+    btnConfirmarNew.parentNode.replaceChild(nuevoConfirmar, btnConfirmarNew);
+    btnCancelarNew.parentNode.replaceChild(nuevoCancelar, btnCancelarNew);
+
     // Handle confirmation
-    btnConfirmar.onclick = async () => {
+    nuevoConfirmar.onclick = async () => {
         try {
             mostrarCarga();
             const response = await fetch('/eliminar-registro', {
@@ -551,13 +569,15 @@ export async function eliminarRegistro(fecha, producto, lote, operario) {
         } finally {
             ocultarCarga();
             anuncio.style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
             document.querySelector('.container').classList.remove('no-touch');
         }
     };
 
     // Handle cancellation
-    btnCancelar.onclick = () => {
+    nuevoCancelar.onclick = () => {
         anuncio.style.display = 'none';
+        document.querySelector('.overlay').style.display = 'none';
         document.querySelector('.container').classList.remove('no-touch');
     };
 }

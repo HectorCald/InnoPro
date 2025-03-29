@@ -336,7 +336,6 @@ async function obtenerAtajos() {
         ocultarCarga();
     }
 }
-
 function generarAtajos(atajos) {
     if (!atajos || atajos.length === 0) return '';
 
@@ -351,7 +350,6 @@ function generarAtajos(atajos) {
         </div>
     `;
 }
-
 function manejarAtajo(vista, accion) {
     // Hide all views
     document.querySelectorAll('.view').forEach(v => {
