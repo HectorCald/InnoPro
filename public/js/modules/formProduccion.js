@@ -9,33 +9,33 @@ export function inicializarFormularioProduccion() {
         <div class="form1">
             <form action="">
                 <div class="form-group">
-                    <p>Producto *</p>
                     <input type="text" name="producto" id="producto-input" list="productos-list" 
-                           placeholder="Buscar producto..." autocomplete="off" required>
+                           placeholder=" " autocomplete="off" required>
+                    <p>Producto *</p>
                     <datalist id="productos-list"></datalist>
                 </div>
 
                 <div class="form-group">
+                    <input type="number" name="lote" placeholder=" " required>
                     <p>Lote *</p>
-                    <input type="number" name="lote" placeholder="Ingrese número de lote" required>
                 </div>
 
                 <div class="form-group">
+                    <input type="number" name="gramaje" placeholder=" " required>
                     <p>Gramaje (gr) *</p>
-                    <input type="number" name="gramaje" placeholder="Ingrese peso en gramos" required>
                 </div>
 
                 <div class="form-group">
-                    <p>Selección/Cernido *</p>
                     <select name="seleccion" required id="seleccion">
-                        <option value="">Seleccione una opción</option>
+                        <option value=""></option>
                         <option value="Cernido">Cernido</option>
                         <option value="Seleccionado">Seleccionado</option>
                     </select>
+                    <p>Selección/Cernido *</p>
                 </div>
 
                 <div class="form-group">
-                    <p>Microondas *</p>
+                    <p class="etiqueta-microondas">Microondas*</p>
                     <div class="microondas-container">
                         <div class="radio-group">
                             <input type="radio" id="micro-si" name="microondas-option" value="si" required>
@@ -50,13 +50,13 @@ export function inicializarFormularioProduccion() {
                 </div>
 
                 <div class="form-group">
+                    <input type="number" name="envasesTerminados" placeholder=" " required>
                     <p>Envases Terminados *</p>
-                    <input type="number" name="envasesTerminados" placeholder="Cantidad de envases" required>
                 </div>
 
                 <div class="form-group">
+                    <input type="month" name="fechaVencimiento" placeholder=" " required>
                     <p>Fecha de Vencimiento *</p>
-                    <input type="month" name="fechaVencimiento" required>
                 </div>
 
                 <p class="nota">
@@ -73,6 +73,7 @@ export function inicializarFormularioProduccion() {
     `;
     inicializarFormulario();
 }
+
 export function inicializarFormulario() {
     ocultarCarga();
     const form = document.querySelector('.form1 form');
@@ -146,6 +147,7 @@ export function inicializarFormulario() {
     });
     cargarProductos();
 }
+
 export function resetearFormulario() {
     const inputs = document.querySelectorAll('.form1 form input:not([type="radio"])');
     inputs.forEach(input => {
@@ -164,6 +166,7 @@ export function resetearFormulario() {
     
     document.querySelector('.microondas-tiempo').style.display = 'none';
 }
+
 export async function cargarProductos() {
     try {
         mostrarCarga();

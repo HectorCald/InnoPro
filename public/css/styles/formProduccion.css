@@ -20,7 +20,6 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 
-
     .title {
         display: flex;
         align-items: center;
@@ -38,7 +37,7 @@
     .form1 {
         background: var(--primary-color);
         border-radius: 16px;
-        padding: 20px;
+        padding: 25px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         max-width: 700px;
         margin: 0 auto;
@@ -51,14 +50,36 @@
         max-width: 800px;
         display: flex;
         flex-direction: column;
-        gap: 0;
+        gap: 5px;
         touch-action: auto;
     }
 
-    .form1 p {
+    .form-group {
+        position: relative;
+        margin-bottom: 10px;
+    }
+
+    .form-group p {
+        position: absolute;
+        left: 1em;
+        top: 50%;
+        transform: translateY(-50%);
         color: var(--primary-light);
         font-size: 0.9em;
-        margin-bottom: 0.3em;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        margin: 0;
+        background: var(--primary-color);
+        padding: 0 0.5em;
+    }
+
+    .form-group input:focus ~ p,
+    .form-group input:not(:placeholder-shown) ~ p,
+    .form-group select:focus ~ p,
+    .form-group select:not(:placeholder-shown) ~ p {
+        top: 0;
+        font-size: 0.8em;
+        color: var(--second-button);
     }
 
     .form1 input,
@@ -87,6 +108,9 @@
         background-position: right 1em center;
         background-size: 1em;
         width: 100%;
+    }
+    .etiqueta-microondas{
+        position: static !important;
     }
 
     .radio-group {
@@ -136,6 +160,7 @@
         gap: 0.5em;
         color: var(--error);
         margin: 1em 0;
+        font-size: 12px;
     }
 
     .form1 button {
@@ -157,9 +182,11 @@
         background: var(--primary-button);
         transform: translateY(-2px);
     }
+
     #seleccion{
         background-color: var(--primary-color);
     }
+
     #seleccion option{
         font-size: 15px !important;
     }

@@ -82,7 +82,6 @@ export function initializeMenu(roles, opcionesDiv, vistas) {
         'Administración': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
             { clase: 'opcion-btn', vista: 'usuarios-view', icono: 'fa-users-cog', texto: 'Usuarios', onclick: 'onclick="cargarUsuarios()"' },
-            { clase: 'opcion-btn', vista: 'consultarRegistros-view', icono: 'fa-search', texto: 'Consultar', onclick: 'onclick="inicializarConsulta()"' },
             { clase: 'opcion-btn', vista: 'compras-view', icono: 'fa-shopping-cart', texto: 'Compras', onclick: 'onclick="inicializarCompras()"' },
             { clase: 'opcion-btn', vista: 'verificarRegistros-view', icono: 'fa-check-double', texto: 'Registros', onclick: 'onclick="cargarRegistros()"' },
             { clase: 'opcion-btn', vista: 'almAcopio-view', icono: 'fa-warehouse', texto: 'Alm Bruto', onclick: 'onclick="inicializarAlmacen()"' },

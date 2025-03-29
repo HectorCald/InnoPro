@@ -1,6 +1,5 @@
 import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario, mostrarPermisos, agregarPermiso, eliminarPermiso } from './modules/users.js';
-import {editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
-import { buscarRegistros, mostrarResultadosBusqueda, inicializarConsulta, limpiarFiltros } from './modules/cRegistros.js';
+import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
 import { confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso, togglePedidosArchivados, finalizarPedidos, confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar } from './modules/newPedido.js';
@@ -47,12 +46,6 @@ window.editarRegistro = editarRegistro;
 window.eliminarRegistro = eliminarRegistro;
 window.pagarRegistro = pagarRegistro;
 window.calcularTotal = calcularTotal;
-
-// Funciones de búsqueda y consulta de registros
-window.buscarRegistros = buscarRegistros;
-window.mostrarResultadosBusqueda = mostrarResultadosBusqueda;
-window.inicializarConsulta = inicializarConsulta;
-window.limpiarFiltros = limpiarFiltros;
 
 // Funciones de gestión de producción
 window.inicializarFormulario = inicializarFormulario;
@@ -274,7 +267,7 @@ async function obtenerRolUsuario() {
 async function iniciarApp() {
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
+    const vistas = document.querySelectorAll('.preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
 
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => {

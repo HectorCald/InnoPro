@@ -87,8 +87,6 @@ function generarHighlights(highlights) {
         </div>
     `).join('');
 }
-
-
 async function obtenerNotificaciones() {
     try {
         mostrarCarga();
@@ -127,7 +125,6 @@ function calcularTiempo(fecha) {
         return `Hace ${horas} hora${horas > 1 ? 's' : ''}`;
     }
 }
-
 function inicializarEventos() {
     document.querySelectorAll('.delete-notification').forEach(button => {
         button.addEventListener('click', async (e) => {
@@ -207,7 +204,6 @@ function inicializarEventos() {
         });
     });
 }
-
 function generarNovedades(novedades) {
     return novedades.map(n => `
         <div class="update-card">
@@ -217,7 +213,6 @@ function generarNovedades(novedades) {
         </div>
     `).join('');
 }
-
 async function obtenerNovedades() {
     return [
         {
@@ -380,6 +375,4 @@ function manejarAtajo(vista, accion) {
         window[cleanAction]();
     }
 }
-
-// Add to window object
 window.manejarAtajo = manejarAtajo;
