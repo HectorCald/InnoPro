@@ -15,11 +15,10 @@
     &::-webkit-scrollbar {
         display: none;
     }
-
     -ms-overflow-style: none;
     scrollbar-width: none;
 
-
+    
     h2 {
         font-size: 16px !important;
         color: var(--primary-text) !important;

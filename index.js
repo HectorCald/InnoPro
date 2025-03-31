@@ -671,7 +671,7 @@ app.put('/actualizar-usuario', requireAuth, async (req, res) => {
 /* ==================== API DE REGISTRO ==================== */
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
-        const { fecha, producto, lote } = req.body;
+        const { fecha, producto, lote, razon } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
         // Get all records from Produccion sheet
@@ -693,6 +693,8 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
                 error: 'Registro no encontrado' 
             });
         }
+
+        const operario = rows[rowIndex][8]; // Obtener el operario del registro
 
         // Get the sheet ID for Produccion sheet
         const spreadsheet = await sheets.spreadsheets.get({
@@ -721,6 +723,36 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
                         }
                     }
                 }]
+            }
+        });
+
+        // Crear notificaciones para el operario y gerencia
+        const fechaActual = new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit'
+        });
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A:D',
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [
+                    [
+                        fechaActual,
+                        req.user.nombre,
+                        'Gerencia',
+                        `Eliminación de registro - ${producto} (Lote: ${lote}) - Razón: ${razon}`
+                    ],
+                    [
+                        fechaActual,
+                        req.user.nombre,
+                        operario,
+                        `Se ha eliminado tu registro de ${producto} (Lote: ${lote}) - Razón: ${razon}`
+                    ]
+                ]
             }
         });
 

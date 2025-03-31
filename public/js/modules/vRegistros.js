@@ -11,6 +11,7 @@ let filtrosActivos = {
 // Exportar funciones al scope global
 window.editarRegistro = editarRegistro;
 window.formatearFecha = formatearFecha;
+window.eliminarRegistro = eliminarRegistro;
 
 /* ==================== FUNCIONES DE INICIALIZACIÓN ==================== */
 async function inicializarReglas() {
@@ -555,78 +556,89 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
 }
 
 export async function eliminarRegistro(fecha, producto, lote, operario) {
-    const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
+    try {
+        const razon = await mostrarModalConfirmacion(
+            '¿Estás seguro de eliminar este registro?',
+            'Ingresa la razón de la eliminación:'
+        );
+        
+        if (!razon) return;
 
-    // Limpiar completamente el contenido anterior
-    contenido.innerHTML = `
-        <h2>¿Eliminar registro?</h2>
-        <p>Esta acción no se puede deshacer</p>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn confirmar">Eliminar</button>
-            <button class="anuncio-btn cancelar">Cancelar</button>
-        </div>
-    `;
+        mostrarCarga();
+        const response = await fetch('/eliminar-registro', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                fecha,
+                producto,
+                lote,
+                operario,
+                razon
+            })
+        });
 
-    // Obtener referencias a los nuevos botones
-    const btnConfirmar = contenido.querySelector('.confirmar');
-    const btnCancelar = contenido.querySelector('.cancelar');
-
-    // Mostrar el diálogo
-    anuncio.style.display = 'flex';
-    document.querySelector('.overlay').style.display = 'block';
-    document.querySelector('.container').classList.add('no-touch');
-
-    // Función para limpiar y cerrar el modal
-    const cerrarModal = () => {
-        anuncio.style.display = 'none';
-        document.querySelector('.overlay').style.display = 'none';
-        document.querySelector('.container').classList.remove('no-touch');
-        // Remover los event listeners
-        btnConfirmar.removeEventListener('click', handleConfirmar);
-        btnCancelar.removeEventListener('click', handleCancelar);
-    };
-
-    // Definir las funciones manejadoras
-    const handleConfirmar = async () => {
-        try {
-            mostrarCarga();
-            const response = await fetch('/eliminar-registro', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    fecha,
-                    producto,
-                    lote,
-                    operario
-                })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                mostrarNotificacion('Registro eliminado correctamente');
-                await cargarRegistros();
-            } else {
-                mostrarNotificacion(data.error || 'Error al eliminar el registro', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al eliminar el registro', 'error');
-        } finally {
-            ocultarCarga();
-            cerrarModal();
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion('Registro eliminado correctamente', 'success');
+            await cargarRegistros();
+        } else {
+            throw new Error(data.error);
         }
-    };
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al eliminar el registro', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
 
-    const handleCancelar = () => {
-        cerrarModal();
-    };
+function mostrarModalConfirmacion(titulo, mensaje) {
+    return new Promise((resolve) => {
+        const anuncio = document.querySelector('.anuncio');
+        const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+        
+        anuncioContenido.innerHTML = `
+            <h2>${titulo}</h2>
+            <div class="detalles-verificacion">
+                <div class="form-group">
+                    <textarea id="razonEliminacion" placeholder="Escribe la razon aqui..."></textarea>
+                </div>
+            </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn confirmar">Confirmar</button>
+                <button class="anuncio-btn cancelar">Cancelar</button>
+            </div>
+        `;
 
-    // Agregar los event listeners a los nuevos botones
-    btnConfirmar.addEventListener('click', handleConfirmar);
-    btnCancelar.addEventListener('click', handleCancelar);
+        anuncio.style.display = 'flex';
+        document.querySelector('.overlay').style.display = 'block';
+        document.querySelector('.container').classList.add('no-touch');
+
+        const btnConfirmar = anuncio.querySelector('.confirmar');
+        const btnCancelar = anuncio.querySelector('.cancelar');
+        const textarea = anuncio.querySelector('#razonEliminacion');
+
+        btnConfirmar.addEventListener('click', () => {
+            const razon = textarea.value.trim();
+            if (!razon) {
+                mostrarNotificacion('Por favor, ingresa una razón', 'warning');
+                return;
+            }
+            anuncio.style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+            document.querySelector('.container').classList.remove('no-touch');
+            resolve(razon);
+        });
+
+        btnCancelar.addEventListener('click', () => {
+            anuncio.style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+            document.querySelector('.container').classList.remove('no-touch');
+            resolve(null);
+        });
+    });
 }
 
 export function editarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento, verificacion, fechaVerificacion) {
