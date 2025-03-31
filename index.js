@@ -802,40 +802,77 @@ app.get('/obtener-registros', requireAuth, async (req, res) => {
 
 app.post('/registrar-produccion', requireAuth, async (req, res) => {
     try {
-        const nombreUsuario = req.user.nombre;
+        const {
+            producto,
+            lote,
+            gramaje,
+            seleccion,
+            microondas,
+            envasesTerminados,
+            fechaVencimiento
+        } = req.body;
+
         const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener la fecha actual en formato dd/mm/yy
         const fecha = new Date().toLocaleDateString('es-ES', {
-            year: 'numeric',
+            day: '2-digit',
             month: '2-digit',
-            day: '2-digit'
+            year: '2-digit'
         });
-        const values = [[
-            fecha,
-            String(req.body.producto),
-            Number(req.body.lote),
-            Number(req.body.gramaje),
-            String(req.body.seleccion),
-            Number(req.body.microondas),
-            Number(req.body.envasesTerminados),
-            String(req.body.fechaVencimiento),
-            nombreUsuario,
-            '',
-            '',
-            ''
-        ]];
-        const result = await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A2',
+
+        // Registrar en la hoja de Producción
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A:L',
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
-            resource: { values }
+            resource: {
+                values: [[
+                    fecha,
+                    producto,
+                    lote,
+                    gramaje,
+                    seleccion,
+                    microondas || 'No',
+                    envasesTerminados,
+                    fechaVencimiento,
+                    req.user.nombre, // Nombre del operario
+                    '', // Cantidad verificada (inicialmente vacía)
+                    '', // Observaciones (inicialmente vacía)
+                    'Pendiente' // Estado inicial
+                ]]
+            }
         });
-        res.json({ success: true, message: 'Registro guardado correctamente' });
+
+        // Registrar notificaciones
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A:D',
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [
+                    [
+                        fecha,
+                        req.user.nombre,
+                        'Almacen',
+                        `Nueva producción registrada - ${producto} (Lote: ${lote})`
+                    ]
+                ]
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Producción registrada correctamente',
+            nombreOperario: req.user.nombre
+        });
     } catch (error) {
-        console.error('Error detallado:', error);
+        console.error('Error al registrar producción:', error);
         res.status(500).json({ 
             success: false, 
-            error: error.message || 'Error al guardar el registro'
+            error: 'Error al registrar la producción: ' + error.message 
         });
     }
 });

@@ -82,28 +82,18 @@ export function inicializarFormulario() {
     const radioButtons = document.querySelectorAll('input[name="microondas-option"]');
     const tiempoMicroondas = document.querySelector('.microondas-tiempo');
     
-    // Mejorar UX móvil para inputs
+    // Añadir evento focus a todos los inputs para mejorar UX móvil
     const inputs = form.querySelectorAll('input, select');
     inputs.forEach(input => {
         input.addEventListener('focus', function() {
             setTimeout(() => {
-                const viewHeight = window.innerHeight;
-                const keyboardHeight = viewHeight * 0.4; // Altura estimada del teclado
                 const inputRect = this.getBoundingClientRect();
-                const offset = inputRect.top + window.scrollY - (viewHeight - keyboardHeight - 50);
-                
+                const offset = inputRect.top + window.scrollY - (window.innerHeight / 3);
                 window.scrollTo({
                     top: offset,
                     behavior: 'smooth'
                 });
-                
-                // Añadir clase para mantener visible
-                this.closest('.form-group').classList.add('input-focused');
-            }, 300);
-        });
-
-        input.addEventListener('blur', function() {
-            this.closest('.form-group').classList.remove('input-focused');
+            }, 100);
         });
     });
     
