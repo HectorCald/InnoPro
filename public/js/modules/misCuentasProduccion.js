@@ -16,7 +16,7 @@ export async function cargarRegistrosCuentas() {
         const nombreData = await nombreResponse.json();
         const nombreUsuario = nombreData.nombre;
 
-        const response = await fetch('/obtener-registros');
+        const response = await fetch('/mantenimiento');
         const data = await response.json();
 
         if (data.success) {

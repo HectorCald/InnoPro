@@ -136,7 +136,7 @@ export function inicializarFormulario() {
 
         try {
             mostrarCarga();
-            const response = await fetch('/registrar-produccion', {
+            const response = await fetch('/mantenimiento', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

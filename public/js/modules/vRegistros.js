@@ -326,7 +326,7 @@ export async function cargarRegistros() {
         const userData = await rolResponse.json();
         const esAdmin = userData.rol === 'Administración';
 
-        const response = await fetch('/obtener-todos-registros');
+        const response = await fetch('/mantenimiento');
         const data = await response.json();
 
         if (data.success) {

@@ -145,7 +145,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/dashboard', requireAuth, (req, res) => {
-    res.redirect('/mantenimiento')
+    res.redirect('/dashboard_db')
 });
 
 app.get('/dashboard_alm', requireAuth, (req, res) => {
@@ -153,6 +153,9 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
 });
 
 app.get('/dashboard_db', requireAuth, (req, res) => {
+    res.render('mantenimiento');
+});
+app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
 });
 
