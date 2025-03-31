@@ -141,19 +141,19 @@ async function verificarPin(pin) {
 
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
-    res.render('login');
+    res.render('mantenimiento');
 });
 
 app.get('/dashboard', requireAuth, (req, res) => {
-    res.redirect('/dashboard_db')
+    res.redirect('/mantenimiento')
 });
 
 app.get('/dashboard_alm', requireAuth, (req, res) => {
-    res.redirect('dashboard_db')
+    res.redirect('mantenimiento')
 });
 
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    res.render('dashboard_db');
+    res.render('mantenimiento');
 });
 
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
