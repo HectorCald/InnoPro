@@ -229,6 +229,7 @@
     .no-registros {
         color: #aaa;
         text-align: center;
+        width: 100%;
         grid-column: 1 / -1;
         padding: 2rem;
         font-size: 1.1rem;
