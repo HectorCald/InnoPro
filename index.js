@@ -3271,49 +3271,33 @@ app.get('/obtener-reglas-especiales', requireAuth, async (req, res) => {
 
 app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
     try {
-        const { producto } = req.body;
+        const reglaAEliminar = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Get current rules
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Precios produccion!A4:G'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[4] === producto);
-
-        if (rowIndex === -1) {
-            return res.status(404).json({
-                success: false,
-                error: 'Regla no encontrada'
-            });
-        }
-
-        // Get the sheet ID
+        // Obtener el ID de la hoja
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
         
-        const preciosSheet = spreadsheet.data.sheets.find(sheet => 
+        const produccionSheet = spreadsheet.data.sheets.find(sheet => 
             sheet.properties.title === 'Precios produccion'
         );
 
-        if (!preciosSheet) {
-            throw new Error('Hoja de Precios produccion no encontrada');
+        if (!produccionSheet) {
+            return res.status(404).json({ success: false, error: 'Hoja no encontrada' });
         }
 
-        // Delete the rule row (rowIndex + 4 because our range starts at A4)
+        // Eliminar la fila directamente usando el índice
         await sheets.spreadsheets.batchUpdate({
             spreadsheetId: process.env.SPREADSHEET_ID,
             resource: {
                 requests: [{
                     deleteDimension: {
                         range: {
-                            sheetId: preciosSheet.properties.sheetId,
+                            sheetId: produccionSheet.properties.sheetId,
                             dimension: 'ROWS',
-                            startIndex: rowIndex + 3, // +3 because we start at A4
-                            endIndex: rowIndex + 4
+                            startIndex: reglaAEliminar.index,
+                            endIndex: reglaAEliminar.index + 1
                         }
                     }
                 }]
@@ -3323,10 +3307,7 @@ app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
         res.json({ success: true, message: 'Regla eliminada correctamente' });
     } catch (error) {
         console.error('Error al eliminar regla:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al eliminar regla: ' + error.message
-        });
+        res.status(500).json({ success: false, error: 'Error al eliminar la regla: ' + error.message });
     }
 });
 

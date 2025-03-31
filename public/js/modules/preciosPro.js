@@ -62,18 +62,50 @@ export async function initializePreciosPro() {
                     <h3>Reglas Especiales</h3>
                    <div class="reglas-container">
                         ${reglas.map((regla, index) => `
-                            <div class="regla-item">
-                                <button class="btn-ver-detalles" 
-                                    data-producto="${regla.producto}"
-                                    data-index="${index}">
-                                    ${regla.producto}
-                                </button>
-                                <button class="btn-eliminar" 
-                                    data-producto="${regla.producto}"
-                                    data-index="${index}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                             <div class="regla-item">
+        <button class="btn-ver-detalles" 
+            data-producto="${regla.producto}"
+            data-index="${index}">
+            ${regla.producto}
+        </button>
+        <div class="regla-detalles">
+            ${regla.etiquetado !== '1' ? `
+                <div class="detalle-grupo">
+                    <label>Etiquetado:</label>
+                    <span>${regla.etiquetado}x</span>
+                </div>
+            ` : ''}
+            ${regla.sellado !== '1' ? `
+                <div class="detalle-grupo">
+                    <label>Sellado:</label>
+                    <span>${regla.sellado}x</span>
+                </div>
+            ` : ''}
+            ${regla.envasado !== '1' ? `
+                <div class="detalle-grupo">
+                    <label>Envasado:</label>
+                    <span>${regla.envasado}x</span>
+                </div>
+            ` : ''}
+            ${regla.cernido !== '1' ? `
+                <div class="detalle-grupo">
+                    <label>Cernido:</label>
+                    <span>${regla.cernido}</span>
+                </div>
+            ` : ''}
+            ${regla.gramajeMin && regla.gramajeMax ? `
+                <div class="detalle-grupo">
+                    <label>Rango de Gramaje:</label>
+                    <span>${regla.gramajeMin} - ${regla.gramajeMax}</span>
+                </div>
+            ` : ''}
+        </div>
+        <button class="btn-eliminar" 
+            data-producto="${regla.producto}"
+            data-index="${index}">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
                         `).join('')}
                     </div>
                 </div>
@@ -89,8 +121,24 @@ export async function initializePreciosPro() {
             btn.addEventListener('click', (e) => {
                 const producto = e.currentTarget.dataset.producto;
                 const index = parseInt(e.currentTarget.dataset.index);
-                const regla = reglas[index]; // Usar el índice para obtener la regla específica
-                mostrarDetallesRegla(regla);
+                const regla = reglas[index];
+                
+                if (window.innerWidth <= 768) {
+                    // En móvil, mostrar el modal
+                    mostrarDetallesRegla(regla);
+                } else {
+                    // En desktop, mostrar/ocultar detalles en línea
+                    const reglaItem = e.currentTarget.closest('.regla-item');
+                    const detalles = reglaItem.querySelector('.regla-detalles');
+                    
+                    // Cerrar otros detalles abiertos
+                    document.querySelectorAll('.regla-detalles.visible').forEach(det => {
+                        if (det !== detalles) det.classList.remove('visible');
+                    });
+                    
+                    // Toggle detalles actuales
+                    detalles.classList.toggle('visible');
+                }
             });
         });
         document.querySelectorAll('.btn-eliminar').forEach(btn => {
@@ -173,33 +221,51 @@ function mostrarDetallesRegla(regla) {
         document.querySelector('.overlay').style.display = 'none';
     });
 }
-async function eliminarRegla(producto) {
+async function eliminarRegla(producto, index) {
     try {
         mostrarCarga();
+        // Obtener las reglas actuales
+        const responseReglas = await fetch('/obtener-reglas-especiales');
+        const dataReglas = await responseReglas.json();
+        
+        if (!dataReglas.reglas || !dataReglas.reglas[index]) {
+            throw new Error('No se encontró la regla a eliminar');
+        }
+
+        const reglaAEliminar = dataReglas.reglas[index];
+
         const response = await fetch('/eliminar-regla-especial', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ producto })
+            body: JSON.stringify({
+                producto: reglaAEliminar.producto,
+                etiquetado: reglaAEliminar.etiquetado,
+                sellado: reglaAEliminar.sellado,
+                envasado: reglaAEliminar.envasado,
+                cernido: reglaAEliminar.cernido,
+                gramajeMin: reglaAEliminar.gramajeMin || '',
+                gramajeMax: reglaAEliminar.gramajeMax || '',
+                index: index + 3 // Ajustamos el índice para que coincida con la hoja
+            })
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Error en la petición al servidor');
+            throw new Error(errorData.error || 'Error al eliminar la regla');
         }
 
         const result = await response.json();
         if (result.success) {
             mostrarNotificacion('Regla eliminada correctamente', 'success', 3000);
-            // En lugar de recargar la página, reinicializamos PreciosPro
             await initializePreciosPro();
         } else {
             throw new Error(result.error || 'Error al eliminar la regla');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al eliminar la regla: ' + error.message);
+        mostrarNotificacion('Error al eliminar la regla: ' + error.message, 'error', 3000);
     } finally {
         ocultarCarga();
     }
@@ -441,6 +507,7 @@ function configurarEventosFormulario(anuncio) {
                 mostrarNotificacion('Regla especial agregada correctamente', 'success', 3000);
                 anuncio.style.display = 'none';
                 document.querySelector('.overlay').style.display = 'none';
+                await initializePreciosPro();
             } else {
                 throw new Error(result.error || 'Error al guardar la regla');
             }

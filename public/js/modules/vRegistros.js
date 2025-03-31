@@ -32,36 +32,38 @@ async function inicializarReglas() {
 
 /* ==================== FUNCIONES DE CÁLCULO Y UTILIDAD ==================== */
 export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
-    nombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+    const normalizedNombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
     cantidad = parseFloat(cantidad) || 0;
     gramaje = parseFloat(gramaje) || 0;
 
-    // Encontrar todas las reglas que aplican para este producto
-    const reglasAplicables = reglasEspeciales?.filter(r => {
-        const nombreCoincide = nombre.includes(r.producto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""));
-        const gramajeCumple = r.gramajeMin && r.gramajeMax ? 
-            (gramaje >= parseFloat(r.gramajeMin) && gramaje <= parseFloat(r.gramajeMax)) : 
-            true;
-        return nombreCoincide && gramajeCumple;
-    }) || [];
-
-    // Obtener los multiplicadores más altos para cada operación
-    const multiplicadores = {
+    // Inicializar multiplicadores con valores por defecto
+    let multiplicadores = {
         etiquetado: '1',
         sellado: '1',
         envasado: '1',
         cernido: preciosBase?.cernidoBolsa || '0'
     };
 
-    // Revisar todas las reglas aplicables y usar el multiplicador más alto para cada operación
+    // Encontrar todas las reglas que aplican para este producto
+    const reglasAplicables = reglasEspeciales?.filter(r => {
+        const nombreRegla = r.producto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+        const nombreCoincide = normalizedNombre.includes(nombreRegla);
+        const gramajeCumple = r.gramajeMin && r.gramajeMax ? 
+            (gramaje >= parseFloat(r.gramajeMin) && gramaje <= parseFloat(r.gramajeMax)) : 
+            true;
+        return nombreCoincide && gramajeCumple;
+    }) || [];
+
+    // Revisar cada regla y aplicar el multiplicador correspondiente si es diferente de 1
     reglasAplicables.forEach(regla => {
-        multiplicadores.etiquetado = Math.max(parseFloat(multiplicadores.etiquetado), parseFloat(regla.etiquetado || '1')).toString();
-        multiplicadores.sellado = Math.max(parseFloat(multiplicadores.sellado), parseFloat(regla.sellado || '1')).toString();
-        multiplicadores.envasado = Math.max(parseFloat(multiplicadores.envasado), parseFloat(regla.envasado || '1')).toString();
-        multiplicadores.cernido = Math.max(parseFloat(multiplicadores.cernido), parseFloat(regla.cernido || preciosBase?.cernidoBolsa || '0')).toString();
+        // Solo actualizar si la regla tiene un valor específico para esa operación
+        if (regla.etiquetado !== '1') multiplicadores.etiquetado = regla.etiquetado;
+        if (regla.sellado !== '1') multiplicadores.sellado = regla.sellado;
+        if (regla.envasado !== '1') multiplicadores.envasado = regla.envasado;
+        if (regla.cernido !== '1') multiplicadores.cernido = regla.cernido;
     });
 
-    // Calcular resultados usando los multiplicadores más altos encontrados
+    // Calcular resultados usando los multiplicadores encontrados
     let resultado = cantidad * preciosBase.envasado * parseFloat(multiplicadores.envasado);
     let resultadoEtiquetado = cantidad * preciosBase.etiquetado * parseFloat(multiplicadores.etiquetado);
     let resultadoSellado = cantidad * preciosBase.sellado * parseFloat(multiplicadores.sellado);
@@ -69,7 +71,7 @@ export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     let resultadoSernido = 0;
     if (seleccion === 'Cernido') {
         const kilos = (cantidad * gramaje) / 1000;
-        resultadoSernido = kilos * parseFloat(multiplicadores.cernido) * 5;
+        resultadoSernido = kilos * parseFloat(multiplicadores.cernido)*5;
     }
 
     return {
