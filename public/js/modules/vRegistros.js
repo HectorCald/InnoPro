@@ -1,3 +1,5 @@
+import { registrarNotificacion } from './advertencia.js'; 
+
 /* ==================== VARIABLES GLOBALES Y CONFIGURACIÓN INICIAL ==================== */
 let reglasEspeciales = null;
 let preciosBase = null;
@@ -125,57 +127,58 @@ function crearOperarioCard(nombre, registros) {
 }
 
 function crearRegistroCard(registro, esAdmin) {
-    const [dia, mes, año] = registro[0].split('/');
+    const [dia, mes, año] = registro[1].split('/');
     // Keep the full date format for display
     const fechaFormateada = `${dia}/${mes}/${año}`;
-    const estaPagado = registro[12];
+    const estaPagado = registro[13];
 
     const registroCard = document.createElement('div');
     registroCard.className = 'registro-card';
+    registroCard.dataset.id = registro[0];
     registroCard.dataset.fecha = `20${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-    registroCard.dataset.producto = registro[1];
-    registroCard.dataset.lote = registro[2];
-    registroCard.dataset.operario = registro[8];
+    registroCard.dataset.producto = registro[2];
+    registroCard.dataset.lote = registro[3];
+    registroCard.dataset.operario = registro[9];
 
     // Solo calcular resultados si es admin
     const resultados = esAdmin ? (estaPagado ? {
-        total: parseFloat(registro[12]),
+        total: parseFloat(registro[13]),
         envasado: 0,
         etiquetado: 0,
         sellado: 0,
         cernido: 0
-    } : calcularTotal(registro[1], registro[10] ? registro[9] : registro[6], registro[3], registro[4])) : null;
+    } : calcularTotal(registro[2], registro[11] ? registro[10] : registro[7], registro[4], registro[5])) : null;
 
     // Botones para administradores
     const botonesAdmin = esAdmin ? `
-        <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
-            <i class="fas fa-trash"></i> Eliminar
+    <button onclick="eliminarRegistro('${registro[0]}')" class="btn-eliminar-registro">
+        <i class="fas fa-trash"></i> Eliminar
+    </button>
+    <button onclick="editarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[3]}', '${registro[9]}', '${registro[4]}', '${registro[5]}', '${registro[6]}', '${registro[7]}', '${registro[8]}', '${registro[10] || ''}', '${registro[11] || ''}')" class="btn-editar-registro">
+        <i class="fas fa-edit"></i> Editar
+    </button>
+    ${registro[10] ? `
+        <button onclick="pagarRegistro('${registro[0]}')" 
+            class="btn-pagar-registro"
+            ${registro[13] ? 'disabled style="background-color: #888; cursor: not-allowed;"' : ''}>
+            <i class="fas fa-dollar-sign"></i> Pagar
         </button>
-        <button onclick="editarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[4]}', '${registro[5]}', '${registro[6]}', '${registro[7]}', '${registro[9] || ''}', '${registro[10] || ''}')" class="btn-editar-registro">
-            <i class="fas fa-edit"></i> Editar
-        </button>
-        ${registro[10] ? `
-            <button onclick="pagarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[9]}')" 
-                class="btn-pagar-registro"
-                ${estaPagado ? 'disabled style="background-color: #888; cursor: not-allowed;"' : ''}>
-                <i class="fas fa-dollar-sign"></i> Pagar
-            </button>
-        ` : ''}` : '';
+    ` : ''}` : '';
 
     // Botón de eliminar para usuarios normales (solo si no está verificado)
-    const botonEliminarUsuario = !esAdmin && !registro[10] ? `
-        <button onclick="eliminarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}')" class="btn-eliminar-registro">
+    const botonEliminarUsuario = !esAdmin && !registro[11] ? `
+        <button onclick="eliminarRegistro('${registro[0]}')" class="btn-eliminar-registro">
             <i class="fas fa-trash"></i> Eliminar
         </button>
     ` : '';
 
     registroCard.innerHTML = `
         <div class="registro-header">
-            ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
+            ${registro[11] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
             <div class="registro-fecha">${dia}/${mes}</div>
-            <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
+            <div class="registro-producto">${registro[2] || 'Sin producto'}</div>
             ${esAdmin ? `
-                <div class="registro-total ${!registro[10] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
+                <div class="registro-total ${!registro[11] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
                      style="${estaPagado ? 'color: #888;' : ''}">${resultados.total.toFixed(2)} Bs.</div>
                 <i class="fas fa-info-circle info-icon"></i>
                 <div class="panel-info" ${estaPagado ? 'style="color: #888;"' : ''}>
@@ -189,24 +192,24 @@ function crearRegistroCard(registro, esAdmin) {
             ` : ''}
         </div>
         <div class="registro-detalles">
-            <p><span>Lote:</span> ${registro[2] || '-'}</p>
-            <p><span>Gramaje:</span> ${registro[3] || '-'}</p>
-            <p><span>Selección:</span> ${registro[4] || '-'}</p>
-            <p><span>Microondas:</span> ${registro[5] || '-'}</p>
-            <p><span>Envases:</span> ${registro[6] || '-'}</p>
-            <p><span>Vencimiento:</span> ${registro[7] || '-'}</p>
+            <p><span>Lote:</span> ${registro[3] || '-'}</p>
+            <p><span>Gramaje:</span> ${registro[4] || '-'}</p>
+            <p><span>Selección:</span> ${registro[5] || '-'}</p>
+            <p><span>Microondas:</span> ${registro[6] || '-'}</p>
+            <p><span>Envases:</span> ${registro[7] || '-'}</p>
+            <p><span>Vencimiento:</span> ${registro[8] || '-'}</p>
             
-            ${registro[10] ? `
-                <p><span>Fecha Verificación:</span> ${registro[10]}</p>
-                <p><span>Cantidad Real:</span> ${registro[9] || '-'}</p>
-                <p><span>Observaciones:</span> ${registro[11] || '-'}</p>
+            ${registro[11] ? `
+                <p><span>Fecha Verificación:</span> ${registro[11]}</p>
+                <p><span>Cantidad Real:</span> ${registro[10] || '-'}</p>
+                <p><span>Observaciones:</span> ${registro[12] || '-'}</p>
                 <div class="acciones">
                     ${botonesAdmin}
                 </div>
             ` : `
                 <div class="acciones">
                     ${!esAdmin ? `
-                        <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[8]}', '${registro[3]}', '${registro[4]}', '${registro[5]}', '${registro[6]}', '${registro[7]}')" class="btn-editar">
+                        <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[9]}', '${registro[7]}')" class="btn-editar">
                             <i class="fas fa-check-circle"></i> Verificar
                         </button>
                         ${botonEliminarUsuario}
@@ -309,11 +312,25 @@ function configurarEventosRegistro(registroCard) {
 
 function ordenarRegistrosPorFecha(registros) {
     return registros.sort((a, b) => {
-        const [diaA, mesA, yearA] = a[0].split('/');
-        const [diaB, mesB, yearB] = b[0].split('/');
-        const fechaA = `20${yearA}-${mesA.padStart(2, '0')}-${diaA.padStart(2, '0')}`;
-        const fechaB = `20${yearB}-${mesB.padStart(2, '0')}-${diaB.padStart(2, '0')}`;
-        return fechaB.localeCompare(fechaA);
+        try {
+            // Ignorar el ID y usar el índice 1 para la fecha
+            const fechaA = a[1] || '';
+            const fechaB = b[1] || '';
+
+            if (!fechaA || !fechaB) return 0;
+
+            // Convertir fechas (dd/mm/yy) a formato comparable
+            const [diaA, mesA, yearA] = fechaA.split('/');
+            const [diaB, mesB, yearB] = fechaB.split('/');
+
+            const fechaFormateadaA = `20${yearA}-${mesA}-${diaA}`;
+            const fechaFormateadaB = `20${yearB}-${mesB}-${diaB}`;
+
+            return fechaFormateadaB.localeCompare(fechaFormateadaA);
+        } catch (error) {
+            console.error('Error al ordenar fechas:', error);
+            return 0;
+        }
     });
 }
 
@@ -326,7 +343,7 @@ export async function cargarRegistros() {
         const userData = await rolResponse.json();
         const esAdmin = userData.rol === 'Administración';
 
-        const response = await fetch('/mantenimiento');
+        const response = await fetch('/obtener-todos-registros');
         const data = await response.json();
 
         if (data.success) {
@@ -343,15 +360,17 @@ export async function cargarRegistros() {
                     </button>
                 </div>`;
 
-            const registrosPorOperario = {};
-            data.registros.slice(1).forEach(registro => {
-                if (!registro[8]) return;
-                if (!registrosPorOperario[registro[8]]) {
-                    registrosPorOperario[registro[8]] = [];
-                }
-                registrosPorOperario[registro[8]].push(registro);
-            });
-
+                const registrosPorOperario = {};
+                data.registros.slice(1).forEach(registro => {
+                    // El operario ahora está en el índice 9 (era 8 antes)
+                    const operario = registro[9];
+                    if (!operario) return;
+                    
+                    if (!registrosPorOperario[operario]) {
+                        registrosPorOperario[operario] = [];
+                    }
+                    registrosPorOperario[operario].push(registro);
+                });
             const nombresOrdenados = Object.keys(registrosPorOperario).sort();
 
             for (const nombre of nombresOrdenados) {
@@ -387,27 +406,20 @@ export async function cargarRegistros() {
         ocultarCarga();
     }
 }
-
-export async function pagarRegistro(fecha, producto, lote, operario) {
+export async function pagarRegistro(id) {
     try {
         mostrarCarga();
 
-        // Buscar el registro card sin depender de la fecha
-        const selector = `.registro-card[data-producto="${producto}"][data-lote="${lote}"][data-operario="${operario}"]`;
-
-        const registroCard = document.querySelector(selector);
+        // Buscar el registro card por ID
+        const registroCard = document.querySelector(`.registro-card[data-id="${id}"]`);
         if (!registroCard) {
-            console.error('No se encontró el registro card. Datos:', { producto, lote, operario });
-            mostrarNotificacion('No se encontró el registro', 'error');
-            return;
+            throw new Error('No se encontró el registro');
         }
 
         // Obtener el total del registro
         const totalElement = registroCard.querySelector('.registro-total');
         if (!totalElement) {
-            console.error('No se encontró el elemento total en el registro card');
-            mostrarNotificacion('No se encontró el total del registro', 'error');
-            return;
+            throw new Error('No se encontró el total del registro');
         }
 
         const total = totalElement.textContent.replace(' Bs.', '');
@@ -418,13 +430,7 @@ export async function pagarRegistro(fecha, producto, lote, operario) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                fecha,
-                producto,
-                lote,
-                operario,
-                total
-            })
+            body: JSON.stringify({ id, total })
         });
 
         const data = await response.json();
@@ -456,11 +462,10 @@ export async function pagarRegistro(fecha, producto, lote, operario) {
         mostrarNotificacion('Error al registrar el pago: ' + error.message, 'error');
     } finally {
         ocultarCarga();
-        await cargarRegistros(); // Recargar los registros para actualizar la vista
+        await cargarRegistros();
     }
 }
-
-export function verificarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento) {
+export function verificarRegistro(id, fecha, producto, operario, envases) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
@@ -468,6 +473,7 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
         <h2>Verificar Registro</h2>
         <div class="detalles-verificacion">
             <div class="form-group">
+                <input type="hidden" id="registro-id" value="${id}">
                 <label>Fecha: <span>${fecha}</span></label>
                 <label>Producto: <span>${producto}</span></label>
                 <label>Operario: <span>${operario}</span></label>
@@ -475,6 +481,7 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
             </div>
             <form id="form-verificacion">
                 <div class="form-group">
+                    <label for="cantidad-real">Cantidad Real:</label>
                     <input type="number" id="cantidad-real" required min="0" step="1" placeholder="Cantidad Real">
                 </div>
                 <div class="form-group">
@@ -482,6 +489,7 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
                     <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly>
                 </div>
                 <div class="form-group">
+                    <label for="observaciones">Observaciones:</label>
                     <textarea id="observaciones" rows="3" placeholder="Observaciones (se enviará como notificación al operario)"></textarea>
                 </div>
             </form>
@@ -511,30 +519,38 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
 
         try {
             mostrarCarga();
+            // Get current user
+            const userResponse = await fetch('/obtener-mi-rol');
+            const userData = await userResponse.json();
+            const usuarioActual = userData.nombre;
+
             const response = await fetch('/actualizar-verificacion', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    fecha,
-                    producto,
-                    lote,
-                    operario,
+                    id,
                     verificacion: cantidadReal,
                     fechaVerificacion,
                     observaciones,
-                    gramaje,
-                    seleccion,
-                    microondas,
-                    envases,
-                    vencimiento,
                     cantidadDeclarada: envases
                 })
             });
 
             const data = await response.json();
             if (data.success) {
+                // Send notification to operator
+                try {
+                    await registrarNotificacion(
+                        usuarioActual, // origin (current user)
+                        operario,     // destination (operator)
+                        `Se ha verificado tu registro (${producto}). Cantidad declarada: ${envases}, Cantidad real: ${cantidadReal}. ${observaciones ? `Observaciones: ${observaciones}` : ''}`
+                    );
+                } catch (notifError) {
+                    console.error('Error al enviar notificación:', notifError);
+                }
+
                 mostrarNotificacion(data.mensaje || 'Verificación guardada correctamente');
                 anuncio.style.display = 'none';
                 document.querySelector('.overlay').style.display = 'none';
@@ -545,7 +561,7 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al guardar la verificación: ' + error.message);
+            mostrarNotificacion('Error al guardar la verificación: ' + error.message, 'error');
         } finally {
             ocultarCarga();
         }
@@ -557,46 +573,70 @@ export function verificarRegistro(fecha, producto, lote, operario, gramaje, sele
         document.querySelector('.container').classList.remove('no-touch');
     });
 }
-
-export async function eliminarRegistro(fecha, producto, lote, operario) {
+export async function eliminarRegistro(id) {
     try {
         const razon = await mostrarModalConfirmacion(
-            '¿Estás seguro de eliminar este registro?',
-            'Ingresa la razón de la eliminación:'
+            'Eliminar Registro',
+            '¿Estás seguro de que deseas eliminar este registro?'
         );
 
         if (!razon) return;
 
         mostrarCarga();
+
+        // Get current user first
+        const userResponse = await fetch('/obtener-mi-rol');
+        const userData = await userResponse.json();
+        const usuarioActual = userData.nombre;
+
+        // Get the record card to extract information
+        const registroCard = document.querySelector(`.registro-card[data-id="${id}"]`);
+        if (!registroCard) {
+            throw new Error('No se encontró el registro');
+        }
+
+        const producto = registroCard.dataset.producto;
+        const lote = registroCard.dataset.lote;
+        const operario = registroCard.dataset.operario;
+
         const response = await fetch('/eliminar-registro', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                fecha,
-                producto,
-                lote,
-                operario,
-                razon
+                id: id,
+                razon: razon
             })
         });
 
         const data = await response.json();
+
         if (data.success) {
+            try {
+                // Register notification with proper error handling
+                await registrarNotificacion(
+                    usuarioActual,
+                    operario,
+                    `Registro eliminado - Producto: ${producto}, Lote: ${lote}. Razón: ${razon}`
+                );
+            } catch (notifError) {
+                console.error('Error al enviar notificación:', notifError);
+                // Continue execution even if notification fails
+            }
+
             mostrarNotificacion('Registro eliminado correctamente', 'success');
             await cargarRegistros();
         } else {
-            throw new Error(data.error);
+            throw new Error(data.error || 'Error al eliminar el registro');
         }
     } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al eliminar el registro', 'error');
+        console.error('Error al eliminar registro:', error);
+        mostrarNotificacion('Error al eliminar el registro: ' + error.message, 'error');
     } finally {
         ocultarCarga();
     }
 }
-
 function mostrarModalConfirmacion(titulo, mensaje) {
     return new Promise((resolve) => {
         const anuncio = document.querySelector('.anuncio');
@@ -643,8 +683,7 @@ function mostrarModalConfirmacion(titulo, mensaje) {
         });
     });
 }
-
-export function editarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento, verificacion, fechaVerificacion) {
+export function editarRegistro(id, fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento, verificacion, fechaVerificacion) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
@@ -652,6 +691,7 @@ export function editarRegistro(fecha, producto, lote, operario, gramaje, selecci
         <h2>Editar Registro</h2>
         <div class="detalles-verificacion">
             <form id="form-edicion">
+                <input type="hidden" id="edit-id" value="${id}">
                 <div class="form-group">
                     <label for="edit-fecha">Fecha:</label>
                     <input type="text" id="edit-fecha" value="${fecha}" required>
@@ -737,7 +777,7 @@ export function editarRegistro(fecha, producto, lote, operario, gramaje, selecci
             } catch (error) {
                 console.error('Error al buscar productos:', error);
             }
-        }, 300); // Debounce delay of 300ms
+        }, 300);
     });
 
     anuncio.style.display = 'flex';
@@ -754,24 +794,26 @@ export function editarRegistro(fecha, producto, lote, operario, gramaje, selecci
             return;
         }
 
-        const datosActualizados = {
-            fechaOriginal: fecha,
-            productoOriginal: producto,
-            loteOriginal: lote,
-            operarioOriginal: operario,
-            fecha: document.getElementById('edit-fecha').value,
-            producto: document.getElementById('edit-producto').value,
-            lote: document.getElementById('edit-lote').value,
-            gramaje: document.getElementById('edit-gramaje').value,
-            seleccion: document.getElementById('edit-seleccion').value,
-            microondas: document.getElementById('edit-microondas').value,
-            envases: document.getElementById('edit-envases').value,
-            vencimiento: document.getElementById('edit-vencimiento').value,
-            razonEdicion
-        };
-
         try {
             mostrarCarga();
+            // Get current user
+            const userResponse = await fetch('/obtener-mi-rol');
+            const userData = await userResponse.json();
+            const usuarioActual = userData.nombre;
+
+            const datosActualizados = {
+                id: document.getElementById('edit-id').value,
+                fecha: document.getElementById('edit-fecha').value,
+                producto: document.getElementById('edit-producto').value,
+                lote: document.getElementById('edit-lote').value,
+                gramaje: document.getElementById('edit-gramaje').value,
+                seleccion: document.getElementById('edit-seleccion').value,
+                microondas: document.getElementById('edit-microondas').value,
+                envases: document.getElementById('edit-envases').value,
+                vencimiento: document.getElementById('edit-vencimiento').value,
+                razonEdicion
+            };
+
             const response = await fetch('/actualizar-registro', {
                 method: 'PUT',
                 headers: {
@@ -782,6 +824,17 @@ export function editarRegistro(fecha, producto, lote, operario, gramaje, selecci
 
             const data = await response.json();
             if (data.success) {
+                // Send notification to operator
+                try {
+                    await registrarNotificacion(
+                        usuarioActual,     // origin (current user)
+                        operario,          // destination (operator)
+                        `Se editó tu registro (${producto}-${lote}). Razón: ${razonEdicion}`
+                    );
+                } catch (notifError) {
+                    console.error('Error al enviar notificación:', notifError);
+                }
+
                 mostrarNotificacion('Registro actualizado correctamente');
                 anuncio.style.display = 'none';
                 document.querySelector('.overlay').style.display = 'none';
@@ -804,7 +857,6 @@ export function editarRegistro(fecha, producto, lote, operario, gramaje, selecci
         document.querySelector('.container').classList.remove('no-touch');
     });
 }
-
 /* ==================== FUNCIONES DE FILTRADO ==================== */
 function configurarFiltros() {
     const btnFiltro = document.querySelector('.btn-filtro');
@@ -903,7 +955,6 @@ function configurarFiltros() {
         anuncioContenido.querySelector('.cancelar').addEventListener('click', cerrarModal);
     });
 }
-
 function aplicarFiltros() {
     const registrosCards = document.querySelectorAll('.registro-card');
     const fechaCards = document.querySelectorAll('.fecha-card');
@@ -972,11 +1023,14 @@ function aplicarFiltros() {
     });
 
     // Si hay filtros activos de nombre y fechas, mostrar el botón
+        // ... rest of the filtering code remains the same ...
+
+    // Si hay filtros activos de nombre y fechas, mostrar el botón
     if (filtrosActivos.nombre && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta) && registrosFiltrados.length > 0) {
         const container = document.querySelector('.verificarRegistros-view');
         const botonCalcular = document.createElement('button');
         botonCalcular.className = 'btn-calcular-total';
-        botonCalcular.innerHTML = '<i class="fas fa-calculator"></i> Calcular Total a Pagar';
+        botonCalcular.innerHTML = '<i class="fas fa-dollar-sign"></i> Pagar';
         botonCalcular.style.cssText = `
             position: fixed;
             bottom: 20px;
@@ -993,11 +1047,23 @@ function aplicarFiltros() {
 
         botonCalcular.addEventListener('click', () => {
             const totalGeneral = registrosFiltrados.reduce((sum, reg) => sum + reg.total, 0);
-            mostrarNotificacion(`Total a pagar: ${totalGeneral.toFixed(2)} Bs.`, 'success', 5000);
+            mostrarComprobantePago(
+                registrosFiltrados.map(reg => ({
+                    fecha: reg.element.dataset.fecha,
+                    producto: reg.element.dataset.producto,
+                    lote: reg.element.dataset.lote,
+                    operario: reg.element.dataset.operario
+                })),
+                filtrosActivos.fechaDesde,
+                filtrosActivos.fechaHasta,
+                totalGeneral
+            );
         });
 
         container.appendChild(botonCalcular);
     }
+
+    // ... rest of the code remains the same ...
 
     // Actualizar contadores
     fechaCards.forEach(fechaCard => {
@@ -1011,7 +1077,6 @@ function aplicarFiltros() {
         }
     });
 }
-
 /* ==================== FUNCIONES DE UTILIDAD ==================== */
 function formatearFecha(fecha) {
     if (!fecha) {

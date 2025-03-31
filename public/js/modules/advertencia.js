@@ -28,9 +28,15 @@ export async function cargarNotificaciones() {
                 }
             }
 
+            // Mostrar el div de advertencias antes de llamar a mostrarAdvertencias
+            const advertenciaDiv = document.querySelector('.advertencia');
+            if (advertenciaDiv) {
+                advertenciaDiv.style.display = 'flex';
+                document.querySelector('.container').classList.add('no-touch');
+            }
+
             if (!notificacionesFiltradas || notificacionesFiltradas.length === 0) {
                 mostrarNotificacion('No tienes notificaciones nuevas', 'info');
-                const advertenciaDiv = document.querySelector('.advertencia');
                 if (advertenciaDiv) {
                     advertenciaDiv.style.display = 'none';
                     document.querySelector('.container').classList.remove('no-touch');
@@ -45,7 +51,6 @@ export async function cargarNotificaciones() {
         mostrarNotificacion('Error al cargar notificaciones', 'error');
     }
 }
-
 function mostrarAdvertencias(notificaciones) {
     const advertenciaDiv = document.querySelector('.advertencia');
     if (!notificaciones || notificaciones.length === 0) {
@@ -63,105 +68,62 @@ function mostrarAdvertencias(notificaciones) {
             dosDiasDespues.setDate(dosDiasDespues.getDate() + 2);
 
             if (new Date() > dosDiasDespues) {
-                // Eliminar automáticamente si han pasado 2 días
                 fetch('/eliminar-notificacion-advertencia', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fecha: notif.fecha,
-                        origen: notif.origen,
-                        mensaje: notif.notificacion
-                    })
+                    body: JSON.stringify({ id: notif.id })
                 });
             }
         }
     });
 
+    // Mostrar la interfaz de notificaciones
+    mostrarInterfazNotificaciones(advertenciaDiv, notificaciones);
+    
+    // Configurar manejadores de eventos
+    configurarManejadoresEventos(advertenciaDiv);
+}
+
+function mostrarInterfazNotificaciones(advertenciaDiv, notificaciones) {
     advertenciaDiv.innerHTML = `
         <div class="advertencia-contenido">
             <h2><i class="fas fa-exclamation-triangle"></i> Notificaciones</h2>
             <p class="consejo">Presiona (x) para eliminar una notificación</p>
             <div class="notificaciones-lista">
                 ${notificaciones.map(notif => `
-                    <div class="notificacion-item" data-fecha="${notif.fecha}" data-origen="${notif.origen}" data-mensaje="${notif.notificacion}">
+                    <div class="notificacion-item" data-id="${notif.id}" data-destino="${notif.destino}">
                         <div class="notif-header">
                             <div class="notif-info">
                                 <span class="fecha">${notif.fecha}</span>
                                 <span class="origen">De: ${notif.origen}</span>
                             </div>
-                            ${notif.origen !== 'Desarrollador' ? `
-                                <button class="btn-eliminar-notif" title="Eliminar notificación">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            ` : ''}
+                            <button class="btn-eliminar-notif" data-id="${notif.id}">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                         <p class="mensaje">${notif.notificacion}</p>
                     </div>
                 `).join('')}
             </div>
-            <div class="confirmacion-lectura" style="display: none; margin: 10px 0;">
-            <label style="display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" id="confirmarLectura" required>
-                <span>Confirmo que he leído todas las notificaciones</span>
-            </label>
-        </div>
-        <div class="anuncio-botones">
-            <button class="btn-aceptar">Aceptar</button>
-            <button class="btn-aceptar-eliminar">Aceptar y Eliminar</button>
-        </div>
+            <div class="confirmacion-lectura" style="display: none;">
+                <label>
+                    <input type="checkbox" id="confirmarLectura">
+                    <span>Confirmo que he leído todas las notificaciones</span>
+                </label>
+            </div>
+            <div class="anuncio-botones">
+                <button class="btn-aceptar">Aceptar</button>
+                <button class="btn-aceptar-eliminar">Aceptar y Eliminar</button>
+            </div>
         </div>
     `;
+}
 
-    advertenciaDiv.style.display = 'flex';
-    document.querySelector('.container').classList.add('no-touch');
-
-    // Configurar botones de eliminar
-    advertenciaDiv.querySelectorAll('.btn-eliminar-notif').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const notifItem = btn.closest('.notificacion-item');
-            const fecha = notifItem.dataset.fecha;
-            const origen = notifItem.dataset.origen;
-            const mensaje = notifItem.dataset.mensaje;
-
-            try {
-                mostrarCarga();
-                const response = await fetch('/eliminar-notificacion-advertencia', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ fecha, origen, mensaje })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    notifItem.remove();
-                    const remainingNotifications = advertenciaDiv.querySelectorAll('.notificacion-item').length;
-
-                    // Actualizar el contador después de eliminar
-                    const badge = document.getElementById('notificationBadge');
-                    if (badge) {
-                        if (remainingNotifications > 0) {
-                            badge.textContent = remainingNotifications;
-                        } else {
-                            badge.style.display = 'none';
-                        }
-                    }
-
-                    if (remainingNotifications === 0) {
-                        advertenciaDiv.style.display = 'none';
-                        document.querySelector('.container').classList.remove('no-touch');
-                    }
-                } else {
-                    console.error('Error:', data.error);
-                }
-            } catch (error) {
-                console.error('Error al eliminar notificación:', error);
-            } finally {
-                ocultarCarga();
-            }
-        });
+function configurarManejadoresEventos(advertenciaDiv) {
+    // Configurar botones de eliminar individuales
+    const deleteButtons = advertenciaDiv.querySelectorAll('.btn-eliminar-notif');
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', eliminarNotificacionIndividual);
     });
 
     // Configurar el botón de aceptar
@@ -170,55 +132,154 @@ function mostrarAdvertencias(notificaciones) {
         advertenciaDiv.style.display = 'none';
         document.querySelector('.container').classList.remove('no-touch');
     });
-    // En el evento click del botón aceptar y eliminar
+
+    // Configurar el botón aceptar y eliminar
     const btnAceptarEliminar = advertenciaDiv.querySelector('.btn-aceptar-eliminar');
-    btnAceptarEliminar.addEventListener('click', async () => {
-        const confirmacionDiv = advertenciaDiv.querySelector('.confirmacion-lectura');
-        const checkbox = advertenciaDiv.querySelector('#confirmarLectura');
-        
-        // Si el checkbox no está visible, mostrarlo y salir
-        if (confirmacionDiv.style.display === 'none') {
-            confirmacionDiv.style.display = 'block';
-            return;
-        }
-    
-        // Verificar si el checkbox está marcado
-        if (!checkbox.checked) {
-            mostrarNotificacion('Debes confirmar que has leído todas las notificaciones', 'warning');
-            return;
-        }
-    
-        try {
-            mostrarCarga();
-            const userResponse = await fetch('/obtener-mi-rol');
-            const userData = await userResponse.json();
-    
-            const response = await fetch('/eliminar-todas-notificaciones', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    nombre: userData.nombre,
-                    rol: userData.rol
-                })
-            });
-    
-            const data = await response.json();
-            if (data.success) {
-                mostrarNotificacion('Tus notificaciones han sido eliminadas', 'success');
-                advertenciaDiv.style.display = 'none';
-                document.querySelector('.container').classList.remove('no-touch');
-                const badge = document.getElementById('notificationBadge');
-                if (badge) badge.style.display = 'none';
-            } else {
-                throw new Error(data.error);
+    btnAceptarEliminar.addEventListener('click', eliminarNotificacionesUsuarioActual);
+}
+
+async function eliminarNotificacionIndividual(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const id = e.currentTarget.dataset.id;
+    console.log('Attempting to delete notification with ID:', id);
+
+    try {
+        mostrarCarga();
+        const response = await fetch('/eliminar-notificacion-advertencia', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            const notifItem = e.currentTarget.closest('.notificacion-item');
+            notifItem.remove();
+
+            // Update notification count
+            const advertenciaDiv = document.querySelector('.advertencia');
+            const remainingNotifs = advertenciaDiv.querySelectorAll('.notificacion-item').length;
+            const badge = document.getElementById('notificationBadge');
+            
+            if (badge) {
+                if (remainingNotifs > 0) {
+                    badge.textContent = remainingNotifs;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                    advertenciaDiv.style.display = 'none';
+                    document.querySelector('.container').classList.remove('no-touch');
+                }
             }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al eliminar las notificaciones', 'error');
-        } finally {
-            ocultarCarga();
+            mostrarNotificacion('Notificación eliminada correctamente', 'success');
+        } else {
+            throw new Error(data.error || 'Error al eliminar la notificación');
         }
-    });
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+        mostrarNotificacion('Error al eliminar la notificación', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+
+async function eliminarNotificacionesUsuarioActual() {
+    const advertenciaDiv = document.querySelector('.advertencia');
+    const confirmacionDiv = advertenciaDiv.querySelector('.confirmacion-lectura');
+    const checkbox = advertenciaDiv.querySelector('#confirmarLectura');
+    
+    if (confirmacionDiv.style.display === 'none') {
+        confirmacionDiv.style.display = 'block';
+        return;
+    }
+
+    if (!checkbox.checked) {
+        mostrarNotificacion('Debes confirmar que has leído todas las notificaciones', 'warning');
+        return;
+    }
+
+    try {
+        mostrarCarga();
+        const userResponse = await fetch('/obtener-mi-rol');
+        const userData = await userResponse.json();
+        const nombreUsuarioActual = userData.nombre;
+        const rolUsuarioActual = userData.rol;
+
+        // Obtener solo las notificaciones que coinciden con el usuario o rol actual
+        const notificacionesAEliminar = Array.from(advertenciaDiv.querySelectorAll('.notificacion-item'))
+            .filter(item => {
+                const destino = item.getAttribute('data-destino');
+                return destino === nombreUsuarioActual || destino === rolUsuarioActual;
+            })
+            .map(item => ({
+                id: item.dataset.id,
+                fecha: item.querySelector('.fecha').textContent,
+                mensaje: item.querySelector('.mensaje').textContent
+            }));
+
+        // Verificar si hay notificaciones para eliminar
+        if (notificacionesAEliminar.length === 0) {
+            mostrarNotificacion('No tienes notificaciones para eliminar', 'info');
+            return;
+        }
+
+        // Eliminar todas las notificaciones en una sola petición
+        const response = await fetch('/eliminar-todas-notificaciones', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nombre: nombreUsuarioActual,
+                rol: rolUsuarioActual,
+                notificaciones: notificacionesAEliminar
+            })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion('Todas las notificaciones han sido eliminadas', 'success');
+            advertenciaDiv.style.display = 'none';
+            document.querySelector('.container').classList.remove('no-touch');
+            const badge = document.getElementById('notificationBadge');
+            if (badge) badge.style.display = 'none';
+            
+            // Eliminar visualmente las notificaciones
+            notificacionesAEliminar.forEach(notif => {
+                const item = advertenciaDiv.querySelector(`[data-id="${notif.id}"]`);
+                if (item) item.remove();
+            });
+        } else {
+            throw new Error(data.error || 'Error al eliminar las notificaciones');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al eliminar las notificaciones', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+export async function registrarNotificacion(origen, destino, mensaje) {
+    try {
+        const response = await fetch('/registrar-notificacion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origen,
+                destino,
+                notificacion: mensaje
+            })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Error al registrar la notificación');
+        }
+
+        return data.id; // Returns the generated notification ID
+    } catch (error) {
+        console.error('Error al registrar notificación:', error);
+        throw error;
+    }
 }

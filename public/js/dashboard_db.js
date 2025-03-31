@@ -10,9 +10,9 @@ import { inicializarAlmacenPrima } from './modules/almPrima.js';
 import { inicializarHome } from './modules/home.js';
 import { initializeMenu } from './modules/menu.js';
 import { initializePreciosPro } from './modules/preciosPro.js';
-import { cargarNotificaciones } from './modules/advertencia.js';
+import { cargarNotificaciones} from './modules/advertencia.js';
 
-// Funciones del menú y navegación
+// Funciones del menú y navegación,
 window.initializeMenu = initializeMenu;
 window.initializePreciosPro = initializePreciosPro;
 window.inicializarHome = inicializarHome;
@@ -103,6 +103,7 @@ window.mostrarProgramaAcopio = mostrarProgramaAcopio;
 window.mostrarNotificacion = mostrarNotificacion;
 window.manejarCierreSesion = manejarCierreSesion;
 window.cargarNotificaciones = cargarNotificaciones;
+
 
 async function bienvenida() {
     try {
@@ -297,6 +298,31 @@ function mostrarCarga() {
 function ocultarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'none';
+}
+export async function registrarNotificacion(origen, destino, mensaje) {
+    try {
+        const response = await fetch('/registrar-notificacion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origen,
+                destino,
+                notificacion: mensaje
+            })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Error al registrar la notificación');
+        }
+
+        return data.id; // Returns the generated notification ID
+    } catch (error) {
+        console.error('Error al registrar notificación:', error);
+        throw error;
+    }
 }
 document.addEventListener('DOMContentLoaded', () => {
     iniciarApp();

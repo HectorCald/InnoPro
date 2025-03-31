@@ -141,7 +141,7 @@ async function verificarPin(pin) {
 
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
-    res.render('mantenimiento');
+    res.render('login');
 });
 
 app.get('/dashboard', requireAuth, (req, res) => {
@@ -149,11 +149,11 @@ app.get('/dashboard', requireAuth, (req, res) => {
 });
 
 app.get('/dashboard_alm', requireAuth, (req, res) => {
-    res.redirect('mantenimiento')
+    res.redirect('dashboard_db')
 });
 
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    res.render('mantenimiento');
+    res.render('dashboard_db');
 });
 app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
@@ -674,21 +674,17 @@ app.put('/actualizar-usuario', requireAuth, async (req, res) => {
 /* ==================== API DE REGISTRO ==================== */
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
-        const { fecha, producto, lote, razon } = req.body;
+        const { id, razon } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
         // Get all records from Produccion sheet
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A:L'
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A:M'
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[1] === producto && 
-            row[2] === lote
-        );
+        const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
             return res.status(404).json({ 
@@ -697,11 +693,14 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
             });
         }
 
-        const operario = rows[rowIndex][8]; // Obtener el operario del registro
+        const registro = rows[rowIndex];
+        const operario = registro[9]; // Índice del operario
+        const producto = registro[2]; // Índice del producto
+        const lote = registro[3];     // Índice del lote
 
         // Get the sheet ID for Produccion sheet
         const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw'
+            spreadsheetId: process.env.SPREADSHEET_ID
         });
         
         const produccionSheet = spreadsheet.data.sheets.find(sheet => 
@@ -714,7 +713,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
 
         // Delete the row
         await sheets.spreadsheets.batchUpdate({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            spreadsheetId: process.env.SPREADSHEET_ID,
             resource: {
                 requests: [{
                     deleteDimension: {
@@ -726,36 +725,6 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
                         }
                     }
                 }]
-            }
-        });
-
-        // Crear notificaciones para el operario y gerencia
-        const fechaActual = new Date().toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit'
-        });
-
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Notificaciones!A:D',
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [
-                    [
-                        fechaActual,
-                        req.user.nombre,
-                        'Gerencia',
-                        `Eliminación de registro - ${producto} (Lote: ${lote}) - Razón: ${razon}`
-                    ],
-                    [
-                        fechaActual,
-                        req.user.nombre,
-                        operario,
-                        `Se ha eliminado tu registro de ${producto} (Lote: ${lote}) - Razón: ${razon}`
-                    ]
-                ]
             }
         });
 
@@ -771,15 +740,14 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
 
 app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
     try {
-        
-
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A:M'
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A:N'  // Get all columns including ID
         });
 
         const rows = response.data.values || [];
+        // Return all rows including headers
         res.json({ success: true, registros: rows });
     } catch (error) {
         console.error('Error al obtener registros:', error);
@@ -792,7 +760,7 @@ app.get('/obtener-registros', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Produccion!A:L'
+            range: 'Produccion!B:L'
         });
         const rows = response.data.values || [];
         const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
@@ -817,21 +785,47 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
 
         const sheets = google.sheets({ version: 'v4', auth });
         
-        // Obtener la fecha actual en formato dd/mm/yy
+        // Get current records to determine the next ID
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A2:A'
+        });
+
+        const existingIds = response.data.values || [];
+        let nextId = 1;
+
+        if (existingIds.length > 0) {
+            // Extract numeric values from IDs (e.g., "R-75" -> 75)
+            const numericIds = existingIds
+            .map(row => {
+                const match = (row[0] || '').match(/RP-(\d+)/);
+                return match ? parseInt(match[1]) : 0;
+            })
+                .filter(id => !isNaN(id));
+
+            // Get the next ID number
+            nextId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+        }
+
+        // Format ID as "R-XX"
+        const formattedId = `RP-${nextId}`;
+
+        // Get current date in dd/mm/yy format
         const fecha = new Date().toLocaleDateString('es-ES', {
             day: '2-digit',
             month: '2-digit',
             year: '2-digit'
         });
 
-        // Registrar en la hoja de Producción
+        // Register in Production sheet
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Produccion!A:L',
+            range: 'Produccion!A:M',
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
             resource: {
                 values: [[
+                    formattedId,
                     fecha,
                     producto,
                     lote,
@@ -840,36 +834,19 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
                     microondas || 'No',
                     envasesTerminados,
                     fechaVencimiento,
-                    req.user.nombre, // Nombre del operario
-                    '', // Cantidad verificada (inicialmente vacía)
-                    '', // Observaciones (inicialmente vacía)
-                    'Pendiente' // Estado inicial
+                    req.user.nombre,
+                    '', // Verified quantity (initially empty)
+                    '', // Observations (initially empty)
+                    'Pendiente' // Initial status
                 ]]
-            }
-        });
-
-        // Registrar notificaciones
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Notificaciones!A:D',
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [
-                    [
-                        fecha,
-                        req.user.nombre,
-                        'Almacen',
-                        `Nueva producción registrada - ${producto} (Lote: ${lote})`
-                    ]
-                ]
             }
         });
 
         res.json({ 
             success: true, 
             message: 'Producción registrada correctamente',
-            nombreOperario: req.user.nombre
+            nombreOperario: req.user.nombre,
+            id: formattedId
         });
     } catch (error) {
         console.error('Error al registrar producción:', error);
@@ -899,75 +876,61 @@ app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
     }
 });
 
-app.post('/registrar-pago', async (req, res) => {
+app.post('/registrar-pago', requireAuth, async (req, res) => {
     try {
-        const { fecha, producto, lote, operario, total } = req.body;
-        
-        // Obtener registros de la hoja
+        const { id, total } = req.body;
+        if (!id || !total) {
+            return res.status(400).json({ success: false, error: 'ID y total son requeridos' });
+        }
+
         const sheets = google.sheets({ version: 'v4', auth });
+        const range = 'Produccion!A2:N';  // Changed from 'Registros' to 'Produccion' to match your sheet name
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Produccion!A:M'
+            range,
         });
 
-        const registros = response.data.values;
-        if (!registros || registros.length < 2) {
-            console.error('No se encontraron registros en la hoja');
-            return res.status(404).json({ success: false, error: 'No se encontraron registros' });
-        }
-
-        // Buscar el registro específico
-        const rowIndex = registros.findIndex(row => 
-            row[1] === producto && 
-            row[2] === lote && 
-            row[8] === operario
-        );
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            console.error('Registro no encontrado. Datos buscados:', { producto, lote, operario });
-            return res.status(404).json({ success: false, error: 'No se encontró el registro' });
+            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
         }
 
-        // Actualizar el total en la columna M
+        // Actualizar el pago en la columna N (índice 13)
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Produccion!M${rowIndex + 1}`,
-            valueInputOption: 'RAW',
+            range: `Produccion!N${rowIndex + 2}`,  // Changed from 'Registros' to 'Produccion'
+            valueInputOption: 'USER_ENTERED',
             resource: {
                 values: [[total]]
             }
         });
 
-        res.json({ success: true });
+        res.json({ success: true, mensaje: 'Pago registrado correctamente' });
     } catch (error) {
         console.error('Error al registrar pago:', error);
-        res.status(500).json({ success: false, error: 'Error al registrar el pago: ' + error.message });
+        res.status(500).json({ success: false, error: 'Error al registrar el pago' });
     }
 });
 
 app.put('/actualizar-registro', requireAuth, async (req, res) => {
     try {
         const { 
-            fechaOriginal, productoOriginal, loteOriginal, operarioOriginal,
-            fecha, producto, lote, gramaje, seleccion, microondas, envases, 
-            vencimiento, razonEdicion 
+            id, fecha, producto, lote, gramaje, seleccion, 
+            microondas, envases, vencimiento, razonEdicion 
         } = req.body;
 
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Obtener registros actuales
+        // Get all records
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Produccion!A2:L'
+            range: 'Produccion!A:M'
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fechaOriginal &&
-            row[1] === productoOriginal &&
-            row[2] === loteOriginal &&
-            row[8] === operarioOriginal
-        );
+        const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
             return res.status(404).json({ 
@@ -976,10 +939,13 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
             });
         }
 
-        // Actualizar registro
+        const registro = rows[rowIndex];
+        const operarioOriginal = registro[9];
+
+        // Update the record
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Produccion!A${rowIndex + 2}:H${rowIndex + 2}`,
+            range: `Produccion!B${rowIndex + 1}:I${rowIndex + 1}`,
             valueInputOption: 'USER_ENTERED',
             resource: {
                 values: [[
@@ -988,34 +954,10 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
                     lote,
                     gramaje,
                     seleccion,
-                    microondas,
+                    microondas || 'No',
                     envases,
                     vencimiento
                 ]]
-            }
-        });
-
-        // Crear notificaciones para gerencia y operario
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Notificaciones!A:D',
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [
-                    [
-                        new Date().toLocaleDateString(),
-                        req.user.nombre,
-                        'Gerencia',
-                        `Edición de registro - ${producto} (Lote: ${lote}): ${razonEdicion}`
-                    ],
-                    [
-                        new Date().toLocaleDateString(),
-                        req.user.nombre,
-                        operarioOriginal,
-                        `Se ha modificado tu registro de ${productoOriginal} (Lote: ${loteOriginal}).Razón: ${razonEdicion}`
-                    ]
-                ]
             }
         });
 
@@ -1032,46 +974,44 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
     }
 });
 
+
+
+
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
-        const { fecha, producto, lote, operario, verificacion, fechaVerificacion, observaciones, gramaje, seleccion, microondas, envases, vencimiento, cantidadDeclarada } = req.body;
+        const { 
+            id, verificacion, fechaVerificacion, 
+            observaciones, cantidadDeclarada 
+        } = req.body;
+
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Obtener todos los registros
+        // Get all records
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Produccion!A2:L'
+            range: 'Produccion!A:M'
         });
 
         const rows = response.data.values || [];
-        
-        // Encontrar el índice exacto verificando todos los campos
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fecha &&           // Fecha
-            row[1] === producto &&        // Producto
-            row[2] === lote &&           // Lote
-            row[3] === gramaje &&        // Gramaje
-            row[4] === seleccion &&      // Selección
-            row[5] === microondas &&     // Microondas
-            row[6] === envases &&       // Cantidad
-            row[7] === vencimiento &&    // Vencimiento
-            row[8] === operario &&       // Operario
-            !row[9] &&                   // Verificación vacía
-            !row[10]                     // Fecha verificación vacía
-        );
+        const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
             return res.status(404).json({ 
                 success: false, 
-                error: 'Registro no encontrado o ya verificado' 
+                error: 'Registro no encontrado' 
             });
         }
 
-        // Actualizar la verificación
+        const registro = rows[rowIndex];
+        const operario = registro[9];
+        const producto = registro[2];
+        const lote = registro[3];
+
+        // Update verification data
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Produccion!J${rowIndex + 2}:L${rowIndex + 2}`,
+            range: `Produccion!K${rowIndex + 1}:M${rowIndex + 1}`,
             valueInputOption: 'USER_ENTERED',
             resource: {
                 values: [[
@@ -1081,31 +1021,6 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
                 ]]
             }
         });
-
-        // Agregar notificación si hay observaciones o si hay diferencia en las cantidades
-        const diferenciaCantidad = parseInt(cantidadDeclarada) !== parseInt(verificacion);
-        if (observaciones || diferenciaCantidad) {
-            let mensajeNotificacion = `Verificación de ${producto} (Lote: ${lote}): `;
-            mensajeNotificacion += `Cantidad declarada: ${cantidadDeclarada}, Cantidad real: ${verificacion}`;
-            if (observaciones) {
-                mensajeNotificacion += `. Observaciones: ${observaciones}`;
-            }
-
-            await sheets.spreadsheets.values.append({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Notificaciones!A:D',
-                valueInputOption: 'USER_ENTERED',
-                insertDataOption: 'INSERT_ROWS',
-                resource: {
-                    values: [[
-                        fechaVerificacion,
-                        req.user.nombre,
-                        operario,
-                        mensajeNotificacion
-                    ]]
-                }
-            });
-        }
 
         res.json({ 
             success: true,
@@ -3363,15 +3278,16 @@ app.get('/obtener-notificaciones', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Notificaciones!A2:D'
+            range: 'Notificaciones!A2:E'
         });
 
         const rows = response.data.values || [];
         const notificaciones = rows.map(row => ({
-            fecha: row[0] || '',
-            origen: row[1] || '',
-            destino: row[2] || '',
-            notificacion: row[3] || ''
+            id: row[0] || '',        // Add ID from first column
+            fecha: row[1] || '',
+            origen: row[2] || '',
+            destino: row[3] || '',
+            notificacion: row[4] || ''
         }));
 
         res.json({ success: true, notificaciones });
@@ -3383,24 +3299,19 @@ app.get('/obtener-notificaciones', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) => {
     try {
-        const { fecha, origen, mensaje } = req.body;
+        const { id } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
-        // Obtener todas las notificaciones
+        // Get all notifications
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Notificaciones!A2:D'
+            range: 'Notificaciones!A2:E'  // Include all columns
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[1] === origen &&
-            row[3] === mensaje  // Agregar comparación del mensaje
-        );
+        const rowIndex = rows.findIndex(row => row[0] === id);  // ID is in first column
 
         if (rowIndex === -1) {
             return res.status(404).json({ 
@@ -3409,7 +3320,7 @@ app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) =
             });
         }
 
-        // Obtener el ID de la hoja
+        // Get the sheet ID
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
@@ -3422,7 +3333,7 @@ app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) =
             throw new Error('Hoja de Notificaciones no encontrada');
         }
 
-        // Eliminar la fila
+        // Delete the row
         await sheets.spreadsheets.batchUpdate({
             spreadsheetId: process.env.SPREADSHEET_ID,
             resource: {
@@ -3431,7 +3342,7 @@ app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) =
                         range: {
                             sheetId: notificacionesSheet.properties.sheetId,
                             dimension: 'ROWS',
-                            startIndex: rowIndex + 1, // +1 porque empezamos desde A2
+                            startIndex: rowIndex + 1, // +1 because we start from A2
                             endIndex: rowIndex + 2
                         }
                     }
@@ -3450,22 +3361,22 @@ app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) =
 });
 app.delete('/eliminar-todas-notificaciones', requireAuth, async (req, res) => {
     try {
-        const { nombre, rol } = req.body;
+        const { nombre, rol, notificaciones } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
-        // Obtener todas las notificaciones
+        // Obtener todas las notificaciones incluyendo el header
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Notificaciones!A:D'
+            range: 'Notificaciones!A1:E'
         });
 
         const rows = response.data.values || [];
-        const headerRow = rows[0]; // Guardar la fila de encabezado
+        const header = rows[0];  // Guardar el header
         
-        // Filtrar las filas que NO son del usuario actual (las que mantendremos)
-        const filasAMantener = rows.filter((row, index) => {
-            if (index === 0) return true; // Mantener el encabezado
-            return row[2] !== nombre && row[2] !== rol; // Mantener si el destino no coincide
+        // Filtrar las filas que NO son del usuario actual
+        const filasAMantener = rows.slice(1).filter(row => {
+            const destino = row[3]; // Columna D (índice 3)
+            return destino !== nombre && destino !== rol;
         });
 
         // Obtener el ID de la hoja de Notificaciones
@@ -3481,43 +3392,95 @@ app.delete('/eliminar-todas-notificaciones', requireAuth, async (req, res) => {
             throw new Error('Hoja de Notificaciones no encontrada');
         }
 
-        // Limpiar toda la hoja
-        await sheets.spreadsheets.batchUpdate({
+        // Limpiar solo las filas de datos, no el header
+        await sheets.spreadsheets.values.clear({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            resource: {
-                requests: [{
-                    updateCells: {
-                        range: {
-                            sheetId: notificacionesSheet.properties.sheetId,
-                            startRowIndex: 0
-                        },
-                        fields: 'userEnteredValue'
-                    }
-                }]
-            }
+            range: 'Notificaciones!A2:E'
         });
 
-        // Escribir las filas filtradas
+        // Escribir las filas filtradas manteniendo el header
         if (filasAMantener.length > 0) {
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Notificaciones!A1',
+                range: 'Notificaciones!A1:E',   
                 valueInputOption: 'RAW',
                 resource: {
-                    values: filasAMantener
+                    values: [header, ...filasAMantener]  // Incluir el header
                 }
             });
         }
 
         res.json({ 
             success: true, 
-            message: 'Notificaciones eliminadas correctamente' 
+            message: 'Notificaciones eliminadas correctamente',
+            notificacionesEliminadas: notificaciones
         });
     } catch (error) {
         console.error('Error al eliminar notificaciones:', error);
         res.status(500).json({ 
             success: false, 
             error: 'Error al eliminar notificaciones: ' + error.message 
+        });
+    }
+});
+app.post('/registrar-notificacion', requireAuth, async (req, res) => {
+    try {
+        const { origen, destino, notificacion } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get current notifications to determine the next ID
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A2:A'
+        });
+
+        const existingIds = response.data.values || [];
+        let nextId = 1;
+
+        if (existingIds.length > 0) {
+            const numericIds = existingIds
+                .map(row => {
+                    const match = (row[0] || '').match(/NA-(\d+)/);  // Changed from N- to NA-
+                    return match ? parseInt(match[1]) : 0;
+                })
+                .filter(id => !isNaN(id));
+
+            nextId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+        }
+
+        const formattedId = `NA-${nextId}`;  // Changed from N- to NA-
+        const fecha = new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit'
+        });
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A2:E',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[
+                    formattedId,
+                    fecha,
+                    origen,
+                    destino,
+                    notificacion
+                ]]
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Notificación registrada correctamente',
+            id: formattedId
+        });
+    } catch (error) {
+        console.error('Error al registrar notificación:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al registrar la notificación: ' + error.message 
         });
     }
 });

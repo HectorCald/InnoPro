@@ -1,3 +1,4 @@
+import { registrarNotificacion } from './advertencia.js'; 
 export function inicializarFormularioProduccion() {
     mostrarCarga();
     const container = document.querySelector('.formProduccion-view');
@@ -136,7 +137,12 @@ export function inicializarFormulario() {
 
         try {
             mostrarCarga();
-            const response = await fetch('/mantenimiento', {
+            // Get current user first
+            const userResponse = await fetch('/obtener-mi-rol');
+            const userData = await userResponse.json();
+            const usuarioActual = userData.nombre;
+
+            const response = await fetch('/registrar-produccion', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -147,6 +153,17 @@ export function inicializarFormulario() {
             const result = await response.json();
             
             if (result.success) {
+                // Send notification to Almacen
+                try {
+                    await registrarNotificacion(
+                        usuarioActual,    // origin (current user)
+                        'Almacen',        // destination
+                        `Se registró una nueva producción de ${data.producto}`
+                    );
+                } catch (notifError) {
+                    console.error('Error al enviar notificación:', notifError);
+                }
+
                 mostrarNotificacion('Registro guardado correctamente','success');
                 resetearFormulario();
             } else {
