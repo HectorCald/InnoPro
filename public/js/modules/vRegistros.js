@@ -22,7 +22,7 @@ async function inicializarReglas() {
         ]);
         const dataReglas = await responseReglas.json();
         const dataPrecios = await responsePrecios.json();
-        
+
         reglasEspeciales = dataReglas.reglas || [];
         preciosBase = dataPrecios.preciosBase;
     } catch (error) {
@@ -48,8 +48,8 @@ export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     const reglasAplicables = reglasEspeciales?.filter(r => {
         const nombreRegla = r.producto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
         const nombreCoincide = normalizedNombre.includes(nombreRegla);
-        const gramajeCumple = r.gramajeMin && r.gramajeMax ? 
-            (gramaje >= parseFloat(r.gramajeMin) && gramaje <= parseFloat(r.gramajeMax)) : 
+        const gramajeCumple = r.gramajeMin && r.gramajeMax ?
+            (gramaje >= parseFloat(r.gramajeMin) && gramaje <= parseFloat(r.gramajeMax)) :
             true;
         return nombreCoincide && gramajeCumple;
     }) || [];
@@ -67,11 +67,14 @@ export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     let resultado = cantidad * preciosBase.envasado * parseFloat(multiplicadores.envasado);
     let resultadoEtiquetado = cantidad * preciosBase.etiquetado * parseFloat(multiplicadores.etiquetado);
     let resultadoSellado = cantidad * preciosBase.sellado * parseFloat(multiplicadores.sellado);
-    
+    if (normalizedNombre.includes('bote')) {
+        resultadoSellado = cantidad * 0.025;
+    }
+
     let resultadoSernido = 0;
     if (seleccion === 'Cernido') {
         const kilos = (cantidad * gramaje) / 1000;
-        resultadoSernido = kilos * parseFloat(multiplicadores.cernido)*5;
+        resultadoSernido = kilos * parseFloat(multiplicadores.cernido) * 5;
     }
 
     return {
@@ -296,8 +299,8 @@ function configurarEventosRegistro(registroCard) {
             // Si el registro está abierto, desplazar la pantalla para mostrarlo completo
             if (detalles.classList.contains('active')) {
                 setTimeout(() => {
-                    registroCard.scrollIntoView({ 
-                        behavior: 'smooth', 
+                    registroCard.scrollIntoView({
+                        behavior: 'smooth',
                         block: 'center'
                     });
                 }, 100);
@@ -330,7 +333,7 @@ export async function cargarRegistros() {
 
         if (data.success) {
             const container = document.querySelector('.verificarRegistros-view');
-            
+
             // Agregar header con título y botón de filtro
             container.innerHTML = `
                 <div class="filtros-header">
@@ -390,10 +393,10 @@ export async function cargarRegistros() {
 export async function pagarRegistro(fecha, producto, lote, operario) {
     try {
         mostrarCarga();
-        
+
         // Buscar el registro card sin depender de la fecha
         const selector = `.registro-card[data-producto="${producto}"][data-lote="${lote}"][data-operario="${operario}"]`;
-        
+
         const registroCard = document.querySelector(selector);
         if (!registroCard) {
             console.error('No se encontró el registro card. Datos:', { producto, lote, operario });
@@ -410,7 +413,7 @@ export async function pagarRegistro(fecha, producto, lote, operario) {
         }
 
         const total = totalElement.textContent.replace(' Bs.', '');
-        
+
         // Enviar la petición al servidor
         const response = await fetch('/registrar-pago', {
             method: 'POST',
@@ -427,7 +430,7 @@ export async function pagarRegistro(fecha, producto, lote, operario) {
         });
 
         const data = await response.json();
-        
+
         if (data.success) {
             // Actualizar la UI
             totalElement.classList.add('pagado');
@@ -462,7 +465,7 @@ export async function pagarRegistro(fecha, producto, lote, operario) {
 export function verificarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-    
+
     anuncioContenido.innerHTML = `
         <h2>Verificar Registro</h2>
         <div class="detalles-verificacion">
@@ -563,7 +566,7 @@ export async function eliminarRegistro(fecha, producto, lote, operario) {
             '¿Estás seguro de eliminar este registro?',
             'Ingresa la razón de la eliminación:'
         );
-        
+
         if (!razon) return;
 
         mostrarCarga();
@@ -600,7 +603,7 @@ function mostrarModalConfirmacion(titulo, mensaje) {
     return new Promise((resolve) => {
         const anuncio = document.querySelector('.anuncio');
         const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-        
+
         anuncioContenido.innerHTML = `
             <h2>${titulo}</h2>
             <div class="detalles-verificacion">
@@ -646,7 +649,7 @@ function mostrarModalConfirmacion(titulo, mensaje) {
 export function editarRegistro(fecha, producto, lote, operario, gramaje, seleccion, microondas, envases, vencimiento, verificacion, fechaVerificacion) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-    
+
     anuncioContenido.innerHTML = `
         <h2>Editar Registro</h2>
         <div class="detalles-verificacion">
@@ -704,7 +707,7 @@ export function editarRegistro(fecha, producto, lote, operario, gramaje, selecci
     // Initialize product suggestions
     const productoInput = anuncio.querySelector('#edit-producto');
     const productosList = anuncio.querySelector('#productos-list');
-    
+
     // Initial load of products
     fetch('/obtener-productos')
         .then(response => response.json())
@@ -726,7 +729,7 @@ export function editarRegistro(fecha, producto, lote, operario, gramaje, selecci
             try {
                 const response = await fetch('/buscar-productos?query=' + encodeURIComponent(productoInput.value));
                 const data = await response.json();
-                
+
                 productosList.innerHTML = '';
                 data.productos.forEach(producto => {
                     const option = document.createElement('option');
@@ -809,13 +812,13 @@ function configurarFiltros() {
     const btnFiltro = document.querySelector('.btn-filtro');
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-    
+
     // Cargar filtros guardados al inicio
     const filtrosGuardados = localStorage.getItem('filtrosRegistros');
     if (filtrosGuardados) {
         filtrosActivos = JSON.parse(filtrosGuardados);
     }
-    
+
     btnFiltro.addEventListener('click', () => {
         // Cargar valores guardados en los inputs
         const filtrosGuardados = localStorage.getItem('filtrosRegistros');
@@ -906,9 +909,9 @@ function configurarFiltros() {
 function aplicarFiltros() {
     const registrosCards = document.querySelectorAll('.registro-card');
     const fechaCards = document.querySelectorAll('.fecha-card');
-    
+
     fechaCards.forEach(card => card.style.display = 'none');
-    
+
     // Remover botón existente si hay
     const botonExistente = document.querySelector('.btn-calcular-total');
     if (botonExistente) {
@@ -916,10 +919,10 @@ function aplicarFiltros() {
     }
 
     let registrosFiltrados = [];
-    
+
     registrosCards.forEach(card => {
         let mostrar = true;
-        
+
         // Filtro por nombre del operario
         if (filtrosActivos.nombre) {
             const nombreOperario = card.closest('.fecha-card').querySelector('h3').textContent.toLowerCase();
@@ -936,7 +939,7 @@ function aplicarFiltros() {
             if (filtrosActivos.fechaDesde) {
                 mostrar = fechaRegistro >= filtrosActivos.fechaDesde;
             }
-            
+
             if (mostrar && filtrosActivos.fechaHasta) {
                 mostrar = fechaRegistro <= filtrosActivos.fechaHasta;
             }
@@ -961,7 +964,7 @@ function aplicarFiltros() {
 
         // Actualizar visibilidad
         card.style.display = mostrar ? 'block' : 'none';
-        
+
         if (mostrar) {
             const fechaCard = card.closest('.fecha-card');
             if (fechaCard) {
