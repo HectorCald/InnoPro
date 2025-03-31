@@ -299,7 +299,7 @@ export async function finalizarPedidos() {
             return;
         }
 
-        // Mostrar confirmación
+        // Show confirmation modal
         const anuncio = document.querySelector('.anuncio');
         anuncio.style.display = 'flex';
         anuncio.innerHTML = `
@@ -328,6 +328,14 @@ export async function finalizarPedidos() {
     }
 }
 export async function confirmarFinalizacionPedidos() {
+    // Create text for clipboard
+    const pedidosText = `*PEDIDO DE MATERIA PRIMA*\n\n*Pedido:*\n${pedidosTemporales.map(pedido => 
+        `• ${pedido.nombre}: ${pedido.cantidad}${pedido.observaciones ? ` (${pedido.observaciones})` : ''}`
+    ).join('\n')}\n\n_El pedido ya se encuentra en la aplicación de Damabrava_`;
+
+    // Copy to clipboard
+    await navigator.clipboard.writeText(pedidosText);
+    mostrarNotificacion('Pedidos copiados al portapapeles', 'success');
     try {
         mostrarCarga();
         const response = await fetch('/finalizar-pedidos', {

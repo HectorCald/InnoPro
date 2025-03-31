@@ -29,7 +29,6 @@ async function inicializarReglas() {
         console.error('Error al cargar reglas:', error);
     }
 }
-
 /* ==================== FUNCIONES DE CÁLCULO Y UTILIDAD ==================== */
 export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
     const normalizedNombre = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
@@ -85,7 +84,6 @@ export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
         cernido: resultadoSernido
     };
 }
-
 /* ==================== FUNCIONES DE MANIPULACIÓN DE UI ==================== */
 function crearOperarioCard(nombre, registros) {
     const operarioCard = document.createElement('div');
