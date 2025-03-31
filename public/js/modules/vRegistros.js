@@ -100,6 +100,18 @@ function crearOperarioCard(nombre, registros) {
     registrosContainer.className = 'registros-grupo';
 
     operarioHeader.addEventListener('click', () => {
+        // Cerrar todos los demás contenedores primero
+        document.querySelectorAll('.registros-grupo').forEach(container => {
+            if (container !== registrosContainer && container.classList.contains('active')) {
+                container.classList.remove('active');
+                const icon = container.parentElement.querySelector('.fa-chevron-down');
+                if (icon) {
+                    icon.style.transform = 'rotate(0)';
+                }
+            }
+        });
+
+        // Abrir/cerrar el contenedor actual
         registrosContainer.classList.toggle('active');
         const icono = operarioHeader.querySelector('.fa-chevron-down');
         icono.style.transform = registrosContainer.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
@@ -255,13 +267,38 @@ function configurarEventosRegistro(registroCard) {
         if (!e.target.classList.contains('info-icon')) {
             const detalles = registroCard.querySelector('.registro-detalles');
             const infoIcon = registroCard.querySelector('.info-icon');
+
+            // Cerrar otros registros abiertos primero
+            document.querySelectorAll('.registro-detalles').forEach(otherDetalles => {
+                if (otherDetalles !== detalles && otherDetalles.classList.contains('active')) {
+                    otherDetalles.classList.remove('active');
+                    const otherCard = otherDetalles.closest('.registro-card');
+                    if (otherCard) {
+                        const otherIcon = otherCard.querySelector('.info-icon');
+                        if (otherIcon) {
+                            otherIcon.style.display = 'none';
+                        }
+                    }
+                }
+            });
+
+            // Toggle detalles actuales
             detalles.classList.toggle('active');
 
             // Mostrar/ocultar icono de info
-            infoIcon.style.display = detalles.classList.contains('active') ? 'inline-block' : 'none';
+            if (infoIcon) {
+                infoIcon.style.display = detalles.classList.contains('active') ? 'inline-block' : 'none';
+            }
 
-            const icono = registroCard.querySelector('.fa-chevron-down');
-            icono.style.transform = detalles.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
+            // Si el registro está abierto, desplazar la pantalla para mostrarlo completo
+            if (detalles.classList.contains('active')) {
+                setTimeout(() => {
+                    registroCard.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center'
+                    });
+                }, 100);
+            }
         }
     });
 }

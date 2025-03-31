@@ -47,35 +47,54 @@ export async function inicializarHome() {
 async function obtenerHighlights() {
     try {
         mostrarCarga();
-        const response = await fetch('/obtener-estadisticas-usuario');
+        
+        // Get user name first
+        const nombreResponse = await fetch('/obtener-nombre');
+        const nombreData = await nombreResponse.json();
+        const nombreUsuario = nombreData.nombre;
+
+        // Get all records using the existing endpoint
+        const response = await fetch('/obtener-registros');
         const data = await response.json();
 
         if (!data.success) {
             throw new Error(data.error);
         }
 
+        // Filter records for current user and calculate statistics
+        const registrosUsuario = data.registros.filter(registro => registro[8] === nombreUsuario);
+        const produccionesTotal = registrosUsuario.length;
+        const produccionesVerificadas = registrosUsuario.filter(registro => registro[10]).length;
+        const noVerificados = produccionesTotal - produccionesVerificadas;
+        const eficienciaVerificados = produccionesTotal > 0 
+            ? Math.round((produccionesVerificadas / produccionesTotal) * 100) 
+            : 0;
+        const eficienciaNoVerificados = produccionesTotal > 0
+            ? Math.round((noVerificados / produccionesTotal) * 100)
+            : 0;
+
         return [
             { 
-                valor: data.estadisticas.produccionesTotal, 
-                etiqueta: 'Total Producciones' 
+                valor: produccionesTotal, 
+                etiqueta: 'Total Registros' 
             },
             { 
-                valor: data.estadisticas.produccionesVerificadas, 
-                etiqueta: `Verificadas (${data.estadisticas.eficiencia}%)` 
+                valor: produccionesVerificadas, 
+                etiqueta: `Verificadas (${eficienciaVerificados}%)` 
             },
             { 
-                valor: `${data.estadisticas.totalBs.toFixed(2)} Bs.`, 
-                etiqueta: 'Total Ganado' 
+                valor: noVerificados, 
+                etiqueta: `No Verificados (${eficienciaNoVerificados}%)` 
             }
         ];
     } catch (error) {
         console.error('Error al obtener highlights:', error);
         return [
-            { valor: '0', etiqueta: 'Total Producciones' },
+            { valor: '0', etiqueta: 'Total Registros' },
             { valor: '0', etiqueta: 'Verificadas (0%)' },
-            { valor: '0 Bs.', etiqueta: 'Total Ganado' }
+            { valor: '0', etiqueta: 'No Verificados (0%)' }
         ];
-    }finally{
+    } finally {
         ocultarCarga();
     }
 }

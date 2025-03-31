@@ -1,3 +1,4 @@
 padding: 15px;
-font-size: 16px;  //Principal
-font-size: 15px;  //Secundario 00
+font-size: 17px;  //Principal
+font-size: 15px;  //Secundario
+font-size: 13px;  //Terceario

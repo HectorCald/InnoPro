@@ -82,6 +82,31 @@ export function inicializarFormulario() {
     const radioButtons = document.querySelectorAll('input[name="microondas-option"]');
     const tiempoMicroondas = document.querySelector('.microondas-tiempo');
     
+    // Mejorar UX móvil para inputs
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            setTimeout(() => {
+                const viewHeight = window.innerHeight;
+                const keyboardHeight = viewHeight * 0.4; // Altura estimada del teclado
+                const inputRect = this.getBoundingClientRect();
+                const offset = inputRect.top + window.scrollY - (viewHeight - keyboardHeight - 50);
+                
+                window.scrollTo({
+                    top: offset,
+                    behavior: 'smooth'
+                });
+                
+                // Añadir clase para mantener visible
+                this.closest('.form-group').classList.add('input-focused');
+            }, 300);
+        });
+
+        input.addEventListener('blur', function() {
+            this.closest('.form-group').classList.remove('input-focused');
+        });
+    });
+    
     radioButtons.forEach(radio => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'si') {
@@ -140,8 +165,7 @@ export function inicializarFormulario() {
         } catch (error) {
             console.error('Error completo:', error);
             alert('Error al guardar el registro: ' + error.message);
-        }
-        finally{
+        } finally {
             ocultarCarga();
         }
     });

@@ -24,7 +24,7 @@
     color: var(--primary-text) !important;
     animation: aparecer 0.3s ease-out;
     padding: 20px;
-    border-radius: 20px;
+    border-radius: 15px;
     width: 90%;
     max-width: 350px;
     max-height: 80vh;
@@ -49,11 +49,12 @@
 }
 
 .anuncio-contenido h2 {
-    font-size: 16px;
+    font-size: 17px;
 }
 
 .anuncio-contenido p {
     color: #aaa;
+    margin-top: 5px;
 }
 
 .anuncio-botones {
@@ -94,7 +95,6 @@
 }
 
 .form-group {
-    margin-bottom: 0;
     display: flex;
     flex-direction: column;
 }

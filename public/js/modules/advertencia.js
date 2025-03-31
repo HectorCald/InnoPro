@@ -13,13 +13,36 @@ export async function cargarNotificaciones() {
         if (data.success) {
             // Filtrar notificaciones para el usuario actual o su rol
             const notificacionesFiltradas = data.notificaciones.filter(notif => 
-                notif.destino === nombreUsuarioActual || // Si el destino coincide con el nombre
-                notif.destino === rolUsuarioActual       // Si el destino coincide con el rol
+                notif.destino === nombreUsuarioActual || 
+                notif.destino === rolUsuarioActual
             );
+            
+            // Actualizar el contador de notificaciones
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                if (notificacionesFiltradas && notificacionesFiltradas.length > 0) {
+                    badge.textContent = notificacionesFiltradas.length;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+            
+            if (!notificacionesFiltradas || notificacionesFiltradas.length === 0) {
+                mostrarNotificacion('No tienes notificaciones nuevas', 'info');
+                const advertenciaDiv = document.querySelector('.advertencia');
+                if (advertenciaDiv) {
+                    advertenciaDiv.style.display = 'none';
+                    document.querySelector('.container').classList.remove('no-touch');
+                }
+                return;
+            }
+            
             mostrarAdvertencias(notificacionesFiltradas);
         }
     } catch (error) {
         console.error('Error al cargar notificaciones:', error);
+        mostrarNotificacion('Error al cargar notificaciones', 'error');
     }
 }
 
@@ -27,6 +50,8 @@ function mostrarAdvertencias(notificaciones) {
     const advertenciaDiv = document.querySelector('.advertencia');
     if (!notificaciones || notificaciones.length === 0) {
         advertenciaDiv.style.display = 'none';
+        const badge = document.getElementById('notificationBadge');
+        if (badge) badge.style.display = 'none';
         return;
     }
 
@@ -78,8 +103,6 @@ function mostrarAdvertencias(notificaciones) {
         </div>
     `;
 
-    // ... rest of the function remains the same ...
-
     advertenciaDiv.style.display = 'flex';
     document.querySelector('.container').classList.add('no-touch');
 
@@ -105,7 +128,19 @@ function mostrarAdvertencias(notificaciones) {
                 const data = await response.json();
                 if (data.success) {
                     notifItem.remove();
-                    if (advertenciaDiv.querySelectorAll('.notificacion-item').length === 0) {
+                    const remainingNotifications = advertenciaDiv.querySelectorAll('.notificacion-item').length;
+                    
+                    // Actualizar el contador después de eliminar
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        if (remainingNotifications > 0) {
+                            badge.textContent = remainingNotifications;
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+
+                    if (remainingNotifications === 0) {
                         advertenciaDiv.style.display = 'none';
                         document.querySelector('.container').classList.remove('no-touch');
                     }
@@ -114,7 +149,7 @@ function mostrarAdvertencias(notificaciones) {
                 }
             } catch (error) {
                 console.error('Error al eliminar notificación:', error);
-            }finally{
+            } finally {
                 ocultarCarga();
             }
         });

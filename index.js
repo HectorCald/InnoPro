@@ -941,7 +941,7 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
                         new Date().toLocaleDateString(),
                         req.user.nombre,
                         operarioOriginal,
-                        `Se ha modificado tu registro de ${productoOriginal} (Lote: ${loteOriginal}). Por favor, ten más cuidado al registrar los datos. Razón: ${razonEdicion}`
+                        `Se ha modificado tu registro de ${productoOriginal} (Lote: ${loteOriginal}).Razón: ${razonEdicion}`
                     ]
                 ]
             }

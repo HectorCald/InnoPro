@@ -123,10 +123,12 @@ async function bienvenida() {
                         </div>
                     </div>
                     <div class="opciones"></div>
-                    <button class="logout-btn" onclick="manejarCierreSesion()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Cerrar Sesión</span>
-                    </button>
+                    <div class="dashboard-buttons">
+                        <button class="notifications-btn" onclick="mostrarNotificacionesPanel()">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge" id="notificationBadge" style="display: none">0</span>
+                        </button>
+                    </div>
                     <div class="profile-modal">
                         <div class="modal-content">
                             <button class="close-modal"><i class="fas fa-times"></i></button>
@@ -144,6 +146,10 @@ async function bienvenida() {
                                 </label>
                                 <i class="fas fa-sun theme-icon"></i>
                             </div>
+                            <button class="logout-btn" onclick="manejarCierreSesion()">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Cerrar Sesión</span>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -297,6 +303,39 @@ document.addEventListener('DOMContentLoaded', () => {
     bienvenida();
     inicializarHome(); 
 });
+window.mostrarNotificacionesPanel = async function() {
+    try {
+        mostrarCarga();
+        const advertenciaDiv = document.querySelector('.advertencia');
+        if (!advertenciaDiv) {
+            console.error('No se encontró el elemento .advertencia');
+            return;
+        }
+        
+        if (advertenciaDiv.style.display === 'flex') {
+            advertenciaDiv.style.display = 'none';
+            document.querySelector('.container').classList.remove('no-touch');
+        } else {
+            await cargarNotificaciones();
+        }
+    } catch (error) {
+        console.error('Error al mostrar notificaciones:', error);
+        mostrarNotificacion('Error al mostrar notificaciones', 'error');
+    } finally {
+        ocultarCarga();
+    }
+};
+window.actualizarContadorNotificaciones = function(cantidad) {
+    const badge = document.getElementById('notificationBadge');
+    if (badge) {
+        if (cantidad > 0) {
+            badge.textContent = cantidad;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+};
 
 
 

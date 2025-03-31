@@ -3,10 +3,10 @@
 .home-view {
     width: 100%;
     background: var(--background) !important;
-    height: calc(100vh - 5em);
+    height: calc(100vh-90px);
     color: var(--primary-text) !important;
     overflow-y: auto;
-    padding: 1em;
+    padding: 10px;
     display: none;
     flex-direction: column;
     gap: 1em;
@@ -30,7 +30,7 @@
         border-bottom: 1px solid #2c2c2c;
 
         h3 {
-            font-size: 16px;
+            font-size: 17px;
             margin: 0;
         }
     }
@@ -61,7 +61,7 @@
     }
 
     .highlight-value {
-        font-size: 15px;
+        font-size: 18px;
         font-weight: 700;
         color: var(--second-button);
     }
@@ -143,14 +143,14 @@
     }
 
     .shortcut-card span {
-        font-size: 1em;
+        font-size: 15px;
         font-weight: 500;
     }
 
     /* Add this if you want to style the shortcuts section title */
     .shortcuts-container h2 {
         color: var(--primary-text);
-        font-size: 1.2em;
+        font-size: 17px;
         margin-bottom: 0.5em;
         text-transform: capitalize;
     }
@@ -160,7 +160,7 @@
         padding: 10px;
         border-radius: 15px;
         margin-top: 10px;
-        color: white;
+        color: rgb(177, 177, 177);
         width: 100%;
     }
 
@@ -169,42 +169,6 @@
         border-radius: 10px;
         margin-bottom: 1em;
         background: var(--primary-dark);
-    }
-
-    .timeline-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5em;
-    }
-
-    .delete-notification {
-        background: none;
-        border: none;
-        color: var(--primary-light);
-        cursor: pointer;
-        padding: 0.2em 0.5em;
-        opacity: 0.6;
-        transition: opacity 0.3s ease;
-    }
-
-    .delete-notification:hover {
-        opacity: 1;
-        color: var(--error);
-    }
-
-    .timeline-item {
-        transition: opacity 0.3s ease;
-    }
-
-    .timeline-message {
-        color: var(--primary-text);
-    }
-
-    .no-notifications {
-        text-align: center;
-        color: var(--primary-light);
-        padding: 1em;
-        font-style: italic;
+        font-size: 14px;
     }
 }
