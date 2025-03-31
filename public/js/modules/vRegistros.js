@@ -603,7 +603,7 @@ function mostrarModalConfirmacion(titulo, mensaje) {
             <h2>${titulo}</h2>
             <div class="detalles-verificacion">
                 <div class="form-group">
-                    <textarea id="razonEliminacion" placeholder="Explique el motivo de la eliminacion. Aqui!"></textarea>
+                    <textarea id="razonEliminacion" placeholder="Explique el motivo de la eliminacion. Aqui!" required ></textarea>
                 </div>
             </div>
             <div class="anuncio-botones">
