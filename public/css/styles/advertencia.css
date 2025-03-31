@@ -12,102 +12,135 @@
     z-index: 10000;
     scrollbar-width: none;
     -ms-overflow-style: none;
-}
-.advertencia-contenido::-webkit-scrollbar {
-    display: none;
-}
 
-.advertencia-contenido {
-    background-color: var(--background);
-    padding: 15px;
-    border-radius: 15px;
-    max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-}
+    .advertencia-contenido::-webkit-scrollbar {
+        display: none;
+    }
 
-.advertencia-contenido h2 {
-    color: var(--primary-text);
-    margin-bottom: 10px;
-    text-align: center;
-    font-size: 16px;
-}
+    .advertencia-contenido {
+        background-color: var(--background);
+        padding: 15px;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
 
-.notificaciones-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
+    .advertencia-contenido h2 {
+        color: var(--primary-text);
+        margin-bottom: 10px;
+        text-align: center;
+        font-size: 16px;
+    }
 
-.notificacion-item {
-    background-color: var(--primary-color);
-    padding: 1em;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-}
+    .notificaciones-lista {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
 
-.notif-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5em;
-    font-size: 12px;
-    color: var(--primary-text);
-    align-items: center;
-}
-.notif-info{
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    margin-right: 70px;
-}
-.btn-eliminar-notif {
-    background: none;
-    border: none;
-    color: var(--danger-color);
-    cursor: pointer;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.3s;
-}
+    .notificacion-item {
+        background-color: var(--primary-color);
+        padding: 1em;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
 
-.btn-eliminar-notif:hover {
-    background-color: rgba(220, 53, 69, 0.1);
-}
+    .notif-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5em;
+        font-size: 12px;
+        color: var(--primary-text);
+        align-items: center;
+    }
 
-.btn-eliminar-notif i {
-    font-size: 12px;
-}
+    .notif-info {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        margin-right: 70px;
+    }
+
+    .btn-eliminar-notif {
+        background: none;
+        border: none;
+        color: var(--danger-color);
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.3s;
+    }
+
+    .btn-eliminar-notif:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .btn-eliminar-notif i {
+        font-size: 12px;
+    }
 
 
-.mensaje {
-    color: var(--primary-text);
-    margin: 0;
-    padding: 10px;
-    border-radius: 10px;
-    font-size: 13px;
-}
+    .mensaje {
+        color: var(--primary-text);
+        margin: 0;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+    .anuncio-botones{
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .btn-aceptar {
+        display: block;
+        padding: 10px;
+        background-color: var(--second-button);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: 100%;
+    }
 
-.btn-aceptar {
-    display: block;
-    margin: 1em auto 0;
-    padding: 0.8em 2em;
-    background-color: var(--second-button);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
+    .btn-aceptar-eliminar {
+        display: block;
+        padding-inline: 10px;
+        background-color: red;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: 100%;
+    }
 
-.btn-aceptar:hover {
-    background-color: var(--accent-color-hover);
-}
-.consejo{
-    text-align: center;
-    font-size: 13px;
-    margin-bottom: 5px;
+    .btn-aceptar:hover {
+        background-color: var(--accent-color-hover);
+    }
+
+    .consejo {
+        text-align: center;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+    .confirmacion-lectura input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        accent-color: green;
+        cursor: pointer;
+    }
+
+    .confirmacion-lectura span {
+        font-size: 13px;
+        user-select: none;
+    }
 }

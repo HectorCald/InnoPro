@@ -3427,6 +3427,79 @@ app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) =
         });
     }
 });
+app.delete('/eliminar-todas-notificaciones', requireAuth, async (req, res) => {
+    try {
+        const { nombre, rol } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener todas las notificaciones
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A:D'
+        });
+
+        const rows = response.data.values || [];
+        const headerRow = rows[0]; // Guardar la fila de encabezado
+        
+        // Filtrar las filas que NO son del usuario actual (las que mantendremos)
+        const filasAMantener = rows.filter((row, index) => {
+            if (index === 0) return true; // Mantener el encabezado
+            return row[2] !== nombre && row[2] !== rol; // Mantener si el destino no coincide
+        });
+
+        // Obtener el ID de la hoja de Notificaciones
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const notificacionesSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Notificaciones'
+        );
+
+        if (!notificacionesSheet) {
+            throw new Error('Hoja de Notificaciones no encontrada');
+        }
+
+        // Limpiar toda la hoja
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    updateCells: {
+                        range: {
+                            sheetId: notificacionesSheet.properties.sheetId,
+                            startRowIndex: 0
+                        },
+                        fields: 'userEnteredValue'
+                    }
+                }]
+            }
+        });
+
+        // Escribir las filas filtradas
+        if (filasAMantener.length > 0) {
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: 'Notificaciones!A1',
+                valueInputOption: 'RAW',
+                resource: {
+                    values: filasAMantener
+                }
+            });
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'Notificaciones eliminadas correctamente' 
+        });
+    } catch (error) {
+        console.error('Error al eliminar notificaciones:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar notificaciones: ' + error.message 
+        });
+    }
+});
 
 
 
