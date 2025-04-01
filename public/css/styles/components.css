@@ -50,6 +50,9 @@
 
 .anuncio-contenido h2 {
     font-size: 17px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .anuncio-contenido p {
@@ -61,6 +64,7 @@
     display: flex;
     gap: 10px;
     justify-content: center;
+    margin-top: 10px;
 }
 
 .anuncio-btn {
@@ -98,23 +102,40 @@
     display: flex;
     flex-direction: column;
 }
+.campo-detalle{
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid gray; 
+}
 
 .anuncio-contenido input,
 .anuncio-contenido textarea {
     width: 100%;
     padding: 15px;
-    border: 1px solid #404040;
+    border: 1px solid #5d5d5d;
     border-radius: 4px;
     background: var(--primary-color);
     color: var(--primary-text);
     font-size: 16px;
+    margin-block: 5px;
+}
+.campo-form{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.campo-form label{
+    width: 200px;
+    text-align: left;
 }
 
 .anuncio-contenido select {
     width: 100%;
     background: var(--primary-color);
     color: var(--primary-text);
-    border: 1px solid #404040;
+    border: 1px solid #515151;
     height: 60px;
     font-size: 16px;
     padding: 10px;

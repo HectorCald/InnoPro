@@ -3486,6 +3486,196 @@ app.post('/registrar-notificacion', requireAuth, async (req, res) => {
 });
 
 
+app.post('/registrar-comprobante', requireAuth, async (req, res) => {
+    try {
+        const comprobante = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Comprobantes!A2:J',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[
+                    comprobante.id,
+                    comprobante.numero,
+                    comprobante.fecha,
+                    comprobante.nombre,
+                    comprobante.telefono,
+                    comprobante.carnet,
+                    comprobante.detalle,
+                    comprobante.subtotal,
+                    comprobante.total,
+                    comprobante.metodoPago
+                ]]
+            }
+        });
+
+        res.json({ success: true, message: 'Comprobante registrado correctamente' });
+    } catch (error) {
+        console.error('Error al registrar comprobante:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al registrar el comprobante: ' + error.message 
+        });
+    }
+});
+
+app.get('/obtener-ultimo-comprobante', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Comprobantes!B2:B'
+        });
+
+        const rows = response.data.values || [];
+        const ultimoNumero = rows.length > 0 ? 
+            Math.max(...rows.map(row => parseInt(row[0]) || 0)) : 0;
+
+        res.json({ success: true, ultimoNumero });
+    } catch (error) {
+        console.error('Error al obtener último comprobante:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener último comprobante: ' + error.message 
+        });
+    }
+});
+app.get('/obtener-comprobantes', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Comprobantes!A2:J'
+        });
+
+        const rows = response.data.values || [];
+        const comprobantes = rows.map(row => ({
+            id: row[0],
+            numero: row[1],
+            total: row[8]
+        }));
+
+        res.json({ success: true, comprobantes });
+    } catch (error) {
+        console.error('Error al obtener comprobantes:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener comprobantes: ' + error.message
+        });
+    }
+});
+// ... código existente ...
+
+app.get('/obtener-detalle-comprobante/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('ID recibido:', id);
+        
+        if (!id) {
+            console.error('Error: ID no proporcionado');
+            return res.status(400).json({ 
+                success: false, 
+                error: 'ID de comprobante no proporcionado' 
+            });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Comprobantes!A2:K'  // Updated range to include column K
+        });
+
+        const rows = response.data.values || [];
+        const comprobanteData = rows.find(row => row[0] === id);
+        
+        if (!comprobanteData) {
+            console.error(`Comprobante con ID ${id} no encontrado en la hoja de cálculo`);
+            return res.status(404).json({ 
+                success: false, 
+                error: `Comprobante con ID ${id} no encontrado` 
+            });
+        }
+
+        const comprobante = {
+            id: comprobanteData[0],
+            numero: comprobanteData[1],
+            fecha: comprobanteData[2],
+            nombre: comprobanteData[3],
+            telefono: comprobanteData[4],
+            carnet: comprobanteData[5],
+            detalle: comprobanteData[6],
+            subtotal: comprobanteData[7],
+            total: comprobanteData[8],
+            metodoPago: comprobanteData[9],
+            firma: comprobanteData[10] || null  // Added firma field
+        };
+
+        res.json({ success: true, comprobante });
+    } catch (error) {
+        console.error('Error al obtener detalle del comprobante:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error interno del servidor' 
+        });
+    }
+});
+app.post('/guardar-firma/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { firma } = req.body;
+        
+        if (!id || !firma) {
+            return res.status(400).json({
+                success: false,
+                error: 'ID y firma son requeridos'
+            });
+        }
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get current comprobantes
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Comprobantes!A2:K'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                error: 'Comprobante no encontrado'
+            });
+        }
+
+        // Update the firma column (K)
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Comprobantes!K${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[firma]]
+            }
+        });
+
+        res.json({
+            success: true,
+            message: 'Firma guardada correctamente'
+        });
+    } catch (error) {
+        console.error('Error al guardar firma:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al guardar la firma: ' + error.message
+        });
+    }
+});
+
+// ... código existente ...
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {

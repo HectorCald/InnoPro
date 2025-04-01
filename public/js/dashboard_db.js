@@ -11,6 +11,7 @@ import { inicializarHome } from './modules/home.js';
 import { initializeMenu } from './modules/menu.js';
 import { initializePreciosPro } from './modules/preciosPro.js';
 import { cargarNotificaciones} from './modules/advertencia.js';
+import { inicializarComprobante } from './modules/comprobante.js';
 
 // Funciones del menú y navegación,
 window.initializeMenu = initializeMenu;
@@ -103,6 +104,8 @@ window.mostrarProgramaAcopio = mostrarProgramaAcopio;
 window.mostrarNotificacion = mostrarNotificacion;
 window.manejarCierreSesion = manejarCierreSesion;
 window.cargarNotificaciones = cargarNotificaciones;
+
+window.inicializarComprobante = inicializarComprobante;
 
 
 async function bienvenida() {
@@ -274,7 +277,7 @@ async function obtenerRolUsuario() {
 async function iniciarApp() {
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
+    const vistas = document.querySelectorAll('.comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
 
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => {

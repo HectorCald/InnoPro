@@ -1,0 +1,235 @@
+@import'styles/colores.css';
+
+.comprobante-view {
+    /* Main Container Styles */
+    width: 100%;
+    background: var(--background) !important;
+    height: calc(100vh - 4em);
+    color: var(--primary-text) !important;
+    overflow-y: auto;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    display: none;
+
+    /* Scrollbar Styles */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    /* Pedidos Container and Buttons */
+    .comprobantes-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+    }
+
+    .title {
+        padding: 1em 0;
+        border-bottom: 1px solid #2c2c2c;
+
+        h3 {
+            font-size: 16px;
+            margin: 0;
+        }
+
+        i {
+            font-size: 16px;
+        }
+    }
+
+    .comprobante-botones {
+        display: flex;
+        gap: 1em;
+        justify-content: center;
+    }
+
+    .cuadro-btn {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+        gap: 5px;
+    }
+
+    .btn-agregar-comprobante {
+        background: var(--primary-color);
+        color: var(--primary-text);
+        border: none;
+        padding: 1em;
+        border-radius: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        width: 50px;
+        height: 50px;
+        justify-content: center;
+        font-size: 15px;
+    }
+
+    .btn-agregar-comprobante:hover {
+        background-color: var(--second-button);
+        color: white;
+    }
+
+    /* ... Estilos existentes ... */
+
+    .formulario-comprobante {
+        background: var(--background);
+        padding: 2em;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 500px;
+        color: var(--primary-text);
+    }
+
+    .formulario-comprobante h3 {
+        text-align: center;
+        margin-bottom: 1.5em;
+        color: var(--primary-color);
+    }
+
+    .campo-form {
+        margin-bottom: 1em;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+    }
+
+    .campo-form label {
+        font-weight: bold;
+        color: var(--primary-text);
+    }
+
+    .campo-form input,
+    .campo-form textarea,
+    .campo-form select {
+        padding: 0.5em;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        background: var(--input-background);
+        color: var(--primary-text);
+    }
+
+    .campo-form textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .botones-form {
+        display: flex;
+        gap: 1em;
+        justify-content: center;
+        margin-top: 2em;
+    }
+
+    .btn-generar,
+    .btn-cancelar {
+        padding: 0.8em 2em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn-generar {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .lista-comprobantes {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+        padding: 1em;
+        background: var(--background);
+        border-radius: 5px;
+    }
+
+    .comprobante-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px;
+        cursor: pointer;
+        border-radius: 20px;
+        border-radius: 5px;
+        background: var(--primary-color);
+        color: var(--primary-text);
+    }
+
+    .detalles-comprobante {
+        background: var(--background);
+        padding: 2em;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 500px;
+        color: var(--primary-text);
+    }
+
+    .detalles-comprobante h3 {
+        text-align: center;
+        margin-bottom: 1.5em;
+        color: var(--primary-color);
+    }
+
+    .detalles-comprobante p {
+        margin: 0.5em 0;
+    }
+
+    .botones-detalles {
+        display: flex;
+        gap: 1em;
+        justify-content: center;
+        margin-top: 2em;
+    }
+
+    .btn-firmar,
+    .btn-cerrar {
+        padding: 0.8em 2em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn-firmar {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-cerrar {
+        background: var(--error-color);
+        color: white;
+    }
+
+    .btn-firmar:hover {
+        background: var(--second-button);
+    }
+
+    .btn-cerrar:hover {
+        opacity: 0.9;
+    }
+
+}
+
+.firma-preview {
+    display: flex;
+    flex-direction: column;
+}
+
+.firma-preview img {
+    width: 100%;
+    border-radius: 20px;
+}
+
+.signature-container {
+    margin-top: 20px;
+    padding: 0;
+    border-top: 1px solid #ccc;
+    max-width: 300px;
+}
