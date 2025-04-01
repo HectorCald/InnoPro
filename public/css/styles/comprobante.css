@@ -177,23 +177,24 @@
 }
 
 .detalle-comprobante h1 {
-    font-size: 17px !important;
+    font-size: 20px !important;
     margin: 3px 0 !important;
 }
 
 .detalle-comprobante h2 {
-    font-size: 16px !important;
+    font-size: 19px !important;
     margin: 3px 0 !important;
 }
 
 .detalle-comprobante h3 {
-    font-size: 14px !important;
+    font-size: 17px !important;
     margin: 3px 0 !important;
 }
 
 .detalle-comprobante p {
     margin: 2px 0 !important;
     line-height: 1.1 !important;
+    font-size: 16px !important;
 }
 
 .detalle-comprobante div {

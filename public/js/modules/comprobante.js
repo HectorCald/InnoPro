@@ -267,7 +267,7 @@ window.descargarComprobantePDF = async function(id) {
         botonesOriginales.style.display = 'none';
         
         const opt = {
-            margin: 1,
+            margin: 7,
             filename: `comprobante-${id}.pdf`,
             image: { type: 'jpeg', quality: 2 },
             html2canvas: { 
@@ -275,11 +275,11 @@ window.descargarComprobantePDF = async function(id) {
                 useCORS: true,
                 letterRendering: true,
                 width: 280,
-                height: 500
+                height: 600
             },
             jsPDF: { 
                 unit: 'mm', 
-                format: [80, 150],
+                format: [80, 160],
                 orientation: 'portrait',
                 compress: true
             }
