@@ -377,37 +377,43 @@ window.firmarComprobante = async function(id) {
     let lastY = 0;
     
     function draw(e) {
-        if (!isDrawing) return;
-        
-        let x, y;
-        if (e.type === 'mousemove') {
-            x = e.offsetX;
-            y = e.offsetY;
-        } else {
-            const rect = canvas.getBoundingClientRect();
-            x = e.touches[0].clientX - rect.left;
-            y = e.touches[0].clientY - rect.top;
-        }
-        
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        
-        [lastX, lastY] = [x, y];
+    if (!isDrawing) return;
+    
+    let x, y;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    if (e.type === 'mousemove') {
+        x = (e.clientX - rect.left) * scaleX;
+        y = (e.clientY - rect.top) * scaleY;
+    } else {
+        x = (e.touches[0].clientX - rect.left) * scaleX;
+        y = (e.touches[0].clientY - rect.top) * scaleY;
     }
     
-    function startDrawing(e) {
-        isDrawing = true;
-        if (e.type === 'mousedown') {
-            lastX = e.offsetX;
-            lastY = e.offsetY;
-        } else {
-            const rect = canvas.getBoundingClientRect();
-            lastX = e.touches[0].clientX - rect.left;
-            lastY = e.touches[0].clientY - rect.top;
-        }
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    
+    [lastX, lastY] = [x, y];
+}
+
+function startDrawing(e) {
+    isDrawing = true;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    if (e.type === 'mousedown') {
+        lastX = (e.clientX - rect.left) * scaleX;
+        lastY = (e.clientY - rect.top) * scaleY;
+    } else {
+        lastX = (e.touches[0].clientX - rect.left) * scaleX;
+        lastY = (e.touches[0].clientY - rect.top) * scaleY;
     }
+}
     
     function stopDrawing() {
         isDrawing = false;
