@@ -10,7 +10,7 @@ export function inicializarFormularioProduccion() {
                 <h2 class="section-title">Fuera de Horario</h2>
             </div>
             <div class="horario-mensaje">
-                <p>Lo sentimos, solo se pueden registrar producciones entre las 8:00 AM y 6:15 PM.</p>
+                <p>Lo sentimos, solo se pueden registrar producciones entre las 8:00 AM y 6:30 PM.</p>
                 <p>Por favor, regrese durante el horario establecido.</p>
             </div>
         `;
@@ -247,7 +247,7 @@ function verificarHorario() {
     const tiempoActual = hora * 60 + minutos; // Convertir a minutos
 
     const inicioJornada = 8 * 60; // 8:00 AM en minutos
-    const finJornada = 18 * 60 + 15; // 6:15 PM en minutos
+    const finJornada = 18 * 60 + 30; // 6:15 PM en minutos
 
     return tiempoActual >= inicioJornada && tiempoActual <= finJornada;
 }
