@@ -267,56 +267,40 @@ window.descargarComprobantePDF = async function(id) {
         mostrarCarga();
         const detalleComprobante = document.querySelector('.detalle-comprobante');
         
-        // Ocultar botones
+        // Ocultar botones antes de generar PDF
         const botonesOriginales = detalleComprobante.querySelector('.anuncio-botones');
         botonesOriginales.style.display = 'none';
         
         // Generar PDF como base64
-        const pdf = await html2pdf().set({
+        const pdfBase64 = await html2pdf().set({
             margin: 10,
             filename: `comprobante-${id}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-                scale: 1,
-                useCORS: true,
-                allowTaint: true,
-                logging: false
-            },
-            jsPDF: { 
-                unit: 'mm',
-                format: 'a4',
-                orientation: 'portrait'
-            }
+            html2canvas: { scale: 1, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         })
         .from(detalleComprobante)
         .outputPdf('datauristring');
 
-        // Enviar al servidor
-        const response = await fetch('/descargar-pdf', {
+        // Guardar PDF en Google Sheets
+        const response = await fetch(`/guardar-pdf/${id}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                pdfBase64: pdf,
-                nombreArchivo: `comprobante-${id}.pdf`
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pdfBase64 })
         });
 
         if (!response.ok) {
-            throw new Error('Error al procesar el PDF');
+            throw new Error('Error al guardar el PDF');
         }
 
-        // Obtener URL de descarga
-        const urlDescarga = `/descargar-pdf/${id}`;
-        window.location.href = urlDescarga;
+        // Descargar PDF
+        window.location.href = `/descargar-pdf/${id}`;
         
         // Restaurar botones
         botonesOriginales.style.display = 'flex';
-        
-        mostrarNotificacion('Comprobante descargado correctamente', 'success');
+        mostrarNotificacion('PDF generado correctamente', 'success');
     } catch (error) {
-        console.error('Error al generar el PDF:', error);
+        console.error('Error:', error);
         mostrarNotificacion('Error al generar el PDF', 'error');
     } finally {
         ocultarCarga();

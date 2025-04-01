@@ -3728,26 +3728,53 @@ app.post('/descargar-pdf', async (req, res) => {
     }
 });
 
-// Endpoint para descargar el PDF
-app.get('/descargar-pdf/:id', async (req, res) => {
+app.post('/guardar-pdf/:id', async (req, res) => {
     try {
-        const fileName = `comprobante-${req.params.id}.pdf`;
-        const filePath = path.join(__dirname, 'temp', fileName);
-        
-        res.download(filePath, fileName, async (err) => {
-            if (err) {
-                console.error('Error al descargar:', err);
-            }
-            // Eliminar archivo temporal después de la descarga
-            try {
-                await fs.unlink(filePath);
-            } catch (unlinkError) {
-                console.error('Error al eliminar archivo temporal:', unlinkError);
+        const { id } = req.params;
+        const { pdfBase64 } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Actualizar la columna L con el PDF en base64
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Comprobantes!L2:L`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[pdfBase64]]
             }
         });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al guardar PDF:', error);
+        res.status(500).json({ success: false, error: 'Error al guardar el PDF' });
+    }
+});
+
+// Descargar PDF desde Google Sheets
+app.get('/descargar-pdf/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener PDF de Google Sheets
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Comprobantes!L2:L'
+        });
+
+        const pdfBase64 = response.data.values[0][0];
+        const pdfBuffer = Buffer.from(pdfBase64.split(',')[1], 'base64');
+
+        // Configurar headers para descarga
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=comprobante-${id}.pdf`);
+        
+        // Enviar PDF
+        res.send(pdfBuffer);
     } catch (error) {
         console.error('Error al descargar PDF:', error);
-        res.status(500).send('Error al descargar el archivo');
+        res.status(500).json({ success: false, error: 'Error al descargar el PDF' });
     }
 });
 
