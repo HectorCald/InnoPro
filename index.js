@@ -3650,26 +3650,65 @@ app.post('/guardar-firma/:id', requireAuth, async (req, res) => {
         });
     }
 });
+// Modificar la ruta de guardar PDF
 app.post('/guardar-pdf/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { pdfBase64 } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Actualizar la columna L con el PDF en base64
+        // Crear una URL HTTPS para el PDF
+        const pdfUrl = `https://damabrava.vercel.app/comprobantes/${id}/pdf`;
+
+        // Guardar tanto la URL como el contenido base64
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Comprobantes!L2:L`,
+            range: `Comprobantes!L${rowIndex + 2}:M${rowIndex + 2}`,
             valueInputOption: 'RAW',
             resource: {
-                values: [[pdfBase64]]
+                values: [[pdfUrl, pdfBase64]]
             }
         });
 
-        res.json({ success: true });
+        res.json({ 
+            success: true, 
+            pdfUrl: pdfUrl 
+        });
     } catch (error) {
         console.error('Error al guardar PDF:', error);
         res.status(500).json({ success: false, error: 'Error al guardar el PDF' });
+    }
+});
+
+// Modificar la ruta de descarga
+app.get('/comprobantes/:id/pdf', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener el PDF base64 de Google Sheets
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Comprobantes!M2:M' // Columna con el contenido base64
+        });
+
+        if (!response.data.values || !response.data.values[0]) {
+            throw new Error('PDF no encontrado');
+        }
+
+        const pdfBase64 = response.data.values[0][0];
+        const pdfBuffer = Buffer.from(pdfBase64.split(',')[1], 'base64');
+
+        // Configurar headers para una descarga segura
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=comprobante-${id}.pdf`);
+        res.setHeader('Content-Security-Policy', "default-src 'self'");
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error('Error al descargar PDF:', error);
+        res.status(500).json({ success: false, error: 'Error al descargar el PDF' });
     }
 });
 app.get('/descargar-pdf/:id', async (req, res) => {
