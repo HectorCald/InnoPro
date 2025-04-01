@@ -24,7 +24,7 @@ export async function cargarRegistrosCuentas() {
             
             container.innerHTML = `
                 <div class="filtros-header">
-                    <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Registros</h2>
+                    <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Mis Registros</h2>
                     <button class="btn-filtro">
                         <i class="fas fa-filter"></i> Filtros
                     </button>
@@ -73,10 +73,10 @@ function setupFilters() {
         const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
         
         anuncioContenido.innerHTML = `
-            <h2>Filtros de Registros</h2>
+            <h2><i class="fas fa-filter"></i> Filtros de Registros</h2>
             <div class="filtros-contenido">
-                <div class="filter-group">
-                    <p>Período de tiempo</p>
+                <div class="campo-form">
+                    <p>Tiempo: </p>
                     <select class="filter-select" id="periodoSelect">
                         <option value="7" ${filtroActual.periodo === '7' ? 'selected' : ''}>7 días</option>
                         <option value="15" ${filtroActual.periodo === '15' ? 'selected' : ''}>15 días</option>
@@ -86,8 +86,8 @@ function setupFilters() {
                         <option value="365" ${filtroActual.periodo === '365' ? 'selected' : ''}>12 meses</option>
                     </select>
                 </div>
-                <div class="filter-group">
-                    <p>Estado de verificación</p>
+                <div class="campo-form">
+                    <p>Estado:</p>
                     <select class="filter-select" id="verificacionSelect">
                         <option value="all" ${filtroActual.verificacion === 'all' ? 'selected' : ''}>Todos</option>
                         <option value="verified" ${filtroActual.verificacion === 'verified' ? 'selected' : ''}>Verificados</option>
@@ -96,8 +96,8 @@ function setupFilters() {
                 </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn aplicar">Aplicar Filtros</button>
-                <button class="anuncio-btn cancelar">Cancelar</button>
+                <button class="anuncio-btn green aplicar">Aplicar Filtros</button>
+                <button class="anuncio-btn gray cancelar">Cancelar</button>
             </div>
         `;
 
@@ -226,7 +226,6 @@ export function crearTarjetaRegistro(registro) {
             <p><span>Microondas:</span> ${registro[5] ? registro[5] + 's' : '—'}</p>
             <p><span>Envases Terminados:</span> ${registro[6] || '—'}</p>
             <p><span>Fecha Vencimiento:</span> ${registro[7] || '—'}</p>
-            <p><span>Nombre:</span> ${registro[8] || '—'}</p>
             <p><span>Cantidad verificada:</span> ${registro[9] || '—'}</p>
             <p><span>Fecha Verificación:</span> ${registro[10] || '—'}</p>
             <p><span>Observaciones:</span> ${registro[11] || '—'}</p>

@@ -23,7 +23,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 1.2rem;
+    padding: 15px;
     background: var(--primary-color);
     z-index: 1000;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -39,7 +39,7 @@
     border: none;
     border-radius: 6px;
     color: var(--primary-light);
-    padding: 8px 12px;
+    padding: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 20px;
@@ -67,7 +67,7 @@
     .bienvenida {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 10px;
 
         .profile-section {
             display: flex;
@@ -95,14 +95,14 @@
                 line-height: 1;
 
                 .profile-name {
-                    font-size: 0.95rem;
+                    font-size: 16px;
                     font-weight: 500;
                     color: var(--primary-text);
                     margin: 0;
                 }
 
                 .profile-role {
-                    font-size: 0.90rem;
+                    font-size: 15px;
                     color: var(--primary-light) !important;
                     margin: 0;
                     padding: 0;
@@ -191,7 +191,7 @@
     .modal-content {
         background: var(--primary-color);
         border-radius: 15px;
-        padding: 2rem;
+        padding: 15px;
         width: 90%;
         max-width: 400px;
         position: absolute;
@@ -213,40 +213,40 @@
         }
 
         .modal-profile-image {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: 3px solid #4CAF50;
-            margin: 0 auto 1.5rem;
+            margin: 10px;
             padding: 3px;
         }
 
         .modal-profile-name {
             color: var(--primary-text);
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
+            font-size: 17px;
+            margin-bottom: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
 
         .modal-profile-role {
             color: var(--primary-light);
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
+            font-size: 15px;
+            margin-bottom: 10px;
         }
 
         .close-modal {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
+            top: 10px;
+            right: 10px;
             background: none;
             border: none;
             color: var(--primary-light);
             cursor: pointer;
-            font-size: 1.5rem;
-            padding: 0.5rem;
+            font-size: 17px;
+            padding: 10px;
             transition: color 0.2s ease;
 
             &:hover {
@@ -316,16 +316,16 @@
         color: var(--primary-text);
     }
     .logout-btn {
-        margin-top: 1.5rem;
-        padding: 0.8rem 1.5rem;
+        margin-top: 10px;
+        padding: 15px;
         background: var(--primary-color);
         border: 1px solid var(--primary-light);
         border-radius: 6px;
         color: var(--primary-light);
-        font-size: 0.95rem;
+        font-size: 15px;
         display: flex;
         align-items: center;
-        gap: 0.8rem;
+        gap:10px;
         cursor: pointer;
         transition: all 0.3s ease;
         width: 100%;
@@ -337,7 +337,7 @@
         }
 
         i {
-            font-size: 1.1rem;
+            font-size: 15px;
         }
     }
 }

@@ -3229,9 +3229,6 @@ app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
     }
 });
 
-
-
-
 /* ==================== RUTAS DE API - NOTIFICACIONES ==================== */
 app.post('/register-fcm-token', async (req, res) => {
     try {
@@ -3548,7 +3545,6 @@ app.get('/obtener-comprobantes', requireAuth, async (req, res) => {
 app.get('/obtener-detalle-comprobante/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        console.log('ID recibido:', id);
         
         if (!id) {
             console.error('Error: ID no proporcionado');
@@ -3650,7 +3646,6 @@ app.post('/guardar-firma/:id', requireAuth, async (req, res) => {
         });
     }
 });
-// Modificar la ruta de guardar PDF
 app.post('/guardar-pdf/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
@@ -3686,7 +3681,6 @@ app.post('/guardar-pdf/:id', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al guardar el PDF' });
     }
 });
-
 app.get('/descargar-pdf/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;

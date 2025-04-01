@@ -44,16 +44,17 @@
 }
 
 .anuncio-contenido i {
-    font-size: 20px;
+    font-size: 15px;
     color: white;
     margin-left: 5px;
 }
 
 .anuncio-contenido h2 {
-    font-size: 17px;
+    font-size: 18px;
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 10px;
 }
 
 .anuncio-contenido p {
@@ -79,17 +80,17 @@
     margin-bottom: 5px;
 }
 
-.anuncio-btn.confirmar {
+.anuncio-btn.red {
     background: #dc3545;
     color: white;
 }
 
-.anuncio-btn.cancelar {
+.anuncio-btn.gray {
     background: #6c757d;
     color: white;
 }
 
-.anuncio-btn.enviar {
+.anuncio-btn.green {
     background: #4CAF50;
     color: white;
 }
@@ -108,15 +109,15 @@
     justify-content: space-between;
     font-size: 13px;
     margin-bottom: 5px;
-    border-bottom: 1px solid gray; 
+    border-bottom: 1px solid #828282; 
 }
 
 .anuncio-contenido input,
 .anuncio-contenido textarea {
     width: 100%;
     padding: 15px;
-    border: 1px solid #5d5d5d;
-    border-radius: 4px;
+    border: 1px solid #828282;
+    border-radius: 10px;
     background: var(--primary-color);
     color: var(--primary-text);
     font-size: 16px;
@@ -126,8 +127,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-top: 5px;
 }
-.campo-form label{
+.campo-form label, .campo-form p{
     width: 200px;
     text-align: left;
 }
@@ -136,10 +138,11 @@
     width: 100%;
     background: var(--primary-color);
     color: var(--primary-text);
-    border: 1px solid #515151;
+    border: 1px solid #828282;
     height: 60px;
     font-size: 16px;
-    padding: 10px;
+    padding: 15px;
+    border-radius: 10px;
 }
 
 .form-group label {
@@ -153,7 +156,7 @@
     padding: 1em;
     border-radius: 8px;
     margin-top: 1em;
-    border: 1px solid #4d4d4d;
+    border: 1px solid #828282;
 }
 
 @keyframes aparecer {
@@ -182,7 +185,7 @@
 .notificacion {
     background: var(--primary-color);
     color: var(--primary-text);
-    padding: 1em 1.5em;
+    padding: 15px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     display: flex;
@@ -207,7 +210,7 @@
 }
 
 .notificacion i {
-    font-size: 1.2em;
+    font-size: 20px;
 }
 
 .notificacion.success i {
@@ -224,6 +227,7 @@
 
 .notificacion .mensaje {
     flex-grow: 1;
+    font-size: 16px;
 }
 
 .notificacion .cerrar {
@@ -231,7 +235,6 @@
     border: none;
     color: #6c757d;
     cursor: pointer;
-    font-size: 1.1em;
     padding: 0;
     transition: color 0.2s;
 }

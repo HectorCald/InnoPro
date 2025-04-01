@@ -5,10 +5,10 @@
     height: calc(100vh - 3em);
     color: var(--primary-text);
     overflow-y: auto;
-    padding: 1em;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: 10px;
     display: none;
     &::-webkit-scrollbar {
         display: none;
@@ -20,29 +20,25 @@
         color: var(--primary-text);
         font-size: 17px;
         font-weight: 500;
-        margin-top: 0.5em;
-        margin-bottom: 10px;
-
-        i {
-            font-size: 17px;
-        }
+        padding-block: 15px;
+        
     }
     .filtros-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-top: 10px;
+        border-bottom: 1px solid rgb(83, 83, 83);
     }
     .btn-filtro {
-        background: var(--primary-color);
+        background: none;
         border: none;
-        border-radius: 8px;
-        padding: 10px;
+        border-radius: 15px;
+        padding: 15px;
         cursor: pointer;
         color: var(--primary-text);
         display: flex;
         align-items: center;
-        gap: 0.5em;
+        gap: 10px;
         transition: all 0.3s ease;
 
         &:hover {
@@ -52,14 +48,16 @@
         i {
             color: #3498db;
         }
+        font-size: 15px;
     }
 
-
+    .subtitulo{
+        color: gray;
+        font-size: 13px;
+    }
     .registros-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 0;
-        padding: 0;
         width: 100%;
     }
 
@@ -68,7 +66,7 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
-        background: var(--background) !important;
+        background: var(--primary-color) !important;
         overflow: hidden;
         display: flex;
         flex-direction: column;
@@ -102,8 +100,8 @@
     }
 
     .registro-card {
-        background: var(--background) !important;
-        border-radius: 12px;
+        background: var(--primary-color) !important;
+        border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
@@ -119,7 +117,6 @@
     .registro-header {
         padding: 15px;
         background: var(--primary-color);
-        border-bottom: 1px solid #444;
         grid-template-columns: auto minmax(0, 1fr) auto auto;
         align-items: center;
         display: flex;
@@ -132,7 +129,7 @@
 
     .registro-fecha {
         color: gray;
-        font-size: 0.9rem;
+        font-size: 15px;
     }
 
     .registro-producto {
@@ -144,81 +141,20 @@
         min-width: 0;
     }
 
-    .registro-total {
-        color: #4CAF50;
-        font-weight: 600;
-        margin: 0;
-        white-space: nowrap;
-
-        &.no-verificado {
-            color: #f44336;
-        }
-    }
-
     .verificado-icon {
         color: #4CAF50;
         font-size: 1.2rem;
     }
 
-    .info-icon {
-        color: #3498db;
-        cursor: pointer;
-        transition: color 0.3s ease;
-        display: none;
-        position: absolute !important;
-        top: 5px;
-        right: 5px;
-        margin-left: 10px;
-
-        &:hover {
-            color: #5c6bc0;
-        }
-    }
-
-    .panel-info {
-        background: var(--primary-dark);
-        padding: 1.2rem;
-        display: none;
-        position: absolute;
-        z-index: 9999;
-        width: 80%;
-        border-top: 1px solid #444;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        top: 20px;
-        right: 5px;
-        border-radius: 10px;
-
-        &.active {
-            display: block;
-        }
-
-        h4 {
-            color: #fff;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-
-        p {
-            color: #ddd;
-            margin: 0.5rem 0;
-            display: flex;
-            justify-content: space-between;
-
-            span:first-child {
-                color: #c9c9c9;
-            }
-        }
-    }
-
     .load-more {
-        padding: 15px;
+        padding: 10px;
         background: none;
         color: white;
         border: none;
-        border-radius: 8px;
+        border-radius: 15px;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-size: 1rem;
+        font-size: 13px;
 
         &:hover {
             background: #373737;
@@ -231,11 +167,7 @@
         text-align: center;
         width: 100%;
         grid-column: 1 / -1;
-        padding: 2rem;
-        font-size: 1.1rem;
+        padding: 15px;
+        font-size: 15px;
     }
-}
-.subtitulo{
-    color: gray;
-    font-size: 15px;
 }

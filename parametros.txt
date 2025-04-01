@@ -2,3 +2,4 @@ padding: 15px;
 font-size: 17px;  //Principal
 font-size: 15px;  //Secundario
 font-size: 13px;  //Terceario
+gap: 10px

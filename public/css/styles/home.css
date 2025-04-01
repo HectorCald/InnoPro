@@ -6,10 +6,10 @@
     height: calc(100vh-90px);
     color: var(--primary-text) !important;
     overflow-y: auto;
-    padding: 10px;
+    padding: 15px;
     display: none;
     flex-direction: column;
-    gap: 1em;
+    gap: 10px;
     display: none;
 
     &::-webkit-scrollbar {
@@ -18,27 +18,19 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 
-    
-    h2 {
-        font-size: 16px !important;
-        color: var(--primary-text) !important;
-    }
 
     .title {
-        padding: 1em 0;
-        border-bottom: 1px solid #2c2c2c;
+        padding-block: 15px;
+        border-bottom: 1px solid rgb(83, 83, 83);
 
         h3 {
             font-size: 17px;
-            margin: 0;
         }
     }
 
 
     .home-header {
-        font-size: 1.8em;
-        font-weight: 600;
-        margin-bottom: 1em;
+        font-size: 17;
     }
 
     .highlights-container {
@@ -50,7 +42,7 @@
     .highlight-card {
         min-width: 100px;
         background: var(--surface);
-        padding: 10px;
+        padding: 15px;
         border-radius: 15px;
         transition: transform 0.3s ease;
     }
@@ -60,21 +52,20 @@
     }
 
     .highlight-value {
-        font-size: 18px;
-        font-weight: 700;
+        font-size: 25px;
+        font-weight: 800;
         color: var(--second-button);
     }
 
     .highlight-label {
         color: var(--primary-light);
-        margin-top: 0.5em;
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .sections-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 2em;
+        gap: 10px;
     }
 
     .timeline {
@@ -83,26 +74,6 @@
         border-radius: 15px;
     }
 
-    .timeline-item {
-        padding: 1em;
-        border-left: 2px solid var(--primary-light);
-        margin-bottom: 1em;
-        position: relative;
-    }
-
-    .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: -6px;
-        top: 0;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--second-button);
-    }
-
-    /* Remove or update the conflicting shortcuts-container styles */
-    /* ... existing styles ... */
 
     .shortcuts-container {
         margin-bottom: 10px;
@@ -121,14 +92,14 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 10px;
+        padding: 15px;
         background: var(--surface);
         border: none;
-        border-radius: 15px;
+        border-radius: 5px;
         color: var(--primary-text);
         cursor: pointer;
         transition: all 0.3s ease;
-        gap: 0.8em;
+        gap: 10px;
     }
 
     .shortcut-card:hover {
@@ -137,37 +108,37 @@
     }
 
     .shortcut-card i {
-        font-size: 30px;
+        font-size: 25px;
         color: var(--second-button);
     }
 
     .shortcut-card span {
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 500;
     }
 
-    /* Add this if you want to style the shortcuts section title */
     .shortcuts-container h2 {
         color: var(--primary-text);
-        font-size: 17px;
-        margin-bottom: 0.5em;
+        font-size: 15px;
         text-transform: capitalize;
+        margin-left: 15px;
     }
 
     .updates-section {
         background: var(--background);
-        padding: 10px;
+        padding: 15px;
         border-radius: 15px;
-        margin-top: 10px;
         color: rgb(177, 177, 177);
         width: 100%;
     }
 
     .update-card {
-        padding: 1em;
+        padding: 15px;
         border-radius: 10px;
-        margin-bottom: 1em;
         background: var(--primary-dark);
-        font-size: 14px;
+        font-size: 13px;
+    }
+    .updates-section h2{
+        font-size: 15px;
     }
 }

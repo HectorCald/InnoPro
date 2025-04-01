@@ -17,13 +17,11 @@ export async function inicializarHome() {
             <div class="title">
                 <h3><i class="fas fa-home"></i> Página principal</h3>
             </div>
-            
             <div class="shortcuts-container">
                 <div class="timeline">
                     <h2>tus atajos</h2>
                     ${generarAtajos(atajos)}
                 </div>
-                
             </div>
 
             <div class="highlights-container">
@@ -84,7 +82,7 @@ async function obtenerHighlights() {
             },
             { 
                 valor: noVerificados, 
-                etiqueta: `No Verificados (${eficienciaNoVerificados}%)` 
+                etiqueta: `No Verif. (${eficienciaNoVerificados}%)` 
             }
         ];
     } catch (error) {
