@@ -3651,91 +3651,72 @@ app.post('/guardar-firma/:id', requireAuth, async (req, res) => {
     }
 });
 // Modificar la ruta de guardar PDF
-app.post('/guardar-pdf/:id', async (req, res) => {
+app.post('/guardar-pdf/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
         const { pdfBase64 } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Crear una URL HTTPS para el PDF
-        const pdfUrl = `https://damabrava.vercel.app/comprobantes/${id}/pdf`;
+        // Obtener el índice de la fila del comprobante
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Comprobantes!A2:A'
+        });
 
-        // Guardar tanto la URL como el contenido base64
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            throw new Error('Comprobante no encontrado');
+        }
+
+        // Guardar el PDF base64 en la columna L
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Comprobantes!L${rowIndex + 2}:M${rowIndex + 2}`,
+            range: `Comprobantes!L${rowIndex + 2}`,
             valueInputOption: 'RAW',
             resource: {
-                values: [[pdfUrl, pdfBase64]]
+                values: [[pdfBase64]]
             }
         });
 
-        res.json({ 
-            success: true, 
-            pdfUrl: pdfUrl 
-        });
+        res.json({ success: true });
     } catch (error) {
         console.error('Error al guardar PDF:', error);
         res.status(500).json({ success: false, error: 'Error al guardar el PDF' });
     }
 });
 
-// Modificar la ruta de descarga
-app.get('/comprobantes/:id/pdf', async (req, res) => {
+app.get('/descargar-pdf/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Obtener el PDF base64 de Google Sheets
+        // Obtener el índice de la fila del comprobante
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!M2:M' // Columna con el contenido base64
+            range: 'Comprobantes!A2:L'
         });
 
-        if (!response.data.values || !response.data.values[0]) {
+        const rows = response.data.values || [];
+        const comprobanteRow = rows.find(row => row[0] === id);
+
+        if (!comprobanteRow || !comprobanteRow[11]) { // 11 es el índice de la columna L
             throw new Error('PDF no encontrado');
         }
 
-        const pdfBase64 = response.data.values[0][0];
+        const pdfBase64 = comprobanteRow[11];
         const pdfBuffer = Buffer.from(pdfBase64.split(',')[1], 'base64');
 
-        // Configurar headers para una descarga segura
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=comprobante-${id}.pdf`);
-        res.setHeader('Content-Security-Policy', "default-src 'self'");
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        
         res.send(pdfBuffer);
     } catch (error) {
         console.error('Error al descargar PDF:', error);
         res.status(500).json({ success: false, error: 'Error al descargar el PDF' });
     }
 });
-app.get('/descargar-pdf/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const sheets = google.sheets({ version: 'v4', auth });
 
-        // Obtener PDF de Google Sheets
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!L2:L'
-        });
-
-        const pdfBase64 = response.data.values[0][0];
-        const pdfBuffer = Buffer.from(pdfBase64.split(',')[1], 'base64');
-
-        // Configurar headers para descarga
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=comprobante-${id}.pdf`);
-        
-        // Enviar PDF
-        res.send(pdfBuffer);
-    } catch (error) {
-        console.error('Error al descargar PDF:', error);
-        res.status(500).json({ success: false, error: 'Error al descargar el PDF' });
-    }
-});
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {

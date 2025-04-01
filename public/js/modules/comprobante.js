@@ -266,9 +266,8 @@ window.descargarComprobantePDF = async function(id) {
         const botonesOriginales = detalleComprobante.querySelector('.anuncio-botones');
         botonesOriginales.style.display = 'none';
         
-        // Configuración para el PDF
         const opt = {
-            margin: 0,
+            margin: 1,
             filename: `comprobante-${id}.pdf`,
             image: { type: 'jpeg', quality: 2 },
             html2canvas: { 
@@ -295,7 +294,7 @@ window.descargarComprobantePDF = async function(id) {
         // Restaurar botones
         botonesOriginales.style.display = 'flex';
         
-        // Guardar en el servidor y obtener URL HTTPS
+        // Guardar en Google Sheets
         const response = await fetch(`/guardar-pdf/${id}`, {
             method: 'POST',
             headers: {
@@ -305,11 +304,10 @@ window.descargarComprobantePDF = async function(id) {
             body: JSON.stringify({ pdfBase64: pdf })
         });
 
-        const data = await response.json();
-        if (!data.success) throw new Error('Error al guardar el PDF');
+        if (!response.ok) throw new Error('Error al guardar el PDF');
 
-        // Usar la URL HTTPS para la descarga
-        window.open(data.pdfUrl, '_blank');
+        // Descargar el PDF
+        window.location.href = `/descargar-pdf/${id}`;
         
         mostrarNotificacion('PDF generado correctamente', 'success');
     } catch (error) {
