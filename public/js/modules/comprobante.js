@@ -267,11 +267,12 @@ window.descargarComprobantePDF = async function(id) {
         mostrarCarga();
         const detalleComprobante = document.querySelector('.detalle-comprobante');
         
-        // Ocultar botones antes de generar PDF
+        // Ocultar botones
         const botonesOriginales = detalleComprobante.querySelector('.anuncio-botones');
         botonesOriginales.style.display = 'none';
         
-        const options = {
+        // Generar PDF como base64
+        const pdf = await html2pdf().set({
             margin: 10,
             filename: `comprobante-${id}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
@@ -279,30 +280,44 @@ window.descargarComprobantePDF = async function(id) {
                 scale: 1,
                 useCORS: true,
                 allowTaint: true,
-                logging: false,
-                letterRendering: true
+                logging: false
             },
             jsPDF: { 
                 unit: 'mm',
                 format: 'a4',
-                orientation: 'portrait',
-                compress: true
+                orientation: 'portrait'
             }
-        };
+        })
+        .from(detalleComprobante)
+        .outputPdf('datauristring');
 
-        // Generar y descargar PDF directamente
-        await html2pdf()
-            .from(detalleComprobante)
-            .set(options)
-            .save();
+        // Enviar al servidor
+        const response = await fetch('/descargar-pdf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                pdfBase64: pdf,
+                nombreArchivo: `comprobante-${id}.pdf`
+            })
+        });
 
+        if (!response.ok) {
+            throw new Error('Error al procesar el PDF');
+        }
+
+        // Obtener URL de descarga
+        const urlDescarga = `/descargar-pdf/${id}`;
+        window.location.href = urlDescarga;
+        
         // Restaurar botones
         botonesOriginales.style.display = 'flex';
         
         mostrarNotificacion('Comprobante descargado correctamente', 'success');
     } catch (error) {
-        console.error('Error detallado:', error);
-        mostrarNotificacion('No se pudo generar el PDF. Por favor, inténtelo de nuevo', 'error');
+        console.error('Error al generar el PDF:', error);
+        mostrarNotificacion('Error al generar el PDF', 'error');
     } finally {
         ocultarCarga();
     }

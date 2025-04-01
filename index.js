@@ -3674,6 +3674,84 @@ app.post('/guardar-firma/:id', requireAuth, async (req, res) => {
         });
     }
 });
+// ... código existente ...
+
+/* ==================== RUTAS DE API - COMPROBANTES ==================== */
+app.get('/generar-pdf/:id', requireAuth, async (req, res) => {
+    try {
+        const id = req.params.id;
+        // Aquí obtienes los datos del comprobante según el ID
+        const response = await fetch(`${process.env.API_URL}/obtener-detalle-comprobante/${id}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error('Error al obtener los detalles del comprobante');
+        }
+
+        // Renderiza la vista del comprobante
+        res.render('comprobante-pdf', { 
+            comprobante: data.comprobante,
+            layout: false
+        });
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al generar el PDF' 
+        });
+    }
+});
+// Importar fs si no está importado
+import fs from 'fs/promises';
+import path from 'path';
+
+// ... código existente ...
+
+// Endpoint para recibir y guardar el PDF
+app.post('/descargar-pdf', async (req, res) => {
+    try {
+        const { pdfBase64, nombreArchivo } = req.body;
+        const pdfData = pdfBase64.split(';base64,').pop();
+        
+        // Crear directorio temporal si no existe
+        const tempDir = path.join(__dirname, 'temp');
+        await fs.mkdir(tempDir, { recursive: true });
+        
+        // Guardar PDF temporalmente
+        const filePath = path.join(tempDir, nombreArchivo);
+        await fs.writeFile(filePath, pdfData, 'base64');
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al guardar PDF:', error);
+        res.status(500).json({ success: false, error: 'Error al procesar el PDF' });
+    }
+});
+
+// Endpoint para descargar el PDF
+app.get('/descargar-pdf/:id', async (req, res) => {
+    try {
+        const fileName = `comprobante-${req.params.id}.pdf`;
+        const filePath = path.join(__dirname, 'temp', fileName);
+        
+        res.download(filePath, fileName, async (err) => {
+            if (err) {
+                console.error('Error al descargar:', err);
+            }
+            // Eliminar archivo temporal después de la descarga
+            try {
+                await fs.unlink(filePath);
+            } catch (unlinkError) {
+                console.error('Error al eliminar archivo temporal:', unlinkError);
+            }
+        });
+    } catch (error) {
+        console.error('Error al descargar PDF:', error);
+        res.status(500).send('Error al descargar el archivo');
+    }
+});
+
+// ... resto del código ...
 
 // ... código existente ...
 
