@@ -244,7 +244,11 @@ window.mostrarDetalleComprobante = async function(id) {
                     <button class="btn-cerrar anuncio-btn cancelar" onclick="cancelarComprobante()">Cerrar</button>
                     ${!comprobante.firma ? `
                         <button class="btn-firmar anuncio-btn enviar" onclick="firmarComprobante('${comprobante.id}')">Firmar</button>
-                    ` : ''}
+                    ` : `
+                        <button class="btn-descargar anuncio-btn enviar" onclick="descargarComprobantePDF('${comprobante.id}')">
+                            <i class="fas fa-download"></i> Descargar PDF
+                        </button>
+                    `}
                 </div>
             </div>
         `;
@@ -254,7 +258,52 @@ window.mostrarDetalleComprobante = async function(id) {
     } catch (error) {
         console.error('Error al mostrar detalle del comprobante:', error);
         mostrarNotificacion(error.message || 'Error al cargar los detalles del comprobante', 'error');
-    }finally {
+    } finally {
+        ocultarCarga();
+    }
+};
+window.descargarComprobantePDF = async function(id) {
+    try {
+        mostrarCarga();
+        const detalleComprobante = document.querySelector('.detalle-comprobante');
+        
+        // Ocultar botones antes de generar PDF
+        const botonesOriginales = detalleComprobante.querySelector('.anuncio-botones');
+        botonesOriginales.style.display = 'none';
+        
+        const options = {
+            margin: 10,
+            filename: `comprobante-${id}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 1,
+                useCORS: true,
+                allowTaint: true,
+                logging: false,
+                letterRendering: true
+            },
+            jsPDF: { 
+                unit: 'mm',
+                format: 'a4',
+                orientation: 'portrait',
+                compress: true
+            }
+        };
+
+        // Generar y descargar PDF directamente
+        await html2pdf()
+            .from(detalleComprobante)
+            .set(options)
+            .save();
+
+        // Restaurar botones
+        botonesOriginales.style.display = 'flex';
+        
+        mostrarNotificacion('Comprobante descargado correctamente', 'success');
+    } catch (error) {
+        console.error('Error detallado:', error);
+        mostrarNotificacion('No se pudo generar el PDF. Por favor, inténtelo de nuevo', 'error');
+    } finally {
         ocultarCarga();
     }
 };
