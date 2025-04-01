@@ -269,7 +269,7 @@ window.descargarComprobantePDF = async function(id) {
         const opt = {
             margin: 0,
             filename: `comprobante-${id}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            image: { type: 'jpeg', quality: 2 },
             html2canvas: { 
                 scale: 1,
                 useCORS: true,
@@ -313,12 +313,16 @@ window.firmarComprobante = async function(id) {
     const contenido = document.querySelector('.anuncio-contenido');
     const detalleComprobante = contenido.querySelector('.detalle-comprobante');
     
-    // Add signature pad container
     const signatureContainer = document.createElement('div');
     signatureContainer.className = 'signature-container';
     signatureContainer.innerHTML = `
-        <h4>Firma Digital</h4>
-        <canvas id="signaturePad" min-width="100%" height="200" style="border-radius: 10px; background: #fff;"></canvas>
+        <div class="signature-header">
+            <h4>Firma Digital</h4>
+            <button class="btn-fullscreen" onclick="toggleFullscreenPad()">
+                <i class="fas fa-expand"></i>
+            </button>
+        </div>
+        <canvas id="signaturePad"></canvas>
         <div class="anuncio-botones">
             <button class="anuncio-btn cancelar" onclick="limpiarFirma()">Limpiar</button>
             <button class="anuncio-btn enviar" onclick="finalizarFirma('${id}')">Finalizar</button>
@@ -327,26 +331,147 @@ window.firmarComprobante = async function(id) {
     
     detalleComprobante.appendChild(signatureContainer);
     
-    // Initialize signature pad
     const canvas = document.getElementById('signaturePad');
-    const signaturePad = new SignaturePad(canvas, {
-        backgroundColor: 'rgb(255, 255, 255)',
-        penColor: 'rgb(0, 0, 0)'
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+        const container = document.querySelector('.signature-container');
+        if (container.classList.contains('fullscreen')) {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight * 0.7;
+        } else {
+            canvas.width = 280;
+            canvas.height = 200;
+        }
+        
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+    }
+    
+    resizeCanvas();
+    
+    window.toggleFullscreenPad = function() {
+        const container = document.querySelector('.signature-container');
+        const button = document.querySelector('.btn-fullscreen i');
+        const currentImage = canvas.toDataURL();
+        
+        container.classList.toggle('fullscreen');
+        button.classList.toggle('fa-expand');
+        button.classList.toggle('fa-compress');
+        
+        resizeCanvas();
+        
+        // Restore previous drawing
+        const img = new Image();
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+        img.src = currentImage;
+    };
+    
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    
+    function draw(e) {
+        if (!isDrawing) return;
+        
+        let x, y;
+        if (e.type === 'mousemove') {
+            x = e.offsetX;
+            y = e.offsetY;
+        } else {
+            const rect = canvas.getBoundingClientRect();
+            x = e.touches[0].clientX - rect.left;
+            y = e.touches[0].clientY - rect.top;
+        }
+        
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        
+        [lastX, lastY] = [x, y];
+    }
+    
+    function startDrawing(e) {
+        isDrawing = true;
+        if (e.type === 'mousedown') {
+            lastX = e.offsetX;
+            lastY = e.offsetY;
+        } else {
+            const rect = canvas.getBoundingClientRect();
+            lastX = e.touches[0].clientX - rect.left;
+            lastY = e.touches[0].clientY - rect.top;
+        }
+    }
+    
+    function stopDrawing() {
+        isDrawing = false;
+    }
+    
+    // Mouse Events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    
+    // Touch Events
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startDrawing(e);
+    }, { passive: false });
+    
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        draw(e);
+    }, { passive: false });
+    
+    canvas.addEventListener('touchend', stopDrawing);
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        if (document.querySelector('.signature-container.fullscreen')) {
+            const currentImage = canvas.toDataURL();
+            resizeCanvas();
+            const img = new Image();
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = currentImage;
+        }
     });
     
     window.limpiarFirma = function() {
-        signaturePad.clear();
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
     };
     
     window.finalizarFirma = async function(comprobanteId) {
-        if (signaturePad.isEmpty()) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        let isEmpty = true;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i] !== 255 || data[i + 1] !== 255 || data[i + 2] !== 255) {
+                isEmpty = false;
+                break;
+            }
+        }
+        
+        if (isEmpty) {
             mostrarNotificacion('Por favor realice su firma', 'error');
             return;
         }
         
         try {
             mostrarCarga();
-            const firmaBase64 = signaturePad.toDataURL('image/png');
+            const firmaBase64 = canvas.toDataURL('image/png');
             const response = await fetch(`/guardar-firma/${comprobanteId}`, {
                 method: 'POST',
                 headers: {
@@ -367,8 +492,48 @@ window.firmarComprobante = async function(id) {
         } catch (error) {
             console.error('Error al guardar la firma:', error);
             mostrarNotificacion('Error al guardar la firma', 'error');
-        }finally {
+        } finally {
             ocultarCarga();
         }
     };
+};
+window.closeFullscreenPad = function() {
+    const container = document.querySelector('.signature-container');
+    const expandButton = document.querySelector('.btn-fullscreen');
+    const closeButton = document.querySelector('.btn-close-fullscreen');
+    const currentImage = canvas.toDataURL();
+    
+    container.classList.remove('fullscreen');
+    expandButton.style.display = 'block';
+    closeButton.style.display = 'none';
+    
+    resizeCanvas();
+    
+    // Restore previous drawing
+    const img = new Image();
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = currentImage;
+};
+
+// Update the toggleFullscreenPad function
+window.toggleFullscreenPad = function() {
+    const container = document.querySelector('.signature-container');
+    const expandButton = document.querySelector('.btn-fullscreen');
+    const closeButton = document.querySelector('.btn-close-fullscreen');
+    const currentImage = canvas.toDataURL();
+    
+    container.classList.add('fullscreen');
+    expandButton.style.display = 'none';
+    closeButton.style.display = 'block';
+    
+    resizeCanvas();
+    
+    // Restore previous drawing
+    const img = new Image();
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = currentImage;
 };

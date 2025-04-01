@@ -77,65 +77,6 @@
         color: white;
     }
 
-    /* ... Estilos existentes ... */
-
-    .formulario-comprobante {
-        background: var(--background);
-        padding: 2em;
-        border-radius: 10px;
-        width: 100%;
-        max-width: 500px;
-        color: var(--primary-text);
-    }
-
-    .formulario-comprobante h3 {
-        text-align: center;
-        margin-bottom: 1.5em;
-        color: var(--primary-color);
-    }
-
-    .campo-form {
-        margin-bottom: 1em;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5em;
-    }
-
-    .campo-form label {
-        font-weight: bold;
-        color: var(--primary-text);
-    }
-
-    .campo-form input,
-    .campo-form textarea,
-    .campo-form select {
-        padding: 0.5em;
-        border: 1px solid var(--border-color);
-        border-radius: 5px;
-        background: var(--input-background);
-        color: var(--primary-text);
-    }
-
-    .campo-form textarea {
-        min-height: 100px;
-        resize: vertical;
-    }
-
-    .botones-form {
-        display: flex;
-        gap: 1em;
-        justify-content: center;
-        margin-top: 2em;
-    }
-
-    .btn-generar,
-    .btn-cancelar {
-        padding: 0.8em 2em;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-    }
 
     .btn-generar {
         background: var(--primary-color);
@@ -222,12 +163,6 @@
     flex-direction: column;
 }
 
-.signature-container {
-    margin-top: 20px;
-    padding: 0;
-    border-top: 1px solid #ccc;
-    max-width: 300px;
-}
 
 
 .detalle-comprobante {
@@ -267,20 +202,135 @@
     padding-bottom: 3px !important;
 }
 
+
+
 .signature-container {
-    margin-top: 5px !important;
-    padding: 0 !important;
-    max-width: 280px !important;
+    margin: 20px auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: white;
+    max-width: 300px;
 }
 
 .signature-container canvas {
-    height: 100px !important;
-    width: 100% !important;
+    width: 100%;
+    height: 200px !important;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white !important;
+    touch-action: none !important;
+    cursor: crosshair !important;
+    display: block;
 }
 
-.firma-preview img {
-    width: 100px !important;
-    height: auto !important;
-    max-height: 100px !important;
-    margin: 0 !important;
+#signaturePad {
+    touch-action: none;
+    background: white;
+}
+
+
+
+
+.signature-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 10px;
+}
+
+.signature-buttons {
+    display: flex;
+    gap: 10px;
+}
+.btn-fullscreen i{
+    color: gray;
+}
+
+.btn-fullscreen,
+.btn-close-fullscreen {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 8px;
+    font-size: 1.2em;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-fullscreen:hover,
+.btn-close-fullscreen:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #000;
+}
+
+.signature-container {
+    margin: 20px auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: white;
+    max-width: 300px;
+    transition: all 0.3s ease;
+    position: relative;
+    
+}
+
+.signature-container.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: calc(100vw-250px);
+    height: 100vh;
+    max-width: none;
+    margin: 0;
+    padding: 20px;
+    z-index: 9999;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.98);
+}
+
+.signature-container.fullscreen canvas {
+    flex: 1;
+    width: 100% !important;
+    height: calc(100vh - 150px) !important;
+    margin: auto;
+}
+
+.signature-container.fullscreen .anuncio-botones {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: white;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+@media (orientation: landscape) {
+    .signature-container.fullscreen canvas {
+        height: calc(100vh - 120px) !important;
+    }
+}
+@media (orientation: landscape) {
+    .signature-container.fullscreen {
+        padding: 10px;
+    }
+    
+    .signature-container.fullscreen canvas {
+        transform: none;
+        height: 60vh !important;
+    }
 }
