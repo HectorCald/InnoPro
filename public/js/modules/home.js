@@ -46,23 +46,28 @@ async function obtenerHighlights() {
     try {
         mostrarCarga();
         
-        // Get user name first
-        const nombreResponse = await fetch('/obtener-nombre');
-        const nombreData = await nombreResponse.json();
-        const nombreUsuario = nombreData.nombre;
+        // Obtener el rol del usuario
+        const rolResponse = await fetch('/obtener-mi-rol');
+        const rolData = await rolResponse.json();
+        const rol = rolData.rol;
 
-        // Get all records using the existing endpoint
-        const response = await fetch('/obtener-registros');
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error(data.error);
+        let registros;
+        if (rol === 'Almacen') {
+            // Para Almacen, obtener todos los registros
+            const response = await fetch('/obtener-todos-registros');
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            registros = data.registros;
+        } else {
+            // Para otros roles, obtener solo sus registros
+            const response = await fetch('/obtener-registros');
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            registros = data.registros;
         }
 
-        // Filter records for current user and calculate statistics
-        const registrosUsuario = data.registros.filter(registro => registro[8] === nombreUsuario);
-        const produccionesTotal = registrosUsuario.length;
-        const produccionesVerificadas = registrosUsuario.filter(registro => registro[10]).length;
+        const produccionesTotal = registros.length;
+        const produccionesVerificadas = registros.filter(registro => registro[10]).length;
         const noVerificados = produccionesTotal - produccionesVerificadas;
         const eficienciaVerificados = produccionesTotal > 0 
             ? Math.round((produccionesVerificadas / produccionesTotal) * 100) 

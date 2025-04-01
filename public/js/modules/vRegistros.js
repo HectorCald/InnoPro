@@ -880,23 +880,23 @@ function configurarFiltros() {
         };
 
         anuncioContenido.innerHTML = `
-            <h2>Filtros de Registros</h2>
+            <h2><i class="fas fa-filter"></i> Filtros de Registros</h2>
             <div class="detalles-verificacion">
                 <form id="filtros-form">
-                    <div class="form-group">
-                        <label>Nombre del operario</label>
+                    <div class="campo-form">
+                        <label>Operario:</label>
                         <input type="text" id="filtro-nombre" placeholder="Buscar por nombre" value="${valoresGuardados.nombre}">
                     </div>
-                    <div class="form-group">
-                        <label>Fecha desde</label>
+                    <div class="campo-form">
+                        <label>Fecha desde:</label>
                         <input type="date" id="filtro-fecha-desde" value="${valoresGuardados.fechaDesde}">
                     </div>
-                    <div class="form-group">
-                        <label>Fecha hasta</label>
+                    <div class="campo-form">
+                        <label>Fecha hasta:</label>
                         <input type="date" id="filtro-fecha-hasta" value="${valoresGuardados.fechaHasta}">
                     </div>
-                    <div class="form-group">
-                        <label>Estado</label>
+                    <div class="campo-form">
+                        <label>Estado:</label>
                         <select id="filtro-estado">
                             <option value="todos" ${valoresGuardados.estado === 'todos' ? 'selected' : ''}>Todos</option>
                             <option value="verificados" ${valoresGuardados.estado === 'verificados' ? 'selected' : ''}>Verificados</option>
@@ -906,9 +906,9 @@ function configurarFiltros() {
                 </form>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn aplicar">Aplicar</button>
-                <button class="anuncio-btn limpiar">Limpiar</button>
-                <button class="anuncio-btn cancelar">Cancelar</button>
+                <button class="anuncio-btn green aplicar">Aplicar</button>
+                <button class="anuncio-btn red limpiar">Limpiar</button>
+                <button class="anuncio-btn gray cancelar">Cancelar</button>
             </div>
         `;
 
