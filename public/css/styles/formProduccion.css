@@ -188,4 +188,17 @@
     #seleccion option{
         font-size: 15px !important;
     }
+    .horario-mensaje {
+    text-align: center;
+    padding: 2rem;
+    background: var(--surface);
+    border-radius: 8px;
+    margin: 2rem;
+}
+
+.horario-mensaje p {
+    margin: 1rem 0;
+    color: var(--primary-text);
+    font-size: 1.1rem;
+}
 }

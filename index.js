@@ -8,7 +8,7 @@ import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import admin from 'firebase-admin';
-
+let sistemaEnMantenimiento = false;
 // Configuración inicial
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -3710,6 +3710,9 @@ app.get('/descargar-pdf/:id', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al descargar el PDF' });
     }
 });
+
+
+
 
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */

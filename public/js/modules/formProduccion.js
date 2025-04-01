@@ -1,7 +1,23 @@
-import { registrarNotificacion } from './advertencia.js'; 
+import { registrarNotificacion } from './advertencia.js';
 export function inicializarFormularioProduccion() {
     mostrarCarga();
     const container = document.querySelector('.formProduccion-view');
+
+    if (!verificarHorario()) {
+        container.innerHTML = `
+            <div class="title">
+                <i class="fas fa-clock"></i>
+                <h2 class="section-title">Fuera de Horario</h2>
+            </div>
+            <div class="horario-mensaje">
+                <p>Lo sentimos, solo se pueden registrar producciones entre las 8:00 AM y 6:15 PM.</p>
+                <p>Por favor, regrese durante el horario establecido.</p>
+            </div>
+        `;
+        ocultarCarga();
+        return;
+    }
+
     container.innerHTML = `
         <div class="title">
             <i class="fas fa-clipboard-list"></i>
@@ -74,19 +90,19 @@ export function inicializarFormularioProduccion() {
     `;
     inicializarFormulario();
 }
-
 export function inicializarFormulario() {
     ocultarCarga();
     const form = document.querySelector('.form1 form');
     
+
     // Agregar manejo de radio buttons para microondas
     const radioButtons = document.querySelectorAll('input[name="microondas-option"]');
     const tiempoMicroondas = document.querySelector('.microondas-tiempo');
-    
+
     // Añadir evento focus a todos los inputs para mejorar UX móvil
     const inputs = form.querySelectorAll('input, select');
     inputs.forEach(input => {
-        input.addEventListener('focus', function() {
+        input.addEventListener('focus', function () {
             setTimeout(() => {
                 const inputRect = this.getBoundingClientRect();
                 const offset = inputRect.top + window.scrollY - (window.innerHeight / 3);
@@ -97,7 +113,7 @@ export function inicializarFormulario() {
             }, 100);
         });
     });
-    
+
     radioButtons.forEach(radio => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'si') {
@@ -113,9 +129,14 @@ export function inicializarFormulario() {
 
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        if (!verificarHorario()) {
+            mostrarNotificacion('No se pueden registrar producciones fuera del horario permitido (8:00 AM - 6:15 PM)', 'error');
+            return;
+        }
         const formData = new FormData(form);
         const data = {};
-        
+
         // Procesar opción de microondas
         const microOption = form.querySelector('input[name="microondas-option"]:checked').value;
         if (microOption === 'no') {
@@ -123,7 +144,7 @@ export function inicializarFormulario() {
         } else {
             data.microondas = formData.get('microondas');
         }
-        
+
         // Process other fields
         formData.forEach((value, key) => {
             if (key !== 'microondas' && key !== 'microondas-option') {
@@ -151,7 +172,7 @@ export function inicializarFormulario() {
             });
 
             const result = await response.json();
-            
+
             if (result.success) {
                 // Send notification to Almacen
                 try {
@@ -164,7 +185,7 @@ export function inicializarFormulario() {
                     console.error('Error al enviar notificación:', notifError);
                 }
 
-                mostrarNotificacion('Registro guardado correctamente','success');
+                mostrarNotificacion('Registro guardado correctamente', 'success');
                 resetearFormulario();
             } else {
                 throw new Error(result.error || 'Error desconocido');
@@ -178,36 +199,34 @@ export function inicializarFormulario() {
     });
     cargarProductos();
 }
-
 export function resetearFormulario() {
     const inputs = document.querySelectorAll('.form1 form input:not([type="radio"])');
     inputs.forEach(input => {
         input.value = '';
     });
-    
+
     const radioInputs = document.querySelectorAll('input[type="radio"]');
     radioInputs.forEach(radio => {
         radio.checked = false;
     });
-    
+
     const selector = document.querySelector('.form1 form select');
     if (selector) {
         selector.selectedIndex = 0;
     }
-    
+
     document.querySelector('.microondas-tiempo').style.display = 'none';
 }
-
 export async function cargarProductos() {
     try {
         mostrarCarga();
         const response = await fetch('/obtener-productos');
         const data = await response.json();
-        
+
         if (data.success) {
             const datalist = document.getElementById('productos-list');
             datalist.innerHTML = ''; // Limpiar opciones existentes
-            
+
             data.productos.forEach(producto => {
                 const option = document.createElement('option');
                 option.value = producto;
@@ -217,7 +236,18 @@ export async function cargarProductos() {
     } catch (error) {
         console.error('Error al cargar productos:', error);
     }
-    finally{
+    finally {
         ocultarCarga();
     }
+}
+function verificarHorario() {
+    const ahora = new Date();
+    const hora = ahora.getHours();
+    const minutos = ahora.getMinutes();
+    const tiempoActual = hora * 60 + minutos; // Convertir a minutos
+
+    const inicioJornada = 8 * 60; // 8:00 AM en minutos
+    const finJornada = 18 * 60 + 15; // 6:15 PM en minutos
+
+    return tiempoActual >= inicioJornada && tiempoActual <= finJornada;
 }

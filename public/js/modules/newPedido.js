@@ -12,11 +12,6 @@ export function inicializarPedidos() {
                     </button>
                     <p>Agregar</p>
                 </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido" onclick="compartirPedido()">
-                        <i class="fab fa-whatsapp"></i>
-                    </button>
-                    <p>Compartir</p>
-                </div>
                 <div class="cuadro-btn"><button class="btn-agregar-pedido" onclick="finalizarPedidos()">
                         <i class="fas fa-check-circle"></i>
                     </button>
