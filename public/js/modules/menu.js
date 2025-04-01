@@ -86,7 +86,8 @@ export function initializeMenu(roles, opcionesDiv, vistas) {
             { clase: 'opcion-btn', vista: 'verificarRegistros-view', icono: 'fa-check-double', texto: 'Registros', onclick: 'onclick="cargarRegistros()"' },
             { clase: 'opcion-btn', vista: 'almAcopio-view', icono: 'fa-warehouse', texto: 'Alm Bruto', onclick: 'onclick="inicializarAlmacen()"' },
             { clase: 'opcion-btn', vista: 'almPrima-view', icono: 'fa-warehouse', texto: 'Alm Prima', onclick: 'onclick="inicializarAlmacenPrima()"' },
-            { clase: 'opcion-btn', vista: 'comprobante-view', icono: 'fa-warehouse', texto: 'Comprobante', onclick: 'onclick="inicializarComprobante()"' }
+            { clase: 'opcion-btn', vista: 'comprobante-view', icono: 'fa-receipt', texto: 'Comprobante', onclick: 'onclick="inicializarComprobante()"' },
+            { clase: 'opcion-btn', vista: 'preciosPro-view', icono: 'fa-dollar-sign', texto: 'Precsios Pro.', onclick: 'onclick="initializePreciosPro()"' }
         ]
     };
     let esElPrimero = true;

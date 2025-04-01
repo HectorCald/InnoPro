@@ -44,8 +44,9 @@
 }
 
 .anuncio-contenido i {
-    font-size: 3em;
-    color: #dc3545;
+    font-size: 20px;
+    color: white;
+    margin-left: 5px;
 }
 
 .anuncio-contenido h2 {

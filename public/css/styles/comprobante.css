@@ -222,14 +222,65 @@
     flex-direction: column;
 }
 
-.firma-preview img {
-    width: 100%;
-    border-radius: 20px;
-}
-
 .signature-container {
     margin-top: 20px;
     padding: 0;
     border-top: 1px solid #ccc;
     max-width: 300px;
+}
+
+
+.detalle-comprobante {
+    font-family: Arial, sans-serif;
+    box-shadow: none;
+    width: 100% !important;
+    max-width: 280px !important;
+    font-size: 10px !important;
+    padding: 8px !important;
+    margin: auto;
+    background: white;
+    position: relative;
+}
+
+.detalle-comprobante h1 {
+    font-size: 17px !important;
+    margin: 3px 0 !important;
+}
+
+.detalle-comprobante h2 {
+    font-size: 16px !important;
+    margin: 3px 0 !important;
+}
+
+.detalle-comprobante h3 {
+    font-size: 14px !important;
+    margin: 3px 0 !important;
+}
+
+.detalle-comprobante p {
+    margin: 2px 0 !important;
+    line-height: 1.1 !important;
+}
+
+.detalle-comprobante div {
+    margin: 8px 0 !important;
+    padding-bottom: 3px !important;
+}
+
+.signature-container {
+    margin-top: 5px !important;
+    padding: 0 !important;
+    max-width: 280px !important;
+}
+
+.signature-container canvas {
+    height: 100px !important;
+    width: 100% !important;
+}
+
+.firma-preview img {
+    width: 100px !important;
+    height: auto !important;
+    max-height: 100px !important;
+    margin: 0 !important;
 }

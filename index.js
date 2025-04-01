@@ -3485,7 +3485,7 @@ app.post('/registrar-notificacion', requireAuth, async (req, res) => {
     }
 });
 
-
+/* ==================== RUTAS DE API - COMPROBANTES ==================== */
 app.post('/registrar-comprobante', requireAuth, async (req, res) => {
     try {
         const comprobante = req.body;
@@ -3521,28 +3521,6 @@ app.post('/registrar-comprobante', requireAuth, async (req, res) => {
         });
     }
 });
-
-app.get('/obtener-ultimo-comprobante', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!B2:B'
-        });
-
-        const rows = response.data.values || [];
-        const ultimoNumero = rows.length > 0 ? 
-            Math.max(...rows.map(row => parseInt(row[0]) || 0)) : 0;
-
-        res.json({ success: true, ultimoNumero });
-    } catch (error) {
-        console.error('Error al obtener último comprobante:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener último comprobante: ' + error.message 
-        });
-    }
-});
 app.get('/obtener-comprobantes', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -3567,8 +3545,6 @@ app.get('/obtener-comprobantes', requireAuth, async (req, res) => {
         });
     }
 });
-// ... código existente ...
-
 app.get('/obtener-detalle-comprobante/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
@@ -3674,60 +3650,6 @@ app.post('/guardar-firma/:id', requireAuth, async (req, res) => {
         });
     }
 });
-// ... código existente ...
-
-/* ==================== RUTAS DE API - COMPROBANTES ==================== */
-app.get('/generar-pdf/:id', requireAuth, async (req, res) => {
-    try {
-        const id = req.params.id;
-        // Aquí obtienes los datos del comprobante según el ID
-        const response = await fetch(`${process.env.API_URL}/obtener-detalle-comprobante/${id}`);
-        const data = await response.json();
-        
-        if (!data.success) {
-            throw new Error('Error al obtener los detalles del comprobante');
-        }
-
-        // Renderiza la vista del comprobante
-        res.render('comprobante-pdf', { 
-            comprobante: data.comprobante,
-            layout: false
-        });
-    } catch (error) {
-        console.error('Error al generar PDF:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al generar el PDF' 
-        });
-    }
-});
-// Importar fs si no está importado
-import fs from 'fs/promises';
-import path from 'path';
-
-// ... código existente ...
-
-// Endpoint para recibir y guardar el PDF
-app.post('/descargar-pdf', async (req, res) => {
-    try {
-        const { pdfBase64, nombreArchivo } = req.body;
-        const pdfData = pdfBase64.split(';base64,').pop();
-        
-        // Crear directorio temporal si no existe
-        const tempDir = path.join(__dirname, 'temp');
-        await fs.mkdir(tempDir, { recursive: true });
-        
-        // Guardar PDF temporalmente
-        const filePath = path.join(tempDir, nombreArchivo);
-        await fs.writeFile(filePath, pdfData, 'base64');
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error al guardar PDF:', error);
-        res.status(500).json({ success: false, error: 'Error al procesar el PDF' });
-    }
-});
-
 app.post('/guardar-pdf/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -3750,8 +3672,6 @@ app.post('/guardar-pdf/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al guardar el PDF' });
     }
 });
-
-// Descargar PDF desde Google Sheets
 app.get('/descargar-pdf/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -3777,10 +3697,6 @@ app.get('/descargar-pdf/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al descargar el PDF' });
     }
 });
-
-// ... resto del código ...
-
-// ... código existente ...
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {

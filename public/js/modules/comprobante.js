@@ -191,62 +191,56 @@ window.mostrarDetalleComprobante = async function(id) {
         const contenido = document.querySelector('.anuncio-contenido');
         
         contenido.innerHTML = `
-            <div class="detalle-comprobante">
-                <h2>Detalle del Comprobante</h2>
-                <h2><img src="./img/Logotipo.webp" alt="Logotipo" style="max-width: 30px;">Damabrava</h2>
-                <div class="campo-detalle">
-                    <label>ID:</label>
-                    <p>${comprobante.id}</p>
+            <div class="detalle-comprobante" style="background: white; color: black; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0; color: #28a745;">¡Pago realizado!</h2>
+                    <h1 style="margin: 10px 0; font-size: 2em;">Bs ${comprobante.total}</h1>
                 </div>
-                <div class="campo-detalle">
-                    <label>Número:</label>
-                    <p>${comprobante.numero}</p>
+
+                <div style="margin:  0; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    <h3 style="margin: 0; color: #666;">Para</h3>
+                    <p style="margin: 5px 0; font-size: 1.2em;">${comprobante.nombre}</p>
+                    <p style="margin: 5px 0; color: #666;">${comprobante.carnet}</p>
+                    <p style="margin: 5px 0; color: #666;">Operario</p>
                 </div>
-                <div class="campo-detalle">
-                    <label>Fecha:</label>
-                    <p>${comprobante.fecha}</p>
+
+                <div style="margin: 20px 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    <h3 style="margin: 0; color: #666;">De</h3>
+                    <p style="margin: 0; font-size: 1.2em;">DAMABRAVA</p>
+                    <p style="margin:0; color: #666;">Empresa</p>
                 </div>
-                <div class="campo-detalle">
-                    <label>Nombre:</label>
-                    <p>${comprobante.nombre}</p>
+
+                <div style="margin: 20px 0;">
+                    <h3 style="margin: 0; color: #666;">Realizado en</h3>
+                    <p style="margin:0;">${comprobante.fecha}</p>
+                    <p style="margin:  0; color: #666;">ID del pago ${comprobante.id}</p>
                 </div>
-                <div class="campo-detalle">
-                    <label>Teléfono:</label>
-                    <p>${comprobante.telefono}</p>
+
+                <div style="margin: 0;">
+                    <h3 style="margin: 0; color: #666;">Detalle</h3>
+                    <p style="margin: 5px 0;">${comprobante.detalle}</p>
                 </div>
-                <div class="campo-detalle">
-                    <label>Carnet:</label>
-                    <p>${comprobante.carnet}</p>
-                </div>
-                <div class="campo-detalle">
-                    <label>Detalle:</label>
-                    <p>${comprobante.detalle}</p>
-                </div>
-                <div class="campo-detalle">
-                    <label>Subtotal:</label>
-                    <p>${comprobante.subtotal}</p>
-                </div>
-                <div class="campo-detalle">
-                    <label>Total:</label>
-                    <p>${comprobante.total}</p>
-                </div>
-                <div class="campo-detalle">
-                    <label>Método de Pago:</label>
-                    <p>${comprobante.metodoPago}</p>
-                </div>
+
                 ${comprobante.firma ? `
-                    <div class="campo-detalle firma-preview">
-                        <label>Firma digital:</label>
-                        <img src="${comprobante.firma}" alt="Firma digital" style="max-width: 300px; border: 1px solid #ccc;">
+                    <p style="margin: 0; color: #666;">Firma del interesado:</p>
+                    <div style="margin: 10px 0; text-align: center;">
+                        <img src="${comprobante.firma}" alt="Firma digital" style="max-width: 150px; border: none;">
+                    </div>
+                    <div class="logo-container" style="text-align: center; margin-top: 10px;">
+                        <p style="margin: 5px 0; color: #666; font-size: 12px;">
+                            <img src="./img/Logotipo.webp" alt="Logo Damabrava" style="width: 40px; height: auto; vertical-align: middle;">
+                            DAMABRAVA
+                        </p>
                     </div>
                 ` : ''}
-                <div class="anuncio-botones">
+
+                <div class="anuncio-botones" style="margin-top: 20px; text-align: center;">
                     <button class="btn-cerrar anuncio-btn cancelar" onclick="cancelarComprobante()">Cerrar</button>
                     ${!comprobante.firma ? `
                         <button class="btn-firmar anuncio-btn enviar" onclick="firmarComprobante('${comprobante.id}')">Firmar</button>
                     ` : `
                         <button class="btn-descargar anuncio-btn enviar" onclick="descargarComprobantePDF('${comprobante.id}')">
-                            <i class="fas fa-download"></i> Descargar PDF
+                            <i class="fas fa-download"></i> Guardar
                         </button>
                     `}
                 </div>
@@ -271,33 +265,42 @@ window.descargarComprobantePDF = async function(id) {
         const botonesOriginales = detalleComprobante.querySelector('.anuncio-botones');
         botonesOriginales.style.display = 'none';
         
-        // Generar PDF como base64
-        const pdfBase64 = await html2pdf().set({
-            margin: 10,
+        // Configuración optimizada para una sola página
+        const opt = {
+            margin: 0,
             filename: `comprobante-${id}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 1, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        })
-        .from(detalleComprobante)
-        .outputPdf('datauristring');
+            html2canvas: { 
+                scale: 1,
+                useCORS: true,
+                letterRendering: true,
+                width: 280,
+                height: 500
+            },
+            jsPDF: { 
+                unit: 'mm', 
+                format: [80, 150],
+                orientation: 'portrait',
+                compress: true
+            }
+        };
 
-        // Guardar PDF en Google Sheets
-        const response = await fetch(`/guardar-pdf/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pdfBase64 })
-        });
+        // Generar PDF
+        const pdf = await html2pdf()
+            .set(opt)
+            .from(detalleComprobante)
+            .toPdf()
+            .output('datauristring');
 
-        if (!response.ok) {
-            throw new Error('Error al guardar el PDF');
-        }
-
-        // Descargar PDF
-        window.location.href = `/descargar-pdf/${id}`;
-        
         // Restaurar botones
         botonesOriginales.style.display = 'flex';
+        
+        // Descargar PDF
+        const link = document.createElement('a');
+        link.href = pdf;
+        link.download = `comprobante-${id}.pdf`;
+        link.click();
+        
         mostrarNotificacion('PDF generado correctamente', 'success');
     } catch (error) {
         console.error('Error:', error);
