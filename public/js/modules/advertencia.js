@@ -102,10 +102,8 @@ function mostrarInterfazNotificaciones(advertenciaDiv, notificaciones) {
                 `).join('')}
             </div>
             <div class="confirmacion-lectura" style="display: none;">
-                <label>
-                    <input type="checkbox" id="confirmarLectura">
-                    <span>He leido todo</span>
-                </label>
+                <input type="checkbox" id="confirmarLectura">
+                <span>He leido todo</span>
             </div>
             <div class="anuncio-botones">
                 <button class="btn-aceptar">Aceptar</button>
@@ -186,7 +184,7 @@ async function eliminarNotificacionesUsuarioActual() {
     const checkbox = advertenciaDiv.querySelector('#confirmarLectura');
     
     if (confirmacionDiv.style.display === 'none') {
-        confirmacionDiv.style.display = 'block';
+        confirmacionDiv.style.display = 'flex';
         return;
     }
 
