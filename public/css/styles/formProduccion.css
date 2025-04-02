@@ -71,10 +71,10 @@
         padding: 5px;
     }
 
-    .form-group input:focus ~ p,
-    .form-group input:not(:placeholder-shown) ~ p,
-    .form-group select:focus ~ p,
-    .form-group select:not(:placeholder-shown) ~ p {
+    .form-group input:focus~p,
+    .form-group input:not(:placeholder-shown)~p,
+    .form-group select:focus~p,
+    .form-group select:not(:placeholder-shown)~p {
         top: 0;
         font-size: 15px;
         color: var(--second-button);
@@ -107,7 +107,8 @@
         background-size: 1em;
         width: 100%;
     }
-    .etiqueta-microondas{
+
+    .etiqueta-microondas {
         position: static !important;
     }
 
@@ -181,24 +182,61 @@
         transform: translateY(-2px);
     }
 
-    #seleccion{
+    #seleccion {
         background-color: var(--primary-color);
     }
 
-    #seleccion option{
+    #seleccion option {
         font-size: 15px !important;
     }
-    .horario-mensaje {
-    text-align: center;
-    padding: 2rem;
-    background: var(--surface);
-    border-radius: 8px;
-    margin: 2rem;
-}
 
-.horario-mensaje p {
-    margin: 1rem 0;
-    color: var(--primary-text);
-    font-size: 1.1rem;
+    .horario-mensaje {
+        text-align: center;
+        padding: 2rem;
+        background: var(--surface);
+        border-radius: 8px;
+        margin: 2rem;
+    }
+
+    .horario-mensaje p {
+        margin: 1rem 0;
+        color: var(--primary-text);
+        font-size: 1.1rem;
+    }
+    .sugerencias-container {
+        position: absolute;
+        width: 100%;
+        z-index: 1000;
+        margin-top: 55px;
+    }
+    .sugerencias-list {
+        background: var(--primary-color);
+        border: 2px solid var(--primary-light);
+        border-radius: 15px;
+        max-height: 200px;
+        overflow-y: auto;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .sugerencias-list li {
+        padding: 10px 15px;
+        cursor: pointer;
+        color: var(--primary-text);
+        border-bottom: 1px solid var(--primary-light);
+    }
+    
+    .sugerencias-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .sugerencias-list li:hover {
+        background: var(--surface);
+    }
+
+.form-group {
+    position: relative;
 }
 }

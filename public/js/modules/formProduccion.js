@@ -96,20 +96,78 @@ export function inicializarFormulario() {
     const productoInput = document.getElementById('producto-input');
     let productosDisponibles = [];
 
-    // Validación del producto
-    productoInput.addEventListener('change', function() {
-        const productoSeleccionado = this.value.trim();
-        if (!productosDisponibles.includes(productoSeleccionado)) {
-            mostrarNotificacion('Por favor seleccione un producto válido de la lista', 'warning');
-            this.value = '';
+    // Create and append suggestions list
+    const sugerenciasContainer = document.createElement('div');
+    sugerenciasContainer.className = 'sugerencias-container';
+    const sugerenciasList = document.createElement('ul');
+    sugerenciasList.className = 'sugerencias-list';
+    sugerenciasContainer.appendChild(sugerenciasList);
+    productoInput.parentNode.appendChild(sugerenciasContainer);
+
+    inicializarEventosProducto(form, productoInput, sugerenciasContainer, sugerenciasList, productosDisponibles);
+    inicializarEventosFormulario(form, productoInput, productosDisponibles);
+}
+
+function inicializarEventosProducto(form, productoInput, sugerenciasContainer, sugerenciasList, productosDisponibles) {
+    productoInput.addEventListener('input', function() {
+        const valor = this.value.trim().toLowerCase();
+        if (valor) {
+            const sugerencias = productosDisponibles.filter(producto => 
+                producto.toLowerCase().includes(valor)
+            );
+            
+            if (sugerencias.length > 0) {
+                sugerenciasList.innerHTML = sugerencias
+                    .map(producto => `<li>${producto}</li>`)
+                    .join('');
+                sugerenciasContainer.style.display = 'block';
+            } else {
+                sugerenciasContainer.style.display = 'none';
+            }
+        } else {
+            sugerenciasContainer.style.display = 'none';
         }
     });
 
-    // Agregar manejo de radio buttons para microondas
+    sugerenciasList.addEventListener('click', function(e) {
+        if (e.target.tagName === 'LI') {
+            productoInput.value = e.target.textContent;
+            sugerenciasContainer.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!productoInput.contains(e.target) && !sugerenciasContainer.contains(e.target)) {
+            sugerenciasContainer.style.display = 'none';
+        }
+    });
+
+    async function cargarProductosValidados() {
+        try {
+            mostrarCarga();
+            const response = await fetch('/obtener-productos');
+            const data = await response.json();
+
+            if (data.success) {
+                productosDisponibles.length = 0;
+                productosDisponibles.push(...new Set(data.productos).values());
+                productosDisponibles.sort();
+            }
+        } catch (error) {
+            console.error('Error al cargar productos:', error);
+        } finally {
+            ocultarCarga();
+        }
+    }
+
+    cargarProductosValidados();
+}
+
+function inicializarEventosFormulario(form, productoInput, productosDisponibles) {
     const radioButtons = document.querySelectorAll('input[name="microondas-option"]');
     const tiempoMicroondas = document.querySelector('.microondas-tiempo');
 
-    // Añadir evento focus a todos los inputs para mejorar UX móvil
+    // Mobile UX improvement
     const inputs = form.querySelectorAll('input, select');
     inputs.forEach(input => {
         input.addEventListener('focus', function () {
@@ -124,6 +182,7 @@ export function inicializarFormulario() {
         });
     });
 
+    // Microondas radio buttons
     radioButtons.forEach(radio => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'si') {
@@ -137,24 +196,26 @@ export function inicializarFormulario() {
         });
     });
 
+    // Form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
-
-        const productoSeleccionado = productoInput.value.trim();
-        if (!productosDisponibles.includes(productoSeleccionado)) {
-            mostrarNotificacion('Por favor seleccione un producto válido de la lista', 'warning');
-            return;
-        }
 
         if (!verificarHorario()) {
             mostrarNotificacion('No se pueden registrar producciones fuera del horario permitido (8:00 AM - 6:15 PM)', 'error');
             return;
         }
 
+        // Validación del producto al momento del submit
+        const productoSeleccionado = productoInput.value.trim();
+        if (!productosDisponibles.includes(productoSeleccionado)) {
+            mostrarNotificacion('El producto ingresado no existe en la lista', 'warning');
+            return;
+        }
+
         const formData = new FormData(form);
         const data = {};
 
-        // Procesar opción de microondas
+        // Process microwave option
         const microOption = form.querySelector('input[name="microondas-option"]:checked').value;
         if (microOption === 'no') {
             data.microondas = 'No';
@@ -175,7 +236,6 @@ export function inicializarFormulario() {
 
         try {
             mostrarCarga();
-            // Get current user first
             const userResponse = await fetch('/obtener-mi-rol');
             const userData = await userResponse.json();
             const usuarioActual = userData.nombre;
@@ -213,34 +273,6 @@ export function inicializarFormulario() {
             ocultarCarga();
         }
     });
-
-    // Modificar cargarProductos para guardar la lista
-    async function cargarProductosValidados() {
-        try {
-            mostrarCarga();
-            const response = await fetch('/obtener-productos');
-            const data = await response.json();
-
-            if (data.success) {
-                const datalist = document.getElementById('productos-list');
-                datalist.innerHTML = '';
-                productosDisponibles = data.productos;
-
-                data.productos.forEach(producto => {
-                    const option = document.createElement('option');
-                    option.value = producto;
-                    datalist.appendChild(option);
-                });
-            }
-        } catch (error) {
-            console.error('Error al cargar productos:', error);
-            mostrarNotificacion('Error al cargar la lista de productos', 'error');
-        } finally {
-            ocultarCarga();
-        }
-    }
-
-    cargarProductosValidados();
 }
 export function resetearFormulario() {
     const inputs = document.querySelectorAll('.form1 form input:not([type="radio"])');
