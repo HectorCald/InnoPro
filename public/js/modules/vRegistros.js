@@ -22,48 +22,13 @@ async function inicializarReglas() {
             fetch('/obtener-reglas-especiales'),
             fetch('/obtener-precios-base')
         ]);
-
-        if (!responseReglas.ok || !responsePrecios.ok) {
-            throw new Error('Error en la respuesta del servidor');
-        }
-
         const dataReglas = await responseReglas.json();
         const dataPrecios = await responsePrecios.json();
 
-        if (!dataReglas.success || !dataPrecios.success) {
-            throw new Error('Error en los datos recibidos');
-        }
-
         reglasEspeciales = dataReglas.reglas || [];
-        preciosBase = dataPrecios.preciosBase || {
-            etiquetado: '0',
-            sellado: '0',
-            envasado: '0',
-            cernidoBolsa: '0'
-        };
-
-        return true;
+        preciosBase = dataPrecios.preciosBase;
     } catch (error) {
         console.error('Error al cargar reglas:', error);
-        mostrarNotificacion('Error al cargar las reglas y precios. Por favor, recarga la página.', 'error');
-        return false;
-    }
-}
-
-// Asegurarse de que las reglas se inicialicen antes de mostrar los filtros
-export async function inicializarVerificacionRegistros() {
-    await inicializarReglas();
-    // Cargar filtros guardados del localStorage
-    const filtrosGuardados = localStorage.getItem('filtrosRegistros');
-    if (filtrosGuardados) {
-        filtrosActivos = JSON.parse(filtrosGuardados);
-        aplicarFiltros();
-    }
-    
-    // Mostrar el botón de filtros solo después de inicializar
-    const btnFiltros = document.querySelector('.btn-filtros');
-    if (btnFiltros) {
-        btnFiltros.style.display = 'block';
     }
 }
 /* ==================== FUNCIONES DE CÁLCULO Y UTILIDAD ==================== */
