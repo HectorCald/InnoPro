@@ -10,7 +10,7 @@ export function inicializarFormularioProduccion() {
                 <h2 class="section-title">Fuera de Horario</h2>
             </div>
             <div class="horario-mensaje">
-                <p>Lo sentimos, solo se pueden registrar producciones entre las 8:00 AM y 6:30 PM.</p>
+                <p>Lo sentimos, solo se pueden registrar producciones entre las 8:00 AM y 7 PM.</p>
                 <p>Por favor, regrese durante el horario establecido.</p>
             </div>
         `;

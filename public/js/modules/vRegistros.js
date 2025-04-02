@@ -1030,11 +1030,11 @@ function aplicarFiltros() {
         const container = document.querySelector('.verificarRegistros-view');
         const botonCalcular = document.createElement('button');
         botonCalcular.className = 'btn-calcular-total';
-        botonCalcular.innerHTML = '<i class="fas fa-dollar-sign"></i> Pagar';
+        botonCalcular.innerHTML = '<i class="fas fa-calculator"></i> Calcular Total';
         botonCalcular.style.cssText = `
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            left: 20px;
             padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
@@ -1047,17 +1047,33 @@ function aplicarFiltros() {
 
         botonCalcular.addEventListener('click', () => {
             const totalGeneral = registrosFiltrados.reduce((sum, reg) => sum + reg.total, 0);
-            mostrarComprobantePago(
-                registrosFiltrados.map(reg => ({
-                    fecha: reg.element.dataset.fecha,
-                    producto: reg.element.dataset.producto,
-                    lote: reg.element.dataset.lote,
-                    operario: reg.element.dataset.operario
-                })),
-                filtrosActivos.fechaDesde,
-                filtrosActivos.fechaHasta,
-                totalGeneral
-            );
+            const anuncio = document.querySelector('.anuncio');
+            const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+
+            anuncioContenido.innerHTML = `
+                <h2><i class="fas fa-calculator"></i> Resumen de Registros</h2>
+                <div class="detalles-verificacion">
+                    <div class="resumen-info">
+                        <p><strong>Operario:</strong> ${filtrosActivos.nombre}</p>
+                        <p><strong>Desde:</strong> ${filtrosActivos.fechaDesde || 'No especificado'}</p>
+                        <p><strong>Hasta:</strong> ${filtrosActivos.fechaHasta || 'No especificado'}</p>
+                        <p class="total-general"><strong>Total:</strong> ${totalGeneral.toFixed(2)} Bs.</p>
+                    </div>
+                </div>
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn gray cancelar">Cerrar</button>
+                </div>
+            `;
+
+            anuncio.style.display = 'flex';
+            document.querySelector('.overlay').style.display = 'block';
+            document.querySelector('.container').classList.add('no-touch');
+
+            anuncioContenido.querySelector('.cancelar').addEventListener('click', () => {
+                anuncio.style.display = 'none';
+                document.querySelector('.overlay').style.display = 'none';
+                document.querySelector('.container').classList.remove('no-touch');
+            });
         });
 
         container.appendChild(botonCalcular);

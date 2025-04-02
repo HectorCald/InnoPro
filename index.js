@@ -448,6 +448,8 @@ app.put('/actualizar-usuario', requireAuth, async (req, res) => {
     }
 });
 
+
+
 /* ==================== RUTAS DE API - DATOS ==================== */
 app.get('/obtener-nombre', requireAuth, (req, res) => {
     res.json({ nombre: req.user.nombre });
@@ -3712,6 +3714,8 @@ app.get('/descargar-pdf/:id', requireAuth, async (req, res) => {
     }
 });
 
+
+/* ==================== RUTAS DE API -  ==================== */
 
 
 
