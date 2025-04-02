@@ -35,7 +35,6 @@ export function inicializarCompras() {
     cargarPedidos();
     ocultarCarga();
 }
-
 async function cargarPedidos() {
     try {
         mostrarCarga();
@@ -62,7 +61,6 @@ async function cargarPedidos() {
         ocultarCarga();
     }
 }
-
 function mostrarPedidos(pedidos, tipo) {
     const container = document.querySelector(`.pedidos-list.${tipo}`);
     
@@ -193,9 +191,15 @@ export async function entregarPedido(button) {
                     <label for="precio">Precio:</label>
                     <input type="number" id="precio" class="form-input" placeholder="0.00" step="0.01">
                 </div>
-                <div class="form-grup">
-                    <label for="observaciones">Observaciones(cantidad bolsas):</label>
-                    <textarea id="observaciones" class="form-input" placeholder="Escribe cantidad de Bolsas y algun otro detalle."></textarea>
+                <div class="campo-form">
+                    <label for="observaciones">Cantidad:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="observaciones" class="form-input" style="flex: 2;" placeholder="Cantidad">
+                        <select id="unidad" class="form-input" style="flex: 1;">
+                            <option value="Bls.">Bls.</option>
+                            <option value="Cja.">Cja.</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="anuncio-botones">
@@ -211,11 +215,14 @@ export async function entregarPedido(button) {
             const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
             const handleConfirm = () => {
+                const cantidad = document.getElementById('observaciones').value;
+                const unidad = document.getElementById('unidad').value;
                 const formData = {
                     cantidad: document.getElementById('cantidad').value,
                     proveedor: document.getElementById('proveedor').value,
                     precio: document.getElementById('precio').value,
-                    observaciones: document.getElementById('observaciones').value
+                    observaciones: cantidad, // Solo la cantidad
+                    unidad: unidad         // Unidad separada
                 };
                 handleClick(formData);
             };
@@ -260,7 +267,7 @@ export async function entregarPedido(button) {
                 await registrarNotificacion(
                     usuarioActual,    // origen (usuario actual)
                     'Acopio',         // destino
-                    `Se hizo la entrega de: ${nombre} cantidad ${confirmed.observaciones}`
+                    `Se hizo la entrega de: ${nombre} cantidad ${confirmed.observaciones} ${confirmed.unidad}`
                 );
             } catch (notifError) {
                 console.error('Error al enviar notificación:', notifError);
@@ -290,7 +297,6 @@ function actualizarResumenEntregas(producto, observaciones) {
     const mensaje = generarMensajeResumen(productosEntregados);
     resumenDiv.innerHTML = mensaje;
 }
-
 function generarMensajeResumen(productos) {
     if (!productos.length) return '';
     
@@ -300,8 +306,6 @@ function generarMensajeResumen(productos) {
 
     return `SE TRAJO MATERIA PRIMA\n\nEntregado:\n${listaProductos}\n\nLos productos ya se encuentran como entregado en la aplicación de Damabrava.`;
 }
-
-
 window.copiarResumen = function() {
     const resumenDiv = document.querySelector('.resumen-mensaje');
     const texto = resumenDiv.textContent;

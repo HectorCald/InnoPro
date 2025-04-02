@@ -1367,10 +1367,133 @@ app.get('/obtener-pedidos-recibidos', requireAuth, async (req, res) => {
     }
 });
 
+app.post('/actualizar-pedido-recibido/:producto', requireAuth, async (req, res) => {
+    try {
+        const { producto } = req.params;
+        console.log('Producto recibido:', producto);
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener datos actuales
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:J'
+        });
+
+        const rows = response.data.values;
+        console.log('Buscando producto en filas:', rows.length);
+        
+        const rowIndex = rows.findIndex(row => {
+            console.log('Comparando:', {
+                producto_fila: row[1],
+                estado: row[7],
+                cantidad: row[9],
+                coincide: row[1] === producto && 
+                         row[7] === 'Recibido' &&
+                         row[9] && parseInt(row[9]) > 0
+            });
+            return row[1] === producto && 
+                   row[7] === 'Recibido' &&
+                   row[9] && parseInt(row[9]) > 0;
+        });
+
+        console.log('Índice encontrado:', rowIndex);
+
+        if (rowIndex === -1) {
+            return res.json({ success: false, error: 'Producto no encontrado' });
+        }
+
+        // Actualizar cantidad en columna J
+        const cantidadActual = parseInt(rows[rowIndex][9] || 0);
+        const nuevaCantidad = Math.max(0, cantidadActual - 1);
+        console.log('Actualizando cantidad:', { cantidadActual, nuevaCantidad });
+        
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Pedidos!J${rowIndex + 1}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[nuevaCantidad]]
+            }
+        });
+
+        // Mantener siempre el estado como "Recibido"
+        res.json({ 
+            success: true, 
+            nuevaCantidad: nuevaCantidad
+        });
+
+    } catch (error) {
+        console.error('Error en actualizar-pedido-recibido:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar el pedido' 
+        });
+    }
+});
+
+
+app.get('/obtener-pedidos-recibidos/:producto', requireAuth, async (req, res) => {
+    try {
+        const { producto } = req.params;
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:K'
+        });
+
+        const rows = response.data.values || [];
+        const pedidosRecibidos = rows
+            .slice(1) // Skip headers
+            .filter(row => 
+                row[1]?.toLowerCase() === producto.toLowerCase() && // Product name matches
+                row[7] === 'Recibido' // Status is Received
+            )
+            .map(row => ({
+                fecha: row[0],
+                nombre: row[1],
+                cantidad: row[2],
+                observaciones: row[3] || '',
+                cantidadRecibida: row[4] || '',
+                proveedor: row[5] || '',
+                precio: row[6] || '',
+                obsCompras: row[9] || '',
+                medida: row[10] || ''
+            }));
+            console.log(pedidosRecibidos)
+
+        res.json({ 
+            success: true, 
+            pedidos: pedidosRecibidos 
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener pedidos recibidos del producto'
+        });
+    }
+});
+
 app.post('/procesar-ingreso', requireAuth, async (req, res) => {
     try {
-        const { producto, peso, hoja, observaciones } = req.body;
+        const { producto, peso, hoja, observaciones, esMultiple } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener datos actuales de la hoja de pedidos
+        const pedidosResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `${hoja}!A:I`
+        });
+
+        const pedidos = pedidosResponse.data.values || [];
+        const rowIndex = pedidos.findIndex(row => row[1] === producto && row[7] === 'Recibido');
+
+        if (rowIndex === -1) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Producto no encontrado o no está en estado Recibido'
+            });
+        }
 
         // Obtener lotes existentes de Almacen Bruto
         const almacenResponse = await sheets.spreadsheets.values.get({
@@ -1388,23 +1511,6 @@ app.post('/procesar-ingreso', requireAuth, async (req, res) => {
             siguienteLote = Math.max(...lotes, 0) + 1;
         }
 
-        // Verificar si el producto existe en la hoja de pedidos
-        const pedidosResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `${hoja}!A:I`
-        });
-
-        const pedidos = pedidosResponse.data.values || [];
-        const productoRowIndex = pedidos.findIndex(row => row[1] === producto);
-
-        if (productoRowIndex === -1) {
-            return res.json({ 
-                success: true, 
-                message: 'El producto ya fue procesado',
-                hojaEliminada: false
-            });
-        }
-
         // Agregar nueva entrada a Almacen Bruto
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -1416,15 +1522,17 @@ app.post('/procesar-ingreso', requireAuth, async (req, res) => {
             }
         });
 
-        // Actualizar el estado del producto a "Entregado" y las observaciones
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `${hoja}!H${productoRowIndex + 1}:I${productoRowIndex + 1}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [['Ingresado', observaciones || '']]
-            }
-        });
+        // Solo actualizar estado si no es ingreso múltiple
+        if (!esMultiple) {
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: `${hoja}!H${rowIndex + 1}:I${rowIndex + 1}`,
+                valueInputOption: 'RAW',
+                resource: {
+                    values: [['Ingresado', observaciones || '']]
+                }
+            });
+        }
 
         res.json({ 
             success: true, 
@@ -2581,106 +2689,52 @@ app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
 app.post('/entregar-pedido', requireAuth, async (req, res) => {
     try {
         const { fecha, producto, cantidad, proveedor, precio, observaciones } = req.body;
-        
-        if (!fecha || !producto) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Faltan datos necesarios' 
-            });
-        }
-
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Obtener el siguiente número de lote para Almacén Bruto
-        const almacenResponse = await sheets.spreadsheets.values.get({
+        // Obtener datos actuales
+        const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen bruto!A:C'
+            range: 'Pedidos!A:K'  // Extendemos el rango hasta K para incluir la unidad
         });
 
-        const almacenRows = almacenResponse.data.values || [];
-        const productoRows = almacenRows.filter(row => row[0] === producto);
-        
-        // Calcular siguiente número de lote
-        let siguienteLote = 1;
-        if (productoRows.length > 0) {
-            const lotes = productoRows.map(row => parseInt(row[2] || 0));
-            siguienteLote = Math.max(...lotes, 0) + 1;
-        }
-        
-
-        // Registrar el movimiento en Movimientos alm-bruto
-        const fechaActual = new Date().toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit'
-        });
-
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Movimientos alm-bruto!A:E',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[
-                    fechaActual,
-                    producto,
-                    cantidad,
-                    'Ingreso',
-                    siguienteLote
-                ]]
-            }
-        });
-
-        // Actualizar el pedido en la hoja Pedidos
-        const pedidosResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:J'
-        });
-
-        const rows = pedidosResponse.data.values || [];
+        const rows = response.data.values || [];
         const rowIndex = rows.findIndex(row => 
             row[0] === fecha && 
-            row[1] === producto
-        ) + 1;
+            row[1] === producto && 
+            row[7] === 'Pendiente'
+        );
 
-        if (rowIndex <= 0) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Pedido no encontrado' 
-            });
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
         }
 
-        // Actualizar las columnas E(cantidad), F(proveedor), G(costo), H(estado), J(observaciones)
+        // Actualizar el pedido con cantidad y unidad separadas
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Pedidos!E${rowIndex}:J${rowIndex}`,
+            range: `Pedidos!E${rowIndex + 1}:K${rowIndex + 1}`,
             valueInputOption: 'RAW',
             resource: {
                 values: [[
-                    cantidad,
-                    proveedor,
-                    precio,
-                    'Recibido',
-                    '',  // Columna I (vacía)
-                    observaciones
+                    cantidad,           // E - Cantidad recibida
+                    proveedor,         // F - Proveedor
+                    precio,            // G - Precio
+                    'Recibido',        // H - Estado
+                    '',                // I - Observaciones
+                    observaciones,     // J - Cantidad en unidades
+                    req.body.unidad    // K - Unidad (Bls. o Cja.)
                 ]]
             }
         });
 
-        res.json({ 
-            success: true, 
-            message: 'Pedido actualizado y registrado en almacén correctamente',
-            lote: siguienteLote
-        });
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error al entregar pedido:', error);
+        console.error('Error:', error);
         res.status(500).json({ 
             success: false, 
             error: 'Error al entregar el pedido: ' + error.message 
         });
     }
 });
-
 
 /* ==================== API DE ALMACENES ==================== */
 

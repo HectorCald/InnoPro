@@ -87,7 +87,7 @@ export async function togglePedidosRecibidos() {
                                 ${pedido.observaciones ? `
                                 <span class="pedido-obs">
                                     <i class="fas fa-comment"></i>
-                                    ${pedido.obsCompras}
+                                    ${pedido.obsCompras} 
                                 </span>` : ''}
                             </div>
                             <div class="anuncio-botones">
@@ -228,30 +228,54 @@ export async function togglePedidosArchivados() {
         listaArchivados.style.display = 'none';
     }
 }
+
 export async function mostrarFormularioIngreso(producto, hoja) {
     try {
         mostrarCarga();
         const response = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
+        const response2 = await fetch(`/obtener-pedidos-recibidos/${encodeURIComponent(producto)}`);
         const data = await response.json();
+        const data2 = await response2.json();
         const siguienteLote = data.success ? data.siguienteLote : '?';
+        
+        const pedidoInfo = data2.pedidos && data2.pedidos.length > 0 ? data2.pedidos[0] : null;
+        
+        // Check if it's a multiple entry
+        if (pedidoInfo?.obsCompras > 1) {
+            const anuncio = document.querySelector('.anuncio');
+            anuncio.style.display = 'flex';
+            anuncio.innerHTML = `
+                <div class="anuncio-contenido">
+                    <h2><i class="fas fa-exclamation-circle"></i> Ingreso Múltiple</h2>
+                    <p>Se detectó que hay ${pedidoInfo.obsCompras} unidades para ingresar.</p>
+                    <p>¿Desea realizar un ingreso múltiple?</p>
+                    <div class="anuncio-botones">
+                        <button class="anuncio-btn gray" onclick="window.procesarIngresoNormal('${producto}', '${hoja}')">No</button>
+                        <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${producto}', '${hoja}')">Sí</button>
+                    </div>
+                </div>
+            `;
 
-        const anuncio = document.querySelector('.anuncio');
-        anuncio.style.display='flex'
-        anuncio.innerHTML = `
-            <div class="anuncio-contenido">
-                <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
-                <div class="form-ingreso">
-                    <input type="text" id="producto-ingreso" value="${producto}" readonly>
-                    <div class="lote-info">Lote a asignar: ${siguienteLote}</div>
-                    <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
-                    <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
-                </div>
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn gray" onclick="inicializarPedidos()">Cancelar</button>
-                    <button class="anuncio-btn green" onclick="procesarIngreso('${producto}', '${hoja}')">Ingresar</button>
-                </div>
-            </div>
-        `;
+            // Add the functions to window object
+            window.procesarIngresoNormal = (producto, hoja) => {
+                mostrarFormularioIngresoNormal(producto, hoja, pedidoInfo, siguienteLote);
+            };
+
+            window.procesarIngresoMultiple = (producto, hoja) => {
+                mostrarIngresoMultiple(producto, hoja, pedidoInfo, siguienteLote);
+            };
+
+            window.inicializarPedidos = inicializarPedidos;
+            window.procesarIngreso = procesarIngreso;
+
+            return; // Stop here if it's multiple entry
+        }
+
+        // If not multiple entry, show normal form
+        mostrarFormularioIngresoNormal(producto, hoja, pedidoInfo, siguienteLote);
+        window.inicializarPedidos = inicializarPedidos;
+        window.procesarIngreso = procesarIngreso;
+
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al cargar el formulario de ingreso', 'error');
@@ -259,7 +283,98 @@ export async function mostrarFormularioIngreso(producto, hoja) {
         ocultarCarga();
     }
 }
-export async function procesarIngreso(producto, hoja) {
+
+function mostrarFormularioIngresoNormal(producto, hoja, pedidoInfo, siguienteLote) {
+    const anuncio = document.querySelector('.anuncio');
+    anuncio.style.display = 'flex';
+    anuncio.innerHTML = `
+        <div class="anuncio-contenido">
+            <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
+            <div class="campo-form">
+            ${pedidoInfo?.obsCompras ? `<p>Cantidad recibido: ${pedidoInfo.obsCompras} ${pedidoInfo.medida} </p>` : ''}
+            </div>
+            
+            <div class="form-ingreso">
+                <input type="text" id="producto-ingreso" value="${producto}" readonly>
+                <div class="lote-info">Lote a asignar: ${siguienteLote}</div>
+                <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+                <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
+            </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn gray" onclick="document.querySelector('.anuncio').style.display='none'">Cancelar</button>
+                <button class="anuncio-btn green" onclick="procesarIngreso('${producto}', '${hoja}')">Ingresar</button>
+            </div>
+        </div>
+    `;
+}
+
+
+export async function mostrarIngresoMultiple(producto, hoja, pedidoInfo, siguienteLote) {
+    const anuncio = document.querySelector('.anuncio');
+    anuncio.style.display = 'flex';
+    anuncio.innerHTML = `
+        <div class="anuncio-contenido">
+            <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto (${pedidoInfo.obsCompras} restantes)</h2>
+            <div class="campo-form">
+            ${pedidoInfo?.obsCompras ? `<p>Cantidad recibido: ${pedidoInfo.obsCompras} ${pedidoInfo.medida} </p>` : ''}
+            </div>
+            
+            <div class="form-ingreso">
+                <input type="text" id="producto-ingreso" value="${producto}" readonly>
+                <div class="lote-info">Lote a asignar: ${siguienteLote}</div>
+                <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+                <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
+            </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn gray" onclick="document.querySelector('.anuncio').style.display='none'">Cancelar</button>
+                <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${producto}', '${hoja}')">Ingresar</button>
+            </div>
+        </div>
+    `;
+
+    window.procesarIngresoMultiple = async (producto, hoja) => {
+        try {
+            mostrarCarga();
+            console.log('Iniciando ingreso múltiple para:', producto);
+            await procesarIngreso(producto, hoja, true);
+
+            // Actualizar obsCompras
+            console.log('Actualizando cantidad restante para:', producto);
+            const response = await fetch(`/actualizar-pedido-recibido/${encodeURIComponent(producto)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            console.log('Respuesta del servidor:', data);
+
+            if (data.success) {
+                if (data.nuevaCantidad > 0) {
+                    console.log('Quedan ingresos pendientes:', data.nuevaCantidad);
+                    // Mostrar siguiente formulario de ingreso
+                    const responseNext = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
+                    const dataNext = await responseNext.json();
+                    const siguienteLote = dataNext.success ? dataNext.siguienteLote : '?';
+                    
+                    await mostrarIngresoMultiple(producto, hoja, { ...pedidoInfo, obsCompras: data.nuevaCantidad }, siguienteLote);
+                } else {
+                    console.log('Todos los ingresos completados');
+                    mostrarNotificacion('Todos los ingresos completados', 'success');
+                    document.querySelector('.anuncio').style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Error en procesarIngresoMultiple:', error);
+            mostrarNotificacion('Error al procesar el ingreso múltiple', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+}
+
+export async function procesarIngreso(producto, hoja, esMultiple = false) {
     try {
         mostrarCarga();
         const pesoInput = document.getElementById('peso-ingreso');
@@ -272,43 +387,44 @@ export async function procesarIngreso(producto, hoja) {
             return;
         }
 
+        console.log('Enviando ingreso:', { producto, peso, hoja, esMultiple });
         const response = await fetch('/procesar-ingreso', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ producto, peso, hoja, observaciones })
+            body: JSON.stringify({ 
+                producto, 
+                peso, 
+                hoja, 
+                observaciones,
+                esMultiple
+            })
         });
 
         const data = await response.json();
-        if (data.success) {
-            // Buscar la tarjeta del producto de manera más compatible
-            const cards = document.querySelectorAll('.pedido-archivado-card');
-            let productoCard = null;
-            cards.forEach(card => {
-                const nombreElement = card.querySelector('.pedido-nombre');
-                if (nombreElement && nombreElement.textContent === producto) {
-                    productoCard = card;
-                }
-            });
+        if (!response.ok) {
+            throw new Error(data.error || 'Error en la respuesta del servidor');
+        }
 
-            if (productoCard) {
-                productoCard.style.display = 'none';
-                actualizarResumenIngresos(producto, peso, observaciones);
-                mostrarNotificacion('Ingreso procesado correctamente', 'success');
+        if (data.success) {
+            actualizarResumenIngresos(producto, peso, observaciones);
+            mostrarNotificacion('Ingreso procesado correctamente', 'success');
+            
+            if (!esMultiple) {
+                cerrarFormularioPedido();
             }
-            cerrarFormularioPedido();
         } else {
             throw new Error(data.error || 'Error al procesar el ingreso');
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error en procesarIngreso:', error);
         mostrarNotificacion(error.message || 'Error al procesar el ingreso', 'error');
+        throw error; // Re-throw para que pueda ser manejado por el llamador
     } finally {
         ocultarCarga();
     }
 }
-
 export function mostrarFormularioRechazo(producto, hoja) {
     const anuncio = document.querySelector('.anuncio');
     anuncio.innerHTML = `

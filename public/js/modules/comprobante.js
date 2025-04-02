@@ -256,7 +256,6 @@ window.mostrarDetalleComprobante = async function(id) {
         ocultarCarga();
     }
 };
-// Modificar la función que maneja la descarga del PDF
 window.descargarComprobantePDF = async function(id) {
     try {
         mostrarCarga();

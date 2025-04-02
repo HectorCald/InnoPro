@@ -1029,15 +1029,11 @@ function aplicarFiltros() {
         botonCalcular.className = 'btn-calcular-total';
         botonCalcular.innerHTML = '<i class="fas fa-calculator"></i> Calcular Total';
         botonCalcular.style.cssText = `
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
             padding: 15px 30px;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 25px;
+            border-radius: 15px;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             z-index: 1000;
@@ -1045,19 +1041,12 @@ function aplicarFiltros() {
             font-weight: bold;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
             transition: all 0.3s ease;
+            max-width: 200px;
         `;
 
-        botonCalcular.addEventListener('mouseover', () => {
-            botonCalcular.style.backgroundColor = '#45a049';
-            botonCalcular.style.transform = 'translateX(-50%) scale(1.05)';
-        });
-
-        botonCalcular.addEventListener('mouseout', () => {
-            botonCalcular.style.backgroundColor = '#4CAF50';
-            botonCalcular.style.transform = 'translateX(-50%) scale(1)';
-        });
 
         botonCalcular.addEventListener('click', () => {
             const totalGeneral = registrosFiltrados.reduce((sum, reg) => sum + reg.total, 0);
