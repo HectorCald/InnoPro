@@ -93,7 +93,17 @@ export function inicializarFormularioProduccion() {
 export function inicializarFormulario() {
     ocultarCarga();
     const form = document.querySelector('.form1 form');
-    
+    const productoInput = document.getElementById('producto-input');
+    let productosDisponibles = [];
+
+    // Validación del producto
+    productoInput.addEventListener('change', function() {
+        const productoSeleccionado = this.value.trim();
+        if (!productosDisponibles.includes(productoSeleccionado)) {
+            mostrarNotificacion('Por favor seleccione un producto válido de la lista', 'warning');
+            this.value = '';
+        }
+    });
 
     // Agregar manejo de radio buttons para microondas
     const radioButtons = document.querySelectorAll('input[name="microondas-option"]');
@@ -130,10 +140,17 @@ export function inicializarFormulario() {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
+        const productoSeleccionado = productoInput.value.trim();
+        if (!productosDisponibles.includes(productoSeleccionado)) {
+            mostrarNotificacion('Por favor seleccione un producto válido de la lista', 'warning');
+            return;
+        }
+
         if (!verificarHorario()) {
             mostrarNotificacion('No se pueden registrar producciones fuera del horario permitido (8:00 AM - 6:15 PM)', 'error');
             return;
         }
+
         const formData = new FormData(form);
         const data = {};
 
@@ -174,11 +191,10 @@ export function inicializarFormulario() {
             const result = await response.json();
 
             if (result.success) {
-                // Send notification to Almacen
                 try {
                     await registrarNotificacion(
-                        usuarioActual,    // origin (current user)
-                        'Almacen',        // destination
+                        usuarioActual,
+                        'Almacen',
                         `Se registró una nueva producción de ${data.producto}`
                     );
                 } catch (notifError) {
@@ -192,12 +208,39 @@ export function inicializarFormulario() {
             }
         } catch (error) {
             console.error('Error completo:', error);
-            alert('Error al guardar el registro: ' + error.message);
+            mostrarNotificacion('Error al guardar el registro: ' + error.message, 'error');
         } finally {
             ocultarCarga();
         }
     });
-    cargarProductos();
+
+    // Modificar cargarProductos para guardar la lista
+    async function cargarProductosValidados() {
+        try {
+            mostrarCarga();
+            const response = await fetch('/obtener-productos');
+            const data = await response.json();
+
+            if (data.success) {
+                const datalist = document.getElementById('productos-list');
+                datalist.innerHTML = '';
+                productosDisponibles = data.productos;
+
+                data.productos.forEach(producto => {
+                    const option = document.createElement('option');
+                    option.value = producto;
+                    datalist.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error al cargar productos:', error);
+            mostrarNotificacion('Error al cargar la lista de productos', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    }
+
+    cargarProductosValidados();
 }
 export function resetearFormulario() {
     const inputs = document.querySelectorAll('.form1 form input:not([type="radio"])');
