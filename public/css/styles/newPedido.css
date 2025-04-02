@@ -1,15 +1,14 @@
 @import'styles/colores.css';
 .newPedido-view {
-    /* Main Container Styles */
     width: 100%;
     background: var(--background) !important;
     height: calc(100vh - 4em);
     color: var(--primary-text) !important;
     overflow-y: auto;
-    padding: 1em;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: 10px;
     display: none;
 
     /* Scrollbar Styles */
@@ -23,24 +22,27 @@
     .pedidos-container {
         display: flex;
         flex-direction: column;
-        gap: 1em;
+        gap: 10px;
     }
     .title {
-        padding: 1em 0;
-        border-bottom: 1px solid #2c2c2c;
+        padding-block: 15px;
+        border-bottom: 1px solid rgb(83, 83, 83);
 
         h3 {
-            font-size: 16px;
+            font-size: 17px;
             margin: 0;
         }
         i{
-            font-size: 16px;
+            font-size: 17px;
         }
+    }
+    .section-title{
+        font-size: 15px;
     }
 
     .pedidos-botones {
         display: flex;
-        gap: 1em;
+        gap: 10px;
         justify-content: center;
     }
 
@@ -49,7 +51,7 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        font-size: 12px;
+        font-size: 13px;
         gap: 5px;
     }
 
@@ -57,7 +59,7 @@
         background: var(--primary-color);
         color: var(--primary-text);
         border: none;
-        padding: 1em;
+        padding: 10px;
         border-radius: 40px;
         cursor: pointer;
         display: flex;
@@ -65,71 +67,17 @@
         width: 50px;
         height: 50px;
         justify-content: center;
-        font-size: 15px;
+        font-size: 17px;
     }
     .btn-agregar-pedido:hover{
         background-color: var(--second-button);
         color: white;
     }
 
-    /* Form Styles */
-    .form-pedido {
-        display: flex;
-        flex-direction: column;
-        gap: 1em;
-        margin: 1em 0;
-
-        input, textarea {
-            padding: 0.5em;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            background: var(--primary-color);
-            color: white;
-        }
-    }
-
-    .cantidad-container {
-        display: flex;
-        gap: 0.5em;
-        align-items: center;
-
-        input {
-            flex: 1;
-        }
-
-        select {
-            padding: 0.5em;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            background: #2d2d2d;
-            color: white;
-            cursor: pointer;
-            min-width: 100px;
-
-            &:hover {
-                border-color: #4CAF50;
-            }
-
-            &:focus {
-                outline: none;
-                border-color: #4CAF50;
-                box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
-            }
-        }
-    }
-
-    /* Pedidos List Styles */
-    .lista-pedidos {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1em;
-        padding: 1em;
-    }
-
     .pedido-card {
         background: var(--primary-color);
-        border-radius: 6px;
-        padding: 1em;
+        border-radius: 15px;
+        padding: 10px;
         border-left: 4px solid #4CAF50;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
 
@@ -149,39 +97,39 @@
 
     .pedido-info {
         h4 {
-            margin: 0 0 0.5em 0;
+            margin: 10px;
             color: var(--primary-text);
-            font-size: 1.1em;
+            font-size: 15px;
         }
 
         .cantidad {
-            font-size: 0.9em;
+            font-size: 13px;
             color: #a8a8a8;
-            margin: 0.5em 0;
+            margin: 10px;
             display: flex;
             align-items: center;
-            gap: 0.5em;
+            gap: 5px;
         }
 
         .observaciones {
-            font-size: 0.85em;
+            font-size: 13px;
             color: #999;
-            margin: 0.5em 0;
+            margin: 10px;
             font-style: italic;
             display: flex;
             align-items: center;
-            gap: 0.5em;
+            gap: 5px;
         }
     }
 
     .pedido-principal {
         display: flex;
         flex-direction: column;
-        gap: 0.5em;
+        gap: 10px;
     }
 
     .pedido-nombre {
-        font-size: 1.2em;
+        font-size: 15px;
         font-weight: 600;
         color: var(--primary-text);
     }
@@ -189,16 +137,16 @@
     .pedido-detalles {
         display: flex;
         flex-direction: column;
-        gap: 0.5em;
+        gap: 5px;
         background: transparent;
         padding: 0;
 
         span {
             display: flex;
             align-items: center;
-            gap: 0.5em;
+            gap: 5px;
             color: var(--primary-text);
-            font-size: 0.9em;
+            font-size: 13px;
 
             i {
                 color: #666;
@@ -225,32 +173,15 @@
     .pedido-detalles-lista {
         color: gray;
     }
-
-    .pedido-fecha, .pedido-cantidad {
-        display: flex;
-        align-items: center;
-        gap: 0.5em;
-    }
-
-    .pedido-obs {
-        color: var(--primary-text);
-        font-size: 15px;
-        padding-top: 0.8em;
-        display: flex;
-        align-items: flex-start;
-        gap: 0.5em;
-    }
-
-    /* Action Buttons */
     .btn-eliminar {
         background: none;
         border: none;
         color: #ff4444;
         cursor: pointer;
-        padding: 0.5em;
+        padding: 5px;
         opacity: 0.7;
         transition: all 0.3s ease;
-        font-size: 1em;
+        font-size: 10px;
 
         &:hover {
             color: #ff0000;
@@ -258,8 +189,6 @@
             transform: scale(1.1);
         }
     }
-
-    /* Archived and Received Pedidos */
     .pedidos-archivados {
         margin: 0;
     }
@@ -267,8 +196,8 @@
     .lista-archivados, .lista-recibidos {
         display: flex;
         flex-direction: column;
-        gap: 1em;
-        padding: 1em;
+        gap: 10px;
+        padding: 10px;
         background: transparent;
         width: 100%;
     }
@@ -276,7 +205,7 @@
     .pedido-archivado-card {
         background: var(--primary-color);
         border-radius: 8px;
-        padding: 1.2em;
+        padding: 15px;
         border-left: 4px solid #4CAF50;
         transition: all 0.3s ease;
         margin: 0;
@@ -292,27 +221,27 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.8em;
+        margin-bottom: 5px;
         padding: 0;
 
         .pedido-nombre {
-            font-size: 1.1em;
+            font-size: 13px;
             font-weight: 500;
             color: var(--primary-text);
         }
 
         .pedido-fecha {
             color: #888;
-            font-size: 0.9em;
+            font-size: 13px;
         }
     }
     .pedido-meta {
         display: flex;
         justify-content: space-between;
-        margin-top: 0.75em;
-        padding-top: 0.75em;
+        margin-top: 5px;
+        padding-top: 10px;
         border-top: 1px solid #444;
-        font-size: 0.8em;
+        font-size: 13px;
         color: #888;
 
         span {
@@ -322,52 +251,14 @@
         }
     }
 
-    /* Received Pedidos Specific */
     .btn-recibido-pedido {
         display: flex;
-        gap: 0.8em;
-        margin-top: 1em;
-        padding-top: 1em;
+        gap: 5px;
+        margin-top: 5px;
+        padding-top: 10px;
         border-top: 1px solid #444;
-
-        button {
-            flex: 1;
-            padding: 0.6em;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5em;
-            transition: all 0.2s ease;
-
-            &.enviar {
-                background: #4CAF50;
-                color: white;
-
-                &:hover {
-                    background: #45a049;
-                }
-            }
-
-            &.cancelar {
-                background: #666;
-                color: white;
-
-                &:hover {
-                    background: #555;
-                }
-            }
-
-            i {
-                font-size: 1em;
-            }
-        }
     }
 
-    /* Summary Section */
     .pedidos-resumen {
         max-height: 180px;
         overflow-y: auto;
@@ -376,22 +267,6 @@
         background: var(--background);
         border-radius: 5px;
     }
-
-    .pedido-resumen-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5em;
-        border-bottom: 1px solid #404040;
-
-        &:last-child {
-            border-bottom: none;
-        }
-
-        span {
-            color: #fff;
-        }
-    }
-    /* Status Messages */
     .no-pedidos {
         text-align: center;
         color: #888;
@@ -404,10 +279,4 @@
         padding: 2em;
         font-size: 0.9em;
     }
-
-    .cantidad-entregada {
-        color: #4CAF50;
-        font-weight: bold;
-    }
-    
 }

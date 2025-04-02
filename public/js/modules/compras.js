@@ -1,9 +1,19 @@
+import { registrarNotificacion } from './advertencia.js';
 export function inicializarCompras() {
     mostrarCarga();
     const container = document.querySelector('.compras-view');
     container.style.display = 'flex';
     container.innerHTML = `
         <div class="pedidos-container">
+            <div class="entregados-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-check-circle"></i> Resumen de Entregas</h3>
+                    <button class="btn-copiar" onclick="copiarResumen()">
+                        <i class="fas fa-copy"></i> Copiar
+                    </button>
+                </div>
+                <div class="resumen-mensaje"></div>
+            </div>
             <div class="pedidos-section">
                 <div class="section-header">
                     <h3><i class="fas fa-clock"></i> Pedidos Pendientes</h3>
@@ -19,6 +29,7 @@ export function inicializarCompras() {
                 <div class="pedidos-list rechazados"></div>
             </div>
         </div>
+        
     `;
 
     cargarPedidos();
@@ -90,7 +101,6 @@ function mostrarPedidos(pedidos, tipo) {
         btn.addEventListener('click', () => entregarPedido(btn));
     });
 }
-
 export async function eliminarPedido(button) {
     try {
         const card = button.closest('.pedido-card');
@@ -158,7 +168,6 @@ export async function eliminarPedido(button) {
         ocultarCarga();
     }
 }
-
 export async function entregarPedido(button) {
     try {
         const card = button.closest('.pedido-card');
@@ -168,32 +177,30 @@ export async function entregarPedido(button) {
         const anuncio = document.querySelector('.anuncio');
         const anuncioContenido = document.querySelector('.anuncio-contenido');
         
-        // Update anuncio content with form
         anuncioContenido.innerHTML = `
-            <i class="fas fa-check-circle"></i>
-            <h3>Entregar Pedido</h3>
-            <p>Complete los detalles de entrega para: ${nombre}</p>
+            <h2><i class="fas fa-check-circle"></i>Entregar Pedido</h2>
+            <p>Entrega de: ${nombre}</p>
             <div class="anuncio-form">
-                <div class="form-group">
-                    <label for="cantidad">Cantidad</label>
-                    <input type="text" id="cantidad" class="form-input" placeholder="Ingrese cantidad">
+                <div class="campo-form">
+                    <label for="cantidad">Cantidad:</label>
+                    <input type="number" id="cantidad" class="form-input" placeholder="Cantidad en Kg.">
                 </div>
-                <div class="form-group">
-                    <label for="proveedor">Proveedor</label>
+                <div class="campo-form">
+                    <label for="proveedor">Proveedor:</label>
                     <input type="text" id="proveedor" class="form-input" placeholder="Nombre del proveedor">
                 </div>
-                <div class="form-group">
-                    <label for="precio">Precio</label>
+                <div class="campo-form">
+                    <label for="precio">Precio:</label>
                     <input type="number" id="precio" class="form-input" placeholder="0.00" step="0.01">
                 </div>
-                <div class="form-group">
-                    <label for="observaciones">Observaciones</label>
-                    <textarea id="observaciones" class="form-input" placeholder="Observaciones adicionales"></textarea>
+                <div class="form-grup">
+                    <label for="observaciones">Observaciones(cantidad bolsas):</label>
+                    <textarea id="observaciones" class="form-input" placeholder="Escribe cantidad de Bolsas y algun otro detalle."></textarea>
                 </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn confirmar">Confirmar</button>
-                <button class="anuncio-btn cancelar">Cancelar</button>
+                <button class="anuncio-btn green confirmar">Confirmar</button>
+                <button class="anuncio-btn gray cancelar">Cancelar</button>
             </div>
         `;
         
@@ -228,6 +235,11 @@ export async function entregarPedido(button) {
 
         mostrarCarga();
 
+        // Obtener el usuario actual primero
+        const userResponse = await fetch('/obtener-mi-rol');
+        const userData = await userResponse.json();
+        const usuarioActual = userData.nombre;
+
         const response = await fetch('/entregar-pedido', {
             method: 'POST',
             headers: {
@@ -243,7 +255,19 @@ export async function entregarPedido(button) {
         const data = await response.json();
 
         if (data.success) {
+            // Enviar notificación
+            try {
+                await registrarNotificacion(
+                    usuarioActual,    // origen (usuario actual)
+                    'Acopio',         // destino
+                    `Se hizo la entrega de: ${nombre} cantidad ${confirmed.observaciones}`
+                );
+            } catch (notifError) {
+                console.error('Error al enviar notificación:', notifError);
+            }
+
             mostrarNotificacion('Pedido entregado correctamente', 'success');
+            actualizarResumenEntregas(nombre, confirmed.observaciones);
             await cargarPedidos();
         } else {
             throw new Error(data.error || 'Error al entregar el pedido');
@@ -254,4 +278,43 @@ export async function entregarPedido(button) {
     } finally {
         ocultarCarga();
     }
+}
+function actualizarResumenEntregas(producto, observaciones) {
+    const resumenDiv = document.querySelector('.resumen-mensaje');
+    const productosEntregados = resumenDiv.getAttribute('data-entregas') ? 
+        JSON.parse(resumenDiv.getAttribute('data-entregas')) : [];
+    
+    productosEntregados.push({ producto, observaciones });
+    resumenDiv.setAttribute('data-entregas', JSON.stringify(productosEntregados));
+    
+    const mensaje = generarMensajeResumen(productosEntregados);
+    resumenDiv.innerHTML = mensaje;
+}
+
+function generarMensajeResumen(productos) {
+    if (!productos.length) return '';
+    
+    const listaProductos = productos
+        .map(p => `• ${p.producto}${p.observaciones ? `: (${p.observaciones})` : ''}`)
+        .join('\n');
+
+    return `SE TRAJO MATERIA PRIMA\n\nEntregado:\n${listaProductos}\n\nLos productos ya se encuentran como entregado en la aplicación de Damabrava.`;
+}
+
+
+window.copiarResumen = function() {
+    const resumenDiv = document.querySelector('.resumen-mensaje');
+    const texto = resumenDiv.textContent;
+    
+    if (!texto.trim()) {
+        mostrarNotificacion('No hay entregas para copiar', 'error');
+        return;
+    }
+
+    navigator.clipboard.writeText(texto).then(() => {
+        mostrarNotificacion('Resumen copiado al portapapeles', 'success');
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+        mostrarNotificacion('Error al copiar el resumen', 'error');
+    });
 }

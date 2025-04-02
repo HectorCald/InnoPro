@@ -247,7 +247,7 @@ function verificarHorario() {
     const tiempoActual = hora * 60 + minutos; // Convertir a minutos
 
     const inicioJornada = 8 * 60; // 8:00 AM en minutos
-    const finJornada = 18 * 60 + 30; // 6:15 PM en minutos
+    const finJornada = 19 * 60; // 6:15 PM en minutos
 
     return tiempoActual >= inicioJornada && tiempoActual <= finJornada;
 }

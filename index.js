@@ -1337,7 +1337,7 @@ app.get('/obtener-pedidos-recibidos', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:H'
+            range: 'Pedidos!A:J'
         });
 
         const rows = response.data.values || [];
@@ -1351,7 +1351,8 @@ app.get('/obtener-pedidos-recibidos', requireAuth, async (req, res) => {
                 observaciones: row[3] || '',
                 cantidadRecibida: row[4] || '',
                 proveedor: row[5] || '',
-                precio: row[6] || ''
+                precio: row[6] || '',
+                obsCompras: row[9] || ''
             }));
 
         res.json({ success: true, pedidos: pedidosRecibidos });

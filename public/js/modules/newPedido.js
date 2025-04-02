@@ -1,3 +1,4 @@
+import { registrarNotificacion } from './advertencia.js';
 export function inicializarPedidos() {
     const anuncio = document.querySelector('.anuncio').style.display='none'
     const container = document.querySelector('.newPedido-view');
@@ -65,10 +66,6 @@ export async function togglePedidosRecibidos() {
                                     <i class="fas fa-box"></i>
                                     Pedido: ${pedido.cantidad}
                                 </span>
-                                <span class="pedido-cantidad-recibida">
-                                    <i class="fas fa-check-circle"></i>
-                                    Recibido: ${pedido.cantidadRecibida || 'No especificado'}
-                                </span>
                                 ${pedido.proveedor ? `
                                 <span class="pedido-proveedor">
                                     <i class="fas fa-truck"></i>
@@ -82,15 +79,15 @@ export async function togglePedidosRecibidos() {
                                 ${pedido.observaciones ? `
                                 <span class="pedido-obs">
                                     <i class="fas fa-comment"></i>
-                                    ${pedido.observaciones}
+                                    ${pedido.obsCompras}
                                 </span>` : ''}
                             </div>
-                            <div class="btn-recibido-pedido">
-                                <button class="enviar" onclick="window.mostrarFormularioIngreso('${pedido.nombre}', 'Pedidos')">
+                            <div class="anuncio-botones">
+                                <button class="enviar anuncio-btn green" onclick="window.mostrarFormularioIngreso('${pedido.nombre}', 'Pedidos')">
                                     <i class="fas fa-check"></i>
                                     Ingresar
                                 </button>
-                                <button class="cancelar" onclick="window.mostrarFormularioRechazo('${pedido.nombre}', 'Pedidos')">
+                                <button class="cancelar anuncio-btn red" onclick="window.mostrarFormularioRechazo('${pedido.nombre}', 'Pedidos')">
                                     <i class="fas fa-times"></i>
                                     Rechazar
                                 </button>
@@ -178,7 +175,7 @@ export async function mostrarFormularioIngreso(producto, hoja) {
         anuncio.style.display='flex'
         anuncio.innerHTML = `
             <div class="anuncio-contenido">
-                <h2>Ingreso de Producto</h2>
+                <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
                 <div class="form-ingreso">
                     <input type="text" id="producto-ingreso" value="${producto}" readonly>
                     <div class="lote-info">Lote a asignar: ${siguienteLote}</div>
@@ -186,8 +183,8 @@ export async function mostrarFormularioIngreso(producto, hoja) {
                     <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
                 </div>
                 <div class="anuncio-botones">
-                    <button class="anuncio-btn cancelar" onclick="inicializarPedidos()">Cancelar</button>
-                    <button class="anuncio-btn confirmar" onclick="procesarIngreso('${producto}', '${hoja}')">Ingresar</button>
+                    <button class="anuncio-btn gray" onclick="inicializarPedidos()">Cancelar</button>
+                    <button class="anuncio-btn green" onclick="procesarIngreso('${producto}', '${hoja}')">Ingresar</button>
                 </div>
             </div>
         `;
@@ -238,15 +235,15 @@ export function mostrarFormularioRechazo(producto, hoja) {
     const anuncio = document.querySelector('.anuncio');
     anuncio.innerHTML = `
         <div class="anuncio-contenido">
-            <i class="fas fa-times-circle"></i>
-            <h2>Rechazar Pedido</h2>
+            
+            <h2><i class="fas fa-times-circle"></i>Rechazar Pedido</h2>
             <div class="form-rechazo">
                 <p>Producto: ${producto}</p>
                 <textarea id="razon-rechazo" placeholder="Razón del rechazo" required></textarea>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar" onclick="inicializarPedidos()">Cancelar</button>
-                <button class="anuncio-btn confirmar" onclick="confirmarRechazo('${producto}', '${hoja}')">Confirmar</button>
+                <button class="anuncio-btn gray" onclick="inicializarPedidos()">Cancelar</button>
+                <button class="anuncio-btn green" onclick="confirmarRechazo('${producto}', '${hoja}')">Confirmar</button>
             </div>
         </div>
     `;
@@ -299,21 +296,21 @@ export async function finalizarPedidos() {
         anuncio.style.display = 'flex';
         anuncio.innerHTML = `
             <div class="anuncio-contenido">
-                <i class="fas fa-clipboard-check"></i>
-                <h2>Finalizar Pedidos</h2>
+                
+                <h2><i class="fas fa-clipboard-check"></i>Finalizar Pedidos</h2>
                 <p>¿Desea finalizar y archivar todos los pedidos actuales?</p>
                 <div class="pedidos-resumen">
                     <h3>Resumen de Pedidos:</h3>
                     ${pedidosTemporales.map(pedido => `
-                        <div class="pedido-resumen-item">
+                        <div class="form-grup">
                             <span>${pedido.nombre}</span>
                             <span>${pedido.cantidad}</span>
                         </div>
                     `).join('')}
                 </div>
                 <div class="anuncio-botones">
-                    <button class="anuncio-btn cancelar" onclick="cerrarFormularioPedido()">Cancelar</button>
-                    <button class="anuncio-btn confirmar" onclick="confirmarFinalizacionPedidos()">Finalizar</button>
+                    <button class="anuncio-btn gray" onclick="cerrarFormularioPedido()">Cancelar</button>
+                    <button class="anuncio-btn green" onclick="confirmarFinalizacionPedidos()">Finalizar</button>
                 </div>
             </div>
         `;
@@ -331,8 +328,15 @@ export async function confirmarFinalizacionPedidos() {
     // Copy to clipboard
     await navigator.clipboard.writeText(pedidosText);
     mostrarNotificacion('Pedidos copiados al portapapeles', 'success');
+    
     try {
         mostrarCarga();
+        
+        // Obtener el usuario actual
+        const userResponse = await fetch('/obtener-mi-rol');
+        const userData = await userResponse.json();
+        const usuarioActual = userData.nombre;
+
         const response = await fetch('/finalizar-pedidos', {
             method: 'POST',
             headers: {
@@ -343,12 +347,21 @@ export async function confirmarFinalizacionPedidos() {
 
         const data = await response.json();
         if (data.success) {
+            // Enviar notificación
+            try {
+                await registrarNotificacion(
+                    usuarioActual,           // origen (usuario actual)
+                    'Administración',        // destino
+                    'Se realizo un pedido de materia prima'
+                );
+            } catch (notifError) {
+                console.error('Error al enviar notificación:', notifError);
+            }
+
             pedidosTemporales = []; // Clear the temporary pedidos
             mostrarNotificacion('Pedidos finalizados correctamente', 'success');
             cerrarFormularioPedido();
-            await Promise.all([
-                cargarPedidos(),
-            ]);
+            await cargarPedidos();
         } else {
             mostrarNotificacion(data.error || 'Error al finalizar los pedidos', 'error');
         }
@@ -373,8 +386,7 @@ export async function mostrarFormularioPedido() {
         const contenido = anuncio.querySelector('.anuncio-contenido');
         
         contenido.innerHTML = `
-            <i class="fas fa-shopping-basket fa-2x"></i>
-            <h2>Nuevo Pedido</h2>
+            <h2><i class="fas fa-shopping-basket fa-2x"></i>Nuevo Pedido</h2>
             <div class="form-pedido">
                 <div class="autocomplete-wrapper">
                     <input type="text" id="nombre-pedido" placeholder="Nombre del producto" autocomplete="off" required>
@@ -394,8 +406,8 @@ export async function mostrarFormularioPedido() {
                 <textarea id="obs-pedido" placeholder="Observaciones"></textarea>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar">Cancelar</button>
-                <button class="anuncio-btn confirmar">Añadir</button>
+                <button class="anuncio-btn gray cancelar">Cancelar</button>
+                <button class="anuncio-btn green confirmar">Añadir</button>
             </div>
         `;
 
@@ -638,6 +650,7 @@ export async function cargarPedidos() {
     document.querySelector('.lista-archivados').style.display='none'
 }
 export function eliminarPedido(nombre) {
+    document.querySelector('.anuncio').style.display= 'none';
     pedidosTemporales = pedidosTemporales.filter(p => p.nombre !== nombre);
     cargarPedidos();
     mostrarNotificacion('Pedido eliminado correctamente', 'success');
@@ -651,12 +664,11 @@ export function mostrarConfirmacionEliminar(fecha, nombre) {
     const contenido = anuncio.querySelector('.anuncio-contenido');
     
     contenido.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <h2>¿Eliminar pedido?</h2>
+        <h2><i class="fas fa-exclamation-triangle"></i>¿Eliminar pedido?</h2>
         <p>Esta acción no se puede deshacer</p>
         <div class="anuncio-botones">
-            <button class="anuncio-btn cancelar">Cancelar</button>
-            <button class="anuncio-btn confirmar">Eliminar</button>
+            <button class="anuncio-btn gray cancelar">Cancelar</button>
+            <button class="anuncio-btn red confirmar">Eliminar</button>
         </div>
     `;
 

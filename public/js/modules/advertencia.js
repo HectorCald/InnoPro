@@ -88,7 +88,6 @@ function mostrarInterfazNotificaciones(advertenciaDiv, notificaciones) {
     advertenciaDiv.innerHTML = `
         <div class="advertencia-contenido">
             <h2><i class="fas fa-exclamation-triangle"></i> Notificaciones</h2>
-            <p class="consejo">Presiona (x) para eliminar una notificación</p>
             <div class="notificaciones-lista">
                 ${notificaciones.map(notif => `
                     <div class="notificacion-item" data-id="${notif.id}" data-destino="${notif.destino}">
@@ -97,9 +96,6 @@ function mostrarInterfazNotificaciones(advertenciaDiv, notificaciones) {
                                 <span class="fecha">${notif.fecha}</span>
                                 <span class="origen">De: ${notif.origen}</span>
                             </div>
-                            <button class="btn-eliminar-notif" data-id="${notif.id}">
-                                <i class="fas fa-times"></i>
-                            </button>
                         </div>
                         <p class="mensaje">${notif.notificacion}</p>
                     </div>
@@ -108,12 +104,12 @@ function mostrarInterfazNotificaciones(advertenciaDiv, notificaciones) {
             <div class="confirmacion-lectura" style="display: none;">
                 <label>
                     <input type="checkbox" id="confirmarLectura">
-                    <span>Confirmo que he leído todas las notificaciones</span>
+                    <span>He leido todo</span>
                 </label>
             </div>
             <div class="anuncio-botones">
                 <button class="btn-aceptar">Aceptar</button>
-                <button class="btn-aceptar-eliminar">Aceptar y Eliminar</button>
+                <button class="btn-aceptar-eliminar">Eliminar</button>
             </div>
         </div>
     `;

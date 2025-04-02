@@ -70,13 +70,13 @@
 }
 
 .anuncio-btn {
-    border-radius: 0.5em;
+    border-radius: 15px;
     border: none;
     cursor: pointer;
     font-weight: 500;
     transition: all 0.3s ease;
     width: 100%;
-    padding: 10px;
+    padding: 15px;
     margin-bottom: 5px;
 }
 
@@ -94,10 +94,31 @@
     background: #4CAF50;
     color: white;
 }
+.anuncio-btn.blue {
+    background: #0086e7;
+    color: white;
+}
 
 .anuncio-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.anuncio-btn.delete, .anuncio-btn.add, .anuncio-btn.run{
+    width: 20px;
+    height: 20px;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.anuncio-btn.delete i{
+    color: #dc3545;
+}
+.anuncio-btn.add i{
+    color: green;
+}
+.anuncio-btn.run i{
+    color: rgb(220, 176, 0);
 }
 
 .form-group {
@@ -130,7 +151,7 @@
     margin-top: 5px;
 }
 .campo-form label, .campo-form p{
-    width: 200px;
+    width: 150px;
     text-align: left;
 }
 

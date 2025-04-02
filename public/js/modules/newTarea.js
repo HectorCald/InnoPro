@@ -125,8 +125,8 @@ export async function mostrarFormularioTarea(productoPreseleccionado = '') {
         const contenido = anuncio.querySelector('.anuncio-contenido');
         
         contenido.innerHTML = `
-            <i class="fas fa-tasks"></i>
-            <h2>Nueva Tarea</h2>
+            
+            <h2><i class="fas fa-tasks"></i>Nueva Tarea</h2>
             <div class="form-tarea">
                 <div class="autocomplete-wrapper">
                     <input type="text" id="nombre-tarea" value="${productoPreseleccionado}" 
@@ -142,8 +142,8 @@ export async function mostrarFormularioTarea(productoPreseleccionado = '') {
                 <textarea id="descripcion-tarea" placeholder="Descripción de la tarea"></textarea>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar">Cancelar</button>
-                <button class="anuncio-btn confirmar">Iniciar Tarea</button>
+                <button class="anuncio-btn  gray cancelar">Cancelar</button>
+                <button class="anuncio-btn green confirmar">Iniciar Tarea</button>
             </div>
         `;
 
@@ -324,11 +324,8 @@ export async function cargarTareasEnProceso() {
                         </span>
                     </div>
                     <div class="tarea-acciones">
-                        <button class="btn-tarea-accion btn-agregar-proceso" onclick="agregarProceso('${tarea.nombre}')">
+                        <button class="btn-tarea-accion btn-proceso" onclick="agregarProceso('${tarea.nombre}')">
                             <i class="fas fa-plus"></i> Proceso
-                        </button>
-                        <button class="btn-tarea-accion btn-pausar" id="btn-pausar-${tarea.nombre}" onclick="pausarTarea('${tarea.nombre}')">
-                            <i class="fas fa-pause"></i> Pausar
                         </button>
                         <button class="btn-tarea-accion btn-finalizar" onclick="finalizarTarea('${tarea.nombre}')">
                             <i class="fas fa-check"></i> Finalizar
@@ -434,6 +431,7 @@ export function iniciarCronometro(tareaId, tiempoInicial) {
 
 export async function agregarProceso(tareaId) {
     try {
+        mostrarCarga();
         const response = await fetch('/obtener-lista-tareas2');
         const data = await response.json();
         
@@ -445,8 +443,8 @@ export async function agregarProceso(tareaId) {
         const contenido = anuncio.querySelector('.anuncio-contenido');
         
         contenido.innerHTML = `
-            <i class="fas fa-cog"></i>
-            <h2>Nuevo Proceso</h2>
+            
+            <h2><i class="fas fa-cog"></i>Nuevo Proceso</h2>
             <div class="form-proceso">
                 <div class="autocomplete-wrapper">
                     <input type="text" id="descripcion-proceso" placeholder="Proceso" autocomplete="off" required>
@@ -454,8 +452,8 @@ export async function agregarProceso(tareaId) {
                 </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar">Cancelar</button>
-                <button class="anuncio-btn confirmar">Agregar Proceso</button>
+                <button class="anuncio-btn gray cancelar">Cancelar</button>
+                <button class="anuncio-btn green confirmar">Agregar Proceso</button>
             </div>
         `;
 
@@ -539,6 +537,8 @@ export async function agregarProceso(tareaId) {
         anuncio.style.display = 'flex';
     } catch (error) {
         mostrarNotificacion(error.message, 'error');
+    }finally{
+        ocultarCarga();
     }
 }
 export async function finalizarProceso(tareaId, procesoId) {
@@ -547,14 +547,14 @@ export async function finalizarProceso(tareaId, procesoId) {
         const contenido = anuncio.querySelector('.anuncio-contenido');
         
         contenido.innerHTML = `
-            <i class="fas fa-weight"></i>
-            <h2>Finalizar Proceso</h2>
+            
+            <h2><i class="fas fa-weight"></i>Finalizar Proceso</h2>
             <div class="form-proceso">
                 <input type="number" id="peso-proceso-final" placeholder="Peso final (kg)" step="0.01" required>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar">Cancelar</button>
-                <button class="anuncio-btn confirmar">Finalizar</button>
+                <button class="anuncio-btn gray cancelar">Cancelar</button>
+                <button class="anuncio-btn green confirmar">Finalizar</button>
             </div>
         `;
 
@@ -637,10 +637,6 @@ export function renderizarProcesos(procesos, tareaId) {
                             </div>
                             ${!estaFinalizado ? `
                                 <div class="proceso-controles">
-                                    <button class="btn-proceso-control btn-proceso-editar" 
-                                            onclick="actualizarProceso('${tareaId}', '${proceso.id}')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
                                     <button class="btn-proceso-control btn-proceso-finalizar" 
                                             onclick="finalizarProceso('${tareaId}', '${proceso.id}')">
                                         <i class="fas fa-check"></i>
@@ -710,7 +706,7 @@ export function toggleProcesos(tareaId) {
 export async function finalizarTarea(tareaId) {
     try {
         const confirmacion = await mostrarConfirmacion(
-            '¿Estás seguro de que deseas finalizar esta tarea?',
+            '¿Finalizar esta tarea?',
             'Esta acción moverá la tarea al historial y calculará el peso restante.'
         );
 
@@ -744,12 +740,12 @@ function mostrarConfirmacion(titulo, mensaje) {
         const contenido = anuncio.querySelector('.anuncio-contenido');
         
         contenido.innerHTML = `
-            <i class="fas fa-exclamation-triangle"></i>
-            <h2>${titulo}</h2>
+            
+            <h2><i class="fas fa-exclamation-triangle"></i>${titulo}</h2>
             <p>${mensaje}</p>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar">Cancelar</button>
-                <button class="anuncio-btn confirmar">Confirmar</button>
+                <button class="anuncio-btn gray cancelar">Cancelar</button>
+                <button class="anuncio-btn green confirmar">Confirmar</button>
             </div>
         `;
 
@@ -801,34 +797,41 @@ export async function mostrarProgramaAcopio() {
         const contenido = anuncio.querySelector('.anuncio-contenido');
         
         contenido.innerHTML = `
-            <i class="fas fa-calendar-alt"></i>
-            <h2>Programa de Acopio</h2>
+            
+            <h2><i class="fas fa-calendar-alt"></i>Programa de Acopio</h2>
             <p>Semana hasta el ${proximoDomingo.toLocaleDateString()}</p>
             <div class="programa-form">
                 ${dias.map(dia => `
                     <div class="dia-programa">
-                        <h3>${dia}</h3>
-                        <input type="date" id="fecha-${dia.toLowerCase()}" class="fecha-input" readonly>
+                        <div class="campo-form">
+                            <p>${dia}</p>
+                            <p id="fecha-${dia.toLowerCase()}" class="fecha-input"></p>
+                        </div>
+                        
                         <div class="tareas-dia" id="tareas-${dia.toLowerCase()}">
-                            <div class="tarea-programa">
-                                <select class="producto-select">
-                                    <option value="">Seleccionar producto</option>
-                                    ${tareasOptions}
-                                </select>
-                                <button type="button" class="btn-eliminar-tarea anuncio-btn confirmar">
-                                    Eliminar
+                            <div class="campo-form">
+                                <div class="campo-form">
+                                    <p>Tarea:</p>
+                                    <select class="producto-select">
+                                            <option value="">Seleccionar producto</option>
+                                            ${tareasOptions}
+                                        </select>
+                                </div>
+                                <button type="button" class="btn-eliminar-tarea anuncio-btn delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button type="button" class="btn-agregar-tarea-dia anuncio-btn add" data-dia="${dia.toLowerCase()}">
+                                    <i class="fas fa-plus"></i>
                                 </button>
                             </div>
                         </div>
-                        <button type="button" class="btn-agregar-tarea-dia anuncio-btn enviar" data-dia="${dia.toLowerCase()}">
-                            Agregar Tarea
-                        </button>
+                        
                     </div>
                 `).join('')}
                 <div class="anuncio-botones">
-                    <button class="anuncio-btn cancelar">Cancelar</button>
-                    <button class="anuncio-btn confirmar guardar-programa">Guardar</button>
-                    <button class="anuncio-btn ver-programa">Ver</button>
+                    <button class="anuncio-btn gray cancelar">Cancelar</button>
+                    <button class="anuncio-btn green confirmar guardar-programa">Guardar</button>
+                    <button class="anuncio-btn blue ver-programa">Ver</button>
                 </div>
             </div>
         `;
@@ -837,7 +840,7 @@ export async function mostrarProgramaAcopio() {
         dias.forEach((dia, index) => {
             const fecha = new Date(proximoDomingo);
             fecha.setDate(fecha.getDate() - (6 - index));
-            document.getElementById(`fecha-${dia.toLowerCase()}`).value = fecha.toISOString().split('T')[0];
+            document.getElementById(`fecha-${dia.toLowerCase()}`).textContent = fecha.toISOString().split('T')[0];
         });
 
         // Add task button handlers
@@ -848,13 +851,21 @@ export async function mostrarProgramaAcopio() {
                 const nuevaTarea = document.createElement('div');
                 nuevaTarea.className = 'tarea-programa';
                 nuevaTarea.innerHTML = `
-                    <select class="producto-select">
-                        <option value="">Seleccionar producto</option>
-                        ${tareasOptions}
-                    </select>
-                    <button type="button" class="btn-eliminar-tarea anuncio-btn confirmar">
-                        Eliminar
-                    </button>
+                    <div class="campo-form">
+                                <div class="campo-form">
+                                    <p>Tarea:</p>
+                                    <select class="producto-select">
+                                            <option value="">Seleccionar producto</option>
+                                            ${tareasOptions}
+                                        </select>
+                                </div>
+                                <button type="button" class="btn-eliminar-tarea anuncio-btn delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button type="button" class="btn-agregar-tarea-dia anuncio-btn add" data-dia="${dia.toLowerCase()}">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                 `;
                 tareasContainer.appendChild(nuevaTarea);
 
@@ -910,8 +921,8 @@ export async function verProgramaciones() {
         const contenido = anuncio.querySelector('.anuncio-contenido');
 
         contenido.innerHTML = `
-            <i class="fas fa-calendar-check"></i>
-            <h2>Programaciones Actuales</h2>
+            
+            <h2><i class="fas fa-calendar-check"></i>Programaciones Actuales</h2>
             <div class="programaciones-lista">
                 ${data.programaciones.length > 0 ? 
                     data.programaciones.map(prog => `
@@ -919,29 +930,28 @@ export async function verProgramaciones() {
                             <div class="programacion-fecha">
                                 <strong>${prog.dia}</strong> - ${new Date(prog.fecha).toLocaleDateString()}
                             </div>
-                            <div class="programacion-producto">${prog.producto}</div>
-                            <div class="programacion-estado">${prog.estado || 'Pendiente'}</div>
-                            <div class="programacion-acciones">
-                                ${prog.estado === 'Pendiente' ? `
-                                    <button class="anuncio-btn iniciar-tarea" 
-                                            onclick="iniciarTareaProgramada('${prog.producto}', '${prog.fecha}')">
-                                        Iniciar
-                                    </button>
-                                ` : ''}
+                            <div class="campo-form">
+                                <p>${prog.producto}</p>
+                                 <button class="anuncio-btn run iniciar-tarea" 
+                                    onclick="iniciarTareaProgramada('${prog.producto}', '${prog.fecha}')">
+                                     <i class="fas fa-play"></i>
+                                </button>
                             </div>
+                                    
                         </div>
                     `).join('')
                     : '<p class="no-programaciones">No hay programaciones registradas</p>'
                 }
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar">Cerrar</button>
+                <button class="anuncio-btn gray cancelar">Cerrar</button>
+                ${data.programaciones.length > 0 ? `
+                    <button class="anuncio-btn red confirmar eliminar-todo" onclick="eliminarProgramaCompleto()">
+                        Eliminar
+                    </button>
+                ` : ''}
             </div>
-            ${data.programaciones.length > 0 ? `
-                <button class="anuncio-btn confirmar eliminar-todo" onclick="eliminarProgramaCompleto()">
-                    Eliminar programa
-                </button>
-            ` : ''}
+            
         `;
 
         anuncio.querySelector('.cancelar').onclick = () => {
@@ -956,7 +966,6 @@ export async function verProgramaciones() {
     }
 }
 
-// Update the eliminarProgramaCompleto function
 window.eliminarProgramaCompleto = async function() {
     try {
         const confirmacion = await mostrarConfirmacion(
@@ -988,9 +997,6 @@ window.eliminarProgramaCompleto = async function() {
         ocultarCarga();
     }
 };
-
-// Function to start a scheduled task
-// Update the iniciarTareaProgramada function
 window.iniciarTareaProgramada = async function(producto, fecha) {
     try {
         const anuncio = document.querySelector('.anuncio');
@@ -1016,8 +1022,6 @@ window.iniciarTareaProgramada = async function(producto, fecha) {
         mostrarNotificacion(error.message, 'error');
     }
 };
-
-// Update the verProgramaciones function to include the fecha parameter
 
 export async function guardarProgramacion(event) {
     if (event) event.preventDefault();
@@ -1083,7 +1087,6 @@ export async function guardarProgramacion(event) {
     }
 }
 
-// Función para agregar una nueva tarea al día
 window.agregarTareaDia = function(dia, tareas) {
     const tareasContainer = document.getElementById(`tareas-${dia}`);
     const nuevaTarea = document.createElement('div');
@@ -1102,7 +1105,6 @@ window.agregarTareaDia = function(dia, tareas) {
     tareasContainer.appendChild(nuevaTarea);
 };
 
-// Función para eliminar una tarea
 window.eliminarTareaDia = function(button) {
     button.closest('.tarea-programa').remove();
 };
