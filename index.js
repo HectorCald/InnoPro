@@ -3713,6 +3713,31 @@ app.get('/descargar-pdf/:id', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al descargar el PDF' });
     }
 });
+app.get('/obtener-ultimo-comprobante', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Comprobantes!B2:B' // Columna de números de comprobante
+        });
+
+        const rows = response.data.values || [];
+        let ultimoNumero = 0;
+
+        if (rows.length > 0) {
+            const numeros = rows.map(row => parseInt(row[0]) || 0);
+            ultimoNumero = Math.max(...numeros);
+        }
+
+        res.json({ success: true, ultimoNumero });
+    } catch (error) {
+        console.error('Error al obtener último número de comprobante:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener último número de comprobante' 
+        });
+    }
+});
 
 
 /* ==================== RUTAS DE API -  ==================== */

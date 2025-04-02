@@ -511,25 +511,46 @@ function startDrawing(e) {
         }
     };
 };
-window.closeFullscreenPad = function() {
-    const container = document.querySelector('.signature-container');
-    const expandButton = document.querySelector('.btn-fullscreen');
-    const closeButton = document.querySelector('.btn-close-fullscreen');
-    const currentImage = canvas.toDataURL();
-    
-    container.classList.remove('fullscreen');
-    expandButton.style.display = 'block';
-    closeButton.style.display = 'none';
-    
-    resizeCanvas();
-    
-    // Restore previous drawing
-    const img = new Image();
-    img.onload = function() {
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    window.toggleFullscreenPad = function() {
+        const container = document.querySelector('.signature-container');
+        const button = document.querySelector('.btn-fullscreen i');
+        const currentImage = canvas.toDataURL();
+        
+        container.classList.toggle('fullscreen');
+        button.classList.toggle('fa-expand');
+        button.classList.toggle('fa-compress');
+        
+        if (container.classList.contains('fullscreen')) {
+            // Force landscape orientation when fullscreen
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => {
+                    console.log('Orientation lock failed:', err);
+                });
+            }
+            canvas.width = window.innerHeight; // Switch width and height
+            canvas.height = window.innerWidth * 0.7;
+        } else {
+            // Release orientation lock when exiting fullscreen
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
+            canvas.width = 280;
+            canvas.height = 200;
+        }
+        
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        
+        // Restore previous drawing
+        const img = new Image();
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+        img.src = currentImage;
     };
-    img.src = currentImage;
-};
 
 // Update the toggleFullscreenPad function
 window.toggleFullscreenPad = function() {
