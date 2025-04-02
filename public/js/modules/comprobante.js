@@ -511,7 +511,7 @@ function startDrawing(e) {
         }
     };
 };
-    window.toggleFullscreenPad = function() {
+window.toggleFullscreenPad = function() {
         const container = document.querySelector('.signature-container');
         const button = document.querySelector('.btn-fullscreen i');
         const currentImage = canvas.toDataURL();
@@ -550,9 +550,7 @@ function startDrawing(e) {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         };
         img.src = currentImage;
-    };
-
-// Update the toggleFullscreenPad function
+};
 window.toggleFullscreenPad = function() {
     const container = document.querySelector('.signature-container');
     const expandButton = document.querySelector('.btn-fullscreen');

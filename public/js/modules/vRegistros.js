@@ -22,13 +22,48 @@ async function inicializarReglas() {
             fetch('/obtener-reglas-especiales'),
             fetch('/obtener-precios-base')
         ]);
+
+        if (!responseReglas.ok || !responsePrecios.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+
         const dataReglas = await responseReglas.json();
         const dataPrecios = await responsePrecios.json();
 
+        if (!dataReglas.success || !dataPrecios.success) {
+            throw new Error('Error en los datos recibidos');
+        }
+
         reglasEspeciales = dataReglas.reglas || [];
-        preciosBase = dataPrecios.preciosBase;
+        preciosBase = dataPrecios.preciosBase || {
+            etiquetado: '0',
+            sellado: '0',
+            envasado: '0',
+            cernidoBolsa: '0'
+        };
+
+        return true;
     } catch (error) {
         console.error('Error al cargar reglas:', error);
+        mostrarNotificacion('Error al cargar las reglas y precios. Por favor, recarga la página.', 'error');
+        return false;
+    }
+}
+
+// Asegurarse de que las reglas se inicialicen antes de mostrar los filtros
+export async function inicializarVerificacionRegistros() {
+    await inicializarReglas();
+    // Cargar filtros guardados del localStorage
+    const filtrosGuardados = localStorage.getItem('filtrosRegistros');
+    if (filtrosGuardados) {
+        filtrosActivos = JSON.parse(filtrosGuardados);
+        aplicarFiltros();
+    }
+    
+    // Mostrar el botón de filtros solo después de inicializar
+    const btnFiltros = document.querySelector('.btn-filtros');
+    if (btnFiltros) {
+        btnFiltros.style.display = 'block';
     }
 }
 /* ==================== FUNCIONES DE CÁLCULO Y UTILIDAD ==================== */
@@ -1023,9 +1058,6 @@ function aplicarFiltros() {
     });
 
     // Si hay filtros activos de nombre y fechas, mostrar el botón
-        // ... rest of the filtering code remains the same ...
-
-    // Si hay filtros activos de nombre y fechas, mostrar el botón
     if (filtrosActivos.nombre && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta) && registrosFiltrados.length > 0) {
         const container = document.querySelector('.verificarRegistros-view');
         const botonCalcular = document.createElement('button');
@@ -1033,17 +1065,34 @@ function aplicarFiltros() {
         botonCalcular.innerHTML = '<i class="fas fa-calculator"></i> Calcular Total';
         botonCalcular.style.cssText = `
             position: fixed;
-            bottom: 20px;
-            left: 20px;
-            padding: 10px 20px;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             z-index: 1000;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
         `;
+
+        botonCalcular.addEventListener('mouseover', () => {
+            botonCalcular.style.backgroundColor = '#45a049';
+            botonCalcular.style.transform = 'translateX(-50%) scale(1.05)';
+        });
+
+        botonCalcular.addEventListener('mouseout', () => {
+            botonCalcular.style.backgroundColor = '#4CAF50';
+            botonCalcular.style.transform = 'translateX(-50%) scale(1)';
+        });
 
         botonCalcular.addEventListener('click', () => {
             const totalGeneral = registrosFiltrados.reduce((sum, reg) => sum + reg.total, 0);
@@ -1078,8 +1127,6 @@ function aplicarFiltros() {
 
         container.appendChild(botonCalcular);
     }
-
-    // ... rest of the code remains the same ...
 
     // Actualizar contadores
     fechaCards.forEach(fechaCard => {
