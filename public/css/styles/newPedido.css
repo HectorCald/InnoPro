@@ -1,4 +1,5 @@
 @import'styles/colores.css';
+
 .newPedido-view {
     width: 100%;
     background: var(--background) !important;
@@ -15,6 +16,7 @@
     &::-webkit-scrollbar {
         display: none;
     }
+
     -ms-overflow-style: none;
     scrollbar-width: none;
 
@@ -24,6 +26,7 @@
         flex-direction: column;
         gap: 10px;
     }
+
     .title {
         padding-block: 15px;
         border-bottom: 1px solid rgb(83, 83, 83);
@@ -32,11 +35,13 @@
             font-size: 17px;
             margin: 0;
         }
-        i{
+
+        i {
             font-size: 17px;
         }
     }
-    .section-title{
+
+    .section-title {
         font-size: 15px;
     }
 
@@ -69,7 +74,8 @@
         justify-content: center;
         font-size: 17px;
     }
-    .btn-agregar-pedido:hover{
+
+    .btn-agregar-pedido:hover {
         background-color: var(--second-button);
         color: white;
     }
@@ -85,6 +91,7 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+
         margin-bottom: 10px;
     }
 
@@ -168,11 +175,12 @@
             padding: 0;
         }
     }
-    
+
 
     .pedido-detalles-lista {
         color: gray;
     }
+
     .btn-eliminar {
         background: none;
         border: none;
@@ -189,11 +197,13 @@
             transform: scale(1.1);
         }
     }
+
     .pedidos-archivados {
         margin: 0;
     }
 
-    .lista-archivados, .lista-recibidos {
+    .lista-archivados,
+    .lista-recibidos {
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -214,6 +224,7 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+
         margin-bottom: 10px;
     }
 
@@ -235,6 +246,7 @@
             font-size: 13px;
         }
     }
+
     .pedido-meta {
         display: flex;
         justify-content: space-between;
@@ -267,16 +279,51 @@
         background: var(--background);
         border-radius: 5px;
     }
+
     .no-pedidos {
         text-align: center;
         color: #888;
         padding: 2em;
         grid-column: 1 / -1;
     }
-    .no-archivados, .no-recibidos {
+
+    .no-archivados,
+    .no-recibidos {
         text-align: center;
         color: #888;
         padding: 2em;
+        font-size: 0.9em;
+    }
+
+
+    .resumen-ingresos {
+        background: #333;
+        border-radius: 6px;
+        padding: 1em;
+        white-space: pre-line;
+        font-family: monospace;
+        margin-top: 1em;
+        min-height: 100px;
+    }
+
+    .btn-copiar {
+        background: #4a4a4a;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 0.5em 1em;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        transition: background 0.2s;
+    }
+
+    .btn-copiar:hover {
+        background: #5a5a5a;
+    }
+
+    .btn-copiar i {
         font-size: 0.9em;
     }
 }

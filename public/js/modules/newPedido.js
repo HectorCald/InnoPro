@@ -43,7 +43,6 @@ export async function togglePedidosRecibidos() {
     const listaArchivados = document.querySelector('.lista-archivados');
     const estaVisible = listaRecibidos.style.display !== 'none';
     
-    // Ocultar archivados y actualizar su botón
     listaArchivados.style.display = 'none';
     
     if (!estaVisible) {
@@ -55,6 +54,15 @@ export async function togglePedidosRecibidos() {
             if (data.success && data.pedidos.length > 0) {
                 listaRecibidos.innerHTML = `
                     <h2 class="section-title">Pedidos recibidos</h2>
+                    <div class="pedido-archivado-card">
+                        <div class="section-header">
+                            <h3><i class="fas fa-check-circle"></i> Resumen de Ingresos</h3>
+                            <button class="btn-copiar" onclick="copiarResumenIngresos()">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <div class="resumen-ingresos" data-ingresos="[]"></div>
+                    </div>
                     ${data.pedidos.map(pedido => `
                         <div class="pedido-archivado-card">
                             <div class="pedido-archivado-header">
@@ -99,6 +107,7 @@ export async function togglePedidosRecibidos() {
                 // Make functions available globally
                 window.mostrarFormularioIngreso = mostrarFormularioIngreso;
                 window.mostrarFormularioRechazo = mostrarFormularioRechazo;
+                window.copiarResumenIngresos = copiarResumenIngresos;
             } else {
                 listaRecibidos.innerHTML = '<p class="no-recibidos">No hay pedidos recibidos</p>';
             }
@@ -111,6 +120,61 @@ export async function togglePedidosRecibidos() {
         }
     } else {
         listaRecibidos.style.display = 'none';
+    }
+}
+
+function copiarResumenIngresos() {
+    const resumenDiv = document.querySelector('.resumen-ingresos');
+    const ingresos = JSON.parse(resumenDiv.getAttribute('data-ingresos') || '[]');
+    
+    if (ingresos.length === 0) {
+        mostrarNotificacion('No hay ingresos para copiar', 'warning');
+        return;
+    }
+
+    const mensaje = generarMensajeResumenIngresos(ingresos);
+    
+    navigator.clipboard.writeText(mensaje).then(() => {
+        mostrarNotificacion('Resumen copiado al portapapeles', 'success');
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+        mostrarNotificacion('Error al copiar el resumen', 'error');
+    });
+}
+
+function generarMensajeResumenIngresos(ingresos) {
+    const listaIngresos = ingresos
+        .map(i => `• ${i.producto}: ${i.peso}kg${i.observaciones ? ` (${i.observaciones})` : ''}`)
+        .join('\n');
+
+    return `SE INGRESÓ MATERIA PRIMA\n\nIngresado:\n${listaIngresos}\n\nLos productos ya se encuentran ingresados en la aplicación de Damabrava.`;
+}
+
+function actualizarResumenIngresos(producto, peso, observaciones) {
+    try {
+        const resumenDiv = document.querySelector('.resumen-ingresos');
+        if (!resumenDiv) {
+            console.error('No se encontró el elemento resumen-ingresos');
+            return;
+        }
+
+        const ingresos = JSON.parse(resumenDiv.getAttribute('data-ingresos') || '[]');
+        ingresos.push({ producto, peso, observaciones });
+        resumenDiv.setAttribute('data-ingresos', JSON.stringify(ingresos));
+        
+        const mensaje = generarMensajeResumenIngresos(ingresos);
+        resumenDiv.textContent = mensaje;
+
+        // Buscar y ocultar la tarjeta del producto de manera más compatible
+        const cards = document.querySelectorAll('.pedido-archivado-card');
+        cards.forEach(card => {
+            const nombreElement = card.querySelector('.pedido-nombre');
+            if (nombreElement && nombreElement.textContent === producto) {
+                card.style.display = 'none';
+            }
+        });
+    } catch (error) {
+        console.error('Error al actualizar resumen:', error);
     }
 }
 export async function togglePedidosArchivados() {
@@ -218,19 +282,33 @@ export async function procesarIngreso(producto, hoja) {
 
         const data = await response.json();
         if (data.success) {
-            mostrarNotificacion('Ingreso procesado correctamente', 'success');
+            // Buscar la tarjeta del producto de manera más compatible
+            const cards = document.querySelectorAll('.pedido-archivado-card');
+            let productoCard = null;
+            cards.forEach(card => {
+                const nombreElement = card.querySelector('.pedido-nombre');
+                if (nombreElement && nombreElement.textContent === producto) {
+                    productoCard = card;
+                }
+            });
+
+            if (productoCard) {
+                productoCard.style.display = 'none';
+                actualizarResumenIngresos(producto, peso, observaciones);
+                mostrarNotificacion('Ingreso procesado correctamente', 'success');
+            }
             cerrarFormularioPedido();
-            await togglePedidosRecibidos();
         } else {
-            mostrarNotificacion(data.error || 'Error al procesar el ingreso', 'error');
+            throw new Error(data.error || 'Error al procesar el ingreso');
         }
     } catch (error) {
         console.error('Error:', error);
-        mostrarNotificacion('Error al procesar el ingreso', 'error');
+        mostrarNotificacion(error.message || 'Error al procesar el ingreso', 'error');
     } finally {
         ocultarCarga();
     }
 }
+
 export function mostrarFormularioRechazo(producto, hoja) {
     const anuncio = document.querySelector('.anuncio');
     anuncio.innerHTML = `
