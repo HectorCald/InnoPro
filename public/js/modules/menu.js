@@ -98,24 +98,26 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
             { clase: 'opcion-btn', vista: 'usuarios-view', icono: 'fa-users-cog', texto: 'Usuarios', onclick: 'onclick="cargarUsuarios()"' },
             {
                 clase: 'opcion-btn submenu-trigger',
-                icono: 'fa-clipboard-list',
+                icono: 'fa-mortar-pestle',
                 texto: 'Acopio',
                 submenu: [
                     { clase: 'opcion-btn submenu-item', vista: 'almAcopio-view', icono: 'fa-warehouse', texto: 'Alm Bruto', onclick: 'onclick="inicializarAlmacen()"' },
-                    { clase: 'opcion-btn submenu-item', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAcopio()"' }
+                    { clase: 'opcion-btn submenu-item', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAcopio()"' },
+                    { clase: 'opcion-btn submenu-item', vista: 'compras-view', icono: 'fa-shopping-cart', texto: 'Compras', onclick: 'onclick="inicializarCompras()"' }
                 ]
             },
             {
                 clase: 'opcion-btn submenu-trigger',
-                icono: 'fa-warehouse',
+                icono: 'fa-industry',
                 texto: 'Producción',
                 submenu: [
                     { clase: 'opcion-btn submenu-item', vista: 'verificarRegistros-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistros()"' },
                     { clase: 'opcion-btn submenu-item', vista: 'almPrima-view', icono: 'fa-warehouse', texto: 'Alm Prima', onclick: 'onclick="inicializarAlmacenPrima()"' },
                     { clase: 'opcion-btn submenu-item', vista: 'preciosPro-view', icono: 'fa-dollar-sign', texto: 'Precios', onclick: 'onclick="initializePreciosPro()"' }
+                   
                 ]
             },
-            { clase: 'opcion-btn', vista: 'compras-view', icono: 'fa-shopping-cart', texto: 'Compras', onclick: 'onclick="inicializarCompras()"' },
+           
             { clase: 'opcion-btn', vista: 'comprobante-view', icono: 'fa-receipt', texto: 'Comprobante', onclick: 'onclick="inicializarComprobante()"' },
         ]
     };
