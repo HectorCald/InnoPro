@@ -153,7 +153,7 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
 });
 
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    res.render('mantenimiento');
+    res.render('dashboard_db');
 });
 app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
@@ -1279,7 +1279,6 @@ app.get('/obtener-usuario-actual', requireAuth, (req, res) => {
         rol: req.user.rol 
     });
 });
-
 app.get('/obtener-detalles-pedidos/:hoja', requireAuth, async (req, res) => {
     try {
         const { hoja } = req.params;
@@ -1304,26 +1303,25 @@ app.get('/obtener-detalles-pedidos/:hoja', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-pedidos-pendientes', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:H'
+            range: 'Pedidos!A:L'
         });
 
         const rows = response.data.values || [];
         const pedidosPendientes = rows
             .slice(1) // Saltar la fila de encabezados
-            .filter(row => row[7] === 'Pendiente')
+            .filter(row => row[8] === 'Pendiente')
             .map(row => ({
-                fecha: row[0],
-                nombre: row[1],
-                cantidad: row[2],
-                observaciones: row[3] || ''
+                fecha: row[1],
+                nombre: row[2],
+                cantidad: row[3],
+                observaciones: row[4] || ''
             }));
-
+            console.log(pedidosPendientes);
         res.json({ success: true, pedidos: pedidosPendientes });
     } catch (error) {
         console.error('Error:', error);
@@ -1333,28 +1331,25 @@ app.get('/obtener-pedidos-pendientes', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-pedidos-recibidos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:J'
+            range: 'Pedidos!A:L'
         });
 
         const rows = response.data.values || [];
         const pedidosRecibidos = rows
             .slice(1) // Saltar la fila de encabezados
-            .filter(row => row[7] === 'Recibido')
+            .filter(row => row[8] === 'Recibido')
             .map(row => ({
-                fecha: row[0],
-                nombre: row[1],
-                cantidad: row[2],
-                observaciones: row[3] || '',
-                cantidadRecibida: row[4] || '',
-                proveedor: row[5] || '',
-                precio: row[6] || '',
-                obsCompras: row[9] || ''
+                id: row[0],
+                fecha: row[1],
+                nombre: row[2],
+                proveedor: row[6] || '',
+                obsCompras: row[10] || '',
+                medida: row[11] || '',
             }));
 
         res.json({ success: true, pedidos: pedidosRecibidos });
@@ -1366,57 +1361,55 @@ app.get('/obtener-pedidos-recibidos', requireAuth, async (req, res) => {
         });
     }
 });
-
-app.post('/actualizar-pedido-recibido/:producto', requireAuth, async (req, res) => {
+app.post('/actualizar-pedido-recibido/:id', requireAuth, async (req, res) => {
     try {
-        const { producto } = req.params;
-        console.log('Producto recibido:', producto);
+        const { id } = req.params;
+        console.log('Producto recibido:', id);
         const sheets = google.sheets({ version: 'v4', auth });
         
         // Obtener datos actuales
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:J'
+            range: 'Pedidos!A:L'
         });
 
         const rows = response.data.values;
-        console.log('Buscando producto en filas:', rows.length);
-        
         const rowIndex = rows.findIndex(row => {
-            console.log('Comparando:', {
-                producto_fila: row[1],
-                estado: row[7],
-                cantidad: row[9],
-                coincide: row[1] === producto && 
-                         row[7] === 'Recibido' &&
-                         row[9] && parseInt(row[9]) > 0
-            });
-            return row[1] === producto && 
-                   row[7] === 'Recibido' &&
-                   row[9] && parseInt(row[9]) > 0;
+            return row[0] === id && 
+                   row[8] === 'Recibido' &&
+                   row[10] && parseInt(row[10]) > 0;
         });
-
-        console.log('Índice encontrado:', rowIndex);
 
         if (rowIndex === -1) {
             return res.json({ success: false, error: 'Producto no encontrado' });
         }
 
-        // Actualizar cantidad en columna J
-        const cantidadActual = parseInt(rows[rowIndex][9] || 0);
+        // Actualizar cantidad
+        const cantidadActual = parseInt(rows[rowIndex][10] || 0);
         const nuevaCantidad = Math.max(0, cantidadActual - 1);
-        console.log('Actualizando cantidad:', { cantidadActual, nuevaCantidad });
         
+        // Si la nueva cantidad es 0, actualizar estado a "Ingresado"
+        if (nuevaCantidad === 0) {
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: `Pedidos!I${rowIndex + 1}`,
+                valueInputOption: 'RAW',
+                resource: {
+                    values: [['Ingresado']]
+                }
+            });
+        }
+
+        // Actualizar la cantidad
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Pedidos!J${rowIndex + 1}`,
+            range: `Pedidos!K${rowIndex + 1}`,
             valueInputOption: 'RAW',
             resource: {
                 values: [[nuevaCantidad]]
             }
         });
 
-        // Mantener siempre el estado como "Recibido"
         res.json({ 
             success: true, 
             nuevaCantidad: nuevaCantidad
@@ -1430,34 +1423,32 @@ app.post('/actualizar-pedido-recibido/:producto', requireAuth, async (req, res) 
         });
     }
 });
-
-
-app.get('/obtener-pedidos-recibidos/:producto', requireAuth, async (req, res) => {
+app.get('/obtener-pedidos-recibidos/:id', requireAuth, async (req, res) => {
     try {
-        const { producto } = req.params;
+        const { id } = req.params;
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:K'
+            range: 'Pedidos!A:L'
         });
 
         const rows = response.data.values || [];
         const pedidosRecibidos = rows
             .slice(1) // Skip headers
             .filter(row => 
-                row[1]?.toLowerCase() === producto.toLowerCase() && // Product name matches
-                row[7] === 'Recibido' // Status is Received
+                row[0] == id && // Product name matches
+                row[8] === 'Recibido' // Status is Received
             )
             .map(row => ({
-                fecha: row[0],
-                nombre: row[1],
-                cantidad: row[2],
-                observaciones: row[3] || '',
-                cantidadRecibida: row[4] || '',
-                proveedor: row[5] || '',
-                precio: row[6] || '',
-                obsCompras: row[9] || '',
-                medida: row[10] || ''
+                fecha: row[1],
+                nombre: row[2],
+                cantidad: row[3],
+                observaciones: row[4] || '',
+                cantidadRecibida: row[5] || '',
+                proveedor: row[6] || '',
+                precio: row[7] || '',
+                obsCompras: row[10] || '',
+                medida: row[11] || ''
             }));
             console.log(pedidosRecibidos)
 
@@ -1473,20 +1464,20 @@ app.get('/obtener-pedidos-recibidos/:producto', requireAuth, async (req, res) =>
         });
     }
 });
-
 app.post('/procesar-ingreso', requireAuth, async (req, res) => {
     try {
-        const { producto, peso, hoja, observaciones, esMultiple } = req.body;
+        const {id, producto, peso, observaciones, esMultiple } = req.body;
+        console.log('ide:'+id)
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Obtener datos actuales de la hoja de pedidos
         const pedidosResponse = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `${hoja}!A:I`
+            range: `Pedidos!A:L`
         });
 
         const pedidos = pedidosResponse.data.values || [];
-        const rowIndex = pedidos.findIndex(row => row[1] === producto && row[7] === 'Recibido');
+        const rowIndex = pedidos.findIndex(row => row[0] === id && row[8] === 'Recibido');
 
         if (rowIndex === -1) {
             return res.status(400).json({ 
@@ -1526,7 +1517,7 @@ app.post('/procesar-ingreso', requireAuth, async (req, res) => {
         if (!esMultiple) {
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.SPREADSHEET_ID,
-                range: `${hoja}!H${rowIndex + 1}:I${rowIndex + 1}`,
+                range: `Pedidos!I${rowIndex + 1}:J${rowIndex + 1}`,
                 valueInputOption: 'RAW',
                 resource: {
                     values: [['Ingresado', observaciones || '']]
@@ -1548,20 +1539,19 @@ app.post('/procesar-ingreso', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.post('/rechazar-pedido', requireAuth, async (req, res) => {
     try {
-        const { hoja, producto, razon } = req.body;
+        const { id, hoja, producto, razon } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Obtener datos actuales
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `${hoja}!A:I`
+            range: `${hoja}!A:L`
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[1] === producto);
+        const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
             return res.status(404).json({ 
@@ -1573,7 +1563,7 @@ app.post('/rechazar-pedido', requireAuth, async (req, res) => {
         // Actualizar estado y razón en una sola operación
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `${hoja}!H${rowIndex + 1}:I${rowIndex + 1}`,
+            range: `${hoja}!I${rowIndex + 1}:J${rowIndex + 1}`,
             valueInputOption: 'USER_ENTERED',
             resource: {
                 values: [['Rechazado', razon]]
@@ -1592,7 +1582,6 @@ app.post('/rechazar-pedido', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/buscar-producto-pendiente/:nombre', requireAuth, async (req, res) => {
     try {
         const { nombre } = req.params;
@@ -1630,38 +1619,6 @@ app.get('/buscar-producto-pendiente/:nombre', requireAuth, async (req, res) => {
         });
     }
 });
-
-app.get('/obtener-siguiente-lote/:producto', requireAuth, async (req, res) => {
-    try {
-        const { producto } = req.params;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get current lots from Almacen Bruto
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Bruto!A:C'
-        });
-
-        const rows = response.data.values || [];
-        const productoRows = rows.filter(row => row[0] === producto);
-        
-        let siguienteLote = 1;
-        if (productoRows.length > 0) {
-            // Get all lot numbers for this product
-            const lotes = productoRows.map(row => parseInt(row[2] || 0));
-            siguienteLote = Math.max(...lotes, 0) + 1;
-        }
-
-        res.json({ success: true, siguienteLote });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener el siguiente lote' 
-        });
-    }
-});
-
 app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
     try {
         const { fecha, nombre } = req.body;
@@ -1729,7 +1686,6 @@ app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.post('/finalizar-pedidos', requireAuth, async (req, res) => {
     try {
         const { pedidos } = req.body;
@@ -1739,16 +1695,38 @@ app.post('/finalizar-pedidos', requireAuth, async (req, res) => {
 
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Convert pedidos to the correct format for the Pedidos sheet
+        // Get current records to determine the next ID
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A2:A'
+        });
+
+        const existingIds = response.data.values || [];
+        let nextId = 1;
+
+        // Find the highest existing ID
+        if (existingIds.length > 0) {
+            const numericIds = existingIds
+                .map(row => {
+                    const match = (row[0] || '').match(/PAA-(\d+)/);
+                    return match ? parseInt(match[1]) : 0;
+                })
+                .filter(id => !isNaN(id));
+
+            nextId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+        }
+
+        // Create all values array with sequential IDs
         const values = pedidos.map(pedido => [
+            `PAA-${nextId++}`,  // Use nextId and then increment
             pedido.fecha,
             pedido.nombre,
             pedido.cantidad,
             pedido.observaciones || '',
             '', // Empty column E
             '', // Empty column F
-            '', // Empty column G
-            'Pendiente' // Estado in column H
+            '',// Estado in column H
+            'Pendiente' // Estado in column J
         ]);
 
         // Append to existing Pedidos sheet
@@ -1772,7 +1750,6 @@ app.post('/finalizar-pedidos', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
     try {
         const { fecha, nombre } = req.body;
@@ -1873,7 +1850,36 @@ app.get('/obtener-tareas-proceso', requireAuth, async (req, res) => {
         });
     }
 });
+app.get('/obtener-siguiente-lote/:producto', requireAuth, async (req, res) => {
+    try {
+        const { producto } = req.params;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get current lots from Almacen Bruto
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen Bruto!A:C'
+        });
 
+        const rows = response.data.values || [];
+        const productoRows = rows.filter(row => row[0] === producto);
+        
+        let siguienteLote = 1;
+        if (productoRows.length > 0) {
+            // Get all lot numbers for this product
+            const lotes = productoRows.map(row => parseInt(row[2] || 0));
+            siguienteLote = Math.max(...lotes, 0) + 1;
+        }
+
+        res.json({ success: true, siguienteLote });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener el siguiente lote' 
+        });
+    }
+});
 app.post('/actualizar-estado-tarea', requireAuth, async (req, res) => {
     try {
         const { tareaId, estado, tiempoTranscurrido } = req.body;
@@ -2659,23 +2665,23 @@ app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:H'
+            range: 'Pedidos!A:L'
         });
 
         const rows = response.data.values || [];
         const pedidos = rows
             .slice(1) // Skip headers
-            .filter(row => row[7] === estado)
+            .filter(row => row[8] === estado)
             .map(row => ({
-                fecha: row[0],
-                nombre: row[1],
-                cantidad: row[2],
-                observaciones: row[3] || '',
-                cantidadRecibida: row[4] || '',
-                proveedor: row[5] || '',
-                precio: row[6] || ''
+                id:row[0],
+                fecha: row[1],
+                nombre: row[2],
+                cantidad: row[3],
+                observaciones: row[4] || '',
+                cantidadRecibida: row[5] || '',
+                proveedor: row[6] || '',
+                precio: row[7] || ''
             }));
-
         res.json({ success: true, pedidos });
     } catch (error) {
         console.error('Error:', error);
@@ -2688,19 +2694,18 @@ app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
 
 app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
     try {
-        const { fecha, producto } = req.body;
+        const { id} = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
         // Get all records from Pedidos sheet
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:I'  // Cambiado a la hoja de Pedidos
+            range: 'Pedidos!A:L'  // Cambiado a la hoja de Pedidos
         });
 
         const rows = response.data.values || [];
         const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[1] === producto
+            row[0] === id
         );
 
         if (rowIndex === -1) {
@@ -2752,20 +2757,19 @@ app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
 
 app.post('/entregar-pedido', requireAuth, async (req, res) => {
     try {
-        const { fecha, producto, cantidad, proveedor, precio, observaciones } = req.body;
+        const { id, cantidad, proveedor, precio, observaciones } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Obtener datos actuales
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:K'  // Extendemos el rango hasta K para incluir la unidad
+            range: 'Pedidos!A:L'  // Extendemos el rango hasta K para incluir la unidad
         });
 
         const rows = response.data.values || [];
         const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[1] === producto && 
-            row[7] === 'Pendiente'
+            row[0] === id && 
+            row[8] === 'Pendiente'
         );
 
         if (rowIndex === -1) {
@@ -2775,7 +2779,7 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
         // Actualizar el pedido con cantidad y unidad separadas
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Pedidos!E${rowIndex + 1}:K${rowIndex + 1}`,
+            range: `Pedidos!F${rowIndex + 1}:M${rowIndex + 1}`,
             valueInputOption: 'RAW',
             resource: {
                 values: [[
@@ -2785,7 +2789,8 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
                     'Recibido',        // H - Estado
                     '',                // I - Observaciones
                     observaciones,     // J - Cantidad en unidades
-                    req.body.unidad    // K - Unidad (Bls. o Cja.)
+                    req.body.unidad,    // K - Unidad (Bls. o Cja.)
+                    `${observaciones} ${req.body.unidad}` // L - Observaciones completas
                 ]]
             }
         });
@@ -3039,7 +3044,6 @@ app.get('/obtener-detalle-producto-prima/:nombre', requireAuth, async (req, res)
 
 
 /* ==================== API DE HOME ==================== */
-// Agregar esta nueva ruta con las demás rutas API
 app.get('/obtener-estadisticas-usuario', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });

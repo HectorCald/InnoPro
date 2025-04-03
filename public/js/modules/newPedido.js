@@ -50,7 +50,6 @@ export async function togglePedidosRecibidos() {
             mostrarCarga();
             const response = await fetch('/obtener-pedidos-recibidos');
             const data = await response.json();
-
             if (data.success && data.pedidos.length > 0) {
                 listaRecibidos.innerHTML = `
                     <h2 class="section-title">Pedidos recibidos</h2>
@@ -66,7 +65,7 @@ export async function togglePedidosRecibidos() {
                     ${data.pedidos.map(pedido => `
                         <div class="pedido-archivado-card">
                             <div class="pedido-archivado-header">
-                                <span class="pedido-nombre">${pedido.nombre}</span>
+                                <span class="pedido-nombre">${pedido.nombre}(${pedido.id})</span>
                                 <span class="pedido-fecha"><i class="fas fa-calendar"></i> ${pedido.fecha}</span>
                             </div>
                             <div class="pedido-detalles">
@@ -79,23 +78,17 @@ export async function togglePedidosRecibidos() {
                                     <i class="fas fa-truck"></i>
                                     Proveedor: ${pedido.proveedor}
                                 </span>` : ''}
-                                ${pedido.precio ? `
-                                <span class="pedido-precio">
-                                    <i class="fas fa-tag"></i>
-                                    Precio: ${pedido.precio}
-                                </span>` : ''}
-                                ${pedido.observaciones ? `
                                 <span class="pedido-obs">
-                                    <i class="fas fa-comment"></i>
-                                    ${pedido.obsCompras} 
-                                </span>` : ''}
+                                    <i class="fas fa-clipboard-check"></i>
+                                    ${pedido.obsCompras} ${pedido.medida} 
+                                </span>
                             </div>
                             <div class="anuncio-botones">
-                                <button class="enviar anuncio-btn green" onclick="window.mostrarFormularioIngreso('${pedido.nombre}', 'Pedidos')">
+                                <button class="enviar anuncio-btn green" onclick="window.mostrarFormularioIngreso('${pedido.id}','${pedido.nombre}', 'Pedidos')">
                                     <i class="fas fa-check"></i>
                                     Ingresar
                                 </button>
-                                <button class="cancelar anuncio-btn red" onclick="window.mostrarFormularioRechazo('${pedido.nombre}', 'Pedidos')">
+                                <button class="cancelar anuncio-btn red" onclick="window.mostrarFormularioRechazo('${pedido.id}','${pedido.nombre}', 'Pedidos')">
                                     <i class="fas fa-times"></i>
                                     Rechazar
                                 </button>
@@ -229,11 +222,11 @@ export async function togglePedidosArchivados() {
     }
 }
 
-export async function mostrarFormularioIngreso(producto, hoja) {
+export async function mostrarFormularioIngreso(id,producto, hoja) {
     try {
         mostrarCarga();
         const response = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
-        const response2 = await fetch(`/obtener-pedidos-recibidos/${encodeURIComponent(producto)}`);
+        const response2 = await fetch(`/obtener-pedidos-recibidos/${encodeURIComponent(id)}`);
         const data = await response.json();
         const data2 = await response2.json();
         const siguienteLote = data.success ? data.siguienteLote : '?';
@@ -258,11 +251,11 @@ export async function mostrarFormularioIngreso(producto, hoja) {
 
             // Add the functions to window object
             window.procesarIngresoNormal = (producto, hoja) => {
-                mostrarFormularioIngresoNormal(producto, hoja, pedidoInfo, siguienteLote);
+                mostrarFormularioIngresoNormal(id, producto, hoja, pedidoInfo, siguienteLote);
             };
 
             window.procesarIngresoMultiple = (producto, hoja) => {
-                mostrarIngresoMultiple(producto, hoja, pedidoInfo, siguienteLote);
+                mostrarIngresoMultiple(id, producto, hoja, pedidoInfo, siguienteLote);
             };
 
             window.inicializarPedidos = inicializarPedidos;
@@ -284,7 +277,7 @@ export async function mostrarFormularioIngreso(producto, hoja) {
     }
 }
 
-function mostrarFormularioIngresoNormal(producto, hoja, pedidoInfo, siguienteLote) {
+function mostrarFormularioIngresoNormal(id, producto, hoja, pedidoInfo, siguienteLote) {
     const anuncio = document.querySelector('.anuncio');
     anuncio.style.display = 'flex';
     anuncio.innerHTML = `
@@ -302,14 +295,14 @@ function mostrarFormularioIngresoNormal(producto, hoja, pedidoInfo, siguienteLot
             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn gray" onclick="document.querySelector('.anuncio').style.display='none'">Cancelar</button>
-                <button class="anuncio-btn green" onclick="procesarIngreso('${producto}', '${hoja}')">Ingresar</button>
+                <button class="anuncio-btn green" onclick="procesarIngreso('${id}','${producto}', '${hoja}')">Ingresar</button>
             </div>
         </div>
     `;
 }
 
 
-export async function mostrarIngresoMultiple(producto, hoja, pedidoInfo, siguienteLote) {
+export async function mostrarIngresoMultiple(id, producto, hoja, pedidoInfo, siguienteLote) {
     const anuncio = document.querySelector('.anuncio');
     anuncio.style.display = 'flex';
     anuncio.innerHTML = `
@@ -327,54 +320,63 @@ export async function mostrarIngresoMultiple(producto, hoja, pedidoInfo, siguien
             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn gray" onclick="document.querySelector('.anuncio').style.display='none'">Cancelar</button>
-                <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${producto}', '${hoja}')">Ingresar</button>
+                <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${id}','${producto}', '${hoja}')">Ingresar</button>
             </div>
         </div>
     `;
 
-    window.procesarIngresoMultiple = async (producto, hoja) => {
-        try {
-            mostrarCarga();
-            console.log('Iniciando ingreso múltiple para:', producto);
-            await procesarIngreso(producto, hoja, true);
+    window.procesarIngresoMultiple = async (id, producto, hoja) => {
+    try {
+        mostrarCarga();
+        console.log('Iniciando ingreso múltiple para:', id);
+        await procesarIngreso(id, producto, hoja, true);
 
-            // Actualizar obsCompras
-            console.log('Actualizando cantidad restante para:', producto);
-            const response = await fetch(`/actualizar-pedido-recibido/${encodeURIComponent(producto)}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-            console.log('Respuesta del servidor:', data);
-
-            if (data.success) {
-                if (data.nuevaCantidad > 0) {
-                    console.log('Quedan ingresos pendientes:', data.nuevaCantidad);
-                    // Mostrar siguiente formulario de ingreso
-                    const responseNext = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
-                    const dataNext = await responseNext.json();
-                    const siguienteLote = dataNext.success ? dataNext.siguienteLote : '?';
-                    
-                    await mostrarIngresoMultiple(producto, hoja, { ...pedidoInfo, obsCompras: data.nuevaCantidad }, siguienteLote);
-                } else {
-                    console.log('Todos los ingresos completados');
-                    mostrarNotificacion('Todos los ingresos completados', 'success');
-                    document.querySelector('.anuncio').style.display = 'none';
-                }
+        // Actualizar obsCompras
+        console.log('Actualizando cantidad restante para:', producto);
+        const response = await fetch(`/actualizar-pedido-recibido/${encodeURIComponent(id)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             }
-        } catch (error) {
-            console.error('Error en procesarIngresoMultiple:', error);
-            mostrarNotificacion('Error al procesar el ingreso múltiple', 'error');
-        } finally {
-            ocultarCarga();
+        });
+
+        const data = await response.json();
+        console.log('Respuesta del servidor:', data);
+
+        // Hide the product card
+        const cards = document.querySelectorAll('.pedido-archivado-card');
+        cards.forEach(card => {
+            const nombreElement = card.querySelector('.pedido-nombre');
+            if (nombreElement && nombreElement.textContent.includes(producto)) {
+                card.style.display = 'none';
+            }
+        });
+
+        if (data.success) {
+            if (data.nuevaCantidad > 0) {
+                console.log('Quedan ingresos pendientes:', data.nuevaCantidad);
+                // Mostrar siguiente formulario de ingreso
+                const responseNext = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
+                const dataNext = await responseNext.json();
+                const siguienteLote = dataNext.success ? dataNext.siguienteLote : '?';
+                
+                await mostrarIngresoMultiple(id, producto, hoja, { ...pedidoInfo, obsCompras: data.nuevaCantidad }, siguienteLote);
+            } else {
+                console.log('Todos los ingresos completados');
+                mostrarNotificacion('Todos los ingresos completados', 'success');
+                document.querySelector('.anuncio').style.display = 'none';
+            }
         }
-    };
+    } catch (error) {
+        console.error('Error en procesarIngresoMultiple:', error);
+        mostrarNotificacion('Error al procesar el ingreso múltiple', 'error');
+    } finally {
+        ocultarCarga();
+    }
+};
 }
 
-export async function procesarIngreso(producto, hoja, esMultiple = false) {
+export async function procesarIngreso(id, producto, hoja, esMultiple = false) {
     try {
         mostrarCarga();
         const pesoInput = document.getElementById('peso-ingreso');
@@ -394,6 +396,7 @@ export async function procesarIngreso(producto, hoja, esMultiple = false) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ 
+                id,
                 producto, 
                 peso, 
                 hoja, 
@@ -425,7 +428,7 @@ export async function procesarIngreso(producto, hoja, esMultiple = false) {
         ocultarCarga();
     }
 }
-export function mostrarFormularioRechazo(producto, hoja) {
+export function mostrarFormularioRechazo(id, producto, hoja) {
     const anuncio = document.querySelector('.anuncio');
     anuncio.innerHTML = `
         <div class="anuncio-contenido">
@@ -436,14 +439,14 @@ export function mostrarFormularioRechazo(producto, hoja) {
                 <textarea id="razon-rechazo" placeholder="Razón del rechazo" required></textarea>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn gray" onclick="inicializarPedidos()">Cancelar</button>
-                <button class="anuncio-btn green" onclick="confirmarRechazo('${producto}', '${hoja}')">Confirmar</button>
+                <button class="anuncio-btn gray" onclick="document.querySelector('.anuncio').style.display='none'">Cancelar</button>
+                <button class="anuncio-btn green" onclick="confirmarRechazo('${id}','${producto}', '${hoja}')">Confirmar</button>
             </div>
         </div>
     `;
     anuncio.style.display = 'flex';
 }
-export async function confirmarRechazo(producto, hoja) {
+export async function confirmarRechazo(id, producto, hoja) {
     try {
         const razonTextarea = document.getElementById('razon-rechazo');
         const razon = razonTextarea.value.trim();
@@ -459,7 +462,7 @@ export async function confirmarRechazo(producto, hoja) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ producto, hoja, razon })
+            body: JSON.stringify({ id, producto, hoja, razon })
         });
 
         const data = await response.json();
@@ -503,7 +506,7 @@ export async function finalizarPedidos() {
                     `).join('')}
                 </div>
                 <div class="anuncio-botones">
-                    <button class="anuncio-btn gray" onclick="cerrarFormularioPedido()">Cancelar</button>
+                    <button class="anuncio-btn gray" onclick="document.querySelector('.anuncio').style.display='none'">Cancelar</button>
                     <button class="anuncio-btn green" onclick="confirmarFinalizacionPedidos()">Finalizar</button>
                 </div>
             </div>
@@ -848,10 +851,6 @@ export function eliminarPedido(nombre) {
     pedidosTemporales = pedidosTemporales.filter(p => p.nombre !== nombre);
     cargarPedidos();
     mostrarNotificacion('Pedido eliminado correctamente', 'success');
-}
-export function cerrarFormularioPedido() {
-    const anuncio = document.querySelector('.anuncio');
-    anuncio.style.display = 'none';
 }
 export function mostrarConfirmacionEliminar(fecha, nombre) {
     const anuncio = document.querySelector('.anuncio');

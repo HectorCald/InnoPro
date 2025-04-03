@@ -2,7 +2,7 @@ import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario, mostrar
 import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-import { confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso, togglePedidosArchivados, finalizarPedidos, confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar, mostrarIngresoMultiple } from './modules/newPedido.js';
+import { confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso, togglePedidosArchivados, finalizarPedidos, confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, eliminarPedido, mostrarConfirmacionEliminar, mostrarIngresoMultiple } from './modules/newPedido.js';
 import { mostrarProgramaAcopio, verProgramaciones, toggleProcesos, mostrarProcesos, finalizarProceso, inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea } from './modules/newTarea.js';
 import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
@@ -65,7 +65,6 @@ window.inicializarPedidos = inicializarPedidos;
 window.mostrarFormularioPedido = mostrarFormularioPedido;
 window.cargarPedidos = cargarPedidos;
 window.guardarPedido = guardarPedido;
-window.cerrarFormularioPedido = cerrarFormularioPedido;
 window.eliminarPedido = eliminarPedido;
 window.mostrarConfirmacionEliminar = mostrarConfirmacionEliminar;
 window.confirmarFinalizacionPedidos = confirmarFinalizacionPedidos;
