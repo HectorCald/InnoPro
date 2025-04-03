@@ -69,24 +69,10 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
         'Acopio': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
             { clase: 'opcion-btn', vista: 'newPedido-view', icono: 'fa-clipboard-list', texto: 'Pedido', onclick: 'onclick="inicializarPedidos()"' },
-            {
-                clase: 'opcion-btn submenu-trigger',
-                icono: 'fa-clipboard-list',
-                texto: 'Registros',
-                submenu: [
-                    { clase: 'opcion-btn submenu-item', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros Ac.', onclick: 'onclick="cargarRegistrosAcopio()"' },
-                    { clase: 'opcion-btn submenu-item', vista: 'newTarea-view', icono: 'fa-tasks', texto: 'Tareas', onclick: 'onclick="inicializarTareas()"' }
-                ]
-            },
-            {
-                clase: 'opcion-btn submenu-trigger',
-                icono: 'fa-warehouse',
-                texto: 'Almacenes',
-                submenu: [
-                    { clase: 'opcion-btn submenu-item', vista: 'almAcopio-view', icono: 'fa-warehouse', texto: 'Alm Bruto', onclick: 'onclick="inicializarAlmacen()"' },
-                    { clase: 'opcion-btn submenu-item', vista: 'almPrima-view', icono: 'fa-warehouse', texto: 'Alm Prima', onclick: 'onclick="inicializarAlmacenPrima()"' }
-                ]
-            }
+            { clase: 'opcion-btn', vista: 'newTarea-view', icono: 'fa-tasks', texto: 'Tareas', onclick: 'onclick="inicializarTareas()"' },
+            { clase: 'opcion-btn', vista: 'almAcopio-view', icono: 'fa-warehouse', texto: 'Alm Bruto', onclick: 'onclick="inicializarAlmacen()"' },
+            { clase: 'opcion-btn', vista: 'almPrima-view', icono: 'fa-warehouse', texto: 'Alm Prima', onclick: 'onclick="inicializarAlmacenPrima()"' },
+            { clase: 'opcion-btn', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAcopio()"' }
         ],
         'Almacen': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
