@@ -98,15 +98,14 @@ function crearPedidoCard(pedido, isAdmin) {
             <div class="registro-estado estado-${estadoClass}">${estado}</div>
         </div>
         <div class="registro-detalles">
-            <p><span>Cantidad:</span> ${pedido[3] || '-'}</p>
+            <p><span>Cantidad Pedida:</span> ${pedido[3] || '-'}</p>
+            <p><span>Cantidad Entregado:</span> ${pedido[12] || '-'}</p>
             <p><span>Observaciones:</span> ${pedido[4] || '-'}</p>
-            ${isAdmin ? `<p><span>Cantidad Entregada:</span> ${pedido[5] || '-'}</p>` : ''}
+            ${isAdmin ? `<p><span>Cantidad comprada:</span> ${pedido[5] || '-'} Kg.</p>` : ''}
             <p><span>Proveedor:</span> ${pedido[6] || '-'}</p>
             ${isAdmin ? `<p><span>Costo:</span> ${pedido[7] || '-'}</p>` : ''}
             <p><span>Detalles:</span> ${pedido[9] || '-'}</p>
-            <p><span>Cantidad Compras:</span> ${pedido[10] || '-'}</p>
-            <p><span>Medida:</span> ${pedido[11] || '-'}</p>
-            <p><span>Entregado:</span> ${pedido[12] || '-'}</p>
+            <p><span>Sin ingresar:</span> ${pedido[10]} ${pedido[11] || '-'}</p>
             ${botonesAdmin}
         </div>
     `;

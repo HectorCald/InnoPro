@@ -62,6 +62,7 @@ async function cargarPedidos() {
     }
 }
 function mostrarPedidos(pedidos, tipo) {
+    mostrarCarga();
     const container = document.querySelector(`.pedidos-list.${tipo}`);
 
     if (!pedidos.length) {
@@ -100,6 +101,7 @@ function mostrarPedidos(pedidos, tipo) {
     container.querySelectorAll('.btn-entregar').forEach(btn => {
         btn.addEventListener('click', () => entregarPedido(btn));
     });
+    ocultarCarga();
 }
 export async function eliminarPedido(button) {
     try {
