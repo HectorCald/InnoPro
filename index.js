@@ -153,7 +153,7 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
 });
 
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    res.render('dashboard_db');
+    res.render('mantenimiento');
 });
 app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
@@ -2046,7 +2046,7 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
         const { tareaId, tiempoCronometro } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Get current task data
+        // Obtener información de la tarea
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Tareas!A2:H'
@@ -2062,10 +2062,19 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
         const tarea = rows[rowIndex];
         const procesos = tarea[7] ? JSON.parse(tarea[7]) : [];
         const pesoInicial = parseFloat(tarea[6] || 0);
-        const ultimoProceso = procesos[procesos.length - 1];
-        const pesoFinal = ultimoProceso ? parseFloat(ultimoProceso.peso || 0) : 0;
+        let pesoFinal;
 
-        // Get next lot number for Almacen Prima
+        // Determinar peso final basado en si hay procesos o no
+        if (procesos.length === 0) {
+            // Si no hay procesos, usar el peso inicial como peso final
+            pesoFinal = pesoInicial;
+        } else {
+            // Si hay procesos, usar el peso del último proceso
+            const ultimoProceso = procesos[procesos.length - 1];
+            pesoFinal = parseFloat(ultimoProceso.peso || 0);
+        }
+
+        // Obtener siguiente número de lote para Almacen Prima
         const almacenPrimaResponse = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Almacen Prima!A:C'
@@ -2074,25 +2083,29 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
         const almacenPrimaRows = almacenPrimaResponse.data.values || [];
         const productoRows = almacenPrimaRows.filter(row => row[0] === tareaId);
         
-        // Calculate next lot number
+        // Calcular siguiente número de lote
         let siguienteLote = 1;
         if (productoRows.length > 0) {
             const lotes = productoRows.map(row => parseInt(row[2] || 0));
             siguienteLote = Math.max(...lotes, 0) + 1;
         }
 
-        // Add new entry to Almacen Prima with new lot number
+        // Registrar en Almacen Prima
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Almacen Prima!A:C',
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
             resource: {
-                values: [[tareaId, pesoFinal, siguienteLote]]
+                values: [[
+                    tareaId,
+                    pesoFinal.toFixed(2),
+                    siguienteLote
+                ]]
             }
         });
 
-        // Registrar el movimiento en Movimientos alm-prima
+        // Registrar movimiento en Movimientos alm-prima
         const fechaActual = new Date().toLocaleDateString('es-ES', {
             day: '2-digit',
             month: '2-digit',
@@ -2108,14 +2121,14 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
                 values: [[
                     fechaActual,
                     tareaId,
-                    pesoFinal,
+                    pesoFinal.toFixed(2),
                     'Ingreso',
                     siguienteLote
                 ]]
             }
         });
 
-        // Add to Historial_tareas
+        // Registrar en Historial_tareas
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Historial_tareas!A2',
@@ -2123,20 +2136,20 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
             insertDataOption: 'INSERT_ROWS',
             resource: {
                 values: [[
-                    tarea[0],
-                    tarea[1],
-                    tarea[2],
-                    new Date().toISOString(),
+                    tarea[0], // nombre
+                    tarea[1], // descripción
+                    tarea[2], // fecha inicio
+                    new Date().toISOString(), // fecha fin
                     tiempoCronometro,
-                    pesoInicial,
-                    pesoFinal,
-                    pesoInicial - pesoFinal,
-                    tarea[7]
+                    pesoInicial.toFixed(2), // peso inicial
+                    pesoFinal.toFixed(2), // peso final
+                    (pesoInicial - pesoFinal).toFixed(2), // merma
+                    tarea[7] // procesos
                 ]]
             }
         });
 
-        // Delete task from Tareas sheet
+        // Eliminar tarea de la hoja Tareas
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
@@ -2168,8 +2181,8 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
         res.json({
             success: true,
             message: 'Tarea finalizada correctamente',
-            pesoRestante: pesoInicial - pesoFinal,
-            pesoProcesado: pesoFinal,
+            pesoRestante: (pesoInicial - pesoFinal).toFixed(2),
+            pesoProcesado: pesoFinal.toFixed(2),
             loteAlmacenPrima: siguienteLote
         });
     } catch (error) {
@@ -2204,17 +2217,20 @@ app.get('/obtener-lotes/:producto', requireAuth, async (req, res) => {
         
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Bruto!A:C'  // Adjust range according to your sheet
+            range: 'Almacen Bruto!A:C'
         });
 
         const rows = response.data.values || [];
         const lotes = rows
             .filter(row => row[0]?.toLowerCase() === producto.toLowerCase())
             .map(row => ({
-                lote: row[2],
-                peso: parseFloat(row[1]) || 0
+                lote: row[2] || '',
+                peso: row[1] ? row[1].toString().replace('.', ',') : '0'
             }))
-            .filter(lote => lote.peso > 0);
+            .filter(lote => {
+                const pesoNumerico = parseFloat(lote.peso.replace(',', '.'));
+                return !isNaN(pesoNumerico) && pesoNumerico > 0;
+            });
 
         res.json({ success: true, lotes });
     } catch (error) {
@@ -2228,70 +2244,118 @@ app.get('/obtener-lotes/:producto', requireAuth, async (req, res) => {
 
 app.post('/crear-tarea', requireAuth, async (req, res) => {
     try {
-        const { nombre, peso, descripcion, fechaInicio, estado, lote } = req.body;
+        const { nombre, peso, descripcion, fechaInicio, estado, lotes } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Primero, actualizar Almacen Bruto
+        // Validar array de lotes
+        if (!Array.isArray(lotes) || lotes.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'No se proporcionaron lotes válidos'
+            });
+        }
+
         const almacenResponse = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Almacen Bruto!A:C'
         });
 
         const rows = almacenResponse.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0]?.toLowerCase() === nombre.toLowerCase() && 
-            row[2] === lote
-        );
+        let pesoTotalDisponible = 0;
+        const lotesInfo = [];
 
-        if (rowIndex === -1) {
-            return res.status(400).json({
-                success: false,
-                error: 'Producto y lote no encontrados'
-            });
-        }
+        // Recolectar información de los lotes
+        for (const loteId of lotes) {
+            const rowIndex = rows.findIndex(row => 
+                row[0]?.toLowerCase() === nombre.toLowerCase() && 
+                row[2] === loteId
+            );
 
-        const pesoActual = parseFloat(rows[rowIndex][1]) || 0;
-        if (pesoActual < peso) {
-            return res.status(400).json({
-                success: false,
-                error: 'No hay suficiente peso disponible'
-            });
-        }
-
-        // Actualizar peso en Almacen Bruto
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Almacen Bruto!B${rowIndex + 1}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[pesoActual - peso]]
+            if (rowIndex === -1) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Lote ${loteId} no encontrado para el producto ${nombre}`
+                });
             }
-        });
 
-        // Registrar el movimiento en Movimientos alm-bruto
+            const pesoLote = Number(parseFloat(rows[rowIndex][1].toString().replace(',', '.')).toFixed(2));
+            pesoTotalDisponible += pesoLote;
+            lotesInfo.push({ 
+                rowIndex, 
+                pesoLote,
+                loteId: rows[rowIndex][2]
+            });
+        }
+
+        // Ordenar lotes de menor a mayor peso
+        lotesInfo.sort((a, b) => a.pesoLote - b.pesoLote);
+
+        const pesoRequerido = Number(parseFloat(peso.toString().replace(',', '.')).toFixed(2));
+
+        console.log('Peso total disponible:', pesoTotalDisponible);
+        console.log('Peso requerido:', pesoRequerido);
+
+        if (pesoTotalDisponible < pesoRequerido) {
+            return res.status(400).json({
+                success: false,
+                error: `No hay suficiente peso disponible. Disponible total: ${pesoTotalDisponible}kg`
+            });
+        }
+
+        // Distribuir el peso comenzando por los lotes más pequeños
+        let pesoRestante = pesoRequerido;
         const fechaActual = new Date().toLocaleDateString('es-ES', {
             day: '2-digit',
             month: '2-digit',
             year: '2-digit'
         });
 
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Movimientos alm-bruto!A:E',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[
-                    fechaActual,
-                    nombre,
-                    peso,
-                    'Salida',
-                    lote
-                ]]
-            }
-        });
+        // Procesar cada lote
+        for (let i = 0; i < lotesInfo.length && pesoRestante > 0; i++) {
+            const loteInfo = lotesInfo[i];
+            let pesoARestar;
 
-        // Crear la tarea con procesos vacíos inicialmente
+            if (i === lotesInfo.length - 1) {
+                // Para el último lote (el más grande), solo tomar lo que falta
+                pesoARestar = Number(pesoRestante.toFixed(2));
+            } else {
+                // Para los demás lotes, tomar todo si es necesario
+                pesoARestar = Math.min(loteInfo.pesoLote, pesoRestante);
+            }
+
+            const nuevoPeso = (loteInfo.pesoLote - pesoARestar).toFixed(2);
+
+            // Actualizar peso en Almacen Bruto
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: `Almacen Bruto!B${loteInfo.rowIndex + 1}`,
+                valueInputOption: 'RAW',
+                resource: {
+                    values: [[nuevoPeso]]
+                }
+            });
+
+            // Registrar movimiento para cada lote
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: 'Movimientos alm-bruto!A:E',
+                valueInputOption: 'RAW',
+                insertDataOption: 'INSERT_ROWS',
+                resource: {
+                    values: [[
+                        fechaActual,
+                        nombre,
+                        pesoARestar.toFixed(2),
+                        'Salida',
+                        loteInfo.loteId
+                    ]]
+                }
+            });
+
+            pesoRestante = Number((pesoRestante - pesoARestar).toFixed(2));
+        }
+
+        // Crear la tarea
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Tareas!A:H',
@@ -2305,7 +2369,7 @@ app.post('/crear-tarea', requireAuth, async (req, res) => {
                     'En proceso',
                     req.user.nombre,
                     Date.now().toString(),
-                    peso,
+                    Number(pesoRequerido).toFixed(2),
                     '[]' // Array de procesos vacío
                 ]]
             }

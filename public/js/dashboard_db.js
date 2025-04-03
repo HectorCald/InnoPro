@@ -3,7 +3,7 @@ import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRe
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
 import { confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso, togglePedidosArchivados, finalizarPedidos, confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, cerrarFormularioPedido, eliminarPedido, mostrarConfirmacionEliminar, mostrarIngresoMultiple } from './modules/newPedido.js';
-import { mostrarProgramaAcopio, verProgramaciones, mostrarHistorialTareas, toggleProcesos, mostrarProcesos, finalizarProceso, inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea } from './modules/newTarea.js';
+import { mostrarProgramaAcopio, verProgramaciones, toggleProcesos, mostrarProcesos, finalizarProceso, inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea } from './modules/newTarea.js';
 import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
 import { inicializarAlmacenPrima } from './modules/almPrima.js';
@@ -87,7 +87,6 @@ window.finalizarTarea = finalizarTarea;
 window.finalizarProceso = finalizarProceso;
 window.mostrarProcesos = mostrarProcesos;
 window.toggleProcesos = toggleProcesos;
-window.mostrarHistorialTareas = mostrarHistorialTareas;
 
 // Funciones de gestión de almacén
 window.inicializarAlmacen = inicializarAlmacen;

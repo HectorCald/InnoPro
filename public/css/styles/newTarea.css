@@ -364,3 +364,84 @@
         color: white;
     }
 }
+
+
+.lote-item.selected {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+.lote-numero {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.lote-tag button:hover {
+    color: #dc3545;
+}
+
+.seleccionar-lotes {
+    width: 100%;
+    height: auto;
+    margin: 10px 0;
+}
+.lotes-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    height: auto;
+    padding: 10px;
+}
+
+.lote-item {
+    background: #3f3f3f;
+    border: 1px solid #dee2e6;
+    border-radius: 15px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    width: 100%;
+}
+.lote-item.selected {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+.lote-numero {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.lotes-seleccionados {
+    margin: 5px;
+    padding: 10px;
+    background: #383838;
+}
+
+.lotes-seleccionados h3 {
+    margin-bottom: 10px;
+    color: #707070;
+}
+
+.lote-seleccionado {
+    background: #3e3e3e;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.peso-total {
+    font-weight: bold;
+    color: var(--primary-text);
+    margin-top: 10px;
+}
+
+.no-lotes {
+    color: #6c757d;
+    text-align: center;
+    padding: 10px;
+}
