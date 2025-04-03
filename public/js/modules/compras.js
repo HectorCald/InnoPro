@@ -38,11 +38,11 @@ export function inicializarCompras() {
 async function cargarPedidos() {
     try {
         mostrarCarga();
-        
+
         // Cargar pedidos pendientes
         const resPendientes = await fetch('/obtener-pedidos-estado/Pendiente');
         const dataPendientes = await resPendientes.json();
-        
+
         // Cargar pedidos rechazados
         const resRechazados = await fetch('/obtener-pedidos-estado/Rechazado');
         const dataRechazados = await resRechazados.json();
@@ -63,7 +63,7 @@ async function cargarPedidos() {
 }
 function mostrarPedidos(pedidos, tipo) {
     const container = document.querySelector(`.pedidos-list.${tipo}`);
-    
+
     if (!pedidos.length) {
         container.innerHTML = `<p class="no-pedidos">No hay pedidos ${tipo}</p>`;
         return;
@@ -109,7 +109,7 @@ export async function eliminarPedido(button) {
 
         const anuncio = document.querySelector('.anuncio');
         const anuncioContenido = document.querySelector('.anuncio-contenido');
-        
+
         anuncioContenido.innerHTML = `
             <h2><i class="fas fa-trash"></i> Eliminar Pedido</h2>
             <p>¿Está seguro que desea eliminar el siguiente pedido?</p>
@@ -126,7 +126,7 @@ export async function eliminarPedido(button) {
                 </button>
             </div>
         `;
-        
+
         anuncio.style.display = 'flex';
 
         const confirmed = await new Promise(resolve => {
@@ -178,7 +178,7 @@ export async function entregarPedido(button) {
 
         const anuncio = document.querySelector('.anuncio');
         const anuncioContenido = document.querySelector('.anuncio-contenido');
-        
+
         anuncioContenido.innerHTML = `
             <h2><i class="fas fa-check-circle"></i>Entregar Pedido</h2>
             <p>Entrega de: ${nombre} (${id})</p>
@@ -206,13 +206,31 @@ export async function entregarPedido(button) {
                     </div>
                 </div>
             </div>
+            <div class="campo-form">
+                <div class="anuncio-botones" style="margin-top: 10px;">
+                        <button class="filter-btn active anuncio-btn" data-status="llego">
+                            Llegó
+                        </button>
+                        <button class="filter-btn anuncio-btn" data-status="no-llego">
+                            No Llegó
+                        </button>
+                    </div>
+            </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn green confirmar">Confirmar</button>
                 <button class="anuncio-btn gray cancelar">Cancelar</button>
             </div>
         `;
-        
+
         anuncio.style.display = 'flex';
+
+        const filterButtons = anuncioContenido.querySelectorAll('.anuncio-btn');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            });
+        });
 
         const confirmed = await new Promise(resolve => {
             const btnConfirmar = anuncioContenido.querySelector('.confirmar');
@@ -221,12 +239,14 @@ export async function entregarPedido(button) {
             const handleConfirm = () => {
                 const cantidad = document.getElementById('observaciones').value;
                 const unidad = document.getElementById('unidad').value;
+                const estadoSeleccionado = anuncioContenido.querySelector('.filter-btn.active').dataset.status;
                 const formData = {
                     cantidad: document.getElementById('cantidad').value,
                     proveedor: document.getElementById('proveedor').value,
                     precio: document.getElementById('precio').value,
-                    observaciones: cantidad, // Solo la cantidad
-                    unidad: unidad         // Unidad separada
+                    observaciones: cantidad,
+                    unidad: unidad,
+                    estado: estadoSeleccionado  // Adding the selected state
                 };
                 handleClick(formData);
             };
@@ -262,7 +282,8 @@ export async function entregarPedido(button) {
                 proveedor: confirmed.proveedor,
                 precio: confirmed.precio,
                 observaciones: confirmed.observaciones,
-                unidad: confirmed.unidad
+                unidad: confirmed.unidad,
+                estado: confirmed.estado  // Including the state in the request
             })
         });
 
@@ -295,28 +316,28 @@ export async function entregarPedido(button) {
 }
 function actualizarResumenEntregas(producto, observaciones) {
     const resumenDiv = document.querySelector('.resumen-mensaje');
-    const productosEntregados = resumenDiv.getAttribute('data-entregas') ? 
+    const productosEntregados = resumenDiv.getAttribute('data-entregas') ?
         JSON.parse(resumenDiv.getAttribute('data-entregas')) : [];
-    
+
     productosEntregados.push({ producto, observaciones });
     resumenDiv.setAttribute('data-entregas', JSON.stringify(productosEntregados));
-    
+
     const mensaje = generarMensajeResumen(productosEntregados);
     resumenDiv.innerHTML = mensaje;
 }
 function generarMensajeResumen(productos) {
     if (!productos.length) return '';
-    
+
     const listaProductos = productos
         .map(p => `• ${p.producto}${p.observaciones ? `: (${p.observaciones})` : ''}`)
         .join('\n');
 
     return `SE TRAJO MATERIA PRIMA\n\nEntregado:\n${listaProductos}\n\nLos productos ya se encuentran como entregado en la aplicación de Damabrava.`;
 }
-window.copiarResumen = function() {
+window.copiarResumen = function () {
     const resumenDiv = document.querySelector('.resumen-mensaje');
     const texto = resumenDiv.textContent;
-    
+
     if (!texto.trim()) {
         mostrarNotificacion('No hay entregas para copiar', 'error');
         return;

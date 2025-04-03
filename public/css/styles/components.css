@@ -67,36 +67,38 @@
     gap: 10px;
     justify-content: center;
     margin-top: 10px;
+    width: 100%;
 }
 
 .anuncio-btn {
     border-radius: 15px;
-    border: none;
+    border: 1px solid gray;
     cursor: pointer;
     font-weight: 500;
     transition: all 0.3s ease;
     width: 100%;
     padding: 15px;
     margin-bottom: 5px;
+    background: none;
+    color: white;
 }
 
 .anuncio-btn.red {
     background: #dc3545;
-    color: white;
 }
 
 .anuncio-btn.gray {
     background: #6c757d;
-    color: white;
 }
 
 .anuncio-btn.green {
     background: #4CAF50;
-    color: white;
 }
 .anuncio-btn.blue {
     background: #0086e7;
-    color: white;
+}
+.anuncio-btn.active{
+    background: #2196F3;
 }
 
 .anuncio-btn:hover {
