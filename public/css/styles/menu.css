@@ -96,11 +96,6 @@
         padding: 10px;
     }
 
-    .opcion-btn:hover {
-        background: #a6a6a6;
-        color: white;
-    }
-
     .opcion-btn i {
         font-size: 18px;
     }
