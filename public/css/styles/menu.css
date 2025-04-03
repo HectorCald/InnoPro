@@ -79,7 +79,7 @@
     }
 
     .opcion-btn {
-        width: 150px;
+        width: 180px;
         height: 45px;
         border-radius: 12px;
         background: var(--primary-color);
@@ -93,11 +93,11 @@
         border: none;
         gap: 10px;
         z-index: 999999;
+        padding: 10px;
     }
 
     .opcion-btn:hover {
         background: #a6a6a6;
-        transform: translateX(-5px);
         color: white;
     }
 
@@ -106,12 +106,12 @@
     }
 
     .opcion-btn.active {
-        background: gray;
-        transform: translateX(-5px);
+        background: var(--second-button) !important;
+        transform: translateX(0px);
         color: white;
     }
 
-    .overlay{
+    .overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -183,9 +183,68 @@
         .opcion-btn i {
             font-size: 18px;
         }
+        .opcion-btn.active {
+            background: var(--second-button) !important;
+            transform: translateX(10px);
+            color: white;
+        }
     }
 
     .overlay {
         display: none;
+    }
+    
+
+}
+.submenu-container {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.submenu-arrow {
+    transition: transform 0.3s ease;
+    font-size: 12px !important;
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+    width: 100%;
+}
+
+.submenu {
+    height: auto;
+    max-height: 500px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    padding-right: 50px;
+    width: auto;
+    border: 1px siolid green;
+}
+
+.submenu.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0;
+}
+
+.submenu-item {
+    width: 100%;
+    opacity: 0.9;
+    margin-top: 5px;
+    background-color: gray !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 1023px) {
+    .submenu-container {
+        width: 180px;
+    }
+    
+    .submenu {
+        background: none;
+    }
+    
+    .submenu-item {
+        padding-left: 1em;
     }
 }

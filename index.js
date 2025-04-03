@@ -3677,36 +3677,187 @@ app.get('/descargar-pdf/:id', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al descargar el PDF' });
     }
 });
-app.get('/obtener-ultimo-comprobante', requireAuth, async (req, res) => {
+app.delete('/eliminar-registro-pedido', requireAuth, async (req, res) => {
     try {
+        const { id } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
+
+        // First, get the spreadsheet to find the correct sheet ID
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const pedidosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Pedidos'
+        );
+
+        if (!pedidosSheet) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Hoja de Pedidos no encontrada' 
+            });
+        }
+
+        // Get all records to find the row to delete
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!B2:B' // Columna de números de comprobante
+            range: 'Pedidos!A2:M'
         });
 
         const rows = response.data.values || [];
-        let ultimoNumero = 0;
+        const rowIndex = rows.findIndex(row => row[0] === id);
 
-        if (rows.length > 0) {
-            const numeros = rows.map(row => parseInt(row[0]) || 0);
-            ultimoNumero = Math.max(...numeros);
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Registro no encontrado' 
+            });
         }
 
-        res.json({ success: true, ultimoNumero });
+        // Delete the row using the correct sheet ID
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            requestBody: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: pedidosSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1, // +1 because we started from A2
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error al obtener último número de comprobante:', error);
+        console.error('Error al eliminar registro:', error);
         res.status(500).json({ 
             success: false, 
-            error: 'Error al obtener último número de comprobante' 
+            error: 'Error al eliminar el registro' 
         });
     }
 });
 
 
 /* ==================== RUTAS DE API REGISTROS ACOPIO -  ==================== */
+app.get('/obtener-registros-pedidos', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:M'  // Ajusta el rango según tus columnas
+        });
 
+        const rows = response.data.values || [];
+        const pedidos = rows.slice(1); // Omitir encabezados
 
+        res.json({ success: true, pedidos });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener los pedidos'
+        });
+    }
+});
+app.put('/actualizar-registro-pedido', requireAuth, async (req, res) => {
+    try {
+        const { id, datos } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get all records to find the row to update
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A2:M'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Registro no encontrado' });
+        }
+
+        // Update the record
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Pedidos!A${rowIndex + 2}:M${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[
+                    id,
+                    rows[rowIndex][1], // Keep original date
+                    datos.nombre,
+                    datos.cantidad,
+                    datos.observaciones,
+                    datos.cantidadEntregada,
+                    datos.proveedor,
+                    datos.costo,
+                    datos.estado,
+                    datos.detalles,
+                    datos.cantidadCompras,
+                    datos.medida,
+                    datos.entregado
+                ]]
+            }
+        });
+
+        res.json({ success: true, message: 'Registro actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar registro:', error);
+        res.status(500).json({ success: false, error: 'Error al actualizar registro' });
+    }
+});
+app.delete('/eliminar-registro-pedido', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get all records to find the row to delete
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A2:M'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Registro no encontrado' 
+            });
+        }
+
+        // Delete the row
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            requestBody: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: 0, // Assuming 'Pedidos' is the first sheet
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1, // +1 because we started from A2
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al eliminar registro:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el registro' 
+        });
+    }
+});
 
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */

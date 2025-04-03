@@ -353,7 +353,7 @@ export async function cargarRegistros() {
             container.innerHTML = `
                 <div class="filtros-header">
                     <h2 class="section-title">
-                        <i class="fas fa-check-double verificado-icon"></i> Registros
+                        <i class="fas fa-check-double verificado-icon"></i> Registros Producción
                     </h2>
                     <button class="btn-filtro">
                         <i class="fas fa-filter"></i> Filtros

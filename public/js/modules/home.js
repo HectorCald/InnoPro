@@ -52,7 +52,32 @@ async function obtenerHighlights() {
         const rol = rolData.rol;
 
         let registros;
-        if (rol === 'Almacen') {
+        if (rol === 'Acopio') {
+            // Para Acopio, obtener todos los pedidos
+            const response = await fetch('/obtener-registros-pedidos');
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            
+            registros = data.pedidos;
+            const pedidosPendientes = registros.filter(pedido => pedido[8] === 'Pendiente').length;
+            const pedidosRecibidos = registros.filter(pedido => pedido[8] === 'Recibido').length;
+            const pedidosEnProceso = registros.filter(pedido => pedido[8] === 'En proceso').length;
+
+            return [
+                { 
+                    valor: pedidosPendientes,
+                    etiqueta: 'Pedidos Pendientes'
+                },
+                { 
+                    valor: pedidosRecibidos,
+                    etiqueta: 'Pedidos Recibidos'
+                },
+                { 
+                    valor: pedidosEnProceso,
+                    etiqueta: 'Pedidos En Proceso'
+                }
+            ];
+        } else if (rol === 'Almacen') {
             // Para Almacen, obtener todos los registros
             const response = await fetch('/obtener-todos-registros');
             const data = await response.json();
@@ -66,6 +91,7 @@ async function obtenerHighlights() {
             registros = data.registros;
         }
 
+        // Para Almacen y otros roles mantener la lógica original
         const produccionesTotal = registros.length;
         const produccionesVerificadas = registros.filter(registro => registro[10]).length;
         const noVerificados = produccionesTotal - produccionesVerificadas;
@@ -287,10 +313,10 @@ async function obtenerAtajos() {
                 },
                 { 
                     clase: 'opcion-btn',
-                    vista: 'almAcopio-view',
-                    icono: 'fa-warehouse',
-                    texto: 'Alm Bruto',
-                    onclick: 'onclick="inicializarAlmacen()"'
+                    vista: 'regAcopio-view',
+                    icono: 'fa-history',
+                    texto: 'Registros Ac.',
+                    onclick: 'onclick="cargarRegistrosAcopio()"'
                 }
             ],
             'Almacen': [
