@@ -603,7 +603,7 @@ export async function mostrarFormularioPedido() {
                 <textarea id="obs-pedido" placeholder="Observaciones"></textarea>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn gray cancelar">Cancelar</button>
+                <button class="anuncio-btn gray cancelar" onclick="document.querySelector('.anuncio').style.display='none'">Cancelar</button>
                 <button class="anuncio-btn green confirmar">Añadir</button>
             </div>
         `;
@@ -661,8 +661,6 @@ export async function mostrarFormularioPedido() {
             }
         });
 
-        // Actualizar los event listeners
-        anuncio.querySelector('.cancelar').onclick = cerrarFormularioPedido;
         anuncio.querySelector('.confirmar').onclick = guardarPedido;
         anuncio.style.display = 'flex';
 
