@@ -152,7 +152,6 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
             e.stopPropagation();
             const anuncio = document.querySelector('.anuncio');
             const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-            const overlay = document.querySelector('.overlay');
 
             anuncioContenido.innerHTML = `
                 <h2><i class="fas fa-trash"></i> Eliminación</h2>
@@ -164,7 +163,6 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
             `;
 
             anuncio.style.display = 'flex';
-            overlay.style.display = 'block';
 
             const btnConfirmar = anuncio.querySelector('.confirmar');
             const btnCancelar = anuncio.querySelector('.cancelar');
@@ -195,12 +193,10 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
                     ocultarCarga();
                 }
                 anuncio.style.display = 'none';
-                overlay.style.display = 'none';
             });
 
             btnCancelar.addEventListener('click', () => {
                 anuncio.style.display = 'none';
-                overlay.style.display = 'none';
             });
         });
     }

@@ -3,10 +3,10 @@
 
 .anuncio {
     position: absolute;
-    top: 70px;
+    top: 78px;
     left: 0;
     width: 100%;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 50px);
     background-color: rgba(0, 0, 0, 0.352);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
