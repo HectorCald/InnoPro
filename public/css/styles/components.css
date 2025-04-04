@@ -76,6 +76,7 @@
     border: 1px solid white;
     cursor: pointer;
     font-weight: 500;
+    font-size: 15px;
     transition: all 0.3s ease;
     width: 100%;
     padding: 15px;
