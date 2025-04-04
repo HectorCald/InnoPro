@@ -123,8 +123,8 @@ export async function eliminarPedido(button) {
                 <button class="anuncio-btn red confirmar">
                     <i class="fas fa-trash"></i> Eliminar
                 </button>
-                <button class="anuncio-btn gray cancelar">
-                    <i class="fas fa-times"></i> Cancelar
+                <button class="anuncio-btn close cancelar">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
         `;
@@ -219,8 +219,8 @@ export async function entregarPedido(button) {
                     </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn green confirmar">Confirmar</button>
-                <button class="anuncio-btn gray cancelar">Cancelar</button>
+                <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             </div>
         `;
 

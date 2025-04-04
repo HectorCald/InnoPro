@@ -495,8 +495,8 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             </form>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn confirmar">Verificar</button>
-            <button class="anuncio-btn cancelar">Cancelar</button>
+            <button class="anuncio-btn green confirmar">Verificar</button>
+            <button class="anuncio-btn gray cancelar">Cancelar</button>
         </div>
     `;
 
@@ -643,15 +643,15 @@ function mostrarModalConfirmacion(titulo, mensaje) {
         const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
         anuncioContenido.innerHTML = `
-            <h2>${titulo}</h2>
+            <h2><i class="fas fa-trash"></i> ${titulo}</h2>
             <div class="detalles-verificacion">
                 <div class="form-group">
                     <textarea id="razonEliminacion" placeholder="Explique el motivo de la eliminacion. Aqui!" required ></textarea>
                 </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn confirmar">Confirmar</button>
-                <button class="anuncio-btn cancelar">Cancelar</button>
+                <button class="anuncio-btn red confirmar"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             </div>
         `;
 
@@ -737,8 +737,8 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
             </form>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn confirmar">Actualizar</button>
-            <button class="anuncio-btn cancelar">Cancelar</button>
+            <button class="anuncio-btn green confirmar"><i class="fas fa-sync"></i>  Actualizar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
@@ -786,7 +786,6 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
 
     const confirmarBtn = anuncio.querySelector('.confirmar');
     const cancelarBtn = anuncio.querySelector('.cancelar');
-
     confirmarBtn.addEventListener('click', async () => {
         const razonEdicion = document.getElementById('razon-edicion').value;
         if (!razonEdicion) {
@@ -862,6 +861,11 @@ function configurarFiltros() {
     const btnFiltro = document.querySelector('.btn-filtro');
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+    const overlay = document.querySelector('.overlay');
+
+    // Remover listener anterior si existe
+    const nuevoBtn = btnFiltro.cloneNode(true);
+    btnFiltro.parentNode.replaceChild(nuevoBtn, btnFiltro);
 
     // Cargar filtros guardados al inicio
     const filtrosGuardados = localStorage.getItem('filtrosRegistros');
@@ -869,7 +873,7 @@ function configurarFiltros() {
         filtrosActivos = JSON.parse(filtrosGuardados);
     }
 
-    btnFiltro.addEventListener('click', () => {
+    nuevoBtn.addEventListener('click', () => {
         // Cargar valores guardados en los inputs
         const filtrosGuardados = localStorage.getItem('filtrosRegistros');
         const valoresGuardados = filtrosGuardados ? JSON.parse(filtrosGuardados) : {
@@ -906,23 +910,36 @@ function configurarFiltros() {
                 </form>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn green aplicar">Aplicar</button>
-                <button class="anuncio-btn red limpiar">Limpiar</button>
-                <button class="anuncio-btn gray cancelar">Cancelar</button>
+                <button class="anuncio-btn green aplicar"><i class="fas fa-check-circle"></i> <span class="btn-text">Aplicar</span></button>
+                <button class="anuncio-btn blue limpiar"><i class="fas fa-eraser"></i> <span class="btn-text">Limpiar</span></button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             </div>
         `;
 
         anuncio.style.display = 'flex';
-        document.querySelector('.overlay').style.display = 'block';
+        overlay.style.display = 'block';
         document.querySelector('.container').classList.add('no-touch');
 
         const cerrarModal = () => {
             anuncio.style.display = 'none';
-            document.querySelector('.overlay').style.display = 'none';
+            overlay.style.display = 'none';
             document.querySelector('.container').classList.remove('no-touch');
         };
 
-        anuncioContenido.querySelector('.aplicar').addEventListener('click', () => {
+        // Remover listeners anteriores y crear nuevos botones
+        const btnAplicar = anuncioContenido.querySelector('.aplicar');
+        const btnLimpiar = anuncioContenido.querySelector('.limpiar');
+        const btnCancelar = anuncioContenido.querySelector('.cancelar');
+
+        const nuevoBtnAplicar = btnAplicar.cloneNode(true);
+        const nuevoBtnLimpiar = btnLimpiar.cloneNode(true);
+        const nuevoBtnCancelar = btnCancelar.cloneNode(true);
+
+        btnAplicar.parentNode.replaceChild(nuevoBtnAplicar, btnAplicar);
+        btnLimpiar.parentNode.replaceChild(nuevoBtnLimpiar, btnLimpiar);
+        btnCancelar.parentNode.replaceChild(nuevoBtnCancelar, btnCancelar);
+
+        nuevoBtnAplicar.addEventListener('click', () => {
             filtrosActivos = {
                 nombre: document.getElementById('filtro-nombre').value,
                 fechaDesde: document.getElementById('filtro-fecha-desde').value,
@@ -935,7 +952,7 @@ function configurarFiltros() {
             cerrarModal();
         });
 
-        anuncioContenido.querySelector('.limpiar').addEventListener('click', () => {
+        nuevoBtnLimpiar.addEventListener('click', () => {
             document.getElementById('filtro-nombre').value = '';
             document.getElementById('filtro-fecha-desde').value = '';
             document.getElementById('filtro-fecha-hasta').value = '';
@@ -952,7 +969,10 @@ function configurarFiltros() {
             cerrarModal();
         });
 
-        anuncioContenido.querySelector('.cancelar').addEventListener('click', cerrarModal);
+        nuevoBtnCancelar.addEventListener('click', cerrarModal);
+
+        // Cerrar al hacer clic fuera del anuncio
+        overlay.addEventListener('click', cerrarModal);
     });
 }
 function aplicarFiltros() {

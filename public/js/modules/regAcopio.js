@@ -20,26 +20,26 @@ export async function cargarRegistrosAcopio() {
 
             // Header con título
             container.innerHTML = `
-    <div class="filtros-header">
-        <h2 class="section-title">
-            <i class="fas fa-clipboard-list"></i> Registros Acopio
-        </h2>
-        <button class="btn-filtro">
-            <i class="fas fa-filter"></i> Filtros
-        </button>
-    </div>
-    <div class="pedidos-container">
-        <div class="fecha-card">
-            <div class="fecha-header">
-                <div class="fecha-info">
-                    <h3>Registro de Pedidos</h3>
-                    <span class="contador">${data.pedidos.length} pedidos</span>
+                <div class="filtros-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-clipboard-list"></i> Registros Acopio
+                    </h2>
+                    <button class="btn-filtro-acopio">
+                        <i class="fas fa-filter"></i> Filtros
+                    </button>
                 </div>
-                <i class="fas fa-chevron-down"></i>
-            </div>
-            <div class="registros-grupo"></div>
-        </div>
-    </div>`;
+                <div class="pedidos-container">
+                    <div class="fecha-card">
+                        <div class="fecha-header">
+                            <div class="fecha-info">
+                                <h3>Registro de Pedidos</h3>
+                                <span class="contador">${data.pedidos.length} pedidos</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="registros-grupo"></div>
+                    </div>
+                </div>`;
 
             const registrosContainer = container.querySelector('.registros-grupo');
             const registrosOrdenados = ordenarRegistrosPorFecha(data.pedidos);
@@ -155,11 +155,11 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
             const overlay = document.querySelector('.overlay');
 
             anuncioContenido.innerHTML = `
-                <h2>Confirmar Eliminación</h2>
-                <p>¿Está seguro de eliminar este registro?</p>
+                <h2><i class="fas fa-trash"></i> Eliminación</h2>
+                <p>¿Está seguro de eliminar este registro? Esta accion no se puede deshacer.</p>
                 <div class="anuncio-botones">
-                    <button class="anuncio-btn red confirmar">Eliminar</button>
-                    <button class="anuncio-btn gray cancelar">Cancelar</button>
+                    <button class="anuncio-btn red confirmar"><i class="fas fa-trash-alt"></i><i class="fas fa-trash"></i> Eliminar</button>
+                    <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
                 </div>
             `;
 
@@ -217,7 +217,7 @@ function ordenarRegistrosPorFecha(registros) {
     });
 }
 function configurarFiltros() {
-    const btnFiltro = document.querySelector('.btn-filtro');
+    const btnFiltro = document.querySelector('.btn-filtro-acopio');
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
@@ -248,9 +248,17 @@ function configurarFiltros() {
                 </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn green confirmar">Aplicar</button>
-                <button class="anuncio-btn red limpiar">Limpiar</button>
-                <button class="anuncio-btn gray cancelar">Cancelar</button>
+                <button class="anuncio-btn green confirmar">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="btn-text">Aplicar</span>
+                </button>
+                <button class="anuncio-btn blue limpiar">
+                    <i class="fas fa-eraser"></i>
+                    <span class="btn-text">Limpiar</span>
+                </button>
+                <button class="anuncio-btn close cancelar">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         `;
 
@@ -396,8 +404,8 @@ function mostrarFormularioEdicion(pedido) {
             </div>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn green guardar">Guardar</button>
-            <button class="anuncio-btn gray cancelar">Cancelar</button>
+            <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 

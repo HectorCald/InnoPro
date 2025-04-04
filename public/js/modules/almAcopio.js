@@ -129,7 +129,7 @@ window.mostrarDetalleProductoAcopio = async function (nombreProducto) {
                 </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar">Cerrar</button>
+                <button class="anuncio-btn gray cancelar">Cerrar</button>
             </div>
         `;
 

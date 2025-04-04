@@ -39,7 +39,7 @@
         width: 100%;
     }
 
-    .btn-filtro {
+    .btn-filtro-acopio {
         background: none;
         border: none;
         border-radius: 15px;
@@ -323,4 +323,5 @@
         background-color: #17a2b8;
         /* celeste */
     }
+    
 }

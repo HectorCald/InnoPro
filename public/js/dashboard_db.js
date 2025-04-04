@@ -336,6 +336,14 @@ export async function registrarNotificacion(origen, destino, mensaje) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    let anuncio = document.querySelector('.anuncio');
+    anuncio.addEventListener('click', (e) => {
+        if (e.target === anuncio || e.target === cancelarBtn) {
+            anuncio.style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+            document.querySelector('.container').classList.remove('no-touch');
+        }
+    });
     iniciarApp();
     bienvenida();
     inicializarHome(); 

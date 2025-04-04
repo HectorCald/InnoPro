@@ -64,8 +64,8 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
                     <textarea id="descripcion-tarea" placeholder="Descripción" rows="3"></textarea>
                 </div>
                 <div class="anuncio-botones">
-                    <button class="anuncio-btn gray cancelar">Cancelar</button>
-                    <button class="anuncio-btn green confirmar">Iniciar Tarea</button>
+                    <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                    <button class="anuncio-btn green confirmar"><i class="fas fa-play-circle"></i>  Iniciar Tarea</button>
                 </div>
             `;
             setupEventListeners();
@@ -486,8 +486,8 @@ export async function agregarProceso(tareaId) {
                 </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn gray cancelar">Cancelar</button>
-                <button class="anuncio-btn green confirmar">Agregar Proceso</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green confirmar"><i class="fas fa-plus-circle"></i>  Agregar Proceso</button>
             </div>
         `;
 
@@ -587,8 +587,8 @@ export async function finalizarProceso(tareaId, procesoId) {
                 <input type="number" id="peso-proceso-final" placeholder="Peso final (kg)" step="0.01" required>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn gray cancelar">Cancelar</button>
-                <button class="anuncio-btn green confirmar">Finalizar</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green confirmar"><i class="fas fa-check-circle"></i> Finalizar</button>
             </div>
         `;
 
@@ -778,8 +778,8 @@ function mostrarConfirmacion(titulo, mensaje) {
             <h2><i class="fas fa-exclamation-triangle"></i>${titulo}</h2>
             <p>${mensaje}</p>
             <div class="anuncio-botones">
-                <button class="anuncio-btn gray cancelar">Cancelar</button>
-                <button class="anuncio-btn green confirmar">Confirmar</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
             </div>
         `;
 
@@ -863,9 +863,9 @@ export async function mostrarProgramaAcopio() {
                     </div>
                 `).join('')}
                 <div class="anuncio-botones">
-                    <button class="anuncio-btn gray cancelar">Cancelar</button>
-                    <button class="anuncio-btn green confirmar guardar-programa">Guardar</button>
-                    <button class="anuncio-btn blue ver-programa">Ver</button>
+                    <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                    <button class="anuncio-btn green confirmar guardar-programa"><i class="fas fa-save"></i> Guardar</button>
+                    <button class="anuncio-btn blue ver-programa"><i class="fas fa-eye"></i> Ver programa</button>
                 </div>
             </div>
         `;
