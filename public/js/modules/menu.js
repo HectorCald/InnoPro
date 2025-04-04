@@ -18,7 +18,6 @@ function initializeMenuStructure(opcionesDiv) {
         </div>
         <div class="menu-secundario ${isDesktop ? 'active' : ''}"></div>
     `;
-
     return {
         menuPrincipal: opcionesDiv.querySelector('.menu-principal'),
         menuSecundario: opcionesDiv.querySelector('.menu-secundario'),

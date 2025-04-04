@@ -8,7 +8,7 @@ import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
 import { inicializarAlmacenPrima } from './modules/almPrima.js';
 import { inicializarHome } from './modules/home.js';
-import { initializeMenu } from './modules/menu.js';
+import { initializeMenu} from './modules/menu.js';
 import { initializePreciosPro } from './modules/preciosPro.js';
 import { cargarNotificaciones} from './modules/advertencia.js';
 import { inicializarComprobante } from './modules/comprobante.js';
@@ -19,6 +19,7 @@ import { cargarRegistrosAcopio } from './modules/regAcopio.js';
 window.initializeMenu = initializeMenu;
 window.initializePreciosPro = initializePreciosPro;
 window.inicializarHome = inicializarHome;
+
 
 // Funciones de gestión de usuarios y permisos
 window.mostrarPermisos = mostrarPermisos;
