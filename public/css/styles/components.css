@@ -197,11 +197,24 @@
     width: 100%;
     padding: 15px;
     border: 1px solid #828282;
-    border-radius: 10px;
+    border-radius: 15px;
     background: var(--primary-color);
     color: var(--primary-text);
     font-size: 16px;
     margin-block: 5px;
+}
+
+.anuncio-contenido input[type="date"] {
+    background: var(--primary-color);
+    padding: 15px;
+    border-radius: 15px;
+    width: 100%;
+    font-size: 15px;
+}
+
+.anuncio-contenido input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
 }
 
 .campo-form {
@@ -227,7 +240,7 @@
     height: 60px;
     font-size: 16px;
     padding: 15px;
-    border-radius: 10px;
+    border-radius: 15px;
 }
 
 .form-group label {
