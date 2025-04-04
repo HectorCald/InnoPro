@@ -96,8 +96,8 @@ function setupFilters() {
                 </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn green aplicar">Aplicar Filtros</button>
-                <button class="anuncio-btn gray cancelar">Cancelar</button>
+                <button class="anuncio-btn green aplicar"><i class="fas fa-check-circle"></i> Aplicar Filtros</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             </div>
         `;
 

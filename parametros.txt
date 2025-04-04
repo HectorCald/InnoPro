@@ -14,3 +14,5 @@ Ver: <i class="fas fa-eye"></i>
 Agregar: <i class="fas fa-plus-circle"></i> 
 Finalizar: <i class="fas fa-check-circle"></i>
 Confirmar: <i class="fas fa-check"></i>
+Aplicar: <i class="fas fa-check-circle"></i>
+Limpiar: <i class="fas fa-eraser"></i>

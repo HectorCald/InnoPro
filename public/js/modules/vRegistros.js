@@ -910,8 +910,8 @@ function configurarFiltros() {
                 </form>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn green aplicar"><i class="fas fa-check-circle"></i> <span class="btn-text">Aplicar</span></button>
-                <button class="anuncio-btn blue limpiar"><i class="fas fa-eraser"></i> <span class="btn-text">Limpiar</span></button>
+                <button class="anuncio-btn green aplicar"><i class="fas fa-check-circle"></i> Aplicar</button>
+                <button class="anuncio-btn blue limpiar"><i class="fas fa-eraser"></i> Limpiar</button>
                 <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             </div>
         `;
