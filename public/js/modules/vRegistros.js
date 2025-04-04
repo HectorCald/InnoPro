@@ -655,7 +655,6 @@ function mostrarModalConfirmacion(titulo, mensaje) {
         `;
 
         anuncio.style.display = 'flex';
-        document.querySelector('.overlay').style.display = 'block';
         document.querySelector('.container').classList.add('no-touch');
 
         const btnConfirmar = anuncio.querySelector('.confirmar');
@@ -676,7 +675,6 @@ function mostrarModalConfirmacion(titulo, mensaje) {
 
         btnCancelar.addEventListener('click', () => {
             anuncio.style.display = 'none';
-            document.querySelector('.overlay').style.display = 'none';
             document.querySelector('.container').classList.remove('no-touch');
             resolve(null);
         });
@@ -780,7 +778,6 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
     });
 
     anuncio.style.display = 'flex';
-    document.querySelector('.overlay').style.display = 'block';
     document.querySelector('.container').classList.add('no-touch');
 
     const confirmarBtn = anuncio.querySelector('.confirmar');
@@ -835,7 +832,6 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
 
                 mostrarNotificacion('Registro actualizado correctamente');
                 anuncio.style.display = 'none';
-                document.querySelector('.overlay').style.display = 'none';
                 document.querySelector('.container').classList.remove('no-touch');
                 await cargarRegistros();
             } else {
@@ -851,7 +847,6 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
 
     cancelarBtn.addEventListener('click', () => {
         anuncio.style.display = 'none';
-        document.querySelector('.overlay').style.display = 'none';
         document.querySelector('.container').classList.remove('no-touch');
     });
 }
