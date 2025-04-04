@@ -185,6 +185,7 @@ async function bienvenida() {
                 });
 
                 profileSection.addEventListener('click', () => {
+                    document.querySelector('.anuncio').style.display = 'none';
                     modal.style.display = 'block';
                     setTimeout(() => {
                         modal.classList.add('show');
@@ -337,13 +338,25 @@ export async function registrarNotificacion(origen, destino, mensaje) {
 
 document.addEventListener('DOMContentLoaded', () => {
     let anuncio = document.querySelector('.anuncio');
+    let dashboard = document.querySelector('.dashboard');
+    
     anuncio.addEventListener('click', (e) => {
-        if (e.target === anuncio || e.target === cancelarBtn) {
+        if (e.target === anuncio) {
             anuncio.style.display = 'none';
             document.querySelector('.overlay').style.display = 'none';
             document.querySelector('.container').classList.remove('no-touch');
         }
     });
+    dashboard.addEventListener('click', () => {
+        if (anuncio.style.display === 'flex') {
+            anuncio.style.display = 'none';
+            overlay.style.display = 'none';
+            container.classList.remove('no-touch');
+        }
+    });
+
+    // The anuncio click event is sufficient to handle the closing
+
     iniciarApp();
     bienvenida();
     inicializarHome(); 
