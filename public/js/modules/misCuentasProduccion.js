@@ -103,7 +103,6 @@ function setupFilters() {
 
         // Mostrar el anuncio y overlay
         anuncio.style.display = 'flex';
-        document.querySelector('.overlay').style.display = 'block';
         document.querySelector('.container').classList.add('no-touch');
 
         // Configurar botones del modal
