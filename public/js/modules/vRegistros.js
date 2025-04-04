@@ -687,50 +687,50 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2>Editar Registro</h2>
+        <h2><i class="fas fa-edit"></i> Editar Registro</h2>
         <div class="detalles-verificacion">
             <form id="form-edicion">
                 <input type="hidden" id="edit-id" value="${id}">
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="edit-fecha">Fecha:</label>
                     <input type="text" id="edit-fecha" value="${fecha}" required>
                 </div>
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="edit-producto">Producto:</label>
                     <input type="text" id="edit-producto" value="${producto}" 
                            list="productos-list" placeholder="Buscar producto..." 
                            autocomplete="off" required>
                     <datalist id="productos-list"></datalist>
                 </div>
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="edit-lote">Lote:</label>
                     <input type="text" id="edit-lote" value="${lote}" required>
                 </div>
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="edit-gramaje">Gramaje:</label>
                     <input type="number" id="edit-gramaje" value="${gramaje}" required>
                 </div>
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="edit-seleccion">Selección:</label>
                     <select id="edit-seleccion" required>
                         <option value="Normal" ${seleccion === 'Normal' ? 'selected' : ''}>Normal</option>
                         <option value="Cernido" ${seleccion === 'Cernido' ? 'selected' : ''}>Cernido</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="edit-microondas">Microondas:</label>
                     <input type="text" id="edit-microondas" value="${microondas}">
                 </div>
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="edit-envases">Envases:</label>
                     <input type="number" id="edit-envases" value="${envases}" required>
                 </div>
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="edit-vencimiento">Vencimiento:</label>
                     <input type="text" id="edit-vencimiento" value="${vencimiento}" required>
                 </div>
                 <div class="form-group">
-                    <label for="razon-edicion">Razón de la edición:</label>
+                    <p for="razon-edicion">Razón de la edición:</p>
                     <textarea id="razon-edicion" rows="3" required placeholder="Explique el motivo de la edición"></textarea>
                 </div>
             </form>
@@ -883,7 +883,7 @@ function configurarFiltros() {
         };
 
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-filter"></i> Filtros de Registros</h2>
+            <h2><i class="fas fa-filter"></i> Filtros</h2>
             <div class="detalles-verificacion">
                 <form id="filtros-form">
                     <div class="campo-form">

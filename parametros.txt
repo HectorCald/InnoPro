@@ -16,3 +16,5 @@ Finalizar: <i class="fas fa-check-circle"></i>
 Confirmar: <i class="fas fa-check"></i>
 Aplicar: <i class="fas fa-check-circle"></i>
 Limpiar: <i class="fas fa-eraser"></i>
+Editar: <i class="fas fa-edit"></i>
+Filtros: <i class="fas fa-filter"></i>

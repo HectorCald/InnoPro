@@ -73,7 +73,7 @@ function setupFilters() {
         const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
         
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-filter"></i> Filtros de Registros</h2>
+            <h2><i class="fas fa-filter"></i> Filtros</h2>
             <div class="filtros-contenido">
                 <div class="campo-form">
                     <p>Tiempo: </p>

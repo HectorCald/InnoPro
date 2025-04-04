@@ -223,21 +223,21 @@ function configurarFiltros() {
 
     btnFiltro.addEventListener('click', () => {
         anuncioContenido.innerHTML = `
-            <h2>Filtros</h2>
+            <h2><i class="fas fa-filter"></i> Filtros</h2>
             <div class="filtros-form">
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="filtro-nombre">Nombre del producto:</label>
                     <input type="text" id="filtro-nombre" placeholder="Filtrar por nombre" value="${filtrosActivos.nombre}">
                 </div>
-                <div class="form-group">
-                    <label for="filtro-fecha-desde">Desde:</label>
+                <div class="campo-form">
+                    <label for="filtro-fecha-desde">Fecha desde:</label>
                     <input type="date" id="filtro-fecha-desde" value="${filtrosActivos.fechaDesde}">
                 </div>
-                <div class="form-group">
-                    <label for="filtro-fecha-hasta">Hasta:</label>
+                <div class="campo-form">
+                    <label for="filtro-fecha-hasta">Fecha hasta:</label>
                     <input type="date" id="filtro-fecha-hasta" value="${filtrosActivos.fechaHasta}">
                 </div>
-                <div class="form-group">
+                <div class="campo-form">
                     <label for="filtro-estado">Estado:</label>
                     <select id="filtro-estado">
                         <option value="todos" ${filtrosActivos.estado === 'todos' ? 'selected' : ''}>Todos los estados</option>
@@ -350,33 +350,33 @@ function mostrarFormularioEdicion(pedido) {
     const overlay = document.querySelector('.overlay');
 
     anuncioContenido.innerHTML = `
-        <h2>Editar Registro</h2>
+        <h2><i class="fas fa-edit"></i> Editar Registro</h2>
         <div class="edicion-form">
-            <div class="form-group">
+            <div class="campo-form">
                 <label for="edit-nombre">Nombre:</label>
                 <input type="text" id="edit-nombre" value="${pedido[2] || ''}">
             </div>
-            <div class="form-group">
+            <div class="campo-form">
                 <label for="edit-cantidad">Cantidad:</label>
                 <input type="number" id="edit-cantidad" value="${pedido[3] || ''}">
             </div>
-            <div class="form-group">
-                <label for="edit-observaciones">Observaciones:</label>
+            <div class="campo-form">
+                <label for="edit-observaciones">Obs:</label>
                 <textarea id="edit-observaciones">${pedido[4] || ''}</textarea>
             </div>
-            <div class="form-group">
+            <div class="campo-form">
                 <label for="edit-cantidad-entregada">Cantidad Entregada:</label>
                 <input type="number" id="edit-cantidad-entregada" value="${pedido[5] || ''}">
             </div>
-            <div class="form-group">
+            <div class="campo-form">
                 <label for="edit-proveedor">Proveedor:</label>
                 <input type="text" id="edit-proveedor" value="${pedido[6] || ''}">
             </div>
-            <div class="form-group">
+            <div class="campo-form">
                 <label for="edit-costo">Costo:</label>
                 <input type="number" id="edit-costo" value="${pedido[7] || ''}">
             </div>
-            <div class="form-group">
+            <div class="campo-form">
                 <label for="edit-estado">Estado:</label>
                 <select id="edit-estado">
                     <option value="Pendiente" ${pedido[8] === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
@@ -384,19 +384,19 @@ function mostrarFormularioEdicion(pedido) {
                     <option value="Recibido" ${pedido[8] === 'Recibido' ? 'selected' : ''}>Recibido</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="campo-form">
                 <label for="edit-detalles">Detalles:</label>
                 <textarea id="edit-detalles">${pedido[9] || ''}</textarea>
             </div>
-            <div class="form-group">
+           <div class="campo-form">
                 <label for="edit-cantidad-compras">Cantidad Compras:</label>
                 <input type="number" id="edit-cantidad-compras" value="${pedido[10] || ''}">
             </div>
-            <div class="form-group">
+            <div class="campo-form">
                 <label for="edit-medida">Medida:</label>
                 <input type="text" id="edit-medida" value="${pedido[11] || ''}">
             </div>
-            <div class="form-group">
+            <div class="campo-form">
                 <label for="edit-entregado">Entregado:</label>
                 <input type="text" id="edit-entregado" value="${pedido[12] || ''}">
             </div>
