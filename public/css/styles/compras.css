@@ -3,13 +3,13 @@
 .compras-view {
     width: 100%;
     background-color: var(--background) !important;
-    height: calc(100vh);
+    height: calc(100vh - 3em);
     color: white;
     overflow-y: auto;
-    padding: 1em;
+    padding: 15px;
     display: none;
     flex-direction: column;
-    gap: 1em;
+    gap: 10px;
     display: none;
 
     &::-webkit-scrollbar {
@@ -20,28 +20,8 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 
-    .compras-view {
-        width: 100%;
-        background-color: var(--background) !important;
-        ;
-        height: calc(100vh - 7em);
-        color: white;
-        overflow-y: auto;
-        padding: 1em;
-        display: flex;
-        flex-direction: column;
-        gap: 1em;
-
-        &::-webkit-scrollbar {
-            display: none;
-        }
-
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
     .compras-header {
-        padding: 1em;
+        padding-block: 15px;
         background: #252525;
         border-radius: 8px;
         margin-bottom: 1em;

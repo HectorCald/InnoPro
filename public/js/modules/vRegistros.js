@@ -500,7 +500,6 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
     `;
 
     anuncio.style.display = 'flex';
-    document.querySelector('.overlay').style.display = 'block';
     document.querySelector('.container').classList.add('no-touch');
 
     const confirmarBtn = anuncio.querySelector('.confirmar');
@@ -552,7 +551,6 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
 
                 mostrarNotificacion(data.mensaje || 'Verificación guardada correctamente');
                 anuncio.style.display = 'none';
-                document.querySelector('.overlay').style.display = 'none';
                 document.querySelector('.container').classList.remove('no-touch');
                 await cargarRegistros();
             } else {
@@ -855,7 +853,6 @@ function configurarFiltros() {
     const btnFiltro = document.querySelector('.btn-filtro');
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-    const overlay = document.querySelector('.overlay');
 
     // Remover listener anterior si existe
     const nuevoBtn = btnFiltro.cloneNode(true);
@@ -911,7 +908,6 @@ function configurarFiltros() {
         `;
 
         anuncio.style.display = 'flex';
-        overlay.style.display = 'block';
         document.querySelector('.container').classList.add('no-touch');
 
         const cerrarModal = () => {
@@ -964,9 +960,6 @@ function configurarFiltros() {
         });
 
         nuevoBtnCancelar.addEventListener('click', cerrarModal);
-
-        // Cerrar al hacer clic fuera del anuncio
-        overlay.addEventListener('click', cerrarModal);
     });
 }
 function aplicarFiltros() {

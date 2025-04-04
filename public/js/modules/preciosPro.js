@@ -356,7 +356,6 @@ async function mostrarFormularioRegla() {
         `;
 
         anuncio.style.display = 'flex';
-        document.querySelector('.overlay').style.display = 'block';
 
         configurarEventosFormulario(anuncio);
         await initializePreciosPro();
