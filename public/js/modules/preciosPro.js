@@ -312,7 +312,7 @@ async function mostrarFormularioRegla() {
         const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
         
         anuncioContenido.innerHTML = `
-            <h2>Agregar Regla Especial</h2>
+            <h2><i class="fas fa-plus-circle"></i> Agregar Regla</h2>
             <input type="text" class="buscador" placeholder="Buscar producto..." id="buscador-producto">
             <select id="producto-select">
                 <option value="">Seleccione un producto</option>
@@ -350,8 +350,8 @@ async function mostrarFormularioRegla() {
                 </div>
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn cancelar">Cancelar</button>
-                <button class="anuncio-btn confirmar">Agregar</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green confirmar"><i class="fas fa-plus-circle"></i>  Agregar</button>
             </div>
         `;
 
