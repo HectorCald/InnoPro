@@ -262,6 +262,10 @@
     padding: 15px;
     border-radius: 15px;
 }
+.anuncio-contenido select option {
+    background: var(--primary-color);
+    color: var(--primary-text);
+}
 
 .form-group label {
     display: block;
