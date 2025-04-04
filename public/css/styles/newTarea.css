@@ -19,14 +19,24 @@
     margin-top: 4px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+.productos-sugeridos{
+    background: var(--primary-color) !important;
+    border: 1px solid #6a6969;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 
 .sugerencia-item {
     padding: 10px 16px;
     cursor: pointer;
     color: var(primary-text);
     transition: background-color 0.2s;
-    border-bottom: 1px solid #383838;
-
+    border-bottom: 1px solid #8f8e8e;
+    font-size: 15px;
     &:last-child {
         border-bottom: none;
     }

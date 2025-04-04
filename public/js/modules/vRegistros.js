@@ -1,5 +1,5 @@
 import { registrarNotificacion } from './advertencia.js'; 
-
+import { mostrarFormularioIngreso } from './almacen.js';
 /* ==================== VARIABLES GLOBALES Y CONFIGURACIÓN INICIAL ==================== */
 let reglasEspeciales = null;
 let preciosBase = null;
@@ -549,7 +549,7 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
                     console.error('Error al enviar notificación:', notifError);
                 }
 
-                mostrarNotificacion(data.mensaje || 'Verificación guardada correctamente');
+                mostrarNotificacion(data.mensaje || 'Verificación guardada correctamente', 'success', 2000);
                 anuncio.style.display = 'none';
                 document.querySelector('.container').classList.remove('no-touch');
                 await cargarRegistros();
@@ -561,6 +561,7 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             mostrarNotificacion('Error al guardar la verificación: ' + error.message, 'error');
         } finally {
             ocultarCarga();
+            mostrarFormularioIngreso(producto); 
         }
     });
 

@@ -8,14 +8,14 @@ import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import admin from 'firebase-admin';
-let sistemaEnMantenimiento = false;
+
 // Configuración inicial
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
-const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';
+const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';6
 
 /* ==================== CONFIGURACIÓN DE FIREBASE ==================== */
 const serviceAccount = {
@@ -3859,8 +3859,228 @@ app.delete('/eliminar-registro-pedido', requireAuth, async (req, res) => {
     }
 });
 
-/* ==================== RUTAS DE API MANUAL DE PRODUCCION  ==================== */
+/* ==================== RUTAS DE API ALMACENES ==================== */
+app.get('/obtener-almacen-general', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A:F'  // Ajusta el rango según tus columnas
+        });
 
+        const rows = response.data.values || [];
+        const pedidos = rows.slice(1); // Omitir encabezados
+
+        res.json({ success: true, pedidos });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener los prodcutos'
+        });
+    }
+}); 
+app.delete('/eliminar-producto-almacen', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener el spreadsheet para encontrar el ID de la hoja
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const almacenSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Almacen general'
+        );
+
+        if (!almacenSheet) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Hoja de Almacen general no encontrada' 
+            });
+        }
+
+        // Obtener todos los registros para encontrar la fila a eliminar
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:F'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Producto no encontrado' 
+            });
+        }
+
+        // Eliminar la fila
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: almacenSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1, // +1 porque empezamos desde A2
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al eliminar producto:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el producto' 
+        });
+    }
+});
+app.put('/actualizar-producto-almacen', requireAuth, async (req, res) => {
+    try {
+        const { id, nombre, gramaje, stock, cantidadTira, lista } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get all records to find the row to update
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:F'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Producto no encontrado' 
+            });
+        }
+
+        // Update the row
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Almacen general!A${rowIndex + 2}:F${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[id, nombre, gramaje, stock, cantidadTira, lista]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al actualizar producto:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar el producto' 
+        });
+    }
+});
+app.post('/agregar-producto-almacen', requireAuth, async (req, res) => {
+    try {
+        const { nombre, gramaje, stock, cantidadTira, lista } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get current products to determine the next ID
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:A'
+        });
+
+        const existingIds = response.data.values || [];
+        let nextId = 1;
+
+        if (existingIds.length > 0) {
+            const numericIds = existingIds
+                .map(row => {
+                    const match = (row[0] || '').match(/PG-(\d+)/);
+                    return match ? parseInt(match[1]) : 0;
+                })
+                .filter(id => !isNaN(id));
+
+            nextId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+        }
+
+        const formattedId = `PG-${nextId}`;
+
+        // Add the new product
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:F',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [[formattedId, nombre, gramaje, stock, cantidadTira, lista]]
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Producto agregado correctamente',
+            id: formattedId
+        });
+    } catch (error) {
+        console.error('Error al agregar producto:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al agregar el producto: ' + error.message 
+        });
+    }
+});
+app.put('/ingresar-stock-almacen', requireAuth, async (req, res) => {
+    try {
+        const { id, cantidad } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get current product data
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:F'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Producto no encontrado' 
+            });
+        }
+
+        // Calculate new stock
+        const currentStock = parseInt(rows[rowIndex][3]) || 0;
+        const newStock = currentStock + cantidad;
+
+        // Update the stock (column D)
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Almacen general!D${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[newStock]]
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Stock actualizado correctamente'
+        });
+    } catch (error) {
+        console.error('Error al actualizar stock:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar el stock: ' + error.message 
+        });
+    }
+});
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {

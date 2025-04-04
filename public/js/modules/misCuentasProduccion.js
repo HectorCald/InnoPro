@@ -7,7 +7,6 @@ let filtroActual = {
     periodo: '365',
     verificacion: 'all'
 };
-
 export async function cargarRegistrosCuentas() {
     try {
         mostrarCarga();
@@ -139,7 +138,6 @@ function parsearFecha(fechaStr) {
         return new Date(0);
     }
 }
-
 function cerrarModal() {
     const anuncio = document.querySelector('.anuncio');
     anuncio.style.display = 'none';
@@ -177,7 +175,6 @@ function mostrarRegistros(reset = false) {
     loadMoreBtn.style.display = 
         registrosMostrados < registrosFiltrados.length ? 'block' : 'none';
 }
-
 export function mostrarDetalles(card) {
     // Cerrar otros registros abiertos primero
     document.querySelectorAll('.registro-detalles').forEach(detalles => {

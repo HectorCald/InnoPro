@@ -5,8 +5,6 @@ font-size: 13px;  //Terceario
 gap: 10px
 
 
-
-
 Iconos
 Cerrar: <i class="fas fa-times"></i>
 Guardar: <i class="fas fa-save"></i>
@@ -18,3 +16,6 @@ Aplicar: <i class="fas fa-check-circle"></i>
 Limpiar: <i class="fas fa-eraser"></i>
 Editar: <i class="fas fa-edit"></i>
 Filtros: <i class="fas fa-filter"></i>
+Almacén: <i class="fas fa-warehouse"></i>
+Mayor a menor (Descendente): <i class="fas fa-sort-amount-down"></i>
+Menor a mayor (Ascendente): <i class="fas fa-sort-amount-up"></i>
