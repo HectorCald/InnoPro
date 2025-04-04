@@ -3859,6 +3859,8 @@ app.delete('/eliminar-registro-pedido', requireAuth, async (req, res) => {
     }
 });
 
+/* ==================== RUTAS DE API MANUAL DE PRODUCCION  ==================== */
+
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {

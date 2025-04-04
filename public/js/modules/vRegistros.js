@@ -470,22 +470,21 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2>Verificar Registro</h2>
+        <h2><i class="fas fa-check-circle"></i> Verificar Registro</h2>
         <div class="detalles-verificacion">
             <div class="form-group">
                 <input type="hidden" id="registro-id" value="${id}">
-                <label>Fecha: <span>${fecha}</span></label>
-                <label>Producto: <span>${producto}</span></label>
-                <label>Operario: <span>${operario}</span></label>
-                <label>Envases terminados: <span>${envases}</span></label>
+                <p>Producto: <span>${producto}</span></p>
+                <p>Operario: <span>${operario}</span></p>
+                <p>Envases terminados: <span>${envases}</span></p>
             </div>
             <form id="form-verificacion">
-                <div class="form-group">
-                    <label for="cantidad-real">Cantidad Real:</label>
+                <div class="campo-form">
+                    <label for="cantidad-real">Cantidad:</label>
                     <input type="number" id="cantidad-real" required min="0" step="1" placeholder="Cantidad Real">
                 </div>
-                <div class="form-group">
-                    <label for="fecha-verificacion">Fecha de Verificación:</label>
+                <div class="campo-form">
+                    <label for="fecha-verificacion">Fecha:</label>
                     <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly>
                 </div>
                 <div class="form-group">
@@ -495,8 +494,8 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             </form>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn green confirmar">Verificar</button>
-            <button class="anuncio-btn gray cancelar">Cancelar</button>
+            <button class="anuncio-btn green confirmar"><i class="fas fa-check-circle"></i>  Verificar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
