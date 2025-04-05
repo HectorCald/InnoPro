@@ -1056,7 +1056,7 @@ function aplicarFiltros() {
 
         botonCalcular.addEventListener('click', async () => {
             try {
-                // Obtener IDs de registros filtrados
+                mostrarCarga();
                 const registrosIds = registrosFiltrados.map(reg => reg.element.dataset.id);
 
                 // Obtener total de extras existentes
@@ -1219,6 +1219,8 @@ function aplicarFiltros() {
             } catch (error) {
                 console.error('Error al calcular totales:', error);
                 mostrarNotificacion('Error al calcular los totales: ' + error.message, 'error');
+            }finally{
+                ocultarCarga();
             }
         });
 
