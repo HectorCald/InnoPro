@@ -1,4 +1,4 @@
-import { registrarNotificacion } from './advertencia.js'; 
+import { registrarNotificacion } from './advertencia.js';
 import { mostrarFormularioIngreso } from './almacen.js';
 /* ==================== VARIABLES GLOBALES Y CONFIGURACIÓN INICIAL ==================== */
 let reglasEspeciales = null;
@@ -360,17 +360,17 @@ export async function cargarRegistros() {
                     </button>
                 </div>`;
 
-                const registrosPorOperario = {};
-                data.registros.slice(1).forEach(registro => {
-                    // El operario ahora está en el índice 9 (era 8 antes)
-                    const operario = registro[9];
-                    if (!operario) return;
-                    
-                    if (!registrosPorOperario[operario]) {
-                        registrosPorOperario[operario] = [];
-                    }
-                    registrosPorOperario[operario].push(registro);
-                });
+            const registrosPorOperario = {};
+            data.registros.slice(1).forEach(registro => {
+                // El operario ahora está en el índice 9 (era 8 antes)
+                const operario = registro[9];
+                if (!operario) return;
+
+                if (!registrosPorOperario[operario]) {
+                    registrosPorOperario[operario] = [];
+                }
+                registrosPorOperario[operario].push(registro);
+            });
             const nombresOrdenados = Object.keys(registrosPorOperario).sort();
 
             for (const nombre of nombresOrdenados) {
@@ -561,7 +561,7 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             mostrarNotificacion('Error al guardar la verificación: ' + error.message, 'error');
         } finally {
             ocultarCarga();
-
+            mostrarFormularioIngreso(producto);
         }
     });
 
@@ -1030,7 +1030,6 @@ function aplicarFiltros() {
         }
     });
 
-    // Si hay filtros activos de nombre y fechas, mostrar el botón
     if (filtrosActivos.nombre && (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta) && registrosFiltrados.length > 0) {
         const container = document.querySelector('.verificarRegistros-view');
         const botonCalcular = document.createElement('button');
@@ -1055,41 +1054,179 @@ function aplicarFiltros() {
             max-width: 200px;
         `;
 
+        botonCalcular.addEventListener('click', async () => {
+            try {
+                // Obtener IDs de registros filtrados
+                const registrosIds = registrosFiltrados.map(reg => reg.element.dataset.id);
 
-        botonCalcular.addEventListener('click', () => {
-            const totalGeneral = registrosFiltrados.reduce((sum, reg) => sum + reg.total, 0);
-            const anuncio = document.querySelector('.anuncio');
-            const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+                // Obtener total de extras existentes
+                const responseExtras = await fetch('/obtener-extras-registros', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ registrosIds })
+                });
 
-            anuncioContenido.innerHTML = `
-                <h2><i class="fas fa-calculator"></i> Resumen de Registros</h2>
-                <div class="detalles-verificacion">
-                    <div class="resumen-info">
-                        <p><strong>Operario:</strong> ${filtrosActivos.nombre}</p>
-                        <p><strong>Desde:</strong> ${filtrosActivos.fechaDesde || 'No especificado'}</p>
-                        <p><strong>Hasta:</strong> ${filtrosActivos.fechaHasta || 'No especificado'}</p>
-                        <p class="total-general"><strong>Total:</strong> ${totalGeneral.toFixed(2)} Bs.</p>
+                const dataExtras = await responseExtras.json();
+                const extrasExistentes = dataExtras.success ? parseFloat(dataExtras.totalExtras.toFixed(10)) : 0;
+
+                let totalGeneral = 0;
+                let totalSellado = 0;
+                let totalEnvasado = 0;
+                let totalEtiquetado = 0;
+                let totalCernido = 0;
+
+                registrosFiltrados.forEach(reg => {
+                    const panelInfo = reg.element.querySelector('.panel-info');
+                    if (panelInfo) {
+                        const parrafos = panelInfo.querySelectorAll('p');
+                        parrafos.forEach(p => {
+                            const texto = p.textContent.trim();
+                            if (texto.includes('Envasado:')) {
+                                totalEnvasado += parseFloat(texto.split('Bs.')[0].split(':')[1]) || 0;
+                            }
+                            if (texto.includes('Etiquetado:')) {
+                                totalEtiquetado += parseFloat(texto.split('Bs.')[0].split(':')[1]) || 0;
+                            }
+                            if (texto.includes('Sellado:')) {
+                                totalSellado += parseFloat(texto.split('Bs.')[0].split(':')[1]) || 0;
+                            }
+                            if (texto.includes('Cernido:')) {
+                                totalCernido += parseFloat(texto.split('Bs.')[0].split(':')[1]) || 0;
+                            }
+                        });
+                    }
+                });
+
+                totalGeneral = totalSellado + totalEnvasado + totalEtiquetado + totalCernido;
+
+                const anuncio = document.querySelector('.anuncio');
+                const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+
+                anuncioContenido.innerHTML = `
+            <h2><i class="fas fa-calculator"></i> Resumen de Registros</h2>
+            <div class="detalles-verificacion">
+                <div class="resumen-info">
+                    <p><strong>Operario:</strong> ${filtrosActivos.nombre}</p>
+                    <p><strong>Desde:</strong> ${filtrosActivos.fechaDesde || 'No especificado'}</p>
+                    <p><strong>Hasta:</strong> ${filtrosActivos.fechaHasta || 'No especificado'}</p>
+                    <div class="desglose-totales">
+                        <p><strong>Total Sellado:</strong> ${totalSellado.toFixed(2)} Bs.</p>
+                        <p><strong>Total Envasado:</strong> ${totalEnvasado.toFixed(2)} Bs.</p>
+                        <p><strong>Total Etiquetado:</strong> ${totalEtiquetado.toFixed(2)} Bs.</p>
+                        <p><strong>Total Cernido:</strong> ${totalCernido.toFixed(2)} Bs.</p>
+                        <p><strong>Total Extras Existentes:</strong> ${extrasExistentes.toFixed(2)} Bs.</p>
+                        <div class="campo-form">
+                            <label>Agregar Extras:</label>    
+                            <input type="number" id="total-extras" value="0" min="0" step="0.01">
+                        </div>
+                        <p class="total-general"><strong>Total General:</strong> <span id="total-general-valor">${(totalGeneral + extrasExistentes).toFixed(2)}</span> Bs.</p>
                     </div>
                 </div>
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn gray cancelar">Cerrar</button>
-                </div>
-            `;
+            </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn blue registrar-cuentas"><i class="fas fa-save"></i> Registrar</button>
+                <button class="anuncio-btn green Pagar"><i class="fas fa-dollar-sign"></i> Pagar</button>
+            </div>
+        `;
 
-            anuncio.style.display = 'flex';
-            document.querySelector('.container').classList.add('no-touch');
+                // Agregar el evento para actualizar el total cuando cambie el valor de extras
+                const inputExtras = anuncioContenido.querySelector('#total-extras');
+                const spanTotalGeneral = anuncioContenido.querySelector('#total-general-valor');
 
-            anuncioContenido.querySelector('.cancelar').addEventListener('click', () => {
-                anuncio.style.display = 'none';
-                document.querySelector('.overlay').style.display = 'none';
-                document.querySelector('.container').classList.remove('no-touch');
-            });
+                inputExtras.addEventListener('input', () => {
+                    const extras = parseFloat(inputExtras.value) || 0;
+                    // Realizar la suma con mayor precisión
+                    const nuevoTotal = (totalGeneral * 1000 + extrasExistentes * 1000 + extras * 1000) / 1000;
+                    spanTotalGeneral.textContent = nuevoTotal.toFixed(2);
+                });
+
+                anuncio.style.display = 'flex';
+                document.querySelector('.container').classList.add('no-touch');
+
+                anuncioContenido.querySelector('.cancelar').addEventListener('click', () => {
+                    anuncio.style.display = 'none';
+                    document.querySelector('.overlay').style.display = 'none';
+                    document.querySelector('.container').classList.remove('no-touch');
+                });
+
+                anuncioContenido.querySelector('.registrar-cuentas').addEventListener('click', async () => {
+                    try {
+                        mostrarCarga();
+                        const extras = parseFloat(document.getElementById('total-extras').value) || 0;
+                        const registrosData = [];
+
+                        registrosFiltrados.forEach(reg => {
+                            const panelInfo = reg.element.querySelector('.panel-info');
+                            const registroId = reg.element.dataset.id;
+                            let datosRegistro = {
+                                id: registroId,
+                                etiquetado: 0,
+                                sellado: 0,
+                                envasado: 0,
+                                cernido: 0
+                            };
+
+                            if (panelInfo) {
+                                const parrafos = panelInfo.querySelectorAll('p');
+                                parrafos.forEach(p => {
+                                    const texto = p.textContent.trim();
+                                    if (texto.includes('Envasado:')) {
+                                        datosRegistro.envasado = parseFloat(texto.split('Bs.')[0].split(':')[1]) || 0;
+                                    }
+                                    if (texto.includes('Etiquetado:')) {
+                                        datosRegistro.etiquetado = parseFloat(texto.split('Bs.')[0].split(':')[1]) || 0;
+                                    }
+                                    if (texto.includes('Sellado:')) {
+                                        datosRegistro.sellado = parseFloat(texto.split('Bs.')[0].split(':')[1]) || 0;
+                                    }
+                                    if (texto.includes('Cernido:')) {
+                                        datosRegistro.cernido = parseFloat(texto.split('Bs.')[0].split(':')[1]) || 0;
+                                    }
+                                });
+                            }
+                            registrosData.push(datosRegistro);
+                        });
+
+                        const response = await fetch('/registrar-desglose', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                registros: registrosData,
+                                extras: extras
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            mostrarNotificacion('Registros actualizados correctamente', 'success');
+                            anuncio.style.display = 'none';
+                            document.querySelector('.container').classList.remove('no-touch');
+                        } else {
+                            throw new Error(data.error);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        mostrarNotificacion('Error al registrar los datos: ' + error.message, 'error');
+                    } finally {
+                        ocultarCarga();
+                    }
+                });
+            } catch (error) {
+                console.error('Error al calcular totales:', error);
+                mostrarNotificacion('Error al calcular los totales: ' + error.message, 'error');
+            }
         });
 
         container.appendChild(botonCalcular);
+
     }
 
-    // Actualizar contadores
+
     fechaCards.forEach(fechaCard => {
         if (fechaCard.style.display === 'block') {
             const registrosVisibles = Array.from(fechaCard.querySelectorAll('.registro-card'))

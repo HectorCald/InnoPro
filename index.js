@@ -1036,6 +1036,79 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
         });
     }
 });
+app.post('/registrar-desglose', async (req, res) => {
+    try {
+        const { registros, extras } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        const extrasPorRegistro = extras / registros.length;
+
+        // Obtener los valores actuales de la hoja
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A:Z'
+        });
+
+        const updates = [];
+        for (const registro of registros) {
+            const rowIndex = response.data.values.findIndex(row => row[0] === registro.id);
+            if (rowIndex !== -1) {
+                updates.push({
+                    range: `Produccion!O${rowIndex + 1}:S${rowIndex + 1}`,
+                    values: [[
+                        registro.etiquetado,
+                        registro.sellado,
+                        registro.envasado,
+                        registro.cernido,
+                        extrasPorRegistro
+                    ]]
+                });
+            }
+        }
+
+        // Aplicar todas las actualizaciones
+        await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                valueInputOption: 'USER_ENTERED',
+                data: updates
+            }
+        });
+
+        res.json({ success: true, mensaje: 'Registros actualizados correctamente' });
+    } catch (error) {
+        console.error('Error al registrar desglose:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/obtener-extras-registros', async (req, res) => {
+    try {
+        const { registrosIds } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A:S'
+        });
+
+        let totalExtras = 0;
+        const valores = response.data.values;
+
+        registrosIds.forEach(id => {
+            const rowIndex = valores.findIndex(row => row[0] === id);
+            if (rowIndex !== -1 && valores[rowIndex][18]) {
+                // Convertir el valor a número y sumar con precisión
+                const extraValue = parseFloat(valores[rowIndex][18].toString().replace(',', '.')) || 0;
+                totalExtras = (totalExtras * 1000 + extraValue * 1000) / 1000;
+            }
+        });
+
+        res.json({ success: true, totalExtras });
+    } catch (error) {
+        console.error('Error al obtener extras:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 /* ==================== API DE PERMISOS ==================== */
 app.put('/actualizar-permisos', requireAuth, async (req, res) => {
