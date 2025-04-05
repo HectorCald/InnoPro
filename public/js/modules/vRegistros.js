@@ -561,7 +561,7 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             mostrarNotificacion('Error al guardar la verificación: ' + error.message, 'error');
         } finally {
             ocultarCarga();
-            mostrarFormularioIngreso(producto); 
+
         }
     });
 
@@ -1077,7 +1077,6 @@ function aplicarFiltros() {
             `;
 
             anuncio.style.display = 'flex';
-            document.querySelector('.overlay').style.display = 'block';
             document.querySelector('.container').classList.add('no-touch');
 
             anuncioContenido.querySelector('.cancelar').addEventListener('click', () => {

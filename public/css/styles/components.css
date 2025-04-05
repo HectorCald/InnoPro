@@ -6,7 +6,7 @@
     top: 70px !important;
     left: 0;
     width: 100%;
-    height: calc(100vh - 50px) !important;
+    height: calc(100vh - 70px) !important;
     background-color: rgba(0, 0, 0, 0.352);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -19,26 +19,54 @@
 
 .anuncio-contenido {
     background: var(--primary-color);
-    border-radius: 1em;
+    border-radius: 10px;
     text-align: center;
     color: var(--primary-text) !important;
     animation: aparecer 0.3s ease-out;
-    padding: 20px;
+    padding: 15px;
     border-radius: 15px;
     width: 90%;
     max-width: 400px;
-    max-height: 80vh;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: absolute;
+}
+.anuncio-contenido .relleno{
+    background: none;
+    border-radius: 10px;
+    text-align: center;
+    color: var(--primary-text) !important;
+    border-radius: 15px;
+    width: 100%;
+    height: 100%;
     overflow-y: auto !important;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
 
     &::-webkit-scrollbar {
-        display: none;
+        width: 8px;
     }
 
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    &::-webkit-scrollbar-track {
+        background: rgba(128, 128, 128, 0.1);
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #626262;
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #626262;
+    }
+
+    /* For Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #626262 rgba(128, 128, 128, 0.1);
     margin: 0;
     gap: 10px;
     position: relative;
@@ -56,11 +84,15 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
+    margin-bottom: 10px;
 }
 
 .anuncio-contenido p {
     color: #aaa;
     margin-top: 5px;
+    width: 100%;
+    text-align: left;
+    font-weight: 500;
 }
 
 .anuncio-botones {
@@ -72,14 +104,14 @@
 }
 
 .anuncio-btn {
-    border-radius: 15px;
+    border-radius: 10px;
     border: 1px solid white;
     cursor: pointer;
     font-weight: 500;
     font-size: 15px !important;
     transition: all 0.3s ease;
     width: 100%;
-    padding: 15px;
+    padding: 8px;
     margin-bottom: 5px;
     background: none;
     color: white;
@@ -196,9 +228,9 @@
 .anuncio-contenido input,
 .anuncio-contenido textarea {
     width: 100%;
-    padding: 15px;
-    border: 1px solid #828282;
-    border-radius: 15px;
+    padding: 10px;
+    border: 1px solid #494949;
+    border-radius: 10px;
     background: var(--primary-color);
     color: var(--primary-text);
     font-size: 16px;
@@ -242,13 +274,16 @@
     align-items: center;
     margin-top: 5px;
     gap: 5px;
+    background-color: rgb(56, 56, 56);
+    padding: 5px 10Px;
+    border-radius: 10px;
 }
 
 .campo-form label,
 .campo-form p {
     width: 150px;
     text-align: left;
-    color: gray;
+    color: rgb(161, 161, 161);
 }
 
 .anuncio-contenido select {
@@ -266,11 +301,39 @@
     background: var(--primary-color);
     color: var(--primary-text);
 }
+.form-grup{
+    background-color: rgb(56, 56, 56);
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
 
 .form-group label {
     display: block;
     color: var(--primary-text);
     font-size: 14px;
+}
+.detalles-grup {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+    background-color: rgb(56, 56, 56);
+    border-radius: 10px;
+}
+
+.detalle-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.detalle-item span {
+    color: #fff;
+    font-size: 15px;
+    padding-left: 10px;
+    width: 100%;
+    text-align: right;
 }
 
 .sugerencia-pedido-existente {

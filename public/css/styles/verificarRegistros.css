@@ -26,9 +26,11 @@
         font-weight: 500;
         padding-block: 15px;
     }
-    .section-title i{
+
+    .section-title i {
         color: var(--primary-text);
     }
+
     .filtros-header {
         display: flex;
         align-items: center;
@@ -36,6 +38,7 @@
         border-bottom: 1px solid rgb(83, 83, 83);
         width: 100%;
     }
+
     .btn-filtro {
         background: none;
         border: none;
@@ -55,8 +58,10 @@
         i {
             color: #3498db;
         }
+
         font-size: 15px;
     }
+
     .fecha-header {
         background: var(--primary-color);
         padding: 15px;
@@ -373,8 +378,13 @@
         }
     }
 
+    .btn-calcular-total {
+        z-index: 0 !important;
+    }
+
     .btn-calcular-total:hover {
         background-color: #45a049 !important;
         transition: all 0.3s ease;
+        z-index: 0;
     }
 }

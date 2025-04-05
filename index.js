@@ -3865,7 +3865,7 @@ app.get('/obtener-almacen-general', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen general!A:F'  // Ajusta el rango según tus columnas
+            range: 'Almacen general!A:H'  // Ajusta el rango según tus columnas
         });
 
         const rows = response.data.values || [];
@@ -3904,7 +3904,7 @@ app.delete('/eliminar-producto-almacen', requireAuth, async (req, res) => {
         // Obtener todos los registros para encontrar la fila a eliminar
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen general!A2:F'
+            range: 'Almacen general!A2:H'
         });
 
         const rows = response.data.values || [];
@@ -3945,13 +3945,13 @@ app.delete('/eliminar-producto-almacen', requireAuth, async (req, res) => {
 });
 app.put('/actualizar-producto-almacen', requireAuth, async (req, res) => {
     try {
-        const { id, nombre, gramaje, stock, cantidadTira, lista } = req.body;
+        const { id, nombre, gramaje, stock, cantidadTira, lista,codigob, precios } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Get all records to find the row to update
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen general!A2:F'
+            range: 'Almacen general!A2:H'
         });
 
         const rows = response.data.values || [];
@@ -3967,10 +3967,10 @@ app.put('/actualizar-producto-almacen', requireAuth, async (req, res) => {
         // Update the row
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Almacen general!A${rowIndex + 2}:F${rowIndex + 2}`,
+            range: `Almacen general!A${rowIndex + 2}:H${rowIndex + 2}`,
             valueInputOption: 'RAW',
             resource: {
-                values: [[id, nombre, gramaje, stock, cantidadTira, lista]]
+                values: [[id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios]]
             }
         });
 
@@ -3982,16 +3982,16 @@ app.put('/actualizar-producto-almacen', requireAuth, async (req, res) => {
             error: 'Error al actualizar el producto' 
         });
     }
-});
+}); 
 app.post('/agregar-producto-almacen', requireAuth, async (req, res) => {
     try {
-        const { nombre, gramaje, stock, cantidadTira, lista } = req.body;
+        const { nombre, gramaje, stock, cantidadTira, lista, codigob, precios } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Get current products to determine the next ID
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen general!A2:A'
+            range: 'Almacen general!A2:H'
         });
 
         const existingIds = response.data.values || [];
@@ -4013,11 +4013,11 @@ app.post('/agregar-producto-almacen', requireAuth, async (req, res) => {
         // Add the new product
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen general!A2:F',
+            range: 'Almacen general!A2:H',
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
             resource: {
-                values: [[formattedId, nombre, gramaje, stock, cantidadTira, lista]]
+                values: [[formattedId, nombre, gramaje, stock, cantidadTira, lista,codigob, precios]]
             }
         });
 
@@ -4042,7 +4042,7 @@ app.put('/ingresar-stock-almacen', requireAuth, async (req, res) => {
         // Get current product data
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen general!A2:F'
+            range: 'Almacen general!A2:H'
         });
 
         const rows = response.data.values || [];

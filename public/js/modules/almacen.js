@@ -21,13 +21,13 @@ export function inicializarAlmacenGral() {
             <div class="lista-productos"></div>
         </div>
     `;
-    
+
     const btnIngresar = container.querySelector('.btn-agregar-pedido i.fa-plus').parentElement;
     btnIngresar.onclick = () => mostrarFormularioIngreso('');
-    
+
     const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-plus-circle').parentElement;
     btnAgregar.onclick = mostrarFormularioAgregarProducto;
-    
+
     mostrarProductos();
 }
 export async function mostrarFormularioIngreso(producto) {
@@ -88,7 +88,7 @@ export async function mostrarFormularioIngreso(producto) {
                 return;
             }
 
-            const productosFiltrados = window.productosAlmacen.filter(producto => 
+            const productosFiltrados = window.productosAlmacen.filter(producto =>
                 producto[1].toLowerCase().includes(busqueda)
             );
 
@@ -183,7 +183,7 @@ export async function mostrarFormularioIngreso(producto) {
     } catch (error) {
         console.error('Error al mostrar formulario:', error);
         mostrarNotificacion('Error al cargar el formulario', 'error');
-    }finally{
+    } finally {
         ocultarCarga();
     }
 }
@@ -202,7 +202,7 @@ export async function cargarAlmacen() {
         productsContainer.innerHTML = '';
 
         data.pedidos.forEach(producto => {
-            const [id, nombre, gramaje, stock, cantidadTira, lista] = producto;
+            const [id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios] = producto;
 
             let stockClass = '';
             if (stock < 100) {
@@ -239,46 +239,96 @@ export async function cargarAlmacen() {
     }
 }
 window.mostrarDetalleProductoGral = function (producto) {
-    const [id, nombre, gramaje, stock, cantidadTira, lista] = producto;
+    const [id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios] = producto;
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
+    function formatearPrecios(preciosStr, num) {
+        if (!preciosStr) return '<div class="detalle-item"><span>No registrado</span></div>';
 
+        return preciosStr.split(';').map(precio => {
+            const [tipo, valor] = precio.split(',');
+            let nombreTipo = tipo;
+            if (num == 1) {
+                return `<div class="detalle-item">
+                    <p>${nombreTipo}:</p>
+                    <span>Bs. ${valor}</span>
+                </div>`;
+            }
+            else {
+                return `<div class="campo-form">
+                            <div class="campo-form">
+                                        <input type="number" id="editPrice_${tipo}" value="${valor}" class="edit-input" data-tipo="${tipo}">
+                                        <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
+                                        <span>%</span>
+                                </div>
+                        </div>`;
+            }
+        }).join('');
+    }
     contenido.innerHTML = `
         <h2><i class="fas fa-box-open"></i> ${nombre}</h2>
-        <div class="producto-detalles">
-            <div class="detalle-seccion">
-                <p>ID: ${id}</p>
-                <div class="detalles-vista">
-                    <p>Nombre: ${nombre}</p>
-                    <p>Gramaje: ${gramaje} gr.</p>
-                    <p>Stock: ${stock} unidades</p>
-                    <p>Cantidad por Tira: ${cantidadTira}</p>
-                    <p>Lista: ${lista}</p>
-                </div>
-                <div class="detalles-edicion" style="display: none;">
-                    <div class="campo-form">
-                        <label>Nombre:</label>
-                        <input type="text" id="editNombre" value="${nombre}" class="edit-input">
+        <div class="relleno">
+            <div class="producto-detalles">
+                    <div class="detalle-seccion">
+                        <p>Informacion General:</p>                
+                        <div class="detalles-grup">
+                            <div class="detalle-item">
+                                <p>Nombre:</p> <span>${nombre}</span>
+                            </div>
+                            <div class="detalle-item">
+                                <p>Gramaje:</p> <span>${gramaje} gramos</span>
+                            </div>
+                            <div class="detalle-item">
+                                <p>Stock:</p> <span>${stock} Unidades</span>
+                            </div>
+                            <div class="detalle-item">
+                                <p>Cantidad por Tira:</p> <span>${cantidadTira === "No se maneja por tira" ? cantidadTira : cantidadTira + " Unidades"}</span>
+                            </div>
+                            <div class="detalle-item">
+                                <p>Lista:</p> <span>${lista}</span>
+                            </div>
+                            <div class="detalle-item">
+                                <p>Codigo de barras:</p> <span>${codigob || 'No registrado'}</span>
+                            </div>
+                        </div>
+                        <p >Precios:</p>  
+                        <div class="detalles-grup">
+                                <div class="detalle-item"><span>${formatearPrecios(precios, '1') || 'No registrado'}</span></div>
+                        </div>
                     </div>
-                    <div class="campo-form">
-                        <label>Gramaje:</label>
-                        <input type="number" id="editGramaje" value="${gramaje}" class="edit-input">
-                    </div>
-                    <div class="campo-form">
-                        <label>Stock:</label>
-                        <input type="number" id="editStock" value="${stock}" class="edit-input">
-                    </div>
-                   <div class="campo-form">
-                        <label>Cantidad por Tira:</label>
-                        <input type="number" id="editCantidadTira" value="${cantidadTira}" class="edit-input">
-                    </div>
-                    <div class="campo-form">
-                        <label>Lista:</label>
-                        <input type="text" id="editLista" value="${lista}" class="edit-input">
+                    <div class="detalles-edicion" style="display: none;">
+                        <p>Informacion General:</p> 
+                        <div class="campo-form">
+                            <label>Nombre:</label>
+                            <input type="text" id="editNombre" value="${nombre}" class="edit-input">
+                        </div>
+                        <div class="campo-form">
+                            <label>Gramaje:</label>
+                            <input type="number" id="editGramaje" value="${gramaje}" class="edit-input">
+                        </div>
+                        <div class="campo-form">
+                            <label>Stock:</label>
+                            <input type="number" id="editStock" value="${stock}" class="edit-input">
+                        </div>
+                        <div class="campo-form">
+                            <label>Cantidad por Tira:</label>
+                            <input type="number" id="editCantidadTira" value="${cantidadTira}" class="edit-input">
+                        </div>
+                        <div class="campo-form">
+                            <label>Lista:</label>
+                            <input type="text" id="editLista" value="${lista}" class="edit-input">
+                        </div>
+                        <div class="campo-form">
+                            <label>Codigo de barras:</label>
+                            <input type="text" id="editCodigoBarras" value="${codigob}" class="edit-input">
+                        </div>
+                        <p>Precios:</p>
+                        ${formatearPrecios(precios, '2') || 'No registrado'}
                     </div>
                 </div>
             </div>
         </div>
+        
         <div class="anuncio-botones">
             <button class="anuncio-btn blue editar">Editar</button>
             <button class="anuncio-btn green guardar" style="display: none;">Guardar</button>
@@ -288,8 +338,22 @@ window.mostrarDetalleProductoGral = function (producto) {
     `;
 
     anuncio.style.display = 'flex';
-    
-    const detallesVista = contenido.querySelector('.detalles-vista');
+    document.querySelectorAll('.porcentaje').forEach(input => {
+        input.addEventListener('input', function () {
+            const tipo = this.id.split('_')[1];
+            const precioInput = document.getElementById(`editPrice_${tipo}`);
+            const porcentaje = parseFloat(this.value) || 0;
+            const precioBase = parseFloat(precioInput.value) || 0;
+
+            if (porcentaje > 0) {
+                const aumento = precioBase * (porcentaje / 100);
+                const precioFinal = precioBase + aumento;
+                precioInput.value = precioFinal.toFixed(2);
+            }
+        });
+    });
+
+    const detallesVista = contenido.querySelectorAll('.detalles-vista');
     const detallesEdicion = contenido.querySelector('.detalles-edicion');
     const btnEditar = contenido.querySelector('.editar');
     const btnGuardar = contenido.querySelector('.guardar');
@@ -303,7 +367,8 @@ window.mostrarDetalleProductoGral = function (producto) {
     };
 
     btnEditar.onclick = () => {
-        detallesVista.style.display = 'none';
+        const detallesGrup = contenido.querySelector('.detalle-seccion');
+        detallesGrup.style.display = 'none';
         detallesEdicion.style.display = 'block';
         btnEditar.style.display = 'none';
         btnGuardar.style.display = 'inline-block';
@@ -312,13 +377,22 @@ window.mostrarDetalleProductoGral = function (producto) {
     btnGuardar.onclick = async () => {
         try {
             mostrarCarga();
+            const preciosInputs = Array.from(contenido.querySelectorAll('.campo-form input[id^="editPrice_"]'));
+            const preciosActualizados = preciosInputs.map(input => {
+                const tipo = input.dataset.tipo;
+                const valor = input.value;
+                return `${tipo},${valor}`;
+            }).join(';');
+            const cantidadTira = document.getElementById('editCantidadTira').value;
             const datosActualizados = {
                 id,
                 nombre: document.getElementById('editNombre').value,
                 gramaje: document.getElementById('editGramaje').value,
                 stock: document.getElementById('editStock').value,
-                cantidadTira: document.getElementById('editCantidadTira').value,
-                lista: document.getElementById('editLista').value
+                cantidadTira: cantidadTira === "" ? "No se maneja por tira" : cantidadTira,
+                lista: document.getElementById('editLista').value,
+                codigob: document.getElementById('editCodigoBarras').value,
+                precios: preciosActualizados
             };
 
             const response = await fetch('/actualizar-producto-almacen', {
@@ -346,43 +420,94 @@ window.mostrarDetalleProductoGral = function (producto) {
     };
 };
 function mostrarFormularioAgregarProducto() {
+
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
+    const preciosBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][7] : 'Normal,0;Mayorista,0';
+    function formatearPrecios(preciosStr, num) {
+        if (!preciosStr) return '<div class="detalle-item"><span>No registrado</span></div>';
 
+        return preciosStr.split(';').map(precio => {
+            const [tipo, valor] = precio.split(',');
+            let nombreTipo = tipo;
+            if (num == 1) {
+                return `<div class="detalle-item">
+                <p>${nombreTipo}:</p>
+                <span>Bs. ${valor}</span>
+            </div>`;
+            }
+            else {
+                return `<div class="campo-form">
+                            <label>${nombreTipo}:</label>
+                            <div class="precio-container">
+                                <div class="campo-form">
+                                        <input type="number" id="editPrice_${tipo}" value="0" class="edit-input" data-tipo="${tipo}">
+                                        <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
+                                        <span>%</span>
+                                </div>
+                            </div>
+                        </div>`;
+            }
+        }).join('');
+    }
     contenido.innerHTML = `
         <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
-        <div class="producto-detalles">
-            <div class="detalle-seccion">
-                <div class="campo-form">
-                    <label>Nombre del Producto:</label>
-                    <input type="text" id="nuevoNombre" class="edit-input" required>
+        <div class="relleno">
+            <div class="producto-detalles">
+                <div class="detalle-seccion">
+                <p>Informacion General:</p>
+                    <div class="campo-form">
+                        <label>Nombre:</label>
+                        <input type="text" id="nuevoNombre" class="edit-input" required>
+                    </div>
+                    <div class="campo-form">
+                        <label>Gramaje:</label>
+                        <input type="number" id="nuevoGramaje" class="edit-input" required>
+                    </div>
+                    <div class="campo-form">
+                        <label>Stock Total:</label>
+                        <input type="number" id="nuevoStock" class="edit-input" required>
+                    </div>
+                    <div class="campo-form">
+                        <label>Cantidad por Tira:</label>
+                        <input type="number" id="nuevoCantidadTira" value="0" class="edit-input">
+                    </div>
+                    <div class="campo-form">
+                        <label>Lista:</label>
+                        <input type="text" id="nuevoLista" class="edit-input" required>
+                    </div>
+                    <div class="campo-form">
+                        <label>Codigo de barras:</label>
+                        <input type="number" id="nuevoCodigoBarras" class="edit-input" required>
+                    </div>
                 </div>
-                <div class="campo-form">
-                    <label>Gramaje:</label>
-                    <input type="number" id="nuevoGramaje" class="edit-input" required>
-                </div>
-                <div class="campo-form">
-                    <label>Stock Total:</label>
-                    <input type="number" id="nuevoStock" class="edit-input" required>
-                </div>
-                <div class="campo-form">
-                    <label>Cantidad por Tira:</label>
-                    <input type="number" id="nuevoCantidadTira" class="edit-input" required>
-                </div>
-                <div class="campo-form">
-                    <label>Lista:</label>
-                    <input type="text" id="nuevoLista" class="edit-input" required>
-                </div>
+                <p>Precios:</p>
+                ${formatearPrecios(preciosBase, '2')}
             </div>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
 
+    anuncio.style.display = 'flex';
+    // Agregar después de que el formulario se muestre
+    document.querySelectorAll('.porcentaje').forEach(input => {
+        input.addEventListener('input', function () {
+            const tipo = this.id.split('_')[1];
+            const precioInput = document.getElementById(`editPrice_${tipo}`);
+            const porcentaje = parseFloat(this.value) || 0;
+            const precioBase = parseFloat(precioInput.value) || 0;
+
+            if (porcentaje > 0) {
+                const aumento = precioBase * (porcentaje / 100);
+                const precioFinal = precioBase + aumento;
+                precioInput.value = precioFinal.toFixed(2);
+            }
+        });
+    });
     anuncio.querySelector('.cancelar').onclick = () => {
         anuncio.style.display = 'none';
     };
@@ -390,13 +515,25 @@ function mostrarFormularioAgregarProducto() {
     anuncio.querySelector('.guardar').onclick = async () => {
         try {
             mostrarCarga();
+            const preciosInputs = Array.from(contenido.querySelectorAll('.campo-form input[id^="editPrice_"]'));
+            const preciosActualizados = preciosInputs.map(input => {
+                const tipo = input.dataset.tipo;
+                const valor = input.value;
+                return `${tipo},${valor}`;
+            }).join(';');
+
+            const cantidadTira = document.getElementById('nuevoCantidadTira').value;
+
             const nuevoProducto = {
                 nombre: document.getElementById('nuevoNombre').value,
                 gramaje: document.getElementById('nuevoGramaje').value,
                 stock: document.getElementById('nuevoStock').value,
-                cantidadTira: document.getElementById('nuevoCantidadTira').value,
-                lista: document.getElementById('nuevoLista').value
+                cantidadTira: cantidadTira === "0" ? "No se maneja por tira" : cantidadTira,
+                lista: document.getElementById('nuevoLista').value,
+                codigob: document.getElementById('nuevoCodigoBarras')?.value || '',
+                precios: preciosActualizados
             };
+
 
             const response = await fetch('/agregar-producto-almacen', {
                 method: 'POST',
