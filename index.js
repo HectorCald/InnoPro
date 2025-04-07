@@ -4107,6 +4107,8 @@ app.post('/agregar-producto-almacen', requireAuth, async (req, res) => {
         });
     }
 });
+
+
 app.put('/ingresar-stock-almacen', requireAuth, async (req, res) => {
     try {
         const { id, cantidad } = req.body;
@@ -4154,8 +4156,6 @@ app.put('/ingresar-stock-almacen', requireAuth, async (req, res) => {
         });
     }
 });
-
-
 app.delete('/eliminar-formato-precio', requireAuth, async (req, res) => {
     try {
         const { tipo } = req.body;
@@ -4236,7 +4236,102 @@ app.post('/agregar-formato-precio', requireAuth, async (req, res) => {
         });
     }
 });
+app.put('/retirar-stock-almacen', requireAuth, async (req, res) => {
+    try {
+        const { id, cantidad } = req.body;
+        
+        // Obtener la hoja de cálculo
+        const sheets = google.sheets({ version: 'v4', auth });
+        const spreadsheetId = process.env.SPREADSHEET_ID;
+        
+        // Obtener el stock actual
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range: 'Almacen general!A2:D',
+        });
+        
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+        
+        if (rowIndex === -1) {
+            return res.json({ success: false, error: 'Producto no encontrado' });
+        }
+        
+        const stockActual = parseInt(rows[rowIndex][3]);
+        const nuevoStock = stockActual - cantidad;
+        
+        if (nuevoStock < 0) {
+            return res.json({ success: false, error: 'Stock insuficiente' });
+        }
+        
+        // Actualizar el stock
+        await sheets.spreadsheets.values.update({
+            spreadsheetId,
+            range: `Almacen general!D${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[nuevoStock]]
+            }
+        });
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.json({ success: false, error: 'Error al actualizar el stock' });
+    }
+});
 
+
+app.post('/registrar-movimiento-almacen', async (req, res) => {
+    try {
+        const { tipo, producto, cantidad, operario } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener el último ID
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-gral!A:A'
+        });
+        
+        const rows = response.data.values || [];
+        let lastId = 0;
+        
+        rows.forEach(row => {
+            if (row[0] && row[0].startsWith('MAG-')) {
+                const num = parseInt(row[0].split('-')[1]);
+                if (!isNaN(num) && num > lastId) {
+                    lastId = num;
+                }
+            }
+        });
+
+        const newId = `MAG-${lastId + 1}`;
+        const fecha = new Date().toLocaleString('es-ES');
+
+        // Insertar nuevo registro incluyendo el operario
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-gral!A:G',
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[
+                    newId,
+                    fecha,
+                    tipo,
+                    producto,
+                    cantidad,
+                    operario,
+                    'Almacén General'
+                ]]
+            }
+        });
+
+        res.json({ success: true, id: newId });
+    } catch (error) {
+        console.error('Error al registrar movimiento:', error);
+        res.json({ success: false, error: 'Error al registrar movimiento' });
+    }
+});
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {

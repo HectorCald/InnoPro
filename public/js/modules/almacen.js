@@ -8,9 +8,14 @@ export function inicializarAlmacenGral() {
         <div class="alamcenGral-container">
             <div class="almacen-botones">
                 <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                        <i class="fas fa-plus"></i>
+                        <i class="fas fa-arrow-circle-down"></i>
                     </button>
-                    <p>Ingresar</p>
+                    <p>Ingresos</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                        <i class="fas fa-arrow-circle-up"></i>
+                    </button>
+                    <p>Salidas</p>
                 </div>
                 <div class="cuadro-btn"><button class="btn-agregar-pedido">
                        <i class="fas fa-box"></i>
@@ -22,13 +27,21 @@ export function inicializarAlmacenGral() {
                     </button>
                     <p>Formato</p>
                 </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                        <i class="fas fa-clipboard-list"></i>
+                    </button>
+                    <p>Pedidos</p>
+                </div>
             </div>    
             <div class="lista-productos"></div>
         </div>
     `;
 
-    const btnIngresar = container.querySelector('.btn-agregar-pedido i.fa-plus').parentElement;
+    const btnIngresar = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-down').parentElement;
     btnIngresar.onclick = () => mostrarFormularioIngreso('');
+
+    const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
+    btnSalidas.onclick = () => mostrarFormularioSalidas('');
 
     const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-box').parentElement;
     btnAgregar.onclick = mostrarFormularioAgregarProducto;
@@ -36,8 +49,11 @@ export function inicializarAlmacenGral() {
     const btnFormato = container.querySelector('.btn-agregar-pedido i.fa-cog').parentElement;
     btnFormato.onclick = mostrarFormularioFormato;
 
+    const btnPedidos = container.querySelector('.btn-agregar-pedido i.fa-clipboard-list').parentElement;
+    btnPedidos.onclick = () => mostrarFormularioPedidos('');
+
     mostrarProductos();
-}
+};
 export async function mostrarFormularioIngreso(producto) {
     try {
         mostrarCarga();
@@ -52,41 +68,45 @@ export async function mostrarFormularioIngreso(producto) {
         const contenido = anuncio.querySelector('.anuncio-contenido');
 
         contenido.innerHTML = `
-            <h2><i class="fas fa-plus"></i> Ingresar Stock</h2>
-            <div class="relleno">
-                    <p>Buscar Producto:</p>
-                    <div class="form-grup">
-                        <div class="autocomplete-wrapper">
-                            <input type="text" id="buscarProducto" class="edit-input" placeholder="Escriba para buscar...">
-                            <div class="productos-sugeridos" style="display: none;">
-                            <!-- Las sugerencias se mostrarán aquí -->
-                            </div>
-                        </div>
-                    </div>
-                    <p class="recomendacion">Selecciona un prodcuto:</p>
-                    <div class="producto-seleccionado form-grup" style="display: none;">
-                        <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
-                        <input type="hidden" id="idProductoSeleccionado">
-                    </div>
-                    
-                    <div class="campo-form">
-                    <p>Cantidad a Ingresar:</p>
-                        <input type="number" id="cantidadIngreso" class="edit-input" min="1" placeholder="Cantidad">
-                    </div>
-                </div>
+    <h2><i class="fas fa-plus"></i> Ingresar Stock</h2>
+    <div class="relleno">
+        <div class="productos-seleccionados">
+            <p>Productos a ingresar:</p>
+            <div class="lista-productos-seleccionados"></div>
+        </div>
+        <p>Buscar Producto:</p>
+        <div class="form-grup">
+            <div class="autocomplete-wrapper">
+                <input type="text" id="buscarProducto" class="edit-input" placeholder="Escriba para buscar...">
+                <div class="productos-sugeridos" style="display: none;"></div>
             </div>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn green ingresar" disabled><i class="fas fa-plus-circle"></i> Ingresar Stock</button>
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="producto-seleccionado form-grup" style="display: none;">
+            <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
+            <input type="hidden" id="idProductoSeleccionado">
+            <div class="campo-form">
+                <p>Cantidad:</p>
+                <input type="number" id="cantidadIngreso" class="edit-input" min="1" placeholder="Cantidad">
             </div>
-        `;
+            <button class="anuncio-btn blue agregar-a-lista"><i class="fas fa-plus"></i> Agregar a la lista</button>
+        </div>
+    </div>
+    <div class="anuncio-botones">
+        <button class="anuncio-btn green ingresar" disabled><i class="fas fa-plus-circle"></i> Procesar Ingresos</button>
+        <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+    </div>
+`;
+
 
         anuncio.style.display = 'flex';
+        let productosParaProcesar = [];
 
         const inputBuscar = contenido.querySelector('#buscarProducto');
         const sugerencias = contenido.querySelector('.productos-sugeridos');
-        const btnIngresar = contenido.querySelector('.ingresar');
         const recomendacion = contenido.querySelector('.recomendacion');
+        const btnAgregarLista = contenido.querySelector('.agregar-a-lista');
+        const listaProductos = contenido.querySelector('.lista-productos-seleccionados');
+        const btnProcesar = contenido.querySelector('.ingresar'); 
 
         // Configurar el evento input antes de establecer el valor
         const handleInput = () => {
@@ -153,37 +173,77 @@ export async function mostrarFormularioIngreso(producto) {
         anuncio.querySelector('.cancelar').onclick = () => {
             anuncio.style.display = 'none';
         };
-
-        btnIngresar.onclick = async () => {
+        btnAgregarLista.onclick = () => {
+            const id = document.getElementById('idProductoSeleccionado').value;
+            const nombre = document.getElementById('nombreProductoSeleccionado').textContent;
+            const cantidad = parseInt(document.getElementById('cantidadIngreso').value);
+        
+            if (!id || !cantidad || cantidad < 1) {
+                mostrarNotificacion('Complete los campos correctamente', 'error');
+                return;
+            }
+        
+            productosParaProcesar.push({ id, nombre, cantidad });
+            actualizarListaProductos();
+            
+            // Limpiar campos
+            document.getElementById('buscarProducto').value = '';
+            document.getElementById('cantidadIngreso').value = '';
+            document.querySelector('.producto-seleccionado').style.display = 'none';
+            btnProcesar.disabled = false;
+        };
+        
+        function actualizarListaProductos() {
+            listaProductos.innerHTML = productosParaProcesar.map((prod, index) => `
+                <div class="detalle-item" style="border-bottom:1px solid gray; margin-top:10px;margin-bottom:10px; padding:5px">
+                    <p>${prod.nombre}</p>
+                    <span>${prod.cantidad} und.</span>
+                    <i class="fas fa-trash delete eliminar-de-lista" data-index="${index}"></i>
+                </div>
+            `).join('');
+        
+            // Agregar eventos para eliminar items
+            listaProductos.querySelectorAll('.eliminar-de-lista').forEach(btn => {
+                btn.onclick = (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    productosParaProcesar.splice(index, 1);
+                    actualizarListaProductos();
+                    btnProcesar.disabled = productosParaProcesar.length === 0;
+                };
+            });
+        }
+        
+        // Modificar el evento onclick del botón procesar:
+        btnProcesar.onclick = async () => {
             try {
-                const id = document.getElementById('idProductoSeleccionado').value;
-                const cantidad = parseInt(document.getElementById('cantidadIngreso').value);
-
-                if (!id || !cantidad || cantidad < 1) {
-                    mostrarNotificacion('Por favor complete todos los campos correctamente', 'error');
-                    return;
-                }
-
                 mostrarCarga();
-                const response = await fetch('/ingresar-stock-almacen', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id, cantidad })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    mostrarNotificacion('Stock ingresado correctamente', 'success');
-                    anuncio.style.display = 'none';
-                    cargarAlmacen();
-                } else {
-                    throw new Error(data.error || 'Error al ingresar stock');
+                for (const producto of productosParaProcesar) {
+                    const response = await fetch('/ingresar-stock-almacen', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            id: producto.id, 
+                            cantidad: producto.cantidad 
+                        })
+                    });
+        
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error(`Error al procesar ${producto.nombre}`);
+                    }
+        
+                    // Registrar el movimiento después de procesar exitosamente
+                    await registrarMovimiento('Ingreso', producto.nombre, producto.cantidad);
                 }
+        
+                mostrarNotificacion('Productos procesados correctamente', 'success');
+                anuncio.style.display = 'none';
+                cargarAlmacen();
             } catch (error) {
                 console.error('Error:', error);
-                mostrarNotificacion('Error al ingresar stock', 'error');
+                mostrarNotificacion(error.message, 'error');
             } finally {
                 ocultarCarga();
             }
@@ -194,7 +254,216 @@ export async function mostrarFormularioIngreso(producto) {
     } finally {
         ocultarCarga();
     }
-}
+};
+export async function mostrarFormularioSalidas(producto) {
+    try {
+        mostrarCarga();
+        const response = await fetch('/obtener-almacen-general');
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error('Error al cargar los productos');
+        }
+        window.productosAlmacen = data.pedidos;
+
+        const anuncio = document.querySelector('.anuncio');
+        const contenido = anuncio.querySelector('.anuncio-contenido');
+
+        contenido.innerHTML = `
+        <h2><i class="fas fa-minus"></i> Registrar Salida</h2>
+        <div class="relleno">
+            <div class="productos-seleccionados">
+                <p>Productos a retirar:</p>
+                <div class="lista-productos-seleccionados"></div>
+            </div>
+            <p>Buscar Producto:</p>
+            <div class="form-grup">
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="buscarProductoSalida" class="edit-input" placeholder="Escriba para buscar...">
+                    <div class="productos-sugeridos" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="producto-seleccionado form-grup" style="display: none;">
+                <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
+                <p><strong>Stock actual:</strong> <span id="stockActual">0</span> unidades</p>
+                <input type="hidden" id="idProductoSeleccionado">
+                <div class="campo-form">
+                    <p>Cantidad:</p>
+                    <input type="number" id="cantidadSalida" class="edit-input" min="1" placeholder="Cantidad">
+                </div>
+                <button class="anuncio-btn blue agregar-a-lista"><i class="fas fa-plus"></i> Agregar a la lista</button>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn red retirar" disabled><i class="fas fa-minus-circle"></i> Procesar Salidas</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+
+
+        anuncio.style.display = 'flex';
+        let productosParaProcesar = [];
+        const inputBuscar = contenido.querySelector('#buscarProductoSalida');
+        const sugerencias = contenido.querySelector('.productos-sugeridos');
+        const btnRetirar = contenido.querySelector('.retirar');
+        const recomendacion = contenido.querySelector('.recomendacion');
+        const btnAgregarLista = contenido.querySelector('.agregar-a-lista');
+        const listaProductos = contenido.querySelector('.lista-productos-seleccionados');
+        const btnProcesar = contenido.querySelector('.retirar');
+
+        const handleInput = () => {
+            const busqueda = inputBuscar.value.toLowerCase().trim();
+            if (busqueda.length < 2) {
+                sugerencias.style.display = 'none';
+                return;
+            }
+
+            const productosFiltrados = window.productosAlmacen.filter(producto =>
+                producto[1].toLowerCase().includes(busqueda)
+            );
+
+            if (productosFiltrados.length > 0) {
+                sugerencias.innerHTML = productosFiltrados.map(producto => `
+                    <div class="sugerencia-item" data-id="${producto[0]}" data-nombre="${producto[1]}" data-gramaje="${producto[2]}" data-stock="${producto[3]}">
+                        ${producto[1]} - ${producto[2]}gr (Stock: ${producto[3]})
+                    </div>
+                `).join('');
+                sugerencias.style.display = 'block';
+
+                sugerencias.querySelectorAll('.sugerencia-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const id = item.dataset.id;
+                        const nombre = item.dataset.nombre;
+                        const gramaje = item.dataset.gramaje;
+                        const stock = item.dataset.stock;
+                        document.getElementById('idProductoSeleccionado').value = id;
+                        document.getElementById('nombreProductoSeleccionado').textContent = `${nombre} - ${gramaje}gr`;
+                        document.getElementById('stockActual').textContent = stock;
+                        document.querySelector('.producto-seleccionado').style.display = 'block';
+                        inputBuscar.value = `${nombre} - ${gramaje}gr`;
+                        sugerencias.style.display = 'none';
+                        btnRetirar.disabled = false;
+                        recomendacion.style.display = 'none';
+                    });
+                });
+            } else {
+                sugerencias.innerHTML = '<div class="no-resultados">No se encontraron productos</div>';
+                sugerencias.style.display = 'block';
+            }
+        };
+
+        inputBuscar.addEventListener('input', handleInput);
+
+        if (producto) {
+            inputBuscar.value = producto;
+            setTimeout(() => {
+                handleInput();
+                if (sugerencias.children.length > 0) {
+                    sugerencias.style.display = 'block';
+                }
+            }, 100);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!sugerencias.contains(e.target) && e.target !== inputBuscar) {
+                sugerencias.style.display = 'none';
+            }
+        });
+
+        anuncio.querySelector('.cancelar').onclick = () => {
+            anuncio.style.display = 'none';
+        };
+        btnAgregarLista.onclick = () => {
+            const id = document.getElementById('idProductoSeleccionado').value;
+            const nombre = document.getElementById('nombreProductoSeleccionado').textContent;
+            const cantidad = parseInt(document.getElementById('cantidadSalida').value);
+            const stockActual = parseInt(document.getElementById('stockActual').textContent);
+    
+            if (!id || !cantidad || cantidad < 1) {
+                mostrarNotificacion('Complete los campos correctamente', 'error');
+                return;
+            }
+    
+            if (cantidad > stockActual) {
+                mostrarNotificacion('La cantidad a retirar no puede ser mayor al stock actual', 'error');
+                return;
+            }
+    
+            productosParaProcesar.push({ id, nombre, cantidad });
+            actualizarListaProductos();
+            
+            // Limpiar campos
+            document.getElementById('buscarProductoSalida').value = '';
+            document.getElementById('cantidadSalida').value = '';
+            document.querySelector('.producto-seleccionado').style.display = 'none';
+            btnProcesar.disabled = false;
+        };
+        
+        function actualizarListaProductos() {
+            listaProductos.innerHTML = productosParaProcesar.map((prod, index) => `
+                <div class="detalle-item" style="border-bottom:1px solid gray; margin-top:10px;margin-bottom:10px; padding:5px">
+                    <p>${prod.nombre}</p>
+                    <span>${prod.cantidad} und.</span>
+                    <i class="fas fa-trash delete eliminar-de-lista" data-index="${index}"></i>
+                </div>
+            `).join('');
+        
+            // Agregar eventos para eliminar items
+            listaProductos.querySelectorAll('.eliminar-de-lista').forEach(btn => {
+                btn.onclick = (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    productosParaProcesar.splice(index, 1);
+                    actualizarListaProductos();
+                    btnProcesar.disabled = productosParaProcesar.length === 0;
+                };
+            });
+        }
+        
+        btnProcesar.onclick = async () => {
+            try {
+                mostrarCarga();
+                for (const producto of productosParaProcesar) {
+                    const response = await fetch('/retirar-stock-almacen', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            id: producto.id, 
+                            cantidad: producto.cantidad 
+                        })
+                    });
+        
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error(`Error al procesar ${producto.nombre}`);
+                    }
+        
+                    // Registrar el movimiento después de procesar exitosamente
+                    await registrarMovimiento('Salida', producto.nombre, producto.cantidad);
+                }
+        
+                mostrarNotificacion('Productos procesados correctamente', 'success');
+                anuncio.style.display = 'none';
+                cargarAlmacen();
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion(error.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
+        };
+
+    } catch (error) {
+        console.error('Error al mostrar formulario:', error);
+        mostrarNotificacion('Error al cargar el formulario', 'error');
+    } finally {
+        ocultarCarga();
+    }
+};
+function mostrarFormularioPedidos() {
+    mostrarNotificacion('Esta opción aun esta en desarrollo', 'warning');
+};
 export async function cargarAlmacen() {
     try {
         mostrarCarga();
@@ -245,7 +514,7 @@ export async function cargarAlmacen() {
     } finally {
         ocultarCarga();
     }
-}
+};
 window.mostrarDetalleProductoGral = function (producto) {
     const [id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios] = producto;
     const anuncio = document.querySelector('.anuncio');
@@ -272,7 +541,7 @@ window.mostrarDetalleProductoGral = function (producto) {
                                     <span>%</span>
                             </div>
                         </div>`;
-                        
+
             }
         }).join('');
     }
@@ -355,7 +624,7 @@ window.mostrarDetalleProductoGral = function (producto) {
             const precioInput = document.getElementById(`editPrice_${tipo}`);
             const porcentaje = parseFloat(this.value) || 0;
             const precioBase = parseFloat(precioInput.value) || 0;
-            
+
 
             if (porcentaje > 0) {
                 const aumento = precioBase * (porcentaje / 100);
@@ -566,7 +835,7 @@ function mostrarFormularioAgregarProducto() {
             ocultarCarga();
         }
     };
-}
+};
 function mostrarConfirmacionEliminar(id, nombre) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -614,7 +883,7 @@ function mostrarConfirmacionEliminar(id, nombre) {
             ocultarCarga();
         }
     };
-}
+};
 export function mostrarProductos() {
     const container = document.querySelector('.lista-productos');
     container.style.display = 'flex';
@@ -643,13 +912,21 @@ export function mostrarProductos() {
     // Call cargarAlmacen after creating the container
     cargarAlmacen();
 
+    function normalizarTexto(texto) {
+        return texto.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Elimina tildes
+            .replace(/\s+/g, ' ')            // Reduce espacios múltiples a uno
+            .trim();                         // Elimina espacios al inicio y final
+    }
+
     const searchInput = document.getElementById('searchProductAcopio');
     searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
+        const searchTerm = normalizarTexto(e.target.value);
         const products = document.querySelectorAll('.product-card');
 
         products.forEach(product => {
-            const productName = product.querySelector('.product-name span').textContent.toLowerCase();
+            const productName = normalizarTexto(product.querySelector('.product-name span').textContent);
             product.style.display = productName.includes(searchTerm) ? 'grid' : 'none';
         });
     });
@@ -685,7 +962,7 @@ export function mostrarProductos() {
             products.forEach(product => container.appendChild(product));
         });
     });
-}
+};
 function mostrarFormularioFormato() {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -694,7 +971,7 @@ function mostrarFormularioFormato() {
     function actualizarListaFormatos(preciosStr) {
         const detallesGrup = contenido.querySelector('.detalles-grup');
         detallesGrup.innerHTML = formatearPrecios(preciosStr, '1');
-        
+
         // Reattach event listeners for delete buttons
         document.querySelectorAll('.delete-price').forEach(icon => {
             icon.addEventListener('click', (e) => {
@@ -794,11 +1071,11 @@ function mostrarFormularioFormato() {
     });
 
     anuncio.style.display = 'flex';
-    
+
     anuncio.querySelector('.cancelar').onclick = () => {
         anuncio.style.display = 'none';
     };
-}
+};
 function mostrarConfirmacionEliminarPrecio(nombre) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -841,7 +1118,7 @@ function mostrarConfirmacionEliminarPrecio(nombre) {
                         return [...producto.slice(0, 7), nuevosPrecios];
                     });
                 }
-                
+
                 mostrarNotificacion('Formato de precio eliminado correctamente', 'success');
                 mostrarFormularioFormato();
                 cargarAlmacen(); // Reload the products to reflect the changes
@@ -856,4 +1133,55 @@ function mostrarConfirmacionEliminarPrecio(nombre) {
             cargarAlmacen();
         }
     };
+};
+
+async function obtenerUsuarioActual() {
+    try {
+        const response = await fetch('/obtener-mi-rol');
+        const data = await response.json();
+        
+        if (data.nombre) {
+            return data.nombre;
+        }
+        
+        if (data.error) {
+            console.error('Error al obtener usuario:', data.error);
+            return 'Sistema';
+        }
+        
+        return 'Sistema';
+    } catch (error) {
+        console.error('Error al obtener usuario:', error);
+        return 'Sistema';
+    }
 }
+
+async function registrarMovimiento(tipo, producto, cantidad) {
+    try {
+        const operario = await obtenerUsuarioActual(); // Esperar a obtener el usuario
+        const response = await fetch('/registrar-movimiento-almacen', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tipo,
+                producto,
+                cantidad,
+                operario
+            })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error('Error al registrar movimiento');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al registrar el movimiento', 'error');
+    }
+}
+
+
+
+

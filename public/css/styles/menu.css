@@ -3,7 +3,7 @@
     position: fixed;
     bottom: 20px;
     right: 20px;
-    z-index: 998;
+    z-index: 7;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -20,7 +20,7 @@
         cursor: pointer;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
         transition: all 0.3s ease;
-        z-index: 999;
+        z-index: 7;
     }
 
     .hamburger {
@@ -30,6 +30,7 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        z-index: 1;
     }
 
     .hamburger span {
@@ -69,7 +70,7 @@
         visibility: hidden;
         transition: all 0.3s ease;
         transform: translateY(20px);
-        z-index: 999;
+        z-index: 7;
     }
 
     .menu-secundario.active {
@@ -92,7 +93,7 @@
         position: relative;
         border: none;
         gap: 10px;
-        z-index: 999999;
+        z-index: 7;
         padding: 10px;
     }
 
@@ -113,7 +114,7 @@
         right: 0;
         bottom: 0;
         background: rgba(0, 0, 0, 0.692);
-        z-index: 999;
+        z-index: 6;
         display: none;
     }
 }
@@ -131,13 +132,12 @@
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         display: flex !important;
         flex-direction: column;
-        z-index: 1000;
 
 
         .menu-principal {
-            display: none !important;
-            z-index: 1200;
+            display: none;
         }
+        z-index: 9;
 
         .menu-secundario {
             position: static !important;
@@ -152,6 +152,7 @@
             height: auto;
             bottom: auto;
             right: auto;
+            z-index: 9;
         }
 
         .opcion-btn {

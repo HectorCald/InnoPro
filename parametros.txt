@@ -25,3 +25,5 @@ Info: <i class="fas fa-info-circle"></i>
 Producto: <i class="fas fa-box"></i>
 Parametros: <i class="fas fa-cog"></i>
 Eliminar: <i class="fas fa-trash"></i>
+salidas: <i class="fas fa-arrow-circle-down"></i>
+ingreso: <i class="fas fa-arrow-circle-up"></i>
