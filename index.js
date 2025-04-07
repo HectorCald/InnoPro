@@ -141,7 +141,7 @@ async function verificarPin(pin) {
 
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
-    res.render('mantenimiento');
+    res.render('login');
 });
 
 app.get('/dashboard', requireAuth, (req, res) => {
@@ -153,7 +153,7 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
 });
 
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    res.render('mantenimiento');
+    res.render('dashboard_db');
 });
 app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
