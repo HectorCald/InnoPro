@@ -313,40 +313,48 @@ async function mostrarFormularioRegla() {
         
         anuncioContenido.innerHTML = `
             <h2><i class="fas fa-plus-circle"></i> Agregar Regla</h2>
-            <input type="text" class="buscador" placeholder="Buscar producto..." id="buscador-producto">
-            <select id="producto-select">
-                <option value="">Seleccione un producto</option>
-                ${dataProductos.productos.map(producto => 
-                    `<option value="${producto}">${producto}</option>`
-                ).join('')}
-            </select>
-            <select id="tipo-base">
-                <option value="">Seleccione tipo</option>
-                <option value="etiquetado">Etiquetado</option>
-                <option value="sellado">Sellado</option>
-                <option value="envasado">Envasado</option>
-                <option value="cernido">Cernido especial</option>
-            </select>
-            <div id="precio-cernido-container" style="display: none;">
-                <label>Precio base cernido:</label>
-                <input type="text" id="precio-cernido-especial" 
-                       pattern="[0-9]*[.,]?[0-9]*" 
-                       placeholder="Ejemplo: 0.3">
-            </div>
-            <div id="multiplicador-container">
-                <select id="multiplicador">
-                    <option value="">Seleccione multiplicador</option>
-                    ${[1,2,3,4,5].map(num => 
-                        `<option value="${num}">x${num}</option>`
-                    ).join('')}
-                </select>
-            </div>
-            <div id="rango-gramaje-container">
-                <label>Rango de gramaje (opcional):</label>
-                <div class="rango-inputs">
-                    <input type="number" id="gramaje-min" placeholder="Mínimo" min="0">
-                    <span>a</span>
-                    <input type="number" id="gramaje-max" placeholder="Máximo" min="0">
+            <div class="relleno">
+                <div class="campo-form">
+                     <input type="text" class="buscador" placeholder="Buscar producto..." id="buscador-producto">
+                </div>
+               <div class="campo-form">
+                     <select id="producto-select">
+                        <option value="">Seleccione un producto</option>
+                        ${dataProductos.productos.map(producto => 
+                            `<option value="${producto}">${producto}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="campo-form">
+                     <select id="tipo-base">
+                        <option value="">Seleccione tipo</option>
+                        <option value="etiquetado">Etiquetado</option>
+                        <option value="sellado">Sellado</option>
+                        <option value="envasado">Envasado</option>
+                        <option value="cernido">Cernido especial</option>
+                    </select>
+                </div>
+                <div id="precio-cernido-container" class="campo-form" style="display: none;">
+                    <label>Precio base cernido:</label>
+                    <input type="text" id="precio-cernido-especial" 
+                        pattern="[0-9]*[.,]?[0-9]*" 
+                        placeholder="Ejemplo: 0.3">
+                </div>
+                <div id="multiplicador-container" class="campo-form">
+                    <select id="multiplicador">
+                        <option value="">Seleccione multiplicador</option>
+                        ${[1,2,3,4,5].map(num => 
+                            `<option value="${num}">x${num}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div id="rango-gramaje-container" class="form-grup">
+                    <p>Rango de gramaje (opcional):</p>
+                    <div class="rango-inputs">
+                        <input type="number" id="gramaje-min" placeholder="Mínimo" min="0">
+                        <span>a</span>
+                        <input type="number" id="gramaje-max" placeholder="Máximo" min="0">
+                    </div>
                 </div>
             </div>
             <div class="anuncio-botones">
@@ -518,7 +526,6 @@ function configurarEventosFormulario(anuncio) {
         }
     });
 }
-// Add this new function
 function mostrarAnuncioEliminar(producto, index) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
@@ -526,26 +533,25 @@ function mostrarAnuncioEliminar(producto, index) {
     anuncioContenido.innerHTML = `
         <i class="fas fa-exclamation-triangle"></i>
         <h2>¿Eliminar regla?</h2>
-        <p>¿Está seguro de eliminar la regla para "${producto}"?</p>
-        <p>Esta acción no se puede deshacer</p>
+        <div class="detalles-grup center">
+            <p>¿Está seguro de eliminar la regla de: "${producto}"?</p>
+            <p>Esta acción no se puede deshacer</p>
+        </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn cancelar">Cancelar</button>
-            <button class="anuncio-btn confirmar">Eliminar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+            <button class="anuncio-btn red confirmar">Eliminar</button>
         </div>
     `;
 
     anuncio.style.display = 'flex';
-    document.querySelector('.overlay').style.display = 'block';
 
     // Add event listeners for buttons
     anuncio.querySelector('.cancelar').addEventListener('click', () => {
         anuncio.style.display = 'none';
-        document.querySelector('.overlay').style.display = 'none';
     });
 
     anuncio.querySelector('.confirmar').addEventListener('click', async () => {
         await eliminarRegla(producto, index);
         anuncio.style.display = 'none';
-        document.querySelector('.overlay').style.display = 'none';
     });
 }

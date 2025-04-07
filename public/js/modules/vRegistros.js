@@ -569,6 +569,7 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             mostrarNotificacion('Error al guardar la verificación: ' + error.message, 'error');
         } finally {
             ocultarCarga();
+            mostrarFormularioIngreso(producto)
         }
     });
 
@@ -885,8 +886,7 @@ function configurarFiltros() {
 
         anuncioContenido.innerHTML = `
             <h2><i class="fas fa-filter"></i> Filtros</h2>
-            <div class="detalles-verificacion">
-                <form id="filtros-form">
+                <form id="filtros-form" class="relleno">
                     <div class="campo-form">
                         <label>Operario:</label>
                         <input type="text" id="filtro-nombre" placeholder="Buscar por nombre" value="${valoresGuardados.nombre}">
@@ -908,7 +908,6 @@ function configurarFiltros() {
                         </select>
                     </div>
                 </form>
-            </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn green aplicar"><i class="fas fa-check-circle"></i> Aplicar</button>
                 <button class="anuncio-btn blue limpiar"><i class="fas fa-eraser"></i> Limpiar</button>

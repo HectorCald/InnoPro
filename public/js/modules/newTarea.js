@@ -46,22 +46,27 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
         function mostrarFormularioPrincipal() {
             contenido.innerHTML = `
                 <h2><i class="fas fa-plus-circle"></i>Nueva Tarea</h2>
-                <div class="form-tarea">
-                <div class="campo-form">
-                    <div class="autocomplete-wrapper">
-                        <input type="text" id="nombre-tarea" placeholder="Nombre del producto" 
-                               value="${nombreProductoActual}" 
-                               ${productoPreseleccionado ? 'readonly' : ''}>
-                        <div id="sugerencias-lista" class="sugerencias-lista"></div>
+                <div class="relleno">
+                    <div class="campo-form">
+                        <div class="autocomplete-wrapper">
+                            <input type="text" id="nombre-tarea" placeholder="Nombre del producto" 
+                                value="${nombreProductoActual}" 
+                            ${productoPreseleccionado ? 'readonly' : ''}>
+                                <div id="sugerencias-lista" class="sugerencias-lista"></div>
+                        </div>
+                        <button class="btn-lotes anuncio-btn add" id="btn-mostrar-lotes">
+                            <i class="fas fa-boxes"></i>
+                        </button>
                     </div>
-                    <button class="btn-lotes anuncio-btn add" id="btn-mostrar-lotes">
-                        <i class="fas fa-boxes"></i>
-                    </button>
-                </div>
-                    
-                    <div class="peso-disponible"></div>
-                    <input type="number" id="peso-tarea" placeholder="Peso en kg" step="0.01">
-                    <textarea id="descripcion-tarea" placeholder="Descripción" rows="3"></textarea>
+                    <div class="campo-form peso-disponible"></div>
+                    <div class="campo-form">
+                        <p>Peso Inicial:</p>
+                        <input type="number" id="peso-tarea" placeholder="Peso en kg" step="0.01">
+                    </div>
+                    <div class="form-grup">
+                        <p>Descripción:</p>
+                        <textarea id="descripcion-tarea" placeholder="Descripción" rows="3"></textarea>
+                    </div>
                 </div>
                 <div class="anuncio-botones">
                     <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
@@ -121,7 +126,7 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
             if (pesoInput && pesoDisponible) {
                 const pesoTotal = Array.from(lotesSeleccionados)
                     .reduce((sum, lote) => sum + parseFloat(lote.peso.toString().replace(',', '.')), 0);
-                
+
                 if (pesoTotal > 0) {
                     pesoDisponible.textContent = `Peso total disponible: ${pesoTotal.toFixed(2).toString().replace('.', ',')}kg`;
                     pesoInput.max = pesoTotal;
@@ -159,20 +164,22 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
 
                 contenido.innerHTML = `
                     <h2><i class="fas fa-boxes"></i>Selección de Lotes</h2>
-                    <div class="lotes-grid">
-                        ${data.success && data.lotes.length > 0 ?
-                        data.lotes.map(lote => `
-                                <div class="lote-item" data-lote="${lote.lote}" data-peso="${lote.peso}">
-                                    <p class="lote-numero">Lote ${lote.lote} - ${lote.peso.toString().replace('.', ',')}kg</p>
-                                </div>
-                            `).join('') :
-                        '<div class="no-lotes">No hay lotes disponibles</div>'
-                    }
-                    </div>
-                    <div class="lotes-seleccionados">
-                        <h3>Lotes Seleccionados:</h3>
-                        <div id="lotes-seleccionados-lista"></div>
-                        <div class="peso-total"></div>
+                    <div class="relleno">
+                        <div class="lotes-grid">
+                            ${data.success && data.lotes.length > 0 ?
+                            data.lotes.map(lote => `
+                                    <div class="lote-item" data-lote="${lote.lote}" data-peso="${lote.peso}">
+                                        <p class="lote-numero">Lote ${lote.lote} - ${lote.peso.toString().replace('.', ',')}kg</p>
+                                    </div>
+                                `).join('') :
+                            '<div class="no-lotes">No hay lotes disponibles</div>'
+                        }
+                        </div>
+                        <div class="lotes-seleccionados">
+                            <h3>Lotes Seleccionados:</h3>
+                            <div id="lotes-seleccionados-lista"></div>
+                            <div class="peso-total"></div>
+                        </div>
                     </div>
                     <div class="anuncio-botones">
                         <button class="anuncio-btn blue volver">
@@ -183,15 +190,15 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
                 `;
 
                 document.querySelectorAll('.lote-item').forEach(item => {
-                    item.addEventListener('click', function() {
+                    item.addEventListener('click', function () {
                         const loteData = {
                             lote: this.dataset.lote,
                             peso: this.dataset.peso.toString().replace('.', ',') // Ensure peso is stored with comma
                         };
-                
+
                         const loteExistente = Array.from(lotesSeleccionados)
                             .find(l => l.lote === loteData.lote);
-                
+
                         if (loteExistente) {
                             lotesSeleccionados.delete(loteExistente);
                             this.classList.remove('selected');
@@ -199,7 +206,7 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
                             lotesSeleccionados.add(loteData);
                             this.classList.add('selected');
                         }
-                
+
                         actualizarResumenLotes();
                     });
                 });
@@ -282,12 +289,12 @@ async function guardarTareaConLote(lotes) {
                 const pesoLote = parseFloat(String(l.peso).replace(',', '.'));
                 return sum + (isNaN(pesoLote) ? 0 : pesoLote);
             }, 0);
-        
+
         const pesoTareaNum = parseFloat(pesoTarea);
-        
+
         console.log('Peso Total Disponible:', pesoTotal.toFixed(2));
         console.log('Peso Tarea:', pesoTareaNum.toFixed(2));
-        
+
         if (Number(pesoTareaNum.toFixed(2)) > Number(pesoTotal.toFixed(2))) {
             mostrarNotificacion(`El peso no puede ser mayor al peso total disponible (${pesoTotal.toFixed(2)}kg)`, 'error');
             return;
@@ -479,12 +486,16 @@ export async function agregarProceso(tareaId) {
         contenido.innerHTML = `
             
             <h2><i class="fas fa-cog"></i>Nuevo Proceso</h2>
-            <div class="form-proceso">
-                <div class="autocomplete-wrapper">
-                    <input type="text" id="descripcion-proceso" placeholder="Proceso" autocomplete="off" required>
-                    <div id="sugerencias-proceso" class="sugerencias-lista"></div>
+            <div class="relleno" style="min-height:200px">
+            <p>Proceso:</p>
+                <div class="form-grup">
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="descripcion-proceso" placeholder="Proceso" autocomplete="off" required>
+                        <div id="sugerencias-proceso" class="sugerencias-lista"></div>
+                    </div>
                 </div>
             </div>
+            
             <div class="anuncio-botones">
                 <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
                 <button class="anuncio-btn green confirmar"><i class="fas fa-plus-circle"></i>  Agregar Proceso</button>
@@ -583,7 +594,8 @@ export async function finalizarProceso(tareaId, procesoId) {
         contenido.innerHTML = `
             
             <h2><i class="fas fa-weight"></i>Finalizar Proceso</h2>
-            <div class="form-proceso">
+            <p>Peso Final:</p>
+            <div class="campo-form">
                 <input type="number" id="peso-proceso-final" placeholder="Peso final (kg)" step="0.01" required>
             </div>
             <div class="anuncio-botones">
@@ -776,7 +788,10 @@ function mostrarConfirmacion(titulo, mensaje) {
         contenido.innerHTML = `
             
             <h2><i class="fas fa-exclamation-triangle"></i>${titulo}</h2>
+            <div class="detalles-grup center">
             <p>${mensaje}</p>
+            </div>
+            
             <div class="anuncio-botones">
                 <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
                 <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
@@ -833,40 +848,33 @@ export async function mostrarProgramaAcopio() {
         contenido.innerHTML = `
             
             <h2><i class="fas fa-calendar-alt"></i>Programa de Acopio</h2>
-            <p>Semana hasta el ${proximoDomingo.toLocaleDateString()}</p>
-            <div class="programa-form">
+            <div class="relleno">
+                <p>Semana hasta el ${proximoDomingo.toLocaleDateString()}</p>
                 ${dias.map(dia => `
-                    <div class="dia-programa">
-                        <div class="campo-form">
-                            <p>${dia}</p>
-                            <p id="fecha-${dia.toLowerCase()}" class="fecha-input"></p>
-                        </div>
-                        
-                        <div class="tareas-dia" id="tareas-${dia.toLowerCase()}">
+                    <div class="campo-form">
+                        <p>${dia}</p>
+                        <p id="fecha-${dia.toLowerCase()}" class="fecha-input"></p>
+                    </div>
+                    
+                    <div class="tareas-dia" id="tareas-${dia.toLowerCase()}">
+                        <div class="detalle-item">
                             <div class="campo-form">
-                                <div class="campo-form">
-                                    <p>Tarea:</p>
-                                    <select class="producto-select">
-                                            <option value="">Seleccionar producto</option>
-                                            ${tareasOptions}
-                                        </select>
-                                </div>
-                                <button type="button" class="btn-eliminar-tarea anuncio-btn delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                <button type="button" class="btn-agregar-tarea-dia anuncio-btn add" data-dia="${dia.toLowerCase()}">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+                                <p>Tarea:</p>
+                                <select class="producto-select">
+                                        <option value="">Seleccionar producto</option>
+                                        ${tareasOptions}
+                                    </select>
                             </div>
+                            <i class="fas fa-trash delete btn-eliminar-tarea"></i>
+                            <i class="fas fa-plus add btn-agregar-tarea-dia" data-dia="${dia.toLowerCase()}"></i>
                         </div>
-                        
                     </div>
                 `).join('')}
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-                    <button class="anuncio-btn green confirmar guardar-programa"><i class="fas fa-save"></i> Guardar</button>
-                    <button class="anuncio-btn blue ver-programa"><i class="fas fa-eye"></i> Ver programa</button>
-                </div>
+            </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green confirmar guardar-programa"><i class="fas fa-save"></i> Guardar</button>
+                <button class="anuncio-btn blue ver-programa"><i class="fas fa-eye"></i> Ver programa</button>
             </div>
         `;
 
@@ -957,19 +965,16 @@ export async function verProgramaciones() {
         contenido.innerHTML = `
             
             <h2><i class="fas fa-calendar-check"></i>Programaciones Actuales</h2>
-            <div class="programaciones-lista">
+            <div class="relleno">
                 ${data.programaciones.length > 0 ?
                 data.programaciones.map(prog => `
                         <div class="programacion-item">
                             <div class="programacion-fecha">
                                 <strong>${prog.dia}</strong> - ${new Date(prog.fecha).toLocaleDateString()}
                             </div>
-                            <div class="campo-form">
+                            <div class="detalle-item">
                                 <p>${prog.producto}</p>
-                                 <button class="anuncio-btn run iniciar-tarea" 
-                                    onclick="iniciarTareaProgramada('${prog.producto}', '${prog.fecha}')">
-                                     <i class="fas fa-play"></i>
-                                </button>
+                                <i class="fas fa-play run iniciar-tarea" onclick="iniciarTareaProgramada('${prog.producto}', '${prog.fecha}')"></i>
                             </div>
                                     
                         </div>

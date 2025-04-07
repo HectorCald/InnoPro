@@ -68,7 +68,7 @@
     scrollbar-width: thin;
     scrollbar-color: #626262 rgba(128, 128, 128, 0.1);
     margin: 0;
-    gap: 5px;
+    gap: 5px !important;
     position: relative;
 }
 
@@ -203,7 +203,7 @@
 }
 
 .anuncio-btn.add i {
-    color: green;
+    color: rgb(0, 244, 0);
     font-size: 25px;
 }
 
@@ -271,7 +271,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 5px;
     gap: 5px;
     background-color: rgb(56, 56, 56);
     padding: 10px;
@@ -290,10 +289,9 @@
     min-height: 40px !important;
     background: none;
     color: var(--primary-text);
-    border: 1px solid #828282;
-    height: 60px;
+    border: 1px solid #4c4c4c;
     font-size: 16px;
-    padding: 15px;
+    padding: 10px;
     border-radius: 15px;
 }
 .anuncio-contenido select option {
@@ -321,8 +319,8 @@
 }
 .detalles-grup.center p {
     display: flex;
-    text-align: center;
-    align-items: center;
+    text-align: center !important;
+    align-items: center !important;
     gap: 5px;
     padding: 10px;
     background-color: rgb(56, 56, 56);
@@ -336,9 +334,7 @@
     gap: 5px;
     align-items: center;
 }
-.detalle-item i.delete{
-    cursor: pointer;
-    background-color:red ;
+.detalle-item i{
     display: flex;
     justify-content: center;
     align-items: center;
@@ -348,19 +344,17 @@
     width: 30px;
     height: 30px;
     font-size: 13px;
+    cursor: pointer;
+}
+.detalle-item i.delete{
+    background-color:red ;
 }
 .detalle-item i.add{
-    cursor: pointer;
     background-color:green;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid white;
-    width: 30px;
-    height: 30px;
-    font-size: 13px;
+}
+.detalle-item i.run{
+    background-color:yellow;
+    color: black;
 }
 .detalle-item i:hover{
     background-color: var(--primary-color);

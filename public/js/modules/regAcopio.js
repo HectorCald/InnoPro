@@ -67,12 +67,12 @@ export async function cargarRegistrosAcopio() {
     } finally {
         ocultarCarga();
     }
-    configurarFiltros();
+    configurarFiltros2();
 }
 function crearPedidoCard(pedido, isAdmin) {
     const [dia, mes, año] = pedido[1].split('/');
     const registroCard = document.createElement('div');
-    registroCard.className = 'registro-card';
+    registroCard.className = 'registro-card-acopio';
     registroCard.dataset.id = pedido[0];
     registroCard.dataset.fecha = pedido[1];
 
@@ -94,8 +94,8 @@ function crearPedidoCard(pedido, isAdmin) {
     registroCard.innerHTML = `
         <div class="registro-header">
             <div class="registro-fecha">${dia}/${mes}</div>
-            <div class="registro-producto">${pedido[2] || 'Sin nombre'}</div>
-            <div class="registro-estado estado-${estadoClass}">${estado}</div>
+            <div class="registro-producto-acopio">${pedido[2] || 'Sin nombre'}</div>
+            <div class="registro-estado-acopio estado-${estadoClass}">${estado}</div>
         </div>
         <div class="registro-detalles">
             <p><span>Cantidad Pedida:</span> ${pedido[3] || '-'}</p>
@@ -156,7 +156,7 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
             anuncioContenido.innerHTML = `
                 <h2><i class="fas fa-trash"></i> Eliminación</h2>
                 <div class="detalles-grup center">
-                <p>¿Está seguro de eliminar este registro? Esta accion no se puede deshacer.</p>
+                
                 </div>
                 
                 <div class="anuncio-botones">
@@ -215,30 +215,42 @@ function ordenarRegistrosPorFecha(registros) {
         return fechaB - fechaA;
     });
 }
-function configurarFiltros() {
+function configurarFiltros2() {
     const btnFiltro = document.querySelector('.btn-filtro-acopio');
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
+    // Función para limpiar eventos anteriores
+    function limpiarEventosAnteriores() {
+        const botones = anuncio.querySelectorAll('button');
+        botones.forEach(boton => {
+            const nuevoBoton = boton.cloneNode(true);
+            boton.parentNode.replaceChild(nuevoBoton, boton);
+        });
+    }
+
     btnFiltro.addEventListener('click', () => {
+        // Limpiar eventos anteriores
+        limpiarEventosAnteriores();
+        
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-filter"></i> Filtros</h2>
-            <div class="filtros-form">
+            <h2><i class="fas fa-filter"></i> Filtros Acopio</h2>
+            <div class="filtros-form relleno">
                 <div class="campo-form">
-                    <label for="filtro-nombre">Nombre del producto:</label>
-                    <input type="text" id="filtro-nombre" placeholder="Filtrar por nombre" value="${filtrosActivos.nombre}">
+                    <label for="filtro-nombre-acopio">Nombre del producto:</label>
+                    <input type="text" id="filtro-nombre-acopio" placeholder="Filtrar por nombre" value="${filtrosActivos.nombre}">
                 </div>
                 <div class="campo-form">
-                    <label for="filtro-fecha-desde">Fecha desde:</label>
-                    <input type="date" id="filtro-fecha-desde" value="${filtrosActivos.fechaDesde}">
+                    <label for="filtro-fecha-desde-acopio">Fecha desde:</label>
+                    <input type="date" id="filtro-fecha-desde-acopio" value="${filtrosActivos.fechaDesde}">
                 </div>
                 <div class="campo-form">
-                    <label for="filtro-fecha-hasta">Fecha hasta:</label>
-                    <input type="date" id="filtro-fecha-hasta" value="${filtrosActivos.fechaHasta}">
+                    <label for="filtro-fecha-hasta-acopio">Fecha hasta:</label>
+                    <input type="date" id="filtro-fecha-hasta-acopio" value="${filtrosActivos.fechaHasta}">
                 </div>
                 <div class="campo-form">
-                    <label for="filtro-estado">Estado:</label>
-                    <select id="filtro-estado">
+                    <label for="filtro-estado-acopio">Estado:</label>
+                    <select id="filtro-estado-acopio">
                         <option value="todos" ${filtrosActivos.estado === 'todos' ? 'selected' : ''}>Todos los estados</option>
                         <option value="Pendiente" ${filtrosActivos.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                         <option value="Recibido" ${filtrosActivos.estado === 'Recibido' ? 'selected' : ''}>Recibido</option>
@@ -246,14 +258,14 @@ function configurarFiltros() {
                     </select>
                 </div>
             </div>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn green confirmar">
+            <div class="anuncio-botones" id="botones-filtro-acopio">
+                <button class="anuncio-btn green confirmar-acopio" id="btn-confirmar-acopio">
                     <i class="fas fa-check-circle"></i> Aplicar
                 </button>
-                <button class="anuncio-btn blue limpiar">
+                <button class="anuncio-btn blue limpiar-acopio" id="btn-limpiar-acopio">
                     <i class="fas fa-eraser"></i> Limpiar
                 </button>
-                <button class="anuncio-btn close cancelar">
+                <button class="anuncio-btn close cancelar-acopio" id="btn-cancelar-acopio">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -261,30 +273,29 @@ function configurarFiltros() {
 
         anuncio.style.display = 'flex';
 
-        // Configurar botones
-        const btnConfirmar = anuncio.querySelector('.confirmar');
-        const btnLimpiar = anuncio.querySelector('.limpiar');
-        const btnCancelar = anuncio.querySelector('.cancelar');
+        // Configurar botones usando IDs únicos
+        const btnConfirmar = document.getElementById('btn-confirmar-acopio');
+        const btnLimpiar = document.getElementById('btn-limpiar-acopio');
+        const btnCancelar = document.getElementById('btn-cancelar-acopio');
 
         btnConfirmar.addEventListener('click', () => {
             filtrosActivos = {
-                nombre: document.getElementById('filtro-nombre').value.toLowerCase(),
-                fechaDesde: document.getElementById('filtro-fecha-desde').value,
-                fechaHasta: document.getElementById('filtro-fecha-hasta').value,
-                estado: document.getElementById('filtro-estado').value
+                nombre: document.getElementById('filtro-nombre-acopio').value.toLowerCase(),
+                fechaDesde: document.getElementById('filtro-fecha-desde-acopio').value,
+                fechaHasta: document.getElementById('filtro-fecha-hasta-acopio').value,
+                estado: document.getElementById('filtro-estado-acopio').value
             };
 
-            aplicarFiltros();
-            localStorage.setItem('filtrosRegistros', JSON.stringify(filtrosActivos));
-
+            aplicarFiltros2();
+            localStorage.setItem('filtrosRegistrosAcopio', JSON.stringify(filtrosActivos));
             anuncio.style.display = 'none';
         });
 
         btnLimpiar.addEventListener('click', () => {
-            document.getElementById('filtro-nombre').value = '';
-            document.getElementById('filtro-fecha-desde').value = '';
-            document.getElementById('filtro-fecha-hasta').value = '';
-            document.getElementById('filtro-estado').value = 'todos';
+            document.getElementById('filtro-nombre-acopio').value = '';
+            document.getElementById('filtro-fecha-desde-acopio').value = '';
+            document.getElementById('filtro-fecha-hasta-acopio').value = '';
+            document.getElementById('filtro-estado-acopio').value = 'todos';
 
             filtrosActivos = {
                 nombre: '',
@@ -294,8 +305,7 @@ function configurarFiltros() {
             };
 
             aplicarFiltros();
-            localStorage.removeItem('filtrosRegistros');
-
+            localStorage.removeItem('filtrosRegistrosAcopio');
             anuncio.style.display = 'none';
         });
 
@@ -304,24 +314,19 @@ function configurarFiltros() {
         });
     });
 
-    // Cargar filtros guardados al iniciar
-    const filtrosGuardados = localStorage.getItem('filtrosRegistros');
+    // Cargar filtros guardados al iniciar con la nueva clave
+    const filtrosGuardados = localStorage.getItem('filtrosRegistrosAcopio');
     if (filtrosGuardados) {
         filtrosActivos = JSON.parse(filtrosGuardados);
         aplicarFiltros();
     }
-
-    // Cerrar al hacer clic fuera del anuncio
-    overlay.addEventListener('click', () => {
-        anuncio.style.display = 'none';
-    });
 }
-function aplicarFiltros() {
-    const registros = document.querySelectorAll('.registro-card');
+function aplicarFiltros2() {
+    const registros = document.querySelectorAll('.registro-card-acopio');
     registros.forEach(registro => {
-        const nombre = registro.querySelector('.registro-producto').textContent.toLowerCase();
+        const nombre = registro.querySelector('.registro-producto-acopio').textContent.toLowerCase();
         const fecha = registro.dataset.fecha;
-        const estado = registro.querySelector('.registro-estado').textContent;
+        const estado = registro.querySelector('.registro-estado-acopio').textContent;
 
         const cumpleFiltros =
             (!filtrosActivos.nombre || nombre.includes(filtrosActivos.nombre)) &&
@@ -335,7 +340,7 @@ function aplicarFiltros() {
     actualizarContador();
 }
 function actualizarContador() {
-    const registrosVisibles = document.querySelectorAll('.registro-card:not([style*="display: none"])').length;
+    const registrosVisibles = document.querySelectorAll('.registro-card-acopio:not([style*="display: none"])').length;
     const contadores = document.querySelectorAll('.contador');
 
     // Actualizar todos los contadores en la página

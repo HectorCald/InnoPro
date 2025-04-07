@@ -241,8 +241,10 @@ export async function mostrarFormularioIngreso(id,producto, hoja) {
             anuncio.innerHTML = `
                 <div class="anuncio-contenido">
                     <h2><i class="fas fa-exclamation-circle"></i> Ingreso Múltiple</h2>
+                    <div class="detalles-grup center">
                     <p>Se detectó que hay ${pedidoInfo.obsCompras} unidades para ingresar.</p>
                     <p>¿Desea realizar un ingreso múltiple?</p>
+                    </div>
                     <div class="anuncio-botones">
                         <button class="anuncio-btn gray" onclick="window.procesarIngresoNormal('${producto}', '${hoja}')">No</button>
                         <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${producto}', '${hoja}')">Sí</button>
@@ -285,14 +287,26 @@ function mostrarFormularioIngresoNormal(id, producto, hoja, pedidoInfo, siguient
     anuncio.innerHTML = `
         <div class="anuncio-contenido">
             <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
-            ${pedidoInfo?.obsCompras ? `<p>Cantidad recibido: ${pedidoInfo.obsCompras} ${pedidoInfo.medida} </p>` : ''}
-            
-            <div class="form-ingreso">
-                <input type="text" id="producto-ingreso" value="${producto}" readonly>
-                <div class="lote-info">Lote a asignar: ${siguienteLote}</div>
-                <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+            <div class=relleno>
+                ${pedidoInfo?.obsCompras ? `<p>Cantidad: (${pedidoInfo.obsCompras} restantes)</p>` : ''}
+                <div class="campo-form">
+                    <p>Nombre:</p>
+                    <input type="text" id="producto-ingreso" value="${producto}" readonly>
+                </div>
+                <div class="detalles-grup">
+                    <div class="detalle-item">
+                        <p>Lote:</p> <span class="lote-info">Lote a asignar: ${siguienteLote}</span>
+                    </div>
+                </div>
+                <div class="campo-form">
+                    <p>Peso:</p>
+                    <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+                </div>
+                <div class="form-grup">
+                <p>Observaciones:</p>
                 <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
-            </div>
+                </div>
+             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
                 <button class="anuncio-btn green" onclick="procesarIngreso('${id}','${producto}', '${hoja}')"><i class="fas fa-arrow-right"></i>  Ingresar</button>
@@ -307,16 +321,29 @@ export async function mostrarIngresoMultiple(id, producto, hoja, pedidoInfo, sig
     anuncio.style.display = 'flex';
     anuncio.innerHTML = `
         <div class="anuncio-contenido">
-            <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
-
+        <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
+        <div class=relleno>
             ${pedidoInfo?.obsCompras ? `<p>Cantidad: (${pedidoInfo.obsCompras} restantes)</p>` : ''}
-            
-            <div class="form-ingreso">
+            <div class="campo-form">
+                <p>Nombre:</p>
                 <input type="text" id="producto-ingreso" value="${producto}" readonly>
-                <div class="lote-info">Lote a asignar: ${siguienteLote}</div>
-                <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
-                <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
             </div>
+            <div class="detalles-grup">
+                <div class="detalle-item">
+                    <p>Lote:</p> <span class="lote-info">Lote a asignar: ${siguienteLote}</span>
+                </div>
+            </div>
+            <div class="campo-form">
+                <p>Peso:</p>
+                <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+            </div>
+            <div class="form-grup">
+            <p>Observaciones:</p>
+            <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
+            </div>
+        </div>
+            
+                
             <div class="anuncio-botones">
                 <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
                 <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${id}','${producto}', '${hoja}')"><i class="fas fa-arrow-right"></i>  Ingresar</button>
@@ -431,11 +458,16 @@ export function mostrarFormularioRechazo(id, producto, hoja) {
     const anuncio = document.querySelector('.anuncio');
     anuncio.innerHTML = `
         <div class="anuncio-contenido">
-            
             <h2><i class="fas fa-times-circle"></i>Rechazar Pedido</h2>
-            <div class="form-rechazo">
-                <p>Producto: ${producto}</p>
-                <textarea id="razon-rechazo" placeholder="Razón del rechazo" required></textarea>
+            <div class=relleno>
+                <p>Nombre:</p>
+                <div class="detalles-grup center">
+                    <p>Producto: ${producto}</p>
+                </div>
+                <p>Razon:</p>
+                <div class="campo-form">
+                    <textarea id="razon-rechazo" placeholder="Razón del rechazo" required></textarea>
+                </div>
             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
@@ -494,9 +526,11 @@ export async function finalizarPedidos() {
             <div class="anuncio-contenido">
                 
                 <h2><i class="fas fa-clipboard-check"></i>Finalizar Pedidos</h2>
-                <p>¿Desea finalizar y archivar todos los pedidos actuales?</p>
+                <div class="detalles-grup center">
+                    <p>¿Desea finalizar y archivar todos los pedidos actuales?</p>
+                </div>
                 <div class="pedidos-resumen">
-                    <h3>Resumen de Pedidos:</h3>
+                    <h2>Resumen de Pedidos:</h2>
                     ${pedidosTemporales.map(pedido => `
                         <div class="form-grup">
                             <span>${pedido.nombre}</span>
@@ -585,11 +619,15 @@ export async function mostrarFormularioPedido() {
             <h2><i class="fas fa-shopping-basket fa-2x"></i>Nuevo Pedido</h2>
             <div class="relleno">
             <p>Selccionar producto:</p>
-                <div class="autocomplete-wrapper">
+            <div class="campo-form">
+            <div class="autocomplete-wrapper">
                     <input type="text" id="nombre-pedido" placeholder="Nombre del producto" autocomplete="off" required>
                     <div id="sugerencias-pedido" class="sugerencias-lista"></div>
                 </div>
-                <div class="cantidad-container">
+            </div>
+                
+                <p>Selccione la unida de medida:</p>
+                <div class="campo-form">
                     <input type="number" id="cantidad-pedido" placeholder="Cantidad" required>
                     <select id="unidad-medida">
                         <option value="unid.">und.</option>
@@ -600,7 +638,11 @@ export async function mostrarFormularioPedido() {
                         <option value="arroba">@</option>
                     </select>
                 </div>
+                <p>Observaciones:</p>
+                <div class="campo-form">
                 <textarea id="obs-pedido" placeholder="Observaciones"></textarea>
+                </div>
+                
             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn close cancelar" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
@@ -810,7 +852,9 @@ export function mostrarConfirmacionEliminar(nombre) {
     anuncio.innerHTML = `
         <div class="anuncio-contenido">
             <h2><i class="fas fa-exclamation-triangle"></i>¿Eliminar pedido?</h2>
+            <div class="detalles-grup center">
             <p>¿Está seguro de eliminar el pedido "${nombre}"?</p>
+            </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
                 <button class="anuncio-btn red confirmar"><i class="fas fa-trash-alt"></i>  Eliminar</button>

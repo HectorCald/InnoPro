@@ -103,7 +103,7 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                    
                 ]
             },
-           
+            { clase: 'opcion-btn', vista: 'almacen-view', icono: 'fa-warehouse', texto: 'Almacen Gral.', onclick: 'onclick="inicializarAlmacenGral()"' },
             { clase: 'opcion-btn', vista: 'comprobante-view', icono: 'fa-receipt', texto: 'Comprobante', onclick: 'onclick="inicializarComprobante()"' },
         ]
     };

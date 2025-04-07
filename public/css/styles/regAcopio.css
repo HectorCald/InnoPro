@@ -134,7 +134,7 @@
         width: 100%;
     }
 
-    .registro-card {
+    .registro-card-acopio {
         background: var(--background);
         border-radius: 15px;
         overflow: hidden;
@@ -165,7 +165,7 @@
         font-size: 13px;
     }
 
-    .registro-producto {
+    .registro-producto-acopio {
         color: var(--primary-text);
         font-weight: 500;
         flex: 1;
@@ -272,8 +272,6 @@
             transform: translateY(-2px);
         }
     }
-
-
     .fa-chevron-down {
         transition: transform 0.3s ease;
 
@@ -281,20 +279,13 @@
             transform: rotate(180deg);
         }
     }
-
-
-
     .no-registros {
         color: #aaa;
         text-align: center;
         padding: 15px;
         font-size: 15px;
     }
-
-
-
-
-    .registro-estado {
+    .registro-estado-acopio {
         padding: 4px 8px;
         border-radius: 15px;
         color: white;

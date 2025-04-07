@@ -53,24 +53,24 @@ export async function mostrarFormularioIngreso(producto) {
 
         contenido.innerHTML = `
             <h2><i class="fas fa-plus"></i> Ingresar Stock</h2>
-            <div class="producto-detalles">
-                <div class="detalle-seccion">
+            <div class="relleno">
+                    <p>Buscar Producto:</p>
                     <div class="form-grup">
-                        <label>Buscar Producto:</label>
                         <div class="autocomplete-wrapper">
                             <input type="text" id="buscarProducto" class="edit-input" placeholder="Escriba para buscar...">
-                            <p class="recomendacion">Selecciona un prodcuto:</p>
                             <div class="productos-sugeridos" style="display: none;">
                             <!-- Las sugerencias se mostrarán aquí -->
                             </div>
                         </div>
                     </div>
-                    <div class="producto-seleccionado" style="display: none;">
+                    <p class="recomendacion">Selecciona un prodcuto:</p>
+                    <div class="producto-seleccionado form-grup" style="display: none;">
                         <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
                         <input type="hidden" id="idProductoSeleccionado">
                     </div>
-                    <div class="form-grup">
-                        <label>Cantidad a Ingresar:</label>
+                    
+                    <div class="campo-form">
+                    <p>Cantidad a Ingresar:</p>
                         <input type="number" id="cantidadIngreso" class="edit-input" min="1" placeholder="Cantidad">
                     </div>
                 </div>
@@ -263,13 +263,16 @@ window.mostrarDetalleProductoGral = function (producto) {
                 </div>`;
             }
             else {
-                return `<div class="campo-form">
-                            <div class="campo-form">
-                                        <input type="number" id="editPrice_${tipo}" value="${valor}" class="edit-input" data-tipo="${tipo}">
-                                        <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
-                                        <span>%</span>
-                                </div>
+                return `
+                        <div class="campo-form">
+                            <label>${nombreTipo}:</label>
+                            <div class="campo-form" style="padding:0; margin-top:0; gap:0">
+                                    <input type="number" id="editPrice_${tipo}" value="${valor}" class="edit-input" data-tipo="${tipo}">
+                                    <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
+                                    <span>%</span>
+                            </div>
                         </div>`;
+                        
             }
         }).join('');
     }
@@ -277,8 +280,8 @@ window.mostrarDetalleProductoGral = function (producto) {
         <h2 class="titulo-modal"><i class="fas fa-info-circle"></i> Información</h2>
         <div class="relleno">
             <div class="producto-detalles">
-                    <div class="detalle-seccion">
-                        <p>Informacion General:</p>                
+                    <div class="detalle-seccion" >
+                        <p>Informacion General:</p>               
                         <div class="detalles-grup">
                             <div class="detalle-item">
                                 <p>Nombre:</p> <span>${nombre}</span>
@@ -304,7 +307,7 @@ window.mostrarDetalleProductoGral = function (producto) {
                                 <div class="detalle-item"><span>${formatearPrecios(precios, '1') || 'No registrado'}</span></div>
                         </div>
                     </div>
-                    <div class="detalles-edicion" style="display: none;">
+                    <div class="detalles-edicion" style="display: none; flex-direction:column; gap:5px"">
                         <p>Informacion General:</p> 
                         <div class="campo-form">
                             <label>Nombre:</label>
@@ -379,7 +382,7 @@ window.mostrarDetalleProductoGral = function (producto) {
     btnEditar.onclick = () => {
         const detallesGrup = contenido.querySelector('.detalle-seccion');
         detallesGrup.style.display = 'none';
-        detallesEdicion.style.display = 'block';
+        detallesEdicion.style.display = 'flex';
         btnEditar.style.display = 'none';
         btnGuardar.style.display = 'inline-block';
         tituloModal.innerHTML = '<i class="fas fa-edit"></i> Editar Información';
@@ -462,7 +465,6 @@ function mostrarFormularioAgregarProducto() {
     contenido.innerHTML = `
         <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
         <div class="relleno">
-                <div class="detalle-seccion">
                 <p>Informacion General:</p>
                     <div class="campo-form">
                         <label>Nombre:</label>
@@ -488,7 +490,6 @@ function mostrarFormularioAgregarProducto() {
                         <label>Codigo de barras:</label>
                         <input type="number" id="nuevoCodigoBarras" class="edit-input" required>
                     </div>
-                </div>
                 <p>Precios:</p>
                 ${formatearPrecios(preciosBase, '2')}
         </div>
