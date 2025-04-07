@@ -513,6 +513,7 @@ export async function cargarAlmacen() {
         mostrarNotificacion('Error al cargar los productos', 'error');
     } finally {
         ocultarCarga();
+        scrollToTop('.almacen-view')
     }
 };
 window.mostrarDetalleProductoGral = function (producto) {

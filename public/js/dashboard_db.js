@@ -14,6 +14,8 @@ import { cargarNotificaciones} from './modules/advertencia.js';
 import { inicializarComprobante } from './modules/comprobante.js';
 import { cargarRegistrosAcopio } from './modules/regAcopio.js';
 import { inicializarAlmacenGral,cargarAlmacen,mostrarProductos } from './modules/almacen.js';
+import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
+import { inicializarBalanceAlmacen } from './modules/balAlmacen.js';
 
 
 // Funciones del menú y navegación,
@@ -115,11 +117,25 @@ window.inicializarComprobante = inicializarComprobante;
 
 // Funciones de registros acopio
 window.cargarRegistrosAcopio = cargarRegistrosAcopio;
-
+// Funciones de registros almacen
+window.cargarRegistrosAlmacenGral = cargarRegistrosAlmacenGral;
 // Funciones de Almcen General
 window.inicializarAlmacenGral = inicializarAlmacenGral;
 window.cargarAlmacen = cargarAlmacen;
 window.mostrarProductos = mostrarProductos;
+// Funciones de balance almacen
+window.inicializarBalanceAlmacen = inicializarBalanceAlmacen;
+function scrollToTop(ventana) {
+    const container = document.querySelector(ventana);
+    if (container) {
+        container.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+}
+
+window.scrollToTop = scrollToTop;  // This assigns the function itself This executes the function immediately and assigns its return value
 
 
 async function bienvenida() {
@@ -275,6 +291,7 @@ export function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) 
         }
     }, duracion);
 }
+
 async function obtenerRolUsuario() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -292,7 +309,7 @@ async function obtenerRolUsuario() {
 async function iniciarApp() {
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
+    const vistas = document.querySelectorAll('.balAlmacen-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
 
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => {
@@ -309,6 +326,7 @@ async function iniciarApp() {
     initializeMenu(roles, opcionesDiv, vistas);
     await cargarNotificaciones();
 }
+
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'flex';

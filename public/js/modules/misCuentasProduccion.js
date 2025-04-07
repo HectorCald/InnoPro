@@ -59,6 +59,7 @@ export async function cargarRegistrosCuentas() {
         mostrarNotificacion('Error al cargar los registros', 'error');
     } finally {
         ocultarCarga();
+        scrollToTop('.cuentasProduccion-view');
     }
 }
 function setupFilters() {

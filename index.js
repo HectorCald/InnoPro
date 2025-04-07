@@ -4280,8 +4280,6 @@ app.put('/retirar-stock-almacen', requireAuth, async (req, res) => {
         res.json({ success: false, error: 'Error al actualizar el stock' });
     }
 });
-
-
 app.post('/registrar-movimiento-almacen', async (req, res) => {
     try {
         const { tipo, producto, cantidad, operario } = req.body;
@@ -4332,6 +4330,195 @@ app.post('/registrar-movimiento-almacen', async (req, res) => {
         res.json({ success: false, error: 'Error al registrar movimiento' });
     }
 });
+
+
+
+app.get('/obtener-movimientos-almacen', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-gral!A:G'
+        });
+
+        const rows = response.data.values || [];
+        const movimientos = rows.slice(1); // Excluir encabezados
+
+        res.json({ 
+            success: true, 
+            movimientos: movimientos 
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.json({ 
+            success: false, 
+            error: 'Error al obtener movimientos' 
+        });
+    }
+});
+app.put('/actualizar-movimiento-almacen', requireAuth, async (req, res) => {
+    try {
+        const { id, tipo, producto, cantidad, operario, almacen } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Validar datos
+        if (!id || !tipo || !producto || !cantidad || !operario || !almacen) {
+            return res.status(400).json({
+                success: false,
+                error: 'Todos los campos son requeridos'
+            });
+        }
+
+        // Buscar el movimiento
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-gral!A:G'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                error: 'Movimiento no encontrado'
+            });
+        }
+
+        // Mantener la fecha original
+        const fechaOriginal = rows[rowIndex][1];
+
+        // Actualizar el movimiento
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Movimientos alm-gral!A${rowIndex + 1}:G${rowIndex + 1}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[
+                    id,
+                    fechaOriginal,
+                    tipo,
+                    producto,
+                    cantidad,
+                    operario,
+                    almacen
+                ]]
+            }
+        });
+
+        res.json({
+            success: true,
+            message: 'Movimiento actualizado correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar movimiento:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el movimiento'
+        });
+    }
+});
+app.delete('/eliminar-movimiento-almacen', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // First, get the spreadsheet to find the correct sheet ID
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const movimientosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Movimientos alm-gral'
+        );
+
+        if (!movimientosSheet) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Hoja de movimientos no encontrada' 
+            });
+        }
+
+        // Get all records to find the row to delete
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-gral!A2:G'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Movimiento no encontrado' 
+            });
+        }
+
+        // Delete the row using batchUpdate
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            requestBody: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: movimientosSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1, // +1 because we started from A2
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ 
+            success: true,
+            message: 'Movimiento eliminado correctamente'
+        });
+    } catch (error) {
+        console.error('Error al eliminar movimiento:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el movimiento' 
+        });
+    }
+});
+
+/* ==================== RUTAS DE API - BALANCE ALMACÉN ==================== */
+app.get('/obtener-balance-almacen', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-gral!A2:G'
+        });
+
+        const rows = response.data.values || [];
+        const movimientos = rows.map(row => ({
+            id: row[0],
+            fecha: row[1],
+            tipo: row[2],
+            producto: row[3],
+            cantidad: parseInt(row[4]),
+            operario: row[5],
+            almacen: row[6]
+        }));
+
+        res.json({
+            success: true,
+            movimientos: movimientos
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener datos del balance'
+        });
+    }
+});
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {

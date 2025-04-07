@@ -27,3 +27,5 @@ Parametros: <i class="fas fa-cog"></i>
 Eliminar: <i class="fas fa-trash"></i>
 salidas: <i class="fas fa-arrow-circle-down"></i>
 ingreso: <i class="fas fa-arrow-circle-up"></i>
+Registros: fa-history
+Gestion:fa-dolly
