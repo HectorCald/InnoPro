@@ -6,7 +6,7 @@
     top: 70px !important;
     left: 0;
     width: 100%;
-    height: calc(100vh - 70px) !important;
+    height: calc(100vh - 50px) !important;
     background-color: rgba(0, 0, 0, 0.352);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -68,7 +68,7 @@
     scrollbar-width: thin;
     scrollbar-color: #626262 rgba(128, 128, 128, 0.1);
     margin: 0;
-    gap: 10px;
+    gap: 5px;
     position: relative;
 }
 
@@ -234,7 +234,6 @@
     background: var(--primary-color);
     color: var(--primary-text);
     font-size: 16px;
-    margin-block: 5px;
 }
 
 .anuncio-contenido input[type="date"] {
@@ -275,7 +274,7 @@
     margin-top: 5px;
     gap: 5px;
     background-color: rgb(56, 56, 56);
-    padding: 5px 10Px;
+    padding: 10px;
     border-radius: 10px;
 }
 
@@ -305,7 +304,6 @@
     background-color: rgb(56, 56, 56);
     padding: 10px;
     border-radius: 10px;
-    margin-top: 10px;
 }
 
 .form-group label {
@@ -316,16 +314,56 @@
 .detalles-grup {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    padding: 15px;
+    gap: 10px;
+    padding: 10px;
     background-color: rgb(56, 56, 56);
     border-radius: 10px;
+}
+.detalles-grup.center p {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    gap: 5px;
+    padding: 10px;
+    background-color: rgb(56, 56, 56);
+    border-radius: 10px;
+    width: 100%;
 }
 
 .detalle-item {
     display: flex;
     justify-content: space-between;
     gap: 5px;
+    align-items: center;
+}
+.detalle-item i.delete{
+    cursor: pointer;
+    background-color:red ;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid white;
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+}
+.detalle-item i.add{
+    cursor: pointer;
+    background-color:green;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid white;
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+}
+.detalle-item i:hover{
+    background-color: var(--primary-color);
 }
 
 .detalle-item span {

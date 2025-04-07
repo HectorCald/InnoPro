@@ -4155,6 +4155,88 @@ app.put('/ingresar-stock-almacen', requireAuth, async (req, res) => {
     }
 });
 
+
+app.delete('/eliminar-formato-precio', requireAuth, async (req, res) => {
+    try {
+        const { tipo } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener todos los productos
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:H'  // Changed from 'Almacen' to 'Almacen general'
+        });
+
+        const rows = response.data.values || [];
+        const actualizaciones = rows.map((row, index) => {
+            const precios = row[7].split(';');
+            const nuevosPrecios = precios.filter(precio => !precio.startsWith(tipo + ','));
+            return {
+                range: `Almacen general!H${index + 2}`,  // Changed from 'Almacen' to 'Almacen general'
+                values: [[nuevosPrecios.join(';')]]
+            };
+        });
+
+        // Actualizar todos los productos
+        await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                valueInputOption: 'RAW',
+                data: actualizaciones
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el formato de precio' 
+        });
+    }
+});
+app.post('/agregar-formato-precio', requireAuth, async (req, res) => {
+    try {
+        const { nombreFormato } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener todos los productos
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:H'
+        });
+
+        const rows = response.data.values || [];
+        const actualizaciones = rows.map((row, index) => {
+            const preciosActuales = row[7] || '';
+            const nuevosPrecios = preciosActuales + (preciosActuales ? ';' : '') + `${nombreFormato},0`;
+            return {
+                range: `Almacen general!H${index + 2}`,
+                values: [[nuevosPrecios]]
+            };
+        });
+
+        // Actualizar todos los productos con el nuevo formato
+        if (actualizaciones.length > 0) {
+            await sheets.spreadsheets.values.batchUpdate({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                resource: {
+                    valueInputOption: 'RAW',
+                    data: actualizaciones
+                }
+            });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al agregar el formato de precio' 
+        });
+    }
+});
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {

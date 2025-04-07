@@ -13,9 +13,14 @@ export function inicializarAlmacenGral() {
                     <p>Ingresar</p>
                 </div>
                 <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                        <i class="fas fa-plus-circle"></i> 
+                       <i class="fas fa-box"></i>
                     </button>
                     <p>Agregar</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <p>Formato</p>
                 </div>
             </div>    
             <div class="lista-productos"></div>
@@ -25,8 +30,11 @@ export function inicializarAlmacenGral() {
     const btnIngresar = container.querySelector('.btn-agregar-pedido i.fa-plus').parentElement;
     btnIngresar.onclick = () => mostrarFormularioIngreso('');
 
-    const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-plus-circle').parentElement;
+    const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-box').parentElement;
     btnAgregar.onclick = mostrarFormularioAgregarProducto;
+
+    const btnFormato = container.querySelector('.btn-agregar-pedido i.fa-cog').parentElement;
+    btnFormato.onclick = mostrarFormularioFormato;
 
     mostrarProductos();
 }
@@ -266,7 +274,7 @@ window.mostrarDetalleProductoGral = function (producto) {
         }).join('');
     }
     contenido.innerHTML = `
-        <h2><i class="fas fa-box-open"></i> ${nombre}</h2>
+        <h2 class="titulo-modal"><i class="fas fa-info-circle"></i> Información</h2>
         <div class="relleno">
             <div class="producto-detalles">
                     <div class="detalle-seccion">
@@ -344,6 +352,7 @@ window.mostrarDetalleProductoGral = function (producto) {
             const precioInput = document.getElementById(`editPrice_${tipo}`);
             const porcentaje = parseFloat(this.value) || 0;
             const precioBase = parseFloat(precioInput.value) || 0;
+            
 
             if (porcentaje > 0) {
                 const aumento = precioBase * (porcentaje / 100);
@@ -357,6 +366,7 @@ window.mostrarDetalleProductoGral = function (producto) {
     const detallesEdicion = contenido.querySelector('.detalles-edicion');
     const btnEditar = contenido.querySelector('.editar');
     const btnGuardar = contenido.querySelector('.guardar');
+    const tituloModal = contenido.querySelector('.titulo-modal');
 
     anuncio.querySelector('.cancelar').onclick = () => {
         anuncio.style.display = 'none';
@@ -372,6 +382,7 @@ window.mostrarDetalleProductoGral = function (producto) {
         detallesEdicion.style.display = 'block';
         btnEditar.style.display = 'none';
         btnGuardar.style.display = 'inline-block';
+        tituloModal.innerHTML = '<i class="fas fa-edit"></i> Editar Información';
     };
 
     btnGuardar.onclick = async () => {
@@ -439,12 +450,10 @@ function mostrarFormularioAgregarProducto() {
             else {
                 return `<div class="campo-form">
                             <label>${nombreTipo}:</label>
-                            <div class="precio-container">
-                                <div class="campo-form">
-                                        <input type="number" id="editPrice_${tipo}" value="0" class="edit-input" data-tipo="${tipo}">
-                                        <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
-                                        <span>%</span>
-                                </div>
+                            <div class="campo-form" style="padding:0; margin-top:0; gap:0">
+                                    <input type="number" id="editPrice_${tipo}" value="0" class="edit-input" data-tipo="${tipo}">
+                                    <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
+                                    <span>%</span>
                             </div>
                         </div>`;
             }
@@ -453,7 +462,6 @@ function mostrarFormularioAgregarProducto() {
     contenido.innerHTML = `
         <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
         <div class="relleno">
-            <div class="producto-detalles">
                 <div class="detalle-seccion">
                 <p>Informacion General:</p>
                     <div class="campo-form">
@@ -483,7 +491,6 @@ function mostrarFormularioAgregarProducto() {
                 </div>
                 <p>Precios:</p>
                 ${formatearPrecios(preciosBase, '2')}
-            </div>
         </div>
         <div class="anuncio-botones">
                 <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
@@ -565,15 +572,13 @@ function mostrarConfirmacionEliminar(id, nombre) {
 
     contenido.innerHTML = `
         <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
-        <div class="producto-detalles">
-            <div class="detalle-seccion">
-                <p>¿Está seguro que desea eliminar el producto "${nombre}"?</p>
+            <div class="detalles-grup center">
+                <p>¿¿Está seguro que desea eliminar el producto "${nombre}"?</p>
                 <p>Esta acción no se puede deshacer.</p>
             </div>
-        </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn red confirmar">Confirmar</button>
-            <button class="anuncio-btn gray cancelar">Cancelar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
@@ -679,4 +684,175 @@ export function mostrarProductos() {
             products.forEach(product => container.appendChild(product));
         });
     });
+}
+function mostrarFormularioFormato() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    const preciosBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][7] : 'Normal,0;Mayorista,0';
+
+    function actualizarListaFormatos(preciosStr) {
+        const detallesGrup = contenido.querySelector('.detalles-grup');
+        detallesGrup.innerHTML = formatearPrecios(preciosStr, '1');
+        
+        // Reattach event listeners for delete buttons
+        document.querySelectorAll('.delete-price').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                const nombreTipo = e.target.getAttribute('data-nombre');
+                mostrarConfirmacionEliminarPrecio(nombreTipo);
+            });
+        });
+    }
+
+    function formatearPrecios(preciosStr, num) {
+        if (!preciosStr) return '<div class="detalle-item"><span>No registrado</span></div>';
+
+        return preciosStr.split(';').map(precio => {
+            const [tipo, valor] = precio.split(',');
+            let nombreTipo = tipo;
+            if (num == 1) {
+                return `<div class="detalle-item">
+                    <p>${nombreTipo}:</p>
+                    <i class="fas fa-trash delete delete-price" data-nombre="${nombreTipo}"></i>
+                </div>`;
+            }
+            else {
+                return `<div class="campo-form">
+                    <label>${nombreTipo}:</label>
+                    <div class="precio-container">
+                        <div class="campo-form">
+                            <i class="fas fa-trash"></i>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        }).join('');
+    }
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-cog"></i> Formatos</h2>
+        <div class="relleno">
+            <p>Formato Precios:</p>
+            <div class="detalles-grup">
+                ${formatearPrecios(preciosBase, '1')}
+            </div>
+            <div class="form-grup">
+                <div class="detalle-item">
+                    <input type="text" id="nuevoFormato" class="edit-input" placeholder="Nuevo formato precio">
+                    <i class="fas fa-plus-circle add add-format"></i>
+                </div>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    // Event listener para agregar nuevo formato
+    contenido.querySelector('.add-format').addEventListener('click', async () => {
+        const nombreFormato = document.getElementById('nuevoFormato').value.trim();
+        if (!nombreFormato) {
+            mostrarNotificacion('Ingrese un nombre para el formato', 'error');
+            return;
+        }
+
+        try {
+            mostrarCarga();
+            const response = await fetch('/agregar-formato-precio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nombreFormato })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Actualizar la lista de precios base con el nuevo formato
+                const nuevoPreciosBase = preciosBase ? `${preciosBase};${nombreFormato},0` : `${nombreFormato},0`;
+                actualizarListaFormatos(nuevoPreciosBase);
+                document.getElementById('nuevoFormato').value = '';
+                mostrarNotificacion('Formato agregado correctamente', 'success');
+            } else {
+                throw new Error(data.error || 'Error al agregar el formato');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al agregar el formato', 'error');
+        } finally {
+            ocultarCarga();
+            cargarAlmacen();
+        }
+    });
+
+    // Initial event listeners for delete buttons
+    document.querySelectorAll('.delete-price').forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            const nombreTipo = e.target.getAttribute('data-nombre');
+            mostrarConfirmacionEliminarPrecio(nombreTipo);
+        });
+    });
+
+    anuncio.style.display = 'flex';
+    
+    anuncio.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+}
+function mostrarConfirmacionEliminarPrecio(nombre) {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    const preciosBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][7] : '';
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
+        <div class="detalles-grup center">
+                <p>¿Está seguro que desea eliminar el formato de precio "${nombre}"?</p>
+                <p>Esta acción eliminará este formato de todos los productos.</p>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn red confirmar">Confirmar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    anuncio.querySelector('.cancelar').onclick = () => {
+        mostrarFormularioFormato();
+    };
+
+    anuncio.querySelector('.confirmar').onclick = async () => {
+        try {
+            mostrarCarga();
+            const response = await fetch('/eliminar-formato-precio', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tipo: nombre })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Update window.productosAlmacen with the new format list
+                if (window.productosAlmacen && window.productosAlmacen.length > 0) {
+                    window.productosAlmacen = window.productosAlmacen.map(producto => {
+                        const precios = producto[7].split(';');
+                        const nuevosPrecios = precios.filter(precio => !precio.startsWith(nombre + ',')).join(';');
+                        return [...producto.slice(0, 7), nuevosPrecios];
+                    });
+                }
+                
+                mostrarNotificacion('Formato de precio eliminado correctamente', 'success');
+                mostrarFormularioFormato();
+                cargarAlmacen(); // Reload the products to reflect the changes
+            } else {
+                throw new Error(data.error || 'Error al eliminar el formato de precio');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al eliminar el formato de precio', 'error');
+        } finally {
+            ocultarCarga();
+            cargarAlmacen();
+        }
+    };
 }

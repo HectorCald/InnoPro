@@ -21,3 +21,7 @@ Mayor a menor (Descendente): <i class="fas fa-sort-amount-down"></i>
 Menor a mayor (Ascendente): <i class="fas fa-sort-amount-up"></i>
 Registrar: <i class="fas fa-save"></i>
 Pagar:<i class="fas fa-dollar-sign"></i>
+Info: <i class="fas fa-info-circle"></i>
+Producto: <i class="fas fa-box"></i>
+Parametros: <i class="fas fa-cog"></i>
+Eliminar: <i class="fas fa-trash"></i>

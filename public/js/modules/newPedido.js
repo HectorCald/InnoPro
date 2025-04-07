@@ -583,7 +583,8 @@ export async function mostrarFormularioPedido() {
         
         contenido.innerHTML = `
             <h2><i class="fas fa-shopping-basket fa-2x"></i>Nuevo Pedido</h2>
-            <div class="form-pedido">
+            <div class="relleno">
+            <p>Selccionar producto:</p>
                 <div class="autocomplete-wrapper">
                     <input type="text" id="nombre-pedido" placeholder="Nombre del producto" autocomplete="off" required>
                     <div id="sugerencias-pedido" class="sugerencias-lista"></div>

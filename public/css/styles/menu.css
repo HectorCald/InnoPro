@@ -69,7 +69,7 @@
         visibility: hidden;
         transition: all 0.3s ease;
         transform: translateY(20px);
-        z-index: 99999;
+        z-index: 999;
     }
 
     .menu-secundario.active {
@@ -136,6 +136,7 @@
 
         .menu-principal {
             display: none !important;
+            z-index: 1200;
         }
 
         .menu-secundario {

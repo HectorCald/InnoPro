@@ -470,33 +470,41 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-check-circle"></i> Verificar Registro</h2>
-        <div class="detalles-verificacion">
-            <div class="form-group">
-                <input type="hidden" id="registro-id" value="${id}">
-                <p>Producto: <span>${producto}</span></p>
-                <p>Operario: <span>${operario}</span></p>
-                <p>Envases terminados: <span>${envases}</span></p>
+     <h2><i class="fas fa-check-circle"></i> Verificar Registro</h2>
+    <div class="relleno">
+        <div class="detalles-grup">
+        <input type="hidden" id="registro-id" value="${id}">
+            <div class="detalle-item">
+                <p>Producto: </p><span>${producto}</span>
             </div>
-            <form id="form-verificacion">
-                <div class="campo-form">
-                    <label for="cantidad-real">Cantidad:</label>
-                    <input type="number" id="cantidad-real" required min="0" step="1" placeholder="Cantidad Real">
-                </div>
-                <div class="campo-form">
-                    <label for="fecha-verificacion">Fecha:</label>
-                    <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly>
-                </div>
-                <div class="form-group">
-                    <label for="observaciones">Observaciones:</label>
-                    <textarea id="observaciones" rows="3" placeholder="Observaciones (se enviará como notificación al operario)"></textarea>
-                </div>
-            </form>
+            <div class="detalle-item">
+                <p>Operario: </p><span>${operario}</span>
+            </div>
+            <div class="detalle-item">
+                <p>Envases terminados: </p><span>${envases}</span>
+            </div>
         </div>
-        <div class="anuncio-botones">
+        <form id="form-verificacion">
+            <div class="campo-form">
+                <label for="cantidad-real">Cantidad:</label>
+                <input type="number" id="cantidad-real" required min="0" step="1" placeholder="Cantidad Real">
+            </div>
+            <div class="campo-form">
+                <label for="fecha-verificacion">Fecha:</label>
+                <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly>
+            </div>
+            <div class="form-group">
+                <label for="observaciones">Observaciones:</label>
+                <textarea id="observaciones" rows="3" placeholder="Observaciones (se enviará como notificación al operario)"></textarea>
+            </div>
+        </form>
+    </div>
+     <div class="anuncio-botones">
             <button class="anuncio-btn green confirmar"><i class="fas fa-check-circle"></i>  Verificar</button>
             <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-        </div>
+    </div>
+        
+        
     `;
 
     anuncio.style.display = 'flex';
@@ -561,7 +569,6 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             mostrarNotificacion('Error al guardar la verificación: ' + error.message, 'error');
         } finally {
             ocultarCarga();
-            mostrarFormularioIngreso(producto);
         }
     });
 
@@ -685,7 +692,8 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
 
     anuncioContenido.innerHTML = `
         <h2><i class="fas fa-edit"></i> Editar Registro</h2>
-        <div class="detalles-verificacion">
+        <div class="relleno" >
+        <p>Información General:</p>
             <form id="form-edicion">
                 <input type="hidden" id="edit-id" value="${id}">
                 <div class="campo-form">
@@ -695,8 +703,8 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
                 <div class="campo-form">
                     <label for="edit-producto">Producto:</label>
                     <input type="text" id="edit-producto" value="${producto}" 
-                           list="productos-list" placeholder="Buscar producto..." 
-                           autocomplete="off" required>
+                        list="productos-list" placeholder="Buscar producto..." 
+                        autocomplete="off" required>
                     <datalist id="productos-list"></datalist>
                 </div>
                 <div class="campo-form">

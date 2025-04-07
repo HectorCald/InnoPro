@@ -155,7 +155,10 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
 
             anuncioContenido.innerHTML = `
                 <h2><i class="fas fa-trash"></i> Eliminación</h2>
+                <div class="detalles-grup center">
                 <p>¿Está seguro de eliminar este registro? Esta accion no se puede deshacer.</p>
+                </div>
+                
                 <div class="anuncio-botones">
                     <button class="anuncio-btn red confirmar"><i class="fas fa-trash"></i> Eliminar</button>
                     <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
@@ -347,7 +350,8 @@ function mostrarFormularioEdicion(pedido) {
 
     anuncioContenido.innerHTML = `
         <h2><i class="fas fa-edit"></i> Editar Registro</h2>
-        <div class="edicion-form">
+        <div class="relleno">
+        <p>Inforamción General:</p>
             <div class="campo-form">
                 <label for="edit-nombre">Nombre:</label>
                 <input type="text" id="edit-nombre" value="${pedido[2] || ''}">

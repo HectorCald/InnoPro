@@ -10,11 +10,9 @@ let filtroActual = {
 export async function cargarRegistrosCuentas() {
     try {
         mostrarCarga();
-        
         const nombreResponse = await fetch('/obtener-nombre');
         const nombreData = await nombreResponse.json();
         const nombreUsuario = nombreData.nombre;
-
         const response = await fetch('/obtener-registros');
         const data = await response.json();
 

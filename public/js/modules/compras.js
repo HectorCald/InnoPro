@@ -183,41 +183,45 @@ export async function entregarPedido(button) {
 
         anuncioContenido.innerHTML = `
             <h2><i class="fas fa-check-circle"></i>Entregar Pedido</h2>
-            <p>Entrega de: ${nombre} (${id})</p>
-            <div class="anuncio-form">
-                <div class="campo-form">
-                    <label for="cantidad">Cantidad:</label>
-                    <input type="number" id="cantidad" class="form-input" placeholder="Cantidad en Kg.">
-                </div>
-                <div class="campo-form">
-                    <label for="proveedor">Proveedor:</label>
-                    <input type="text" id="proveedor" class="form-input" placeholder="Nombre del proveedor">
-                </div>
-                <div class="campo-form">
-                    <label for="precio">Precio:</label>
-                    <input type="number" id="precio" class="form-input" placeholder="0.00" step="0.01">
-                </div>
-                <div class="campo-form">
-                    <label for="observaciones">Cantidad:</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="number" id="observaciones" class="form-input" style="flex: 2;" placeholder="Cantidad">
-                        <select id="unidad" class="form-input" style="flex: 1;">
-                            <option value="Bls.">Bls.</option>
-                            <option value="Cja.">Cja.</option>
-                        </select>
+            <div class="relleno">
+                <p>Entrega de: ${nombre} (${id})</p>
+                <div class="anuncio-form">
+                    <div class="campo-form">
+                        <label for="cantidad">Cantidad:</label>
+                        <input type="number" id="cantidad" class="form-input" placeholder="Cantidad en Kg.">
+                    </div>
+                    <div class="campo-form">
+                        <label for="proveedor">Proveedor:</label>
+                        <input type="text" id="proveedor" class="form-input" placeholder="Nombre del proveedor">
+                    </div>
+                    <div class="campo-form">
+                        <label for="precio">Precio:</label>
+                        <input type="number" id="precio" class="form-input" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="campo-form">
+                        <label for="observaciones">Cantidad:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="observaciones" class="form-input" style="flex: 2;" placeholder="Cantidad">
+                            <select id="unidad" class="form-input" style="flex: 1;">
+                                <option value="Bls.">Bls.</option>
+                                <option value="Cja.">Cja.</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+                <p>Estado:</p>  
+                <div class="campo-form">
+                    <div class="anuncio-botones" style="margin-top: 10px;">
+                            <button class="filter-btn active anuncio-btn" data-status="llego">
+                                Llegó
+                            </button>
+                            <button class="filter-btn anuncio-btn" data-status="no-llego">
+                                No Llegó
+                            </button>
+                        </div>
+                </div>
             </div>
-            <div class="campo-form">
-                <div class="anuncio-botones" style="margin-top: 10px;">
-                        <button class="filter-btn active anuncio-btn" data-status="llego">
-                            Llegó
-                        </button>
-                        <button class="filter-btn anuncio-btn" data-status="no-llego">
-                            No Llegó
-                        </button>
-                    </div>
-            </div>
+            
             <div class="anuncio-botones">
                 <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
                 <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
