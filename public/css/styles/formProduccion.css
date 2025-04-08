@@ -76,7 +76,7 @@
     .form-group select:focus~p,
     .form-group select:not(:placeholder-shown)~p {
         top: 0;
-        font-size: 15px;
+        font-size: 13px;
         color: var(--second-button);
     }
 
