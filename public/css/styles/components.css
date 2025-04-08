@@ -10,7 +10,7 @@
     background-color: rgba(0, 0, 0, 0.352);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    z-index: 8;
+    z-index: 9;
     display: none;
     justify-content: center;
     align-items: center;
