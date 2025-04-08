@@ -563,7 +563,7 @@ window.mostrarDetalleProductoGral = function (producto) {
                                 <p>Stock:</p> <span>${stock} Unidades</span>
                             </div>
                             <div class="detalle-item">
-                                <p>Cantidad por Tira:</p> <span>${cantidadTira === "No se maneja por tira" ? cantidadTira : cantidadTira + " Unidades"}</span>
+                                <p>Cantidad por grupo:</p> <span>${cantidadTira === "No se maneja por tira" ? cantidadTira : cantidadTira + " Unidades"}</span>
                             </div>
                             <div class="detalle-item">
                                 <p>Lista:</p> <span>${lista}</span>
@@ -749,7 +749,7 @@ function mostrarFormularioAgregarProducto() {
                         <input type="number" id="nuevoStock" class="edit-input" required>
                     </div>
                     <div class="campo-form">
-                        <label>Cantidad por Tira:</label>
+                        <label>Cantidad por grupo:</label>
                         <input type="number" id="nuevoCantidadTira" value="0" class="edit-input">
                     </div>
                     <div class="campo-form">
