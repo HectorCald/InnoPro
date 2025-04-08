@@ -17,7 +17,17 @@ import { inicializarAlmacenGral,cargarAlmacen,mostrarProductos } from './modules
 import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
 import { inicializarBalanceAlmacen } from './modules/balAlmacen.js';
 
+function scrollToTop(ventana) {
+    const container = document.querySelector(ventana);
+    if (container) {
+        container.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+}
 
+window.scrollToTop = scrollToTop;
 // Funciones del menú y navegación,
 window.initializeMenu = initializeMenu;
 window.initializePreciosPro = initializePreciosPro;
@@ -125,17 +135,7 @@ window.cargarAlmacen = cargarAlmacen;
 window.mostrarProductos = mostrarProductos;
 // Funciones de balance almacen
 window.inicializarBalanceAlmacen = inicializarBalanceAlmacen;
-function scrollToTop(ventana) {
-    const container = document.querySelector(ventana);
-    if (container) {
-        container.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    }
-}
-
-window.scrollToTop = scrollToTop;  // This assigns the function itself This executes the function immediately and assigns its return value
+  // This assigns the function itself This executes the function immediately and assigns its return value
 
 
 async function bienvenida() {

@@ -10,19 +10,19 @@ export function inicializarAlmacenPrima() {
         <div class="almacen-container">
             <div class="almacen-header">
                 <div class="search-bar">
-                    <input type="text" id="searchProduct" placeholder="Buscar producto...">
+                    <input type="text" id="searchProduct2" placeholder="Buscar producto...">
                     <i class="fas fa-search"></i>
                 </div>
                 <div class="filter-options">
-                    <button class="filter-btn active" data-filter="all">
+                    <button class="filter-btn2 active" data-filter="all">
                         Todos
                     </button>
-                    <button class="filter-btn" data-filter="low">
+                    <button class="filter-btn2" data-filter="low">
                         Bajo
                     </button>
                 </div>
             </div>
-            <div class="products-grid" id="productsContainer">
+            <div class="products-grid" id="productsContainer2">
                 <!-- Los productos se cargarán aquí dinámicamente -->
             </div>
         </div>
@@ -59,7 +59,7 @@ async function cargarProductosAlmacen() {
             return acc;
         }, {});
 
-        const container = document.getElementById('productsContainer');
+        const container = document.getElementById('productsContainer2');
         container.innerHTML = Object.values(productosAgrupados).map(producto => `
             <div class="product-card" onclick="mostrarDetalleProducto('${producto.nombre}')">
                 <div class="product-info">
@@ -273,8 +273,8 @@ function filterProducts(searchTerm = '') {
 }
 
 function initializeEventListeners() {
-    const searchInput = document.getElementById('searchProduct');
-    const filterButtons = document.querySelectorAll('.filter-btn');
+    const searchInput = document.getElementById('searchProduct2');
+    const filterButtons = document.querySelectorAll('.filter-btn2');
 
     searchInput.addEventListener('keyup', (e) => {
         e.preventDefault();

@@ -203,12 +203,14 @@
         color: var(--primary-text);
         font-size: 1.1rem;
     }
+
     .sugerencias-container {
         position: absolute;
         width: 100%;
         z-index: 1000;
         margin-top: 55px;
     }
+
     .sugerencias-list {
         background: var(--primary-color);
         border: 2px solid var(--primary-light);
@@ -227,16 +229,16 @@
         color: var(--primary-text);
         border-bottom: 1px solid var(--primary-light);
     }
-    
+
     .sugerencias-list li:last-child {
         border-bottom: none;
     }
-    
+
     .sugerencias-list li:hover {
         background: var(--surface);
     }
 
-.form-group {
-    position: relative;
-}
+    .form-group {
+        position: relative;
+    }
 }

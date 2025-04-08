@@ -89,7 +89,7 @@ export function inicializarFormularioProduccion() {
         </div>
     `;
     inicializarFormulario();
-    scrollToTop('.formProduccion-view');
+    
 }
 export function inicializarFormulario() {
     ocultarCarga();
@@ -107,6 +107,7 @@ export function inicializarFormulario() {
 
     inicializarEventosProducto(form, productoInput, sugerenciasContainer, sugerenciasList, productosDisponibles);
     inicializarEventosFormulario(form, productoInput, productosDisponibles);
+    scrollToTop('.formProduccion-view');
 }
 function inicializarEventosProducto(form, productoInput, sugerenciasContainer, sugerenciasList, productosDisponibles) {
     productoInput.addEventListener('input', function() {
