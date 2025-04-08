@@ -110,11 +110,18 @@ export function inicializarFormulario() {
     scrollToTop('.formProduccion-view');
 }
 function inicializarEventosProducto(form, productoInput, sugerenciasContainer, sugerenciasList, productosDisponibles) {
+    function normalizarTexto(texto) {
+        return texto.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, "");
+    }
     productoInput.addEventListener('input', function() {
-        const valor = this.value.trim().toLowerCase();
-        if (valor) {
+        const valorNormalizado = normalizarTexto(this.value.trim());
+        
+        if (valorNormalizado) {
             const sugerencias = productosDisponibles.filter(producto => 
-                producto.toLowerCase().includes(valor)
+                normalizarTexto(producto).includes(valorNormalizado)
             );
             
             if (sugerencias.length > 0) {
@@ -144,26 +151,32 @@ function inicializarEventosProducto(form, productoInput, sugerenciasContainer, s
     });
 
     async function cargarProductosValidados() {
-        try {
-            mostrarCarga();
-            const response = await fetch('/obtener-productos');
-            const data = await response.json();
+    try {
+        mostrarCarga();
+        const response = await fetch('/obtener-productos');
+        const data = await response.json();
 
-            if (data.success) {
-                productosDisponibles.length = 0;
-                productosDisponibles.push(...new Set(data.productos).values());
-                productosDisponibles.sort();
-            }
-        } catch (error) {
-            console.error('Error al cargar productos:', error);
-        } finally {
-            ocultarCarga();
+        if (data.success) {
+            // Normalizar y eliminar duplicados
+            const productosUnicos = new Set(
+                data.productos.map(producto => 
+                    producto.trim() // Eliminar espacios en blanco al inicio y final
+                ).filter(Boolean) // Eliminar valores vacíos
+            );
+            
+            productosDisponibles.length = 0;
+            productosDisponibles.push(...Array.from(productosUnicos));
+            productosDisponibles.sort((a, b) => a.localeCompare(b, 'es')); // Ordenar alfabéticamente en español
         }
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
+    } finally {
+        ocultarCarga();
     }
+}
 
     cargarProductosValidados();
 }
-
 function inicializarEventosFormulario(form, productoInput, productosDisponibles) {
     const radioButtons = document.querySelectorAll('input[name="microondas-option"]');
     const tiempoMicroondas = document.querySelector('.microondas-tiempo');
