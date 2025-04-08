@@ -231,25 +231,6 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
     }
 });
 
-/* ==================== RUTAS DE API - PRODUCTOS ==================== */
-app.get('/obtener-productos', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Productos!A2:A'
-        });
-
-        const productos = response.data.values ? response.data.values.map(row => row[0]) : [];
-        res.json({ success: true, productos });
-    } catch (error) {
-        console.error('Error al obtener productos:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener lista de productos' 
-        });
-    }
-});
 
 /* ==================== RUTAS DE API - GESTIÓN DE USUARIOS ==================== */
 app.post('/crear-usuario', requireAuth, async (req, res) => {
@@ -461,10 +442,10 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Productos!A2:A' // Obtener solo la primera columna, excluyendo el título
+            range: 'Almacen general!A2:H' // Obtener solo la primera columna, excluyendo el título
         });
 
-        const productos = response.data.values ? response.data.values.map(row => row[0]) : [];
+        const productos = response.data.values ? response.data.values.map(row => row[1]) : [];
         res.json({ success: true, productos });
     } catch (error) {
         console.error('Error al obtener productos:', error);
@@ -475,58 +456,26 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
     }
 });
 
-/* ==================== API DE USUARIO ==================== */
-app.post('/crear-usuario', requireAuth, async (req, res) => {
+/* ==================== RUTAS DE API - PRODUCTOS ==================== */
+app.get('/obtener-productos', requireAuth, async (req, res) => {
     try {
-
-        const { nombre, pin, rol } = req.body;
-
-        if (!nombre || !pin || !rol) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Faltan datos requeridos' 
-            });
-        }
-
         const sheets = google.sheets({ version: 'v4', auth });
-
-        // Verificar si el PIN ya existe
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Almacen general!A2:H'
         });
 
-        const rows = response.data.values || [];
-        if (rows.some(row => row[0] === pin)) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'El PIN ya está en uso' 
-            });
-        }
-
-        // Agregar nuevo usuario
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[pin, nombre, rol]]
-            }
-        });
-
-        res.json({ 
-            success: true, 
-            message: 'Usuario creado exitosamente' 
-        });
+        const productos = response.data.values ? response.data.values.map(row => row[1]) : [];
+        res.json({ success: true, productos });
     } catch (error) {
-        console.error('Error al crear usuario:', error);
+        console.error('Error al obtener productos:', error);
         res.status(500).json({ 
             success: false, 
-            error: 'Error al crear usuario: ' + error.message 
+            error: 'Error al obtener lista de productos' 
         });
     }
 });
+
 
 app.get('/obtener-usuarios', requireAuth, async (req, res) => {
     try {
