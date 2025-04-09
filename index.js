@@ -4119,6 +4119,110 @@ app.put('/actualizar-producto-acopio', requireAuth, async (req, res) => {
         });
     }
 });
+app.post('/agregar-producto-acopio', requireAuth, async (req, res) => {
+
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener el último ID
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen acopio!A2:A'
+        });
+        
+        const rows = response.data.values || [];
+        let lastId = 0;
+        
+        if (rows.length > 0) {
+            const lastRow = rows[rows.length - 1][0];
+            const match = lastRow.match(/PB-(\d+)/);
+            if (match) {
+                lastId = parseInt(match[1]);
+            }
+        }
+        
+        const newId = `PB-${lastId + 1}`;
+        const { nombre, pesoBrutoLote, pesoPrimaLote } = req.body;
+
+        // Agregar nueva fila
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen acopio!A2:D',
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[newId, nombre, pesoBrutoLote || '', pesoPrimaLote || '']]
+            }
+        });
+
+        res.json({ success: true, message: 'Producto agregado correctamente' });
+    } catch (error) {
+        console.error('Error al agregar producto:', error);
+        res.status(500).json({ success: false, error: 'Error al agregar el producto' });
+    }
+});
+app.delete('/eliminar-producto-acopio', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener el spreadsheet para encontrar el ID de la hoja
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const acopioSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Almacen acopio'
+        );
+
+        if (!acopioSheet) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Hoja de Almacen acopio no encontrada' 
+            });
+        }
+
+        // Obtener todos los registros para encontrar la fila a eliminar
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen acopio!A2:D'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Producto no encontrado' 
+            });
+        }
+
+        // Eliminar la fila usando batchUpdate
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            requestBody: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: acopioSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1, // +1 porque empezamos desde A2
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al eliminar producto:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el producto' 
+        });
+    }
+});
 
 
 
@@ -4341,6 +4445,146 @@ app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
     } catch (error) {
         console.error('Error al registrar movimiento:', error);
         res.json({ success: false, error: 'Error al registrar movimiento' });
+    }
+});
+
+
+app.post('/verificar-tarea', requireAuth, async (req, res) => {
+    try {
+        const { nombre, nombreNormalizado } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Lista tareas!A:B'
+        });
+
+        const rows = response.data.values || [];
+        const existe = rows.some(row => {
+            if (!row[1]) return false;
+            const tareaExistente = row[1].toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim();
+            return tareaExistente === nombreNormalizado;
+        });
+
+        res.json({ disponible: !existe });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al verificar la tarea' });
+    }
+});
+
+app.get('/obtener-tareas', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Lista tareas!A:B'
+        });
+
+        const rows = response.data.values || [];
+        const tareas = rows.slice(1).map(row => ({
+            id: row[0],
+            nombre: row[1]
+        }));
+
+        res.json({ success: true, tareas });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al obtener las tareas' });
+    }
+});
+
+app.post('/agregar-tarea', requireAuth, async (req, res) => {
+    try {
+        const { nombre } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Lista tareas!A:A'
+        });
+        
+        const rows = response.data.values || [];
+        let lastId = 0;
+        
+        if (rows.length > 0) {
+            const lastRow = rows[rows.length - 1][0];
+            const match = lastRow.match(/TA-(\d+)/);
+            if (match) {
+                lastId = parseInt(match[1]);
+            }
+        }
+        
+        const newId = `TA-${lastId + 1}`;
+
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Lista tareas!A:B',
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[newId, nombre]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al agregar la tarea' });
+    }
+});
+
+app.delete('/eliminar-tarea', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const tareasSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Lista tareas'
+        );
+
+        if (!tareasSheet) {
+            return res.status(404).json({ success: false, error: 'Hoja no encontrada' });
+        }
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Lista tareas!A:B'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
+        }
+
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            requestBody: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: tareasSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex,
+                            endIndex: rowIndex + 1
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al eliminar la tarea' });
     }
 });
 

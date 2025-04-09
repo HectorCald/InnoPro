@@ -85,14 +85,17 @@
 
     .almacen-header {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
         align-items: center;
         margin-bottom: 20px;
         gap: 10px;
+        max-width: 100%;
 
         .search-bar {
             position: relative;
-            width: 300px;
+            min-width: 100%;
 
             input {
                 width: 100%;
@@ -116,6 +119,7 @@
         .filter-options {
             display: flex;
             gap: 10px;
+            width: 100%;
 
             .filter-btn {
                 padding: 8px 16px;
@@ -126,6 +130,7 @@
                 cursor: pointer;
                 transition: all 0.3s ease;
                 height: 40px;
+                width: 100%;
 
                 &.active {
                     background: var(--second-button);
@@ -155,6 +160,21 @@
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 10px;
             margin-top: 20px;
+        }
+        .almacen-header{
+            justify-content: space-between;
+
+
+            .search-bar{
+                min-width: 300px;
+            }
+            .filter-options{
+                width: auto;
+
+                .filter-btn{
+                    width: auto;
+               }
+            }
         }
     }
 

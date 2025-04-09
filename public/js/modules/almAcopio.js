@@ -10,16 +10,6 @@ export function inicializarAlmacen() {
         <div class="alamcenGral-container">
             <div class="almacen-botones">
                 <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                        <i class="fas fa-boxes"></i>
-                    </button>
-                    <p>Prima</p>
-                </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                        <i class="fas fa-cubes"></i>
-                    </button>
-                    <p>Bruto</p>
-                </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
                        <i class="fas fa-plus-circle"></i>
                     </button>
                     <p>Agregar</p>
@@ -29,15 +19,15 @@ export function inicializarAlmacen() {
                     </button>
                     <p>Tarea</p>
                 </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                       <i class="fas fa-cogs"></i>
-                    </button>
-                    <p>Proceso</p>
-                </div>
             </div>    
             <div class="lista-productos"></div>
         </div>
     `;
+    const btnAgregarAcopio = container.querySelector('.btn-agregar-pedido i.fa-plus-circle').parentElement;
+    btnAgregarAcopio.onclick = () => mostrarFormularioAgregarAcopio('');
+
+    const btnAgregarTarea = container.querySelector('.btn-agregar-pedido i.fa-tasks').parentElement;
+    btnAgregarTarea.onclick = () => mostrarFormularioAgregarTarea('');
 
 
     mostrarProductosBruto();
@@ -59,6 +49,15 @@ export function mostrarProductosBruto() {
                     </button>
                     <button class="filter-btn giro" data-filter="low">
                         <i class="fas fa-sort-amount-up"></i>
+                    </button>
+                    <button class="filter-btn" data-view="both" title="Mostrar ambos">
+                        <i class="fas fa-boxes"></i>
+                    </button>
+                    <button class="filter-btn" data-view="bruto" title="Solo Bruto">
+                        <i class="fas fa-cubes"></i>
+                    </button>
+                    <button class="filter-btn" data-view="prima" title="Solo Prima">
+                        <i class="fas fa-box"></i>
                     </button>
                 </div>
             </div>
@@ -99,8 +98,6 @@ export function mostrarProductosBruto() {
             product.style.display = productName.includes(searchTerm) ? 'grid' : 'none';
         });
     });
-
-    // Add click event for the search icon
     searchIcon.addEventListener('click', () => {
         if (searchInput.value.length > 0) {
             searchInput.value = '';
@@ -114,28 +111,65 @@ export function mostrarProductosBruto() {
     });
 
     const filterButtons = document.querySelectorAll('.filter-btn');
+    let currentView = 'both';
+    let currentSort = 'all';
+
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
+            if (button.dataset.filter) {
+                // Manejo de ordenamiento
+                currentSort = button.dataset.filter;
+                filterButtons.forEach(btn => {
+                    if (btn.dataset.filter) btn.classList.remove('active');
+                });
+            } else if (button.dataset.view) {
+                // Manejo de vista (bruto/prima)
+                currentView = button.dataset.view;
+                filterButtons.forEach(btn => {
+                    if (btn.dataset.view) btn.classList.remove('active');
+                });
+            }
             button.classList.add('active');
 
-            const filter = button.dataset.filter;
             const products = Array.from(document.querySelectorAll('.product-card'));
 
-            products.sort((a, b) => {
-                // Extraer solo los números usando una expresión regular más robusta
-                const stockA = parseInt(a.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
-                const stockB = parseInt(b.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
+            // Aplicar filtros de vista
+            products.forEach(product => {
+                const brutoPeso = product.querySelector('.estado-bruto');
+                const primaPeso = product.querySelector('.estado-prima');
 
-                // Si no hay número, tratarlo como 0
-                const numA = isNaN(stockA) ? 0 : stockA;
-                const numB = isNaN(stockB) ? 0 : stockB;
-
-                if (filter === 'all') {
-                    return numB - numA; // Mayor a menor
-                } else {
-                    return numA - numB; // Menor a mayor
+                switch (currentView) {
+                    case 'bruto':
+                        if (brutoPeso) brutoPeso.style.display = 'block';
+                        if (primaPeso) primaPeso.style.display = 'none';
+                        break;
+                    case 'prima':
+                        if (brutoPeso) brutoPeso.style.display = 'none';
+                        if (primaPeso) primaPeso.style.display = 'block';
+                        break;
+                    default: // 'both'
+                        if (brutoPeso) brutoPeso.style.display = 'block';
+                        if (primaPeso) primaPeso.style.display = 'block';
+                        break;
                 }
+            });
+
+            // Ordenar productos
+            products.sort((a, b) => {
+                const getRelevantValue = (card) => {
+                    let value;
+                    if (currentView === 'prima') {
+                        value = card.querySelector('.estado-prima').textContent;
+                    } else {
+                        value = card.querySelector('.estado-bruto').textContent;
+                    }
+                    return parseFloat(value) || 0;
+                };
+
+                const valueA = getRelevantValue(a);
+                const valueB = getRelevantValue(b);
+
+                return currentSort === 'all' ? valueB - valueA : valueA - valueB;
             });
 
             const container = document.getElementById('productsContainer');
@@ -216,8 +250,8 @@ export async function cargarAlmacenBruto() {
                         <span>${nombre || 'Sin nombre'}</span>
                     </div>   
                     <div class="product-quantity">
-                        <div class="registro-estado-acopio estado-bruto">${totalBruto.toFixed(1)} kg</div>
-                        <div class="registro-estado-acopio estado-prima">${totalPrima.toFixed(1)} kg</div>
+                        <div class="registro-estado-acopio estado-bruto">${totalBruto.toFixed(1)}</div>
+                        <div class="registro-estado-acopio estado-prima">${totalPrima.toFixed(1)}</div>
                     </div>
                 </div>
             `;
@@ -372,6 +406,55 @@ window.editarProductoAcopio = function(producto) {
     setupEntryHandlers();
     setupGuardarHandler(id);
 };
+
+function mostrarConfirmacionEliminar(id, nombre) {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
+        <div class="relleno">
+        <div class="detalles-grup center">
+            <p>¿Está seguro que desea eliminar el producto "${nombre}"?</p>
+            <p>Esta acción no se puede deshacer.</p>
+        </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn red confirmar-eliminar">Eliminar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+
+    contenido.querySelector('.confirmar-eliminar').onclick = async () => {
+        try {
+            mostrarCarga();
+            const response = await fetch('/eliminar-producto-acopio', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id })
+            });
+
+            if (!response.ok) throw new Error('Error al eliminar el producto');
+
+            mostrarNotificacion('Producto eliminado correctamente', 'success');
+            anuncio.style.display = 'none';
+            setTimeout(() => cargarAlmacenBruto(), 500);
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al eliminar el producto', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+
+    contenido.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+}
 function setupEntryHandlers() {
     document.querySelector('.add-peso-bruto').addEventListener('click', () => {
         const peso = document.getElementById('nuevoPesoBruto').value;
@@ -486,5 +569,270 @@ function setupGuardarHandler(id) {
         }
     };
 }
+function mostrarFormularioAgregarAcopio() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    
+    contenido.innerHTML = `
+        <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
+        <div class="relleno">
+            <p>Información General:</p>
+            <div class="campo-form">
+                <label>Nombre del Producto:</label>
+                <input type="text" id="nuevoNombre" class="edit-input" placeholder="Nombre del producto" required>
+            </div>
+            
+            <div class="form-grup">
+                <p>Materia Bruta:</p>
+                <div class="form-grup">
+                    <div class="detalle-item">
+                        <input type="number" step="0.01" id="nuevoPesoBruto" class="edit-input" placeholder="Peso (kg)">
+                        <input type="number" id="nuevoLoteBruto" class="edit-input" placeholder="Lote">
+                        <i class="fas fa-plus-circle add add-peso-bruto"></i>
+                    </div>
+                </div>
+                <div id="materiaBrutaEntries"></div>
+            </div>
 
+            <div class="form-grup">
+                <p>Materia Prima:</p>
+                <div class="form-grup">
+                    <div class="detalle-item">
+                        <input type="number" step="0.01" id="nuevoPesoPrima" class="edit-input" placeholder="Peso (kg)">
+                        <input type="number" id="nuevoLotePrima" class="edit-input" placeholder="Lote">
+                        <i class="fas fa-plus-circle add add-peso-prima"></i>
+                    </div>
+                </div>
+                <div id="materiaPrimaEntries"></div>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+
+    setupEntryHandlers();
+
+    anuncio.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+
+    anuncio.querySelector('.guardar').onclick = async () => {
+        try {
+            mostrarCarga();
+            
+            // Recolectar datos de materia bruta
+            const pesoBrutoInputs = Array.from(document.querySelectorAll('[id^="editPesoBruto_"]'));
+            const loteBrutoInputs = Array.from(document.querySelectorAll('[id^="editLoteBruto_"]'));
+            const pesoBrutoLote = pesoBrutoInputs.map((input, index) => {
+                if (!input.value || !loteBrutoInputs[index].value) return null;
+                return `${input.value.replace(',', '.')}-${loteBrutoInputs[index].value}`;
+            }).filter(item => item !== null).join(';');
+
+            // Recolectar datos de materia prima
+            const pesoPrimaInputs = Array.from(document.querySelectorAll('[id^="editPesoPrima_"]'));
+            const lotePrimaInputs = Array.from(document.querySelectorAll('[id^="editLotePrima_"]'));
+            const pesoPrimaLote = pesoPrimaInputs.map((input, index) => {
+                if (!input.value || !lotePrimaInputs[index].value) return null;
+                return `${input.value.replace(',', '.')}-${lotePrimaInputs[index].value}`;
+            }).filter(item => item !== null).join(';');
+
+            const nuevoProducto = {
+                nombre: document.getElementById('nuevoNombre').value,
+                pesoBrutoLote,
+                pesoPrimaLote
+            };
+
+            const response = await fetch('/agregar-producto-acopio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(nuevoProducto)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Producto agregado correctamente', 'success');
+                anuncio.style.display = 'none';
+                setTimeout(() => cargarAlmacenBruto(), 500);
+            } else {
+                throw new Error(data.error || 'Error al agregar el producto');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion(`Error al agregar el producto: ${error.message}`, 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+}
+
+
+
+
+function mostrarFormularioAgregarTarea() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-tasks"></i> Gestión de Tareas</h2>
+        <div class="relleno">
+            <div class="campo-form">
+                <label>Nueva Tarea:</label>
+                <div class="detalle-item">
+                    <input type="text" id="nombreTarea" class="edit-input" placeholder="Nombre de la tarea">
+                    <small id="tareaDisponible" style="display: none;"></small>
+                </div>
+            </div>
+            <div id="listaTareas" class="campo-form" style="display: none;">
+                <!-- Aquí se cargarán las tareas existentes -->
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn blue ver-tareas"><i class="fas fa-eye"></i> Ver Tareas</button>
+            <button class="anuncio-btn green agregar"><i class="fas fa-plus"></i> Agregar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+
+    const inputTarea = document.getElementById('nombreTarea');
+    const mensajeDisponible = document.getElementById('tareaDisponible');
+    const btnVerTareas = contenido.querySelector('.ver-tareas');
+    const btnAgregar = contenido.querySelector('.agregar');
+    const btnCancelar = contenido.querySelector('.cancelar');
+    const listaTareas = document.getElementById('listaTareas');
+    let tareasVisible = false;
+    let timeoutId = null;
+
+    inputTarea.addEventListener('input', async () => {
+        const nombre = inputTarea.value.trim();
+        mensajeDisponible.style.display = nombre ? 'block' : 'none';
+
+        // Limpiar el timeout anterior si existe
+        if (timeoutId) clearTimeout(timeoutId);
+
+        if (nombre) {
+            // Mostrar indicador de carga mientras se verifica
+            mensajeDisponible.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: #666; font-size: 1.2em; border:none;"></i>';
+
+            // Esperar 300ms después de que el usuario deje de escribir
+            timeoutId = setTimeout(async () => {
+                const nombreNormalizado = nombre.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .trim();
+
+                const response = await fetch('/verificar-tarea', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        nombre: nombre,
+                        nombreNormalizado: nombreNormalizado 
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.disponible) {
+                    mensajeDisponible.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745; font-size: 1.2em; border:none;"></i>';
+                } else {
+                    mensajeDisponible.innerHTML = '<i class="fas fa-times-circle" style="color: #dc3545; font-size: 1.2em; border:none;"></i>';
+                }
+            }, 300);
+        }
+    });
+    btnVerTareas.onclick = async () => {
+        if (!tareasVisible) {
+            await cargarTareas();
+            listaTareas.style.display = 'block';
+            btnVerTareas.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar Tareas';
+        } else {
+            listaTareas.style.display = 'none';
+            btnVerTareas.innerHTML = '<i class="fas fa-eye"></i> Ver Tareas';
+        }
+        tareasVisible = !tareasVisible;
+    };
+
+    btnAgregar.onclick = agregarNuevaTarea;
+    btnCancelar.onclick = () => anuncio.style.display = 'none';
+}
+async function cargarTareas() {
+    const container = document.getElementById('listaTareas');
+    try {
+        mostrarCarga();
+        const response = await fetch('/obtener-tareas');
+        const data = await response.json();
+        
+        container.innerHTML = data.tareas.map(tarea => `
+            <div class="detalle-item" style="padding-bottom:10px">
+                <span style="text-align:left">${tarea.nombre}</span>
+                <i class="fas fa-trash delete" onclick="eliminarTarea('${tarea.id}')"></i>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al cargar las tareas', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+async function agregarNuevaTarea() {
+    const nombre = document.getElementById('nombreTarea').value.trim();
+    if (!nombre) {
+        mostrarNotificacion('Ingrese un nombre para la tarea', 'error');
+        return;
+    }
+
+    try {
+        mostrarCarga();
+        const response = await fetch('/agregar-tarea', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion('Tarea agregada correctamente', 'success');
+            document.getElementById('nombreTarea').value = '';
+            cargarTareas();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al agregar la tarea', 'error');
+    }finally{
+        ocultarCarga();
+    }
+}
+window.eliminarTarea = async (id) => {
+    try {
+        mostrarCarga();
+        const response = await fetch('/eliminar-tarea', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion('Tarea eliminada correctamente', 'success');
+            cargarTareas();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al eliminar la tarea', 'error');
+    }finally{
+        ocultarCarga();
+    }
+};
 
