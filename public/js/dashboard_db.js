@@ -6,7 +6,6 @@ import { confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mos
 import { mostrarProgramaAcopio, verProgramaciones, toggleProcesos, mostrarProcesos, finalizarProceso, inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea } from './modules/newTarea.js';
 import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
-import { inicializarAlmacenPrima } from './modules/almPrima.js';
 import { inicializarHome } from './modules/home.js';
 import { initializeMenu} from './modules/menu.js';
 import { initializePreciosPro } from './modules/preciosPro.js';
@@ -104,7 +103,6 @@ window.toggleProcesos = toggleProcesos;
 
 // Funciones de gestión de almacén
 window.inicializarAlmacen = inicializarAlmacen;
-window.inicializarAlmacenPrima = inicializarAlmacenPrima;
 window.mostrarFormularioRechazo = mostrarFormularioRechazo;
 window.mostrarFormularioIngreso = mostrarFormularioIngreso;
 window.confirmarRechazo = confirmarRechazo;

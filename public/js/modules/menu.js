@@ -69,7 +69,6 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
             { clase: 'opcion-btn', vista: 'newPedido-view', icono: 'fa-clipboard-list', texto: 'Pedido', onclick: 'onclick="inicializarPedidos()"' },
             { clase: 'opcion-btn', vista: 'newTarea-view', icono: 'fa-tasks', texto: 'Tareas', onclick: 'onclick="inicializarTareas()"' },
             { clase: 'opcion-btn', vista: 'almAcopio-view', icono: 'fa-warehouse', texto: 'Alm Bruto', onclick: 'onclick="inicializarAlmacen()"' },
-            { clase: 'opcion-btn', vista: 'almPrima-view', icono: 'fa-warehouse', texto: 'Alm Prima', onclick: 'onclick="inicializarAlmacenPrima()"' },
             { clase: 'opcion-btn', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAcopio()"' }
         ],
         'Almacen': [

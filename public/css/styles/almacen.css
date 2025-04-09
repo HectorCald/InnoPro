@@ -141,10 +141,20 @@
         }
     }
 
+    
     .products-grid {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    @media screen and (min-width: 768px) {
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
     }
 
     .product-card {
