@@ -24,7 +24,7 @@
     color: var(--primary-text) !important;
     animation: aparecer 0.3s ease-out;
     padding: 15px;
-    border-radius: 15px;
+    border-radius: 10px;
     width: 90%;
     max-width: 400px;
     max-height: 85vh;
@@ -39,7 +39,7 @@
     border-radius: 10px;
     text-align: center;
     color: var(--primary-text) !important;
-    border-radius: 15px;
+    border-radius: 10px;
     width: 100%;
     height: 100%;
     overflow-y: auto !important;
@@ -272,7 +272,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
     background-color: rgb(56, 56, 56);
     padding: 10px;
     border-radius: 10px;
