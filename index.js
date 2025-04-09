@@ -4059,29 +4059,63 @@ app.post('/agregar-producto-almacen', requireAuth, async (req, res) => {
 
 
 
-app.get('/obtener-productos-acopio', requireAuth, async (req, res) => {
+app.get('/obtener-almacen-acopio', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen acopio!A2:B' // Solo obtenemos ID y PRODUCTO
+            range: 'Almacen acopio!A:D'  // Assuming columns A and B contain id and name
         });
 
         const rows = response.data.values || [];
-        const productos = rows.map(row => ({
-            id: row[0],
-            nombre: row[1]
-        }));
+        const pedidos = rows.slice(1); // Skip headers
 
-        res.json({ 
-            success: true, 
-            productos: productos 
-        });
+        res.json({ success: true, pedidos });
     } catch (error) {
         console.error('Error:', error);
-        res.json({ 
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener los productos de acopio'
+        });
+    }
+});
+app.put('/actualizar-producto-acopio', requireAuth, async (req, res) => {
+    try {
+        const { id, nombre, pesoBrutoLote, pesoPrimaLote } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get all records to find the row to update
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen acopio!A:D'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Producto no encontrado' 
+            });
+        }
+
+        // Update the row with new values
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Almacen acopio!A${rowIndex + 1}:D${rowIndex + 1}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[id, nombre, pesoBrutoLote, pesoPrimaLote]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al actualizar producto:', error);
+        res.status(500).json({ 
             success: false, 
-            error: 'Error al obtener productos de acopio' 
+            error: 'Error al actualizar el producto' 
         });
     }
 });

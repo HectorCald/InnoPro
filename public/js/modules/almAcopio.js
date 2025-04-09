@@ -5,297 +5,486 @@ export function inicializarAlmacen() {
 
     container.innerHTML = `
         <div class="title">
-            <h3><i class="fas fa-warehouse"></i>  Gestión de Almacén Bruto</h3>
+            <h3><i class="fas fa-warehouse"></i> Gestión de Almacen</h3>
         </div>
+        <div class="alamcenGral-container">
+            <div class="almacen-botones">
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                        <i class="fas fa-boxes"></i>
+                    </button>
+                    <p>Prima</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                        <i class="fas fa-cubes"></i>
+                    </button>
+                    <p>Bruto</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                       <i class="fas fa-plus-circle"></i>
+                    </button>
+                    <p>Agregar</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                       <i class="fas fa-tasks"></i>
+                    </button>
+                    <p>Tarea</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                       <i class="fas fa-cogs"></i>
+                    </button>
+                    <p>Proceso</p>
+                </div>
+            </div>    
+            <div class="lista-productos"></div>
+        </div>
+    `;
+
+
+    mostrarProductosBruto();
+}
+export function mostrarProductosBruto() {
+    const container = document.querySelector('.lista-productos');
+    container.style.display = 'flex';
+
+    container.innerHTML = `
         <div class="almacen-container">
             <div class="almacen-header">
                 <div class="search-bar">
                     <input type="text" id="searchProductAcopio" placeholder="Buscar producto...">
-                    <i class="fas fa-search"></i>
+                    <i class="fas fa-search search-icon"></i>
                 </div>
                 <div class="filter-options">
-                    <button class="filter-btn active" data-filter="all">
-                        Todos
+                    <button class="filter-btn" data-filter="all">
+                        <i class="fas fa-sort-amount-down"></i>
                     </button>
-                    <button class="filter-btn" data-filter="low">
-                        Bajo
+                    <button class="filter-btn giro" data-filter="low">
+                        <i class="fas fa-sort-amount-up"></i>
                     </button>
                 </div>
             </div>
-            <div class="products-grid" id="productsContainerAcopio">
-                <!-- Los productos se cargarán aquí dinámicamente -->
+            <div class="products-grid" id="productsContainer">
             </div>
         </div>
     `;
 
-    cargarProductosAlmacenAcopio();
-    initializeEventListeners();
-}
-async function cargarProductosAlmacenAcopio() {
+    // Call cargarAlmacen after creating the container
+    cargarAlmacenBruto();
+
+    function normalizarTexto(texto) {
+        return texto.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Elimina tildes
+            .replace(/\s+/g, ' ')            // Reduce espacios múltiples a uno
+            .trim();                         // Elimina espacios al inicio y final
+    }
+
+    const searchInput = document.getElementById('searchProductAcopio');
+    const searchIcon = document.querySelector('.search-icon');
+
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = normalizarTexto(e.target.value);
+        const products = document.querySelectorAll('.product-card');
+
+        // Change icon based on input value
+        if (e.target.value.length > 0) {
+            searchIcon.classList.remove('fa-search');
+            searchIcon.classList.add('fa-times');
+        } else {
+            searchIcon.classList.remove('fa-times');
+            searchIcon.classList.add('fa-search');
+        }
+
+        products.forEach(product => {
+            const productName = normalizarTexto(product.querySelector('.product-name span').textContent);
+            product.style.display = productName.includes(searchTerm) ? 'grid' : 'none';
+        });
+    });
+
+    // Add click event for the search icon
+    searchIcon.addEventListener('click', () => {
+        if (searchInput.value.length > 0) {
+            searchInput.value = '';
+            searchIcon.classList.remove('fa-times');
+            searchIcon.classList.add('fa-search');
+            // Show all products
+            document.querySelectorAll('.product-card').forEach(product => {
+                product.style.display = 'grid';
+            });
+        }
+    });
+
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            const filter = button.dataset.filter;
+            const products = Array.from(document.querySelectorAll('.product-card'));
+
+            products.sort((a, b) => {
+                // Extraer solo los números usando una expresión regular más robusta
+                const stockA = parseInt(a.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
+                const stockB = parseInt(b.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
+
+                // Si no hay número, tratarlo como 0
+                const numA = isNaN(stockA) ? 0 : stockA;
+                const numB = isNaN(stockB) ? 0 : stockB;
+
+                if (filter === 'all') {
+                    return numB - numA; // Mayor a menor
+                } else {
+                    return numA - numB; // Menor a mayor
+                }
+            });
+
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+            products.forEach(product => container.appendChild(product));
+        });
+    });
+};
+export async function cargarAlmacenBruto() {
     try {
         mostrarCarga();
-        const response = await fetch('/obtener-productos-almacen');
+        const response = await fetch('/obtener-almacen-acopio');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
 
         if (!data.success) {
-            throw new Error(data.error || 'Error al cargar productos');
+            throw new Error(data.error || 'Error al cargar los productos');
         }
 
-        // Agrupar productos por nombre
-        const productosAgrupados = data.productos.reduce((acc, producto) => {
-            if (!acc[producto.nombre]) {
-                acc[producto.nombre] = {
-                    nombre: producto.nombre,
-                    cantidad: 0,
-                    lotes: []
-                };
-            }
-            acc[producto.nombre].cantidad += producto.cantidad;
-            acc[producto.nombre].lotes.push({
-                lote: producto.lote,
-                cantidad: producto.cantidad,
-                ultimaActualizacion: producto.ultimaActualizacion
-            });
-            return acc;
-        }, {});
+        const productsContainer = document.getElementById('productsContainer');
+        if (!productsContainer) {
+            throw new Error('Container not found');
+        }
 
-        const container = document.getElementById('productsContainerAcopio');
-        container.innerHTML = Object.values(productosAgrupados).map(producto => `
-            <div class="product-card" onclick="mostrarDetalleProductoAcopio('${producto.nombre}')">
+        window.productosAlmacen = data.pedidos;
+        productsContainer.innerHTML = '';
+
+        // Check if we have products
+        if (!data.pedidos || data.pedidos.length === 0) {
+            productsContainer.innerHTML = '<div class="no-products">No hay productos disponibles</div>';
+            return;
+        }
+
+        data.pedidos.forEach(producto => {
+            if (!producto) return;
+
+            const [id, nombre, pesoBrutoLote, pesoPrimaLote] = producto;
+
+            // Safe handling of weight calculations
+            const pesosBrutos = (pesoBrutoLote || '').split(';')
+                .map(item => (item || '').split('-')[0])
+                .filter(peso => peso);
+
+            const pesosPrima = (pesoPrimaLote || '').split(';')
+                .map(item => (item || '').split('-')[0])
+                .filter(peso => peso);
+
+            const totalBruto = pesosBrutos.reduce((sum, peso) => {
+                const value = parseFloat(peso.replace(',', '.'));
+                return sum + (isNaN(value) ? 0 : value);
+            }, 0);
+
+            const totalPrima = pesosPrima.reduce((sum, peso) => {
+                const value = parseFloat(peso.replace(',', '.'));
+                return sum + (isNaN(value) ? 0 : value);
+            }, 0);
+
+            let stockClass = '';
+            if (totalBruto < 100) {
+                stockClass = 'low-stock';
+            } else if (totalBruto >= 100 && totalBruto < 300) {
+                stockClass = 'medium-stock';
+            } else {
+                stockClass = 'high-stock';
+            }
+
+            const productCard = document.createElement('div');
+            productCard.className = `product-card ${stockClass}`;
+            productCard.onclick = () => mostrarDetalleProductoAcopio(producto);
+            productCard.innerHTML = `
                 <div class="product-info">
                     <div class="product-name">
                         <i class="fas fa-box"></i>
-                        <span>${producto.nombre}</span>
-                    </div>
+                        <span>${nombre || 'Sin nombre'}</span>
+                    </div>   
                     <div class="product-quantity">
-                        ${producto.cantidad} kg
+                        <div class="registro-estado-acopio estado-bruto">${totalBruto.toFixed(1)} kg</div>
+                        <div class="registro-estado-acopio estado-prima">${totalPrima.toFixed(1)} kg</div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+            productsContainer.appendChild(productCard);
+        });
+
     } catch (error) {
-        mostrarNotificacion(error.message, 'error');
+        console.error('Error detallado:', error);
+        mostrarNotificacion(`Error al cargar los productos: ${error.message}`, 'error');
     } finally {
         ocultarCarga();
+        scrollToTop('.almacen-view');
     }
 }
+window.mostrarDetalleProductoAcopio = function (producto) {
+    const [id, nombre, pesoBrutoLote, pesoPrimaLote] = producto;
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
 
-window.mostrarDetalleProductoAcopio = async function (nombreProducto) {
-    try {
-        mostrarCarga();
-        const response = await fetch(`/obtener-detalle-producto/${encodeURIComponent(nombreProducto)}`);
+    function formatearPesoLote(pesoLoteStr) {
+        if (!pesoLoteStr) return '<div class="detalle-item"><span>No registrado</span></div>';
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || `Error HTTP: ${response.status}`);
-        }
+        return pesoLoteStr.split(';').map(item => {
+            const [peso, lote] = item.split('-');
+            return `<div class="detalle-item">
+                <p>Peso: ${peso} kg</p>
+                <span>Lote: ${lote}</span>
+            </div>`;
+        }).join('');
+    }
 
-        const data = await response.json();
-        window.currentProductData = data;
-
-        if (!data.success) {
-            throw new Error(data.error || 'Error al cargar detalles del producto');
-        }
-
-        const anuncio = document.querySelector('.anuncio');
-        const contenido = anuncio.querySelector('.anuncio-contenido');
-
-        contenido.innerHTML = `
-            <i class="fas fa-box-open"></i>
-            <h2>${nombreProducto}</h2>
+    contenido.innerHTML = `
+        <h2 class="titulo-modal"><i class="fas fa-info-circle"></i> Información</h2>
+        <div class="relleno">
             <div class="producto-detalles">
                 <div class="detalle-seccion">
-                    <h3>Información General</h3>
-                    <p>Stock Total: ${data.producto.cantidad} kg</p>
-                    <div class="lote-selector">
-                        <label for="selectLote">Seleccionar Lote:</label>
-                        <select id="selectLote" onchange="actualizarDetallesLote(this.value)">
-                            ${data.producto.lotes.map(lote => `
-                                <option value="${lote.lote}">
-                                    Lote: ${lote.lote} - ${lote.cantidad} kg
-                                </option>
-                            `).join('')}
-                        </select>
+                    <p>Información General:</p>               
+                    <div class="detalles-grup">
+                        <div class="detalle-item">
+                            <p>Nombre:</p> <span>${nombre}</span>
+                        </div>
                     </div>
-                    <div id="detallesLote">
-                        <!-- Los detalles del lote se actualizarán dinámicamente -->
+                    <p>Materia Bruta:</p>  
+                    <div class="detalles-grup">
+                        ${formatearPesoLote(pesoBrutoLote)}
+                    </div>
+                    <p>Materia Prima:</p>  
+                    <div class="detalles-grup">
+                        ${formatearPesoLote(pesoPrimaLote)}
                     </div>
                 </div>
-                <div class="detalle-seccion">
-                    <h3>Movimientos Recientes</h3>
-                    ${data.movimientos.length > 0 ?
-                    '<canvas id="graficoMovimientos"></canvas>' :
-                    '<p class="no-data">No hay movimientos registrados</p>'}
-                </div>
+                <div class="detalles-edicion relleno" style="display:none"></div>
             </div>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn gray cancelar">Cerrar</button>
-            </div>
-        `;
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn blue editar">Editar</button>
+            <button class="anuncio-btn green guardar" style="display: none;">Guardar</button>
+            <button class="anuncio-btn red eliminar">Eliminar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
 
-        if (data.movimientos.length > 0) {
-            const ctx = document.getElementById('graficoMovimientos')?.getContext('2d');
-            if (ctx) {
-                const ultimosMovimientos = [...data.movimientos].reverse();
-                
-                let stockAcumulado = 0;
-                const valoresAcumulados = ultimosMovimientos.map(m => {
-                    const cantidad = parseFloat(m.cantidad) || 0;
-                    if (m.tipo.toLowerCase() === 'ingreso') {
-                        stockAcumulado += cantidad;
-                    } else {
-                        stockAcumulado -= cantidad;
-                    }
-                    return stockAcumulado;
-                });
+    anuncio.style.display = 'flex';
 
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ultimosMovimientos.map(m => {
-                            const [day, month] = m.fecha.split('/');
-                            return `${day}/${month}`; // Solo día y mes
-                        }),
-                        datasets: [{
-                            label: 'Stock Acumulado',
-                            data: valoresAcumulados,
-                            borderColor: '#2196F3',
-                            tension: 0.4,
-                            fill: true,
-                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                            stepped: false,
-                            borderWidth: 2,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#2196F3'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        aspectRatio: 2,
-                        scales: {
-                            y: {
-                                grid: { color: '#2c2c2c' },
-                                ticks: {
-                                    color: '#fff',
-                                    callback: function (value) {
-                                        return value + ' kg';
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: { color: '#2c2c2c' },
-                                ticks: { 
-                                    color: '#fff',
-                                    maxRotation: 45,  // Rotación diagonal
-                                    minRotation: 45   // Mantener ángulo consistente
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: { color: '#fff' }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        const mov = ultimosMovimientos[context.dataIndex];
-                                        const cantidad = parseFloat(mov.cantidad);
-                                        return `${mov.tipo}: ${cantidad} kg (Total: ${context.raw} kg)`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
+    const btnEditar = contenido.querySelector('.editar');
+    const btnGuardar = contenido.querySelector('.guardar');
 
-        anuncio.style.display = 'flex';
-        anuncio.querySelector('.cancelar').onclick = () => {
-            anuncio.style.display = 'none';
-        };
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion(error.message, 'error');
-    } finally {
-        ocultarCarga();
-    }
-};
-
-window.actualizarDetallesLote = function (loteSeleccionado) {
-    const detallesLote = document.getElementById('detallesLote');
-    const data = window.currentProductData;
-    const lote = data.producto.lotes.find(l => l.lote === loteSeleccionado);
-
-    if (lote) {
-        detallesLote.innerHTML = `
-            <p>Cantidad en Lote: ${lote.cantidad} kg</p>
-            <p>Última Actualización: ${new Date(lote.ultimaActualizacion).toLocaleDateString()}</p>
-        `;
-
-        // Show movements for this specific lot if they exist
-        if (data.movimientosPorLote[loteSeleccionado]?.length > 0) {
-            detallesLote.innerHTML += `
-                <h4>Movimientos del Lote</h4>
-                <ul class="movimientos-lote">
-                    ${data.movimientosPorLote[loteSeleccionado].map(mov => `
-                        <li>${new Date(mov.fecha).toLocaleDateString()} - ${mov.tipo}: ${mov.cantidad} kg</li>
-                    `).join('')}
-                </ul>
-            `;
-        }
-    }
-};
-function filterProducts(searchTerm = '') {
-    const products = document.querySelectorAll('.product-card');
-    const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
-
-    // Función para normalizar texto (eliminar acentos)
-    const normalizeText = (text) => {
-        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    anuncio.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
     };
 
-    const normalizedSearchTerm = normalizeText(searchTerm);
+    anuncio.querySelector('.eliminar').onclick = () => {
+        mostrarConfirmacionEliminar(id, nombre);
+    };
 
-    products.forEach(product => {
-        const name = product.querySelector('.product-name span').textContent;
-        const normalizedName = normalizeText(name);
-        const quantity = parseFloat(product.querySelector('.product-quantity').textContent);
-        const isLowStock = quantity < 100;
+    btnEditar.onclick = () => {
+        editarProductoAcopio(producto);
+    };
+};
+window.editarProductoAcopio = function(producto) {
+    const [id, nombre, pesoBrutoLote, pesoPrimaLote] = producto;
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    const detallesEdicion = contenido.querySelector('.detalles-edicion');
+    const btnEditar = contenido.querySelector('.editar');
+    const btnGuardar = contenido.querySelector('.guardar');
+    const tituloModal = contenido.querySelector('.titulo-modal');
+    const detallesGrup = contenido.querySelector('.detalle-seccion');
 
-        const matchesSearch = normalizedName.includes(normalizedSearchTerm);
-        const matchesFilter = activeFilter === 'all' || (activeFilter === 'low' && isLowStock);
+    detallesEdicion.innerHTML = `
+        <p>Información General:</p> 
+        <div class="campo-form">
+            <label>Nombre:</label>
+            <input type="text" id="editNombre" value="${nombre}" class="edit-input">
+        </div>
+        <div class="form-grup">
+            <p>Materia Bruta:</p>
+            <div class="form-grup">
+                <div class="detalle-item">
+                    <input type="number" step="0.01" id="nuevoPesoBruto" class="edit-input" placeholder="Peso (kg)">
+                    <input type="number" id="nuevoLoteBruto" class="edit-input" placeholder="Lote">
+                    <i class="fas fa-plus-circle add add-peso-bruto"></i>
+                </div>
+            </div>
+            <div id="materiaBrutaEntries">
+                ${pesoBrutoLote ? pesoBrutoLote.split(';').map((item, index) => {
+                    const [peso, lote] = item.split('-').map(val => val.trim());
+                    const pesoFormateado = peso.replace(',', '.');
+                    return `
+                        <div class="campo-form entrada-peso" data-index="${index}">
+                            <div class="detalle-item">
+                                <input type="number" step="0.01" id="editPesoBruto_${index}" value="${pesoFormateado}" class="edit-input" placeholder="Peso">
+                                <input type="number" id="editLoteBruto_${index}" value="${lote}" class="edit-input" placeholder="Lote">
+                                <i class="fas fa-trash delete delete-entry" onclick="eliminarEntrada(this, 'bruto')"></i>
+                            </div>
+                        </div>`;
+                }).join('') : ''}
+            </div>
+        </div>
+        <div class="form-grup">
+            <p>Materia Prima:</p>
+            <div class="form-grup">
+                <div class="detalle-item">
+                    <input type="number" step="0.01" id="nuevoPesoPrima" class="edit-input" placeholder="Peso (kg)">
+                    <input type="number" id="nuevoLotePrima" class="edit-input" placeholder="Lote">
+                    <i class="fas fa-plus-circle add add-peso-prima"></i>
+                </div>
+            </div>
+            <div id="materiaPrimaEntries">
+                ${pesoPrimaLote ? pesoPrimaLote.split(';').map((item, index) => {
+                    const [peso, lote] = item.split('-').map(val => val.trim());
+                    const pesoFormateado = peso.replace(',', '.');
+                    return `
+                        <div class="campo-form entrada-peso" data-index="${index}">
+                            <div class="detalle-item">
+                                <input type="number" step="0.01" id="editPesoPrima_${index}" value="${pesoFormateado}" class="edit-input" placeholder="Peso">
+                                <input type="number" id="editLotePrima_${index}" value="${lote}" class="edit-input" placeholder="Lote">
+                                <i class="fas fa-trash delete delete-entry" onclick="eliminarEntrada(this, 'prima')"></i>
+                            </div>
+                        </div>`;
+                }).join('') : ''}
+            </div>
+        </div>
+    `;
 
-        product.style.display = (matchesSearch && matchesFilter) ? 'flex' : 'none';
+    detallesGrup.style.display = 'none';
+    detallesEdicion.style.display = 'flex';
+    btnEditar.style.display = 'none';
+    btnGuardar.style.display = 'inline-block';
+    tituloModal.innerHTML = '<i class="fas fa-edit"></i> Editar Información';
+
+    setupEntryHandlers();
+    setupGuardarHandler(id);
+};
+function setupEntryHandlers() {
+    document.querySelector('.add-peso-bruto').addEventListener('click', () => {
+        const peso = document.getElementById('nuevoPesoBruto').value;
+        const lote = document.getElementById('nuevoLoteBruto').value;
+        
+        if (!peso || !lote) {
+            mostrarNotificacion('Por favor ingrese peso y lote', 'error');
+            return;
+        }
+
+        const container = document.getElementById('materiaBrutaEntries');
+        const nuevoIndex = container.querySelectorAll('.entrada-peso').length;
+
+        container.insertAdjacentHTML('beforeend', `
+            <div class="campo-form entrada-peso" data-index="${nuevoIndex}">
+                <div class="detalle-item">
+                    <input type="number" step="0.01" id="editPesoBruto_${nuevoIndex}" value="${peso}" class="edit-input" placeholder="Peso">
+                    <input type="number" id="editLoteBruto_${nuevoIndex}" value="${lote}" class="edit-input" placeholder="Lote">
+                    <i class="fas fa-trash delete delete-entry" onclick="this.closest('.entrada-peso').remove()"></i>
+                </div>
+            </div>
+        `);
+
+        // Limpiar campos
+        document.getElementById('nuevoPesoBruto').value = '';
+        document.getElementById('nuevoLoteBruto').value = '';
+    });
+
+    document.querySelector('.add-peso-prima').addEventListener('click', () => {
+        const peso = document.getElementById('nuevoPesoPrima').value;
+        const lote = document.getElementById('nuevoLotePrima').value;
+        
+        if (!peso || !lote) {
+            mostrarNotificacion('Por favor ingrese peso y lote', 'error');
+            return;
+        }
+
+        const container = document.getElementById('materiaPrimaEntries');
+        const nuevoIndex = container.querySelectorAll('.entrada-peso').length;
+
+        container.insertAdjacentHTML('beforeend', `
+            <div class="campo-form entrada-peso" data-index="${nuevoIndex}">
+                <div class="detalle-item">
+                    <input type="number" step="0.01" id="editPesoPrima_${nuevoIndex}" value="${peso}" class="edit-input" placeholder="Peso">
+                    <input type="number" id="editLotePrima_${nuevoIndex}" value="${lote}" class="edit-input" placeholder="Lote">
+                    <i class="fas fa-trash delete delete-entry" onclick="this.closest('.entrada-peso').remove()"></i>
+                </div>
+            </div>
+        `);
+
+        // Limpiar campos
+        document.getElementById('nuevoPesoPrima').value = '';
+        document.getElementById('nuevoLotePrima').value = '';
     });
 }
+function setupGuardarHandler(id) {
+    const btnGuardar = document.querySelector('.guardar');
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
 
-function initializeEventListeners() {
-    const searchInput = document.getElementById('searchProductAcopio');
-    const filterButtons = document.querySelectorAll('.filter-btn');
+    btnGuardar.onclick = async () => {
+        try {
+            mostrarCarga();
 
-    searchInput.addEventListener('keyup', (e) => {
-        e.preventDefault();
-        filterProducts(e.target.value);
-    });
+            // Recolectar datos brutos y prima (código existente)
+            const pesoBrutoInputs = Array.from(contenido.querySelectorAll('[id^="editPesoBruto_"]'));
+            const loteBrutoInputs = Array.from(contenido.querySelectorAll('[id^="editLoteBruto_"]'));
+            const pesoBrutoLote = pesoBrutoInputs.map((input, index) => {
+                if (!input.value || !loteBrutoInputs[index].value) return null;
+                return `${input.value.replace(',', '.')}-${loteBrutoInputs[index].value}`;
+            }).filter(item => item !== null).join(';');
 
-    searchInput.addEventListener('input', (e) => {
-        e.preventDefault();
-        filterProducts(e.target.value);
-    });
+            const pesoPrimaInputs = Array.from(contenido.querySelectorAll('[id^="editPesoPrima_"]'));
+            const lotePrimaInputs = Array.from(contenido.querySelectorAll('[id^="editLotePrima_"]'));
+            const pesoPrimaLote = pesoPrimaInputs.map((input, index) => {
+                if (!input.value || !lotePrimaInputs[index].value) return null;
+                return `${input.value.replace(',', '.')}-${lotePrimaInputs[index].value}`;
+            }).filter(item => item !== null).join(';');
 
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            // Si el botón es "Todos", limpiar el campo de búsqueda
-            if (btn.dataset.filter === 'all') {
-                searchInput.value = '';
+            const datosActualizados = {
+                id,
+                nombre: document.getElementById('editNombre').value,
+                pesoBrutoLote,
+                pesoPrimaLote
+            };
+
+            const response = await fetch('/actualizar-producto-acopio', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datosActualizados)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
-            filterProducts(searchInput.value);
-        });
-    });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Producto actualizado correctamente', 'success');
+                anuncio.style.display = 'none';
+                setTimeout(() => cargarAlmacenBruto(), 500);
+            } else {
+                throw new Error(data.error || 'Error al actualizar el producto');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion(`Error al actualizar el producto: ${error.message}`, 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
 }
+
+

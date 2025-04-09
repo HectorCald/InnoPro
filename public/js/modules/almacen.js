@@ -579,11 +579,11 @@ window.mostrarDetalleProductoGral = function (producto) {
     }
     async function cargarProductosAcopio() {
         try {
-            const response = await fetch('/obtener-productos-acopio');
+            const response = await fetch('/obtener-almacen-acopio');
             const data = await response.json();
 
             if (data.success) {
-                const selectIndex = document.getElementById('editIndex'); // Changed from 'nuevoIndex'
+                const selectIndex = document.getElementById('editIndex');
                 if (!selectIndex) {
                     console.error('Select element not found');
                     return;
@@ -591,13 +591,14 @@ window.mostrarDetalleProductoGral = function (producto) {
 
                 selectIndex.innerHTML = '<option value="">Seleccionar</option>';
 
-                data.productos.forEach(producto => {
-                    const selected = producto.id === indexId ? 'selected' : '';
+                data.pedidos.forEach(producto => {
+                    const [id, nombre] = producto;
+                    const selected = id === indexId ? 'selected' : '';
                     selectIndex.innerHTML += `
-                        <option value="${producto.id}|${producto.nombre}" ${selected}>
-                            ${producto.nombre}
-                        </option>
-                    `;
+                    <option value="${id}|${nombre}" ${selected}>
+                        ${nombre}
+                    </option>
+                `;
                 });
             }
         } catch (error) {
@@ -605,6 +606,7 @@ window.mostrarDetalleProductoGral = function (producto) {
             mostrarNotificacion('Error al cargar productos de acopio', 'error');
         }
     }
+
 
     contenido.innerHTML = `
         <h2 class="titulo-modal"><i class="fas fa-info-circle"></i> Información</h2>
@@ -682,11 +684,11 @@ window.mostrarDetalleProductoGral = function (producto) {
                         <select id="editTags" class="edit-input">
                             <option value="">Seleccionar</option>
                             ${window.productosAlmacen && window.productosAlmacen[0] && window.productosAlmacen[0][8] ?
-            window.productosAlmacen[0][8].split(';')
-                .filter(tag => tag.trim())
-                .map(tag => `<option value="${tag}">${tag}</option>`)
-                .join('')
-            : '<option disabled>No hay etiquetas disponibles</option>'
+                            window.productosAlmacen[0][8].split(';')
+                                .filter(tag => tag.trim())
+                                .map(tag => `<option value="${tag}">${tag}</option>`)
+                                .join('')
+                            : '<option disabled>No hay etiquetas disponibles</option>'
         }
                         </select>
                         <div class="detalle-item">
@@ -931,19 +933,25 @@ function mostrarFormularioAgregarProducto() {
     }
     async function cargarProductosAcopio() {
         try {
-            const response = await fetch('/obtener-productos-acopio');
+            const response = await fetch('/obtener-almacen-acopio');
             const data = await response.json();
 
             if (data.success) {
                 const selectIndex = document.getElementById('nuevoIndex');
+                if (!selectIndex) {
+                    console.error('Select element not found');
+                    return;
+                }
+
                 selectIndex.innerHTML = '<option value="">Seleccionar</option>';
 
-                data.productos.forEach(producto => {
+                data.pedidos.forEach(producto => {
+                    const [id, nombre] = producto;
                     selectIndex.innerHTML += `
-                        <option value="${producto.id}|${producto.nombre}">
-                            ${producto.nombre}
-                        </option>
-                    `;
+                    <option value="${id}|${nombre}">
+                        ${nombre}
+                    </option>
+                `;
                 });
             }
         } catch (error) {
@@ -990,11 +998,11 @@ function mostrarFormularioAgregarProducto() {
                     <select id="nuevoTags" class="edit-input">
                         <option value="">Seleccionar</option>
                         ${window.productosAlmacen && window.productosAlmacen[0] && window.productosAlmacen[0][8] ?
-            window.productosAlmacen[0][8].split(';')
-                .filter(tag => tag.trim())
-                .map(tag => `<option value="${tag}">${tag}</option>`)
-                .join('')
-            : '<option disabled>No hay etiquetas disponibles</option>'
+                            window.productosAlmacen[0][8].split(';')
+                                .filter(tag => tag.trim())
+                                .map(tag => `<option value="${tag}">${tag}</option>`)
+                                .join('')
+                            : '<option disabled>No hay etiquetas disponibles</option>'
         }
                     </select>
                     <div class="detalle-item">
