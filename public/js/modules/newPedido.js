@@ -1,5 +1,15 @@
 import { registrarNotificacion } from './advertencia.js';
 let pedidosTemporales = [];
+function cerrarFormularioPedido() {
+    const anuncio = document.querySelector('.anuncio');
+    if (anuncio) {
+        anuncio.style.display = 'none';
+    } else {
+        console.error('No se encontró el elemento .anuncio');
+    }
+}
+
+
 export function inicializarPedidos() {
     const anuncio = document.querySelector('.anuncio').style.display='none'
     const container = document.querySelector('.newPedido-view');
@@ -38,569 +48,6 @@ export function inicializarPedidos() {
         </div>
     `;
     cargarPedidos();
-}
-export async function togglePedidosRecibidos() {
-    const listaRecibidos = document.querySelector('.lista-recibidos');
-    const listaArchivados = document.querySelector('.lista-archivados');
-    const estaVisible = listaRecibidos.style.display !== 'none';
-    
-    listaArchivados.style.display = 'none';
-    
-    if (!estaVisible) {
-        try {
-            mostrarCarga();
-            const response = await fetch('/obtener-pedidos-recibidos');
-            const data = await response.json();
-            if (data.success && data.pedidos.length > 0) {
-                listaRecibidos.innerHTML = `
-                    <h2 class="section-title">Pedidos recibidos</h2>
-                    <div class="pedido-archivado-card">
-                        <div class="section-header">
-                            <h3><i class="fas fa-check-circle"></i> Resumen de Ingresos</h3>
-                            <button class="btn-copiar" onclick="copiarResumenIngresos()">
-                                <i class="fas fa-copy"></i> Copiar
-                            </button>
-                        </div>
-                        <div class="resumen-ingresos" data-ingresos="[]"></div>
-                    </div>
-                    ${data.pedidos.map(pedido => `
-                        <div class="pedido-archivado-card">
-                            <div class="pedido-archivado-header">
-                                <span class="pedido-nombre">${pedido.nombre}(${pedido.id})</span>
-                                <span class="pedido-fecha"><i class="fas fa-calendar"></i> ${pedido.fecha}</span>
-                            </div>
-                            <div class="pedido-detalles">
-                                <span class="pedido-cantidad">
-                                    <i class="fas fa-box"></i>
-                                    Pedido: ${pedido.cantidad}
-                                </span>
-                                ${pedido.proveedor ? `
-                                <span class="pedido-proveedor">
-                                    <i class="fas fa-truck"></i>
-                                    Proveedor: ${pedido.proveedor}
-                                </span>` : ''}
-                                <span class="pedido-obs">
-                                    <i class="fas fa-clipboard-check"></i>
-                                    ${pedido.obsCompras} ${pedido.medida} 
-                                </span>
-                            </div>
-                            <div class="anuncio-botones">
-                                <button class="enviar anuncio-btn green" onclick="window.mostrarFormularioIngreso('${pedido.id}','${pedido.nombre}', 'Pedidos')">
-                                    <i class="fas fa-check"></i>
-                                    Ingresar
-                                </button>
-                                <button class="cancelar anuncio-btn red" onclick="window.mostrarFormularioRechazo('${pedido.id}','${pedido.nombre}', 'Pedidos')">
-                                    <i class="fas fa-times"></i>
-                                    Rechazar
-                                </button>
-                            </div>
-                        </div>
-                    `).join('')}
-                `;
-
-                // Make functions available globally
-                window.mostrarFormularioIngreso = mostrarFormularioIngreso;
-                window.mostrarFormularioRechazo = mostrarFormularioRechazo;
-                window.copiarResumenIngresos = copiarResumenIngresos;
-            } else {
-                listaRecibidos.innerHTML = '<p class="no-recibidos">No hay pedidos recibidos</p>';
-            }
-            listaRecibidos.style.display = 'block';
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al cargar pedidos recibidos', 'error');
-        } finally {
-            ocultarCarga();
-        }
-    } else {
-        listaRecibidos.style.display = 'none';
-    }
-}
-
-function copiarResumenIngresos() {
-    const resumenDiv = document.querySelector('.resumen-ingresos');
-    const ingresos = JSON.parse(resumenDiv.getAttribute('data-ingresos') || '[]');
-    
-    if (ingresos.length === 0) {
-        mostrarNotificacion('No hay ingresos para copiar', 'warning');
-        return;
-    }
-
-    const mensaje = generarMensajeResumenIngresos(ingresos);
-    
-    navigator.clipboard.writeText(mensaje).then(() => {
-        mostrarNotificacion('Resumen copiado al portapapeles', 'success');
-    }).catch(err => {
-        console.error('Error al copiar:', err);
-        mostrarNotificacion('Error al copiar el resumen', 'error');
-    });
-}
-
-function generarMensajeResumenIngresos(ingresos) {
-    const listaIngresos = ingresos
-        .map(i => `• ${i.producto}: ${i.peso}kg${i.observaciones ? ` (${i.observaciones})` : ''}`)
-        .join('\n');
-
-    return `SE INGRESÓ MATERIA PRIMA\n\nIngresado:\n${listaIngresos}\n\nLos productos ya se encuentran ingresados en la aplicación de Damabrava.`;
-}
-
-function actualizarResumenIngresos(producto, peso, observaciones) {
-    try {
-        const resumenDiv = document.querySelector('.resumen-ingresos');
-        if (!resumenDiv) {
-            console.error('No se encontró el elemento resumen-ingresos');
-            return;
-        }
-
-        const ingresos = JSON.parse(resumenDiv.getAttribute('data-ingresos') || '[]');
-        ingresos.push({ producto, peso, observaciones });
-        resumenDiv.setAttribute('data-ingresos', JSON.stringify(ingresos));
-        
-        const mensaje = generarMensajeResumenIngresos(ingresos);
-        resumenDiv.textContent = mensaje;
-
-        // Buscar y ocultar la tarjeta del producto de manera más compatible
-        const cards = document.querySelectorAll('.pedido-archivado-card');
-        cards.forEach(card => {
-            const nombreElement = card.querySelector('.pedido-nombre');
-            if (nombreElement && nombreElement.textContent === producto) {
-                card.style.display = 'none';
-            }
-        });
-    } catch (error) {
-        console.error('Error al actualizar resumen:', error);
-    }
-}
-export async function togglePedidosArchivados() {
-    const listaArchivados = document.querySelector('.lista-archivados');
-    const listaRecibidos = document.querySelector('.lista-recibidos');
-    const estaVisible = listaArchivados.style.display !== 'none';
-    
-    // Ocultar recibidos y actualizar su botón
-    listaRecibidos.style.display = 'none';
-    
-    if (!estaVisible) {
-        try {
-            mostrarCarga();
-            const response = await fetch('/obtener-pedidos-pendientes');
-            const data = await response.json();
-
-            if (data.success && data.pedidos.length > 0) {
-                listaArchivados.innerHTML = `
-                        <p class="section-title">Pedidos pendientes</p>
-                        ${data.pedidos.map(pedido => `
-                            <div class="pedido-archivado-card">
-                                <div class="pedido-archivado-header">
-                                    <span class="pedido-nombre">${pedido.nombre}</span>
-                                    <span class="pedido-fecha"><i class="fas fa-calendar"></i> ${pedido.fecha}</span>
-                                </div>
-                                <div class="pedido-detalles">
-                                    <span class="pedido-cantidad">
-                                        <i class="fas fa-box"></i>
-                                        ${pedido.cantidad}
-                                    </span>
-                                    ${pedido.observaciones ? `
-                                    <span class="pedido-obs">
-                                        <i class="fas fa-comment"></i>
-                                        ${pedido.observaciones}
-                                    </span>` : ''}
-                                </div>
-                            </div>
-                        `).join('')}
-                    `;
-            } else {
-                listaArchivados.innerHTML = '<p class="no-archivados">No hay pedidos pendientes</p>';
-            }
-            listaArchivados.style.display = 'block';
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al cargar pedidos pendientes', 'error');
-        } finally {
-            ocultarCarga();
-        }
-    } else {
-        listaArchivados.style.display = 'none';
-    }
-}
-
-export async function mostrarFormularioIngreso(id,producto, hoja) {
-    try {
-        mostrarCarga();
-        const response = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
-        const response2 = await fetch(`/obtener-pedidos-recibidos/${encodeURIComponent(id)}`);
-        const data = await response.json();
-        const data2 = await response2.json();
-        const siguienteLote = data.success ? data.siguienteLote : '?';
-        
-        const pedidoInfo = data2.pedidos && data2.pedidos.length > 0 ? data2.pedidos[0] : null;
-        
-        // Check if it's a multiple entry
-        if (pedidoInfo?.obsCompras > 1) {
-            const anuncio = document.querySelector('.anuncio');
-            anuncio.style.display = 'flex';
-            anuncio.innerHTML = `
-                <div class="anuncio-contenido">
-                    <h2><i class="fas fa-exclamation-circle"></i> Ingreso Múltiple</h2>
-                    <div class="detalles-grup center">
-                    <p>Se detectó que hay ${pedidoInfo.obsCompras} unidades para ingresar.</p>
-                    <p>¿Desea realizar un ingreso múltiple?</p>
-                    </div>
-                    <div class="anuncio-botones">
-                        <button class="anuncio-btn gray" onclick="window.procesarIngresoNormal('${producto}', '${hoja}')">No</button>
-                        <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${producto}', '${hoja}')">Sí</button>
-                        <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
-                    </div>
-                </div>
-            `;
-
-            // Add the functions to window object
-            window.procesarIngresoNormal = (producto, hoja) => {
-                mostrarFormularioIngresoNormal(id, producto, hoja, pedidoInfo, siguienteLote);
-            };
-
-            window.procesarIngresoMultiple = (producto, hoja) => {
-                mostrarIngresoMultiple(id, producto, hoja, pedidoInfo, siguienteLote);
-            };
-
-            window.inicializarPedidos = inicializarPedidos;
-            window.procesarIngreso = procesarIngreso;
-
-            return; // Stop here if it's multiple entry
-        }
-
-        // If not multiple entry, show normal form
-        mostrarFormularioIngresoNormal(producto, hoja, pedidoInfo, siguienteLote);
-        window.inicializarPedidos = inicializarPedidos;
-        window.procesarIngreso = procesarIngreso;
-
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar el formulario de ingreso', 'error');
-    } finally {
-        ocultarCarga();
-    }
-}
-
-function mostrarFormularioIngresoNormal(id, producto, hoja, pedidoInfo, siguienteLote) {
-    const anuncio = document.querySelector('.anuncio');
-    anuncio.style.display = 'flex';
-    anuncio.innerHTML = `
-        <div class="anuncio-contenido">
-            <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
-            <div class=relleno>
-                ${pedidoInfo?.obsCompras ? `<p>Cantidad: (${pedidoInfo.obsCompras} restantes)</p>` : ''}
-                <div class="campo-form">
-                    <p>Nombre:</p>
-                    <input type="text" id="producto-ingreso" value="${producto}" readonly>
-                </div>
-                <div class="detalles-grup">
-                    <div class="detalle-item">
-                        <p>Lote:</p> <span class="lote-info">Lote a asignar: ${siguienteLote}</span>
-                    </div>
-                </div>
-                <div class="campo-form">
-                    <p>Peso:</p>
-                    <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
-                </div>
-                <div class="form-grup">
-                <p>Observaciones:</p>
-                <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
-                </div>
-             </div>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
-                <button class="anuncio-btn green" onclick="procesarIngreso('${id}','${producto}', '${hoja}')"><i class="fas fa-arrow-right"></i>  Ingresar</button>
-            </div>
-        </div>
-    `;
-}
-
-
-export async function mostrarIngresoMultiple(id, producto, hoja, pedidoInfo, siguienteLote) {
-    const anuncio = document.querySelector('.anuncio');
-    anuncio.style.display = 'flex';
-    anuncio.innerHTML = `
-        <div class="anuncio-contenido">
-        <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
-        <div class=relleno>
-            ${pedidoInfo?.obsCompras ? `<p>Cantidad: (${pedidoInfo.obsCompras} restantes)</p>` : ''}
-            <div class="campo-form">
-                <p>Nombre:</p>
-                <input type="text" id="producto-ingreso" value="${producto}" readonly>
-            </div>
-            <div class="detalles-grup">
-                <div class="detalle-item">
-                    <p>Lote:</p> <span class="lote-info">Lote a asignar: ${siguienteLote}</span>
-                </div>
-            </div>
-            <div class="campo-form">
-                <p>Peso:</p>
-                <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
-            </div>
-            <div class="form-grup">
-            <p>Observaciones:</p>
-            <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
-            </div>
-        </div>
-            
-                
-            <div class="anuncio-botones">
-                <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
-                <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${id}','${producto}', '${hoja}')"><i class="fas fa-arrow-right"></i>  Ingresar</button>
-            </div>
-        </div>
-    `;
-
-    window.procesarIngresoMultiple = async (id, producto, hoja) => {
-    try {
-        mostrarCarga();
-        console.log('Iniciando ingreso múltiple para:', id);
-        await procesarIngreso(id, producto, hoja, true);
-
-        // Actualizar obsCompras
-        console.log('Actualizando cantidad restante para:', producto);
-        const response = await fetch(`/actualizar-pedido-recibido/${encodeURIComponent(id)}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const data = await response.json();
-        console.log('Respuesta del servidor:', data);
-
-        // Hide the product card
-        const cards = document.querySelectorAll('.pedido-archivado-card');
-        cards.forEach(card => {
-            const nombreElement = card.querySelector('.pedido-nombre');
-            if (nombreElement && nombreElement.textContent.includes(producto)) {
-                card.style.display = 'none';
-            }
-        });
-
-        if (data.success) {
-            if (data.nuevaCantidad > 0) {
-                console.log('Quedan ingresos pendientes:', data.nuevaCantidad);
-                // Mostrar siguiente formulario de ingreso
-                const responseNext = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
-                const dataNext = await responseNext.json();
-                const siguienteLote = dataNext.success ? dataNext.siguienteLote : '?';
-                
-                await mostrarIngresoMultiple(id, producto, hoja, { ...pedidoInfo, obsCompras: data.nuevaCantidad }, siguienteLote);
-            } else {
-                console.log('Todos los ingresos completados');
-                mostrarNotificacion('Todos los ingresos completados', 'success');
-                document.querySelector('.anuncio').style.display = 'none';
-            }
-        }
-    } catch (error) {
-        console.error('Error en procesarIngresoMultiple:', error);
-        mostrarNotificacion('Error al procesar el ingreso múltiple', 'error');
-    } finally {
-        ocultarCarga();
-    }
-};
-}
-
-export async function procesarIngreso(id, producto, hoja, esMultiple = false) {
-    try {
-        mostrarCarga();
-        const pesoInput = document.getElementById('peso-ingreso');
-        const observacionesInput = document.getElementById('observaciones-ingreso');
-        const peso = parseFloat(pesoInput.value);
-        const observaciones = observacionesInput.value.trim();
-
-        if (isNaN(peso) || peso <= 0) {
-            mostrarNotificacion('Por favor ingrese un peso válido', 'error');
-            return;
-        }
-
-        console.log('Enviando ingreso:', { producto, peso, hoja, esMultiple });
-        const response = await fetch('/procesar-ingreso', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                id,
-                producto, 
-                peso, 
-                hoja, 
-                observaciones,
-                esMultiple
-            })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || 'Error en la respuesta del servidor');
-        }
-
-        if (data.success) {
-            actualizarResumenIngresos(producto, peso, observaciones);
-            mostrarNotificacion('Ingreso procesado correctamente', 'success');
-            
-            if (!esMultiple) {
-                cerrarFormularioPedido();
-            }
-        } else {
-            throw new Error(data.error || 'Error al procesar el ingreso');
-        }
-    } catch (error) {
-        console.error('Error en procesarIngreso:', error);
-        mostrarNotificacion(error.message || 'Error al procesar el ingreso', 'error');
-        throw error; // Re-throw para que pueda ser manejado por el llamador
-    } finally {
-        ocultarCarga();
-    }
-}
-export function mostrarFormularioRechazo(id, producto, hoja) {
-    const anuncio = document.querySelector('.anuncio');
-    anuncio.innerHTML = `
-        <div class="anuncio-contenido">
-            <h2><i class="fas fa-times-circle"></i>Rechazar Pedido</h2>
-            <div class=relleno>
-                <p>Nombre:</p>
-                <div class="detalles-grup center">
-                    <p>Producto: ${producto}</p>
-                </div>
-                <p>Razon:</p>
-                <div class="campo-form">
-                    <textarea id="razon-rechazo" placeholder="Razón del rechazo" required></textarea>
-                </div>
-            </div>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
-                <button class="anuncio-btn green" onclick="confirmarRechazo('${id}','${producto}', '${hoja}')"><i class="fas fa-check"></i> Confirmar</button>
-            </div>
-        </div>
-    `;
-    anuncio.style.display = 'flex';
-}
-export async function confirmarRechazo(id, producto, hoja) {
-    try {
-        const razonTextarea = document.getElementById('razon-rechazo');
-        const razon = razonTextarea.value.trim();
-
-        if (!razon) {
-            mostrarNotificacion('Por favor ingrese la razón del rechazo', 'warning');
-            return;
-        }
-
-        mostrarCarga();
-        const response = await fetch('/rechazar-pedido', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ id, producto, hoja, razon })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok && data.success) {
-            mostrarNotificacion('Pedido rechazado correctamente', 'success');
-            cerrarFormularioPedido();
-            await togglePedidosRecibidos();
-        } else {
-            throw new Error(data.error || 'Error al rechazar el pedido');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion(error.message, 'error');
-    } finally {
-        ocultarCarga();
-    }
-}
-export async function finalizarPedidos() {
-    try {
-        if (pedidosTemporales.length === 0) {
-            mostrarNotificacion('No hay pedidos para finalizar', 'warning');
-            return;
-        }
-
-        // Show confirmation modal
-        const anuncio = document.querySelector('.anuncio');
-        anuncio.style.display = 'flex';
-        anuncio.innerHTML = `
-            <div class="anuncio-contenido">
-                
-                <h2><i class="fas fa-clipboard-check"></i>Finalizar Pedidos</h2>
-                <div class="detalles-grup center">
-                    <p>¿Desea finalizar y archivar todos los pedidos actuales?</p>
-                </div>
-                <div class="pedidos-resumen">
-                    <h2>Resumen de Pedidos:</h2>
-                    ${pedidosTemporales.map(pedido => `
-                        <div class="form-grup">
-                            <span>${pedido.nombre}</span>
-                            <span>${pedido.cantidad}</span>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
-                    <button class="anuncio-btn green" onclick="confirmarFinalizacionPedidos()"><i class="fas fa-check-double"></i>  Finalizar</button>
-                </div>
-            </div>
-        `;
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar los pedidos', 'error');
-    }
-}
-export async function confirmarFinalizacionPedidos() {
-    // Create text for clipboard
-    const pedidosText = `*PEDIDO DE MATERIA PRIMA*\n\n*Pedido:*\n${pedidosTemporales.map(pedido => 
-        `• ${pedido.nombre}: ${pedido.cantidad}${pedido.observaciones ? ` (${pedido.observaciones})` : ''}`
-    ).join('\n')}\n\n_El pedido ya se encuentra en la aplicación de Damabrava_`;
-
-    // Copy to clipboard
-    await navigator.clipboard.writeText(pedidosText);
-    mostrarNotificacion('Pedidos copiados al portapapeles', 'success');
-    
-    try {
-        mostrarCarga();
-        
-        // Obtener el usuario actual
-        const userResponse = await fetch('/obtener-mi-rol');
-        const userData = await userResponse.json();
-        const usuarioActual = userData.nombre;
-
-        const response = await fetch('/finalizar-pedidos', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ pedidos: pedidosTemporales })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            // Enviar notificación
-            try {
-                await registrarNotificacion(
-                    usuarioActual,           // origen (usuario actual)
-                    'Administración',        // destino
-                    'Se realizo un pedido de materia prima'
-                );
-            } catch (notifError) {
-                console.error('Error al enviar notificación:', notifError);
-            }
-
-            pedidosTemporales = []; // Clear the temporary pedidos
-            mostrarNotificacion('Pedidos finalizados correctamente', 'success');
-            cerrarFormularioPedido();
-            await cargarPedidos();
-        } else {
-            mostrarNotificacion(data.error || 'Error al finalizar los pedidos', 'error');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al finalizar los pedidos', 'error');
-    } finally {
-        ocultarCarga();
-    }
 }
 export async function mostrarFormularioPedido() {
     try {
@@ -742,6 +189,99 @@ export async function verificarPedidoExistente(nombre) {
         mostrarNotificacion('Error al verificar pedido existente', 'error');
     }
 }
+export async function finalizarPedidos() {
+    try {
+        if (pedidosTemporales.length === 0) {
+            mostrarNotificacion('No hay pedidos para finalizar', 'warning');
+            return;
+        }
+
+        // Show confirmation modal
+        const anuncio = document.querySelector('.anuncio');
+        anuncio.style.display = 'flex';
+        anuncio.innerHTML = `
+            <div class="anuncio-contenido">
+                
+                <h2><i class="fas fa-clipboard-check"></i>Finalizar Pedidos</h2>
+                <div class="detalles-grup center">
+                    <p>¿Desea finalizar y archivar todos los pedidos actuales?</p>
+                </div>
+                <div class="pedidos-resumen">
+                    <h2>Resumen de Pedidos:</h2>
+                    ${pedidosTemporales.map(pedido => `
+                        <div class="form-grup">
+                            <span>${pedido.nombre}</span>
+                            <span>${pedido.cantidad}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
+                    <button class="anuncio-btn green" onclick="confirmarFinalizacionPedidos()"><i class="fas fa-check-double"></i>  Finalizar</button>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al cargar los pedidos', 'error');
+    }
+}
+
+
+
+export async function confirmarFinalizacionPedidos() {
+    // Create text for clipboard
+    const pedidosText = `*PEDIDO DE MATERIA PRIMA*\n\n*Pedido:*\n${pedidosTemporales.map(pedido => 
+        `• ${pedido.nombre}: ${pedido.cantidad}${pedido.observaciones ? ` (${pedido.observaciones})` : ''}`
+    ).join('\n')}\n\n_El pedido ya se encuentra en la aplicación de Damabrava_`;
+
+    // Copy to clipboard
+    await navigator.clipboard.writeText(pedidosText);
+    mostrarNotificacion('Pedidos copiados al portapapeles', 'success');
+    
+    try {
+        mostrarCarga();
+        
+        // Obtener el usuario actual
+        const userResponse = await fetch('/obtener-mi-rol');
+        const userData = await userResponse.json();
+        const usuarioActual = userData.nombre;
+
+        const response = await fetch('/finalizar-pedidos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ pedidos: pedidosTemporales })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            // Enviar notificación
+            try {
+                await registrarNotificacion(
+                    usuarioActual,           // origen (usuario actual)
+                    'Administración',        // destino
+                    'Se realizo un pedido de materia prima'
+                );
+            } catch (notifError) {
+                console.error('Error al enviar notificación:', notifError);
+            }
+
+            pedidosTemporales = []; // Clear the temporary pedidos
+            mostrarNotificacion('Pedidos finalizados correctamente', 'success');
+            await cargarPedidos();
+            cerrarFormularioPedido();
+        } else {
+            mostrarNotificacion(data.error || 'Error al finalizar los pedidos', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al finalizar los pedidos', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
 function mostrarSugerenciaPedido(hoja, pedido) {
     const sugerenciaDiv = document.createElement('div');
     sugerenciaDiv.className = 'sugerencia-pedido-existente';
@@ -809,8 +349,6 @@ function mostrarSugerenciaPedido(hoja, pedido) {
         sugerenciaDiv.remove();
     };
 }
-
-
 export async function guardarPedido() {
     try {
         const nombre = document.getElementById('nombre-pedido').value.trim();
@@ -840,7 +378,6 @@ export async function guardarPedido() {
         mostrarNotificacion('Error al agregar el pedido', 'error');
     }
 }
-
 export function eliminarPedido(nombre) {
     document.querySelector('.anuncio').style.display= 'none';
     pedidosTemporales = pedidosTemporales.filter(p => p.nombre !== nombre);
@@ -873,7 +410,6 @@ export function mostrarConfirmacionEliminar(nombre) {
     
     anuncio.style.display = 'flex';
 }
-
 export async function cargarPedidos() {
     try {
         const container = document.querySelector('.lista-pedidos');
@@ -925,3 +461,491 @@ export async function cargarPedidos() {
     document.querySelector('.lista-recibidos').style.display = 'none';
     document.querySelector('.lista-archivados').style.display = 'none';
 }
+
+
+
+
+
+export async function togglePedidosArchivados() {
+    const listaArchivados = document.querySelector('.lista-archivados');
+    const listaRecibidos = document.querySelector('.lista-recibidos');
+    const estaVisible = listaArchivados.style.display !== 'none';
+    
+    // Ocultar recibidos y actualizar su botón
+    listaRecibidos.style.display = 'none';
+    
+    if (!estaVisible) {
+        try {
+            mostrarCarga();
+            const response = await fetch('/obtener-pedidos-pendientes');
+            const data = await response.json();
+
+            if (data.success && data.pedidos.length > 0) {
+                listaArchivados.innerHTML = `
+                        <p class="section-title">Pedidos pendientes</p>
+                        ${data.pedidos.map(pedido => `
+                            <div class="pedido-archivado-card">
+                                <div class="pedido-archivado-header">
+                                    <span class="pedido-nombre">${pedido.nombre}</span>
+                                    <span class="pedido-fecha"><i class="fas fa-calendar"></i> ${pedido.fecha}</span>
+                                </div>
+                                <div class="pedido-detalles">
+                                    <span class="pedido-cantidad">
+                                        <i class="fas fa-box"></i>
+                                        ${pedido.cantidad}
+                                    </span>
+                                    ${pedido.observaciones ? `
+                                    <span class="pedido-obs">
+                                        <i class="fas fa-comment"></i>
+                                        ${pedido.observaciones}
+                                    </span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    `;
+            } else {
+                listaArchivados.innerHTML = '<p class="no-archivados">No hay pedidos pendientes</p>';
+            }
+            listaArchivados.style.display = 'block';
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al cargar pedidos pendientes', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    } else {
+        listaArchivados.style.display = 'none';
+    }
+}
+export async function togglePedidosRecibidos() {
+    const listaRecibidos = document.querySelector('.lista-recibidos');
+    const listaArchivados = document.querySelector('.lista-archivados');
+    const estaVisible = listaRecibidos.style.display !== 'none';
+    
+    listaArchivados.style.display = 'none';
+    
+    if (!estaVisible) {
+        try {
+            mostrarCarga();
+            const response = await fetch('/obtener-pedidos-recibidos');
+            const data = await response.json();
+            if (data.success && data.pedidos.length > 0) {
+                listaRecibidos.innerHTML = `
+                    <h2 class="section-title">Pedidos recibidos</h2>
+                    <div class="pedido-archivado-card">
+                        <div class="section-header">
+                            <h3><i class="fas fa-check-circle"></i> Resumen de Ingresos</h3>
+                            <button class="btn-copiar" onclick="copiarResumenIngresos()">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <div class="resumen-ingresos" data-ingresos="[]"></div>
+                    </div>
+                    ${data.pedidos.map(pedido => `
+                        <div class="pedido-archivado-card">
+                            <div class="pedido-archivado-header">
+                                <span class="pedido-nombre">${pedido.nombre}(${pedido.id})</span>
+                                <span class="pedido-fecha"><i class="fas fa-calendar"></i> ${pedido.fecha}</span>
+                            </div>
+                            <div class="pedido-detalles">
+                                <span class="pedido-cantidad">
+                                    <i class="fas fa-box"></i>
+                                    Pedido: ${pedido.cantidad}
+                                </span>
+                                ${pedido.proveedor ? `
+                                <span class="pedido-proveedor">
+                                    <i class="fas fa-truck"></i>
+                                    Proveedor: ${pedido.proveedor}
+                                </span>` : ''}
+                                <span class="pedido-obs">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    ${pedido.obsCompras} ${pedido.medida} 
+                                </span>
+                            </div>
+                            <div class="anuncio-botones">
+                                <button class="enviar anuncio-btn green" onclick="window.mostrarFormularioIngreso('${pedido.id}','${pedido.nombre}', 'Pedidos')">
+                                    <i class="fas fa-check"></i>
+                                    Ingresar
+                                </button>
+                                <button class="cancelar anuncio-btn red" onclick="window.mostrarFormularioRechazo('${pedido.id}','${pedido.nombre}', 'Pedidos')">
+                                    <i class="fas fa-times"></i>
+                                    Rechazar
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+
+                // Make functions available globally
+                window.mostrarFormularioIngreso = mostrarFormularioIngreso;
+                window.mostrarFormularioRechazo = mostrarFormularioRechazo;
+                window.copiarResumenIngresos = copiarResumenIngresos;
+            } else {
+                listaRecibidos.innerHTML = '<p class="no-recibidos">No hay pedidos recibidos</p>';
+            }
+            listaRecibidos.style.display = 'block';
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al cargar pedidos recibidos', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    } else {
+        listaRecibidos.style.display = 'none';
+    }
+}
+
+
+export async function mostrarFormularioIngreso(id,producto, hoja) {
+    try {
+        mostrarCarga();
+        const response = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
+        const response2 = await fetch(`/obtener-pedidos-recibidos/${encodeURIComponent(id)}`);
+        const data = await response.json();
+        const data2 = await response2.json();
+        const siguienteLote = data.success ? data.siguienteLote : '?';
+        
+        const pedidoInfo = data2.pedidos && data2.pedidos.length > 0 ? data2.pedidos[0] : null;
+        
+        // Check if it's a multiple entry
+        if (pedidoInfo?.obsCompras > 1) {
+            const anuncio = document.querySelector('.anuncio');
+            anuncio.style.display = 'flex';
+            anuncio.innerHTML = `
+                <div class="anuncio-contenido">
+                    <h2><i class="fas fa-exclamation-circle"></i> Ingreso Múltiple</h2>
+                    <div class="detalles-grup center">
+                    <p>Se detectó que hay ${pedidoInfo.obsCompras} unidades para ingresar.</p>
+                    <p>¿Desea realizar un ingreso múltiple?</p>
+                    </div>
+                    <div class="anuncio-botones">
+                        <button class="anuncio-btn gray" onclick="window.procesarIngresoNormal('${producto}', '${hoja}')">No</button>
+                        <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${producto}', '${hoja}')">Sí</button>
+                        <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            `;
+
+            // Add the functions to window object
+            window.procesarIngresoNormal = (producto, hoja) => {
+                mostrarFormularioIngresoNormal(id, producto, hoja, pedidoInfo, siguienteLote);
+            };
+
+            window.procesarIngresoMultiple = (producto, hoja) => {
+                mostrarIngresoMultiple(id, producto, hoja, pedidoInfo, siguienteLote);
+            };
+
+            window.inicializarPedidos = inicializarPedidos;
+            window.procesarIngreso = procesarIngreso;
+
+            return; // Stop here if it's multiple entry
+        }
+
+        // If not multiple entry, show normal form
+        mostrarFormularioIngresoNormal(producto, hoja, pedidoInfo, siguienteLote);
+        window.inicializarPedidos = inicializarPedidos;
+        window.procesarIngreso = procesarIngreso;
+
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al cargar el formulario de ingreso', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+function mostrarFormularioIngresoNormal(id, producto, hoja, pedidoInfo, siguienteLote) {
+    const anuncio = document.querySelector('.anuncio');
+    anuncio.style.display = 'flex';
+    anuncio.innerHTML = `
+        <div class="anuncio-contenido">
+            <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
+            <div class=relleno>
+                ${pedidoInfo?.obsCompras ? `<p>Cantidad: (${pedidoInfo.obsCompras} restantes)</p>` : ''}
+                <div class="campo-form">
+                    <p>Nombre:</p>
+                    <input type="text" id="producto-ingreso" value="${producto}" readonly>
+                </div>
+                <div class="detalles-grup">
+                    <div class="detalle-item">
+                        <p>Lote:</p> <span class="lote-info">Lote a asignar: ${siguienteLote}</span>
+                    </div>
+                </div>
+                <div class="campo-form">
+                    <p>Peso:</p>
+                    <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+                </div>
+                <div class="form-grup">
+                <p>Observaciones:</p>
+                <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
+                </div>
+             </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green" onclick="procesarIngreso('${id}','${producto}', '${hoja}')"><i class="fas fa-arrow-right"></i>  Ingresar</button>
+            </div>
+        </div>
+    `;
+}
+export async function mostrarIngresoMultiple(id, producto, hoja, pedidoInfo, siguienteLote) {
+    const anuncio = document.querySelector('.anuncio');
+    anuncio.style.display = 'flex';
+    anuncio.innerHTML = `
+        <div class="anuncio-contenido">
+        <h2><i class="fas fa-truck-loading"></i>Ingreso de Producto</h2>
+        <div class=relleno>
+            ${pedidoInfo?.obsCompras ? `<p>Cantidad: (${pedidoInfo.obsCompras} restantes)</p>` : ''}
+            <div class="campo-form">
+                <p>Nombre:</p>
+                <input type="text" id="producto-ingreso" value="${producto}" readonly>
+            </div>
+            <div class="detalles-grup">
+                <div class="detalle-item">
+                    <p>Lote:</p> <span class="lote-info">Lote a asignar: ${siguienteLote}</span>
+                </div>
+            </div>
+            <div class="campo-form">
+                <p>Peso:</p>
+                <input type="number" id="peso-ingreso" placeholder="Peso en kg" step="0.01">
+            </div>
+            <div class="form-grup">
+            <p>Observaciones:</p>
+            <textarea id="observaciones-ingreso" placeholder="Observaciones" rows="3"></textarea>
+            </div>
+        </div>
+            
+                
+            <div class="anuncio-botones">
+                <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${id}','${producto}', '${hoja}')"><i class="fas fa-arrow-right"></i>  Ingresar</button>
+            </div>
+        </div>
+    `;
+
+    window.procesarIngresoMultiple = async (id, producto, hoja) => {
+    try {
+        mostrarCarga();
+        console.log('Iniciando ingreso múltiple para:', id);
+        await procesarIngreso(id, producto, hoja, true);
+
+        // Actualizar obsCompras
+        console.log('Actualizando cantidad restante para:', producto);
+        const response = await fetch(`/actualizar-pedido-recibido/${encodeURIComponent(id)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        console.log('Respuesta del servidor:', data);
+
+        // Hide the product card
+        const cards = document.querySelectorAll('.pedido-archivado-card');
+        cards.forEach(card => {
+            const nombreElement = card.querySelector('.pedido-nombre');
+            if (nombreElement && nombreElement.textContent.includes(producto)) {
+                card.style.display = 'none';
+            }
+        });
+
+        if (data.success) {
+            if (data.nuevaCantidad > 0) {
+                console.log('Quedan ingresos pendientes:', data.nuevaCantidad);
+                // Mostrar siguiente formulario de ingreso
+                const responseNext = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
+                const dataNext = await responseNext.json();
+                const siguienteLote = dataNext.success ? dataNext.siguienteLote : '?';
+                
+                await mostrarIngresoMultiple(id, producto, hoja, { ...pedidoInfo, obsCompras: data.nuevaCantidad }, siguienteLote);
+            } else {
+                console.log('Todos los ingresos completados');
+                mostrarNotificacion('Todos los ingresos completados', 'success');
+                document.querySelector('.anuncio').style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error en procesarIngresoMultiple:', error);
+        mostrarNotificacion('Error al procesar el ingreso múltiple', 'error');
+    } finally {
+        ocultarCarga();
+    }
+};
+}
+export async function procesarIngreso(id, producto, hoja, esMultiple = false) {
+    try {
+        mostrarCarga();
+        const pesoInput = document.getElementById('peso-ingreso');
+        const observacionesInput = document.getElementById('observaciones-ingreso');
+        const peso = parseFloat(pesoInput.value);
+        const observaciones = observacionesInput.value.trim();
+
+        if (isNaN(peso) || peso <= 0) {
+            mostrarNotificacion('Por favor ingrese un peso válido', 'error');
+            return;
+        }
+
+        console.log('Enviando ingreso:', { producto, peso, hoja, esMultiple });
+        const response = await fetch('/procesar-ingreso', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                id,
+                producto, 
+                peso, 
+                hoja, 
+                observaciones,
+                esMultiple
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Error en la respuesta del servidor');
+        }
+
+        if (data.success) {
+            actualizarResumenIngresos(producto, peso, observaciones);
+            mostrarNotificacion('Ingreso procesado correctamente', 'success');
+            
+            if (!esMultiple) {
+                cerrarFormularioPedido();
+            }
+        } else {
+            throw new Error(data.error || 'Error al procesar el ingreso');
+        }
+    } catch (error) {
+        console.error('Error en procesarIngreso:', error);
+        mostrarNotificacion(error.message || 'Error al procesar el ingreso', 'error');
+        throw error; // Re-throw para que pueda ser manejado por el llamador
+    } finally {
+        ocultarCarga();
+    }
+}
+
+
+
+export function mostrarFormularioRechazo(id, producto, hoja) {
+    const anuncio = document.querySelector('.anuncio');
+    anuncio.innerHTML = `
+        <div class="anuncio-contenido">
+            <h2><i class="fas fa-times-circle"></i>Rechazar Pedido</h2>
+            <div class=relleno>
+                <p>Nombre:</p>
+                <div class="detalles-grup center">
+                    <p>Producto: ${producto}</p>
+                </div>
+                <p>Razon:</p>
+                <div class="campo-form">
+                    <textarea id="razon-rechazo" placeholder="Razón del rechazo" required></textarea>
+                </div>
+            </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green" onclick="confirmarRechazo('${id}','${producto}', '${hoja}')"><i class="fas fa-check"></i> Confirmar</button>
+            </div>
+        </div>
+    `;
+    anuncio.style.display = 'flex';
+}
+export async function confirmarRechazo(id, producto, hoja) {
+    try {
+        const razonTextarea = document.getElementById('razon-rechazo');
+        const razon = razonTextarea.value.trim();
+
+        if (!razon) {
+            mostrarNotificacion('Por favor ingrese la razón del rechazo', 'warning');
+            return;
+        }
+
+        mostrarCarga();
+        const response = await fetch('/rechazar-pedido', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id, producto, hoja, razon })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            mostrarNotificacion('Pedido rechazado correctamente', 'success');
+            cerrarFormularioPedido();
+            await togglePedidosRecibidos();
+        } else {
+            throw new Error(data.error || 'Error al rechazar el pedido');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+
+
+
+function copiarResumenIngresos() {
+    const resumenDiv = document.querySelector('.resumen-ingresos');
+    const ingresos = JSON.parse(resumenDiv.getAttribute('data-ingresos') || '[]');
+    
+    if (ingresos.length === 0) {
+        mostrarNotificacion('No hay ingresos para copiar', 'warning');
+        return;
+    }
+
+    const mensaje = generarMensajeResumenIngresos(ingresos);
+    
+    navigator.clipboard.writeText(mensaje).then(() => {
+        mostrarNotificacion('Resumen copiado al portapapeles', 'success');
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+        mostrarNotificacion('Error al copiar el resumen', 'error');
+    });
+}
+function generarMensajeResumenIngresos(ingresos) {
+    const listaIngresos = ingresos
+        .map(i => `• ${i.producto}: ${i.peso}kg${i.observaciones ? ` (${i.observaciones})` : ''}`)
+        .join('\n');
+
+    return `SE INGRESÓ MATERIA PRIMA\n\nIngresado:\n${listaIngresos}\n\nLos productos ya se encuentran ingresados en la aplicación de Damabrava.`;
+}
+function actualizarResumenIngresos(producto, peso, observaciones) {
+    try {
+        const resumenDiv = document.querySelector('.resumen-ingresos');
+        if (!resumenDiv) {
+            console.error('No se encontró el elemento resumen-ingresos');
+            return;
+        }
+
+        const ingresos = JSON.parse(resumenDiv.getAttribute('data-ingresos') || '[]');
+        ingresos.push({ producto, peso, observaciones });
+        resumenDiv.setAttribute('data-ingresos', JSON.stringify(ingresos));
+        
+        const mensaje = generarMensajeResumenIngresos(ingresos);
+        resumenDiv.textContent = mensaje;
+
+        // Buscar y ocultar la tarjeta del producto de manera más compatible
+        const cards = document.querySelectorAll('.pedido-archivado-card');
+        cards.forEach(card => {
+            const nombreElement = card.querySelector('.pedido-nombre');
+            if (nombreElement && nombreElement.textContent === producto) {
+                card.style.display = 'none';
+            }
+        });
+    } catch (error) {
+        console.error('Error al actualizar resumen:', error);
+    }
+}
+
+
+
+
+
+
+
+
+
+

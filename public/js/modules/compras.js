@@ -230,11 +230,12 @@ export async function entregarPedido(button) {
 
         anuncio.style.display = 'flex';
 
-        const filterButtons = anuncioContenido.querySelectorAll('.anuncio-btn');
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
+        const filterButtons = anuncioContenido.querySelectorAll('.filter-btn');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent button default action
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
             });
         });
 
@@ -252,7 +253,7 @@ export async function entregarPedido(button) {
                     precio: document.getElementById('precio').value,
                     observaciones: cantidad,
                     unidad: unidad,
-                    estado: estadoSeleccionado  // Adding the selected state
+                    estado: estadoSeleccionado
                 };
                 handleClick(formData);
             };

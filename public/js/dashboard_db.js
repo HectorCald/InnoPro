@@ -3,7 +3,7 @@ import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRe
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
 import { confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso, togglePedidosArchivados, finalizarPedidos, confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, eliminarPedido, mostrarConfirmacionEliminar, mostrarIngresoMultiple } from './modules/newPedido.js';
-import { mostrarProgramaAcopio, verProgramaciones, toggleProcesos, mostrarProcesos, finalizarProceso, inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso, pausarTarea, finalizarTarea } from './modules/newTarea.js';
+import { mostrarProgramaAcopio, verProgramaciones, toggleProcesos, mostrarProcesos, finalizarProceso, inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso,finalizarTarea } from './modules/newTarea.js';
 import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
 import { inicializarHome } from './modules/home.js';
@@ -95,7 +95,6 @@ window.mostrarFormularioTarea = mostrarFormularioTarea;
 window.cargarTareasEnProceso = cargarTareasEnProceso;
 window.iniciarCronometro = iniciarCronometro;
 window.agregarProceso = agregarProceso;
-window.pausarTarea = pausarTarea;
 window.finalizarTarea = finalizarTarea;
 window.finalizarProceso = finalizarProceso;
 window.mostrarProcesos = mostrarProcesos;

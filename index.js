@@ -1688,22 +1688,30 @@ app.get('/obtener-tareas-proceso', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Tareas!A2:H'
+            range: 'Tareas!A:G'
         });
 
         const rows = response.data.values || [];
-        const tareas = rows
-            .filter(row => row[3] === 'En proceso')
-            .map(row => ({
-                nombre: row[0] || '',
-                descripcion: row[1] || '',
-                fechaInicio: row[2] || '',
-                estado: row[3] || '',
-                usuario: row[4] || '',
-                tiempoInicial: row[5] || Date.now().toString(),
-                pesoInicial: parseFloat(row[6]) || 0,
-                procesos: row[7] ? JSON.parse(row[7]) : []
-            }));
+        const tareas = rows.slice(1).filter(row => row[4] === 'En proceso').map(row => ({
+            nombre: row[0] || '',
+            pesoInicial: row[1] || 0,
+            descripcion: row[2] || '',
+            fechaInicio: row[3] || '',
+            estado: row[4] || '',
+            usuario: row[5] || '',
+            procesos: row[6] ? row[6].split(';')
+                .filter(proceso => proceso.trim())
+                .map(proceso => {
+                    const [descripcion, estado = 'En proceso'] = proceso.split('|');
+                    return { 
+                        id: Math.random().toString(36).substr(2, 9),
+                        descripcion: descripcion.trim(),
+                        estado: estado.trim(),
+                        inicio: new Date().toISOString()
+                    };
+                }) : [],
+            tiempoInicial: new Date(row[3]).getTime()
+        }));
 
         res.json({ success: true, tareas });
     } catch (error) {
@@ -1777,7 +1785,6 @@ app.post('/actualizar-estado-tarea', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
 app.post('/agregar-proceso-tarea', requireAuth, async (req, res) => {
     try {
         const { tareaId, descripcion } = req.body;
@@ -1823,7 +1830,6 @@ app.post('/agregar-proceso-tarea', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
 app.post('/actualizar-proceso', requireAuth, async (req, res) => {
     try {
         const { tareaId, procesoId, estado, fin, peso } = req.body;
@@ -1874,43 +1880,6 @@ app.post('/actualizar-proceso', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
-app.get('/obtener-lista-tareas', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen bruto!A2:A' // First column after header
-        });
-
-        const tareas = response.data.values ? response.data.values.map(row => row[0]) : [];
-        res.json({ success: true, tareas });
-    } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener lista de tareas: ' + error.message 
-        });
-    }
-});
-
-app.get('/obtener-lista-tareas2', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Lista tareas!A2:A' // First column after header
-        });
-
-        const tareas = response.data.values ? response.data.values.map(row => row[0]) : [];
-        res.json({ success: true, tareas });
-    } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener lista de tareas: ' + error.message 
-        });
-    }
-});
-
 app.post('/finalizar-tarea', requireAuth, async (req, res) => {
     try {
         const { tareaId, tiempoCronometro } = req.body;
@@ -2063,202 +2032,59 @@ app.post('/finalizar-tarea', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-lista-pedidos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen bruto!A2:A'
+            range: 'Almacen acopio!A2:D'
         });
 
-        const pedidos = [...new Set((response.data.values || []).map(row => row[0]).filter(Boolean))];
+        const pedidos = [...new Set((response.data.values || []).map(row => row[1]).filter(Boolean))];
         res.json({ success: true, pedidos });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ success: false, error: 'Error al obtener la lista de pedidos' });
     }
 });
-
-app.get('/obtener-lotes/:producto', requireAuth, async (req, res) => {
-    try {
-        const { producto } = req.params;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Bruto!A:C'
-        });
-
-        const rows = response.data.values || [];
-        const lotes = rows
-            .filter(row => row[0]?.toLowerCase() === producto.toLowerCase())
-            .map(row => ({
-                lote: row[2] || '',
-                peso: row[1] ? row[1].toString().replace('.', ',') : '0'
-            }))
-            .filter(lote => {
-                const pesoNumerico = parseFloat(lote.peso.replace(',', '.'));
-                return !isNaN(pesoNumerico) && pesoNumerico > 0;
-            });
-
-        res.json({ success: true, lotes });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener lotes' 
-        });
-    }
-});
-
 app.post('/crear-tarea', requireAuth, async (req, res) => {
     try {
         const { nombre, peso, descripcion, fechaInicio, estado, lotes } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Validar array de lotes
-        if (!Array.isArray(lotes) || lotes.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'No se proporcionaron lotes válidos'
-            });
-        }
+        // Obtener el usuario desde el token
+        const token = req.cookies.token;
+        const decodedToken = jwt.verify(token, JWT_SECRET);
+        const usuario = decodedToken.nombre;
 
-        const almacenResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Bruto!A:C'
-        });
-
-        const rows = almacenResponse.data.values || [];
-        let pesoTotalDisponible = 0;
-        const lotesInfo = [];
-
-        // Recolectar información de los lotes
-        for (const loteId of lotes) {
-            const rowIndex = rows.findIndex(row => 
-                row[0]?.toLowerCase() === nombre.toLowerCase() && 
-                row[2] === loteId
-            );
-
-            if (rowIndex === -1) {
-                return res.status(400).json({
-                    success: false,
-                    error: `Lote ${loteId} no encontrado para el producto ${nombre}`
-                });
-            }
-
-            const pesoLote = Number(parseFloat(rows[rowIndex][1].toString().replace(',', '.')).toFixed(2));
-            pesoTotalDisponible += pesoLote;
-            lotesInfo.push({ 
-                rowIndex, 
-                pesoLote,
-                loteId: rows[rowIndex][2]
-            });
-        }
-
-        // Ordenar lotes de menor a mayor peso
-        lotesInfo.sort((a, b) => a.pesoLote - b.pesoLote);
-
-        const pesoRequerido = Number(parseFloat(peso.toString().replace(',', '.')).toFixed(2));
-
-        console.log('Peso total disponible:', pesoTotalDisponible);
-        console.log('Peso requerido:', pesoRequerido);
-
-        if (pesoTotalDisponible < pesoRequerido) {
-            return res.status(400).json({
-                success: false,
-                error: `No hay suficiente peso disponible. Disponible total: ${pesoTotalDisponible}kg`
-            });
-        }
-
-        // Distribuir el peso comenzando por los lotes más pequeños
-        let pesoRestante = pesoRequerido;
-        const fechaActual = new Date().toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit'
-        });
-
-        // Procesar cada lote
-        for (let i = 0; i < lotesInfo.length && pesoRestante > 0; i++) {
-            const loteInfo = lotesInfo[i];
-            let pesoARestar;
-
-            if (i === lotesInfo.length - 1) {
-                // Para el último lote (el más grande), solo tomar lo que falta
-                pesoARestar = Number(pesoRestante.toFixed(2));
-            } else {
-                // Para los demás lotes, tomar todo si es necesario
-                pesoARestar = Math.min(loteInfo.pesoLote, pesoRestante);
-            }
-
-            const nuevoPeso = (loteInfo.pesoLote - pesoARestar).toFixed(2);
-
-            // Actualizar peso en Almacen Bruto
-            await sheets.spreadsheets.values.update({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: `Almacen Bruto!B${loteInfo.rowIndex + 1}`,
-                valueInputOption: 'RAW',
-                resource: {
-                    values: [[nuevoPeso]]
-                }
-            });
-
-            // Registrar movimiento para cada lote
-            await sheets.spreadsheets.values.append({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Movimientos alm-bruto!A:E',
-                valueInputOption: 'RAW',
-                insertDataOption: 'INSERT_ROWS',
-                resource: {
-                    values: [[
-                        fechaActual,
-                        nombre,
-                        pesoARestar.toFixed(2),
-                        'Salida',
-                        loteInfo.loteId
-                    ]]
-                }
-            });
-
-            pesoRestante = Number((pesoRestante - pesoARestar).toFixed(2));
-        }
-
-        // Crear la tarea
+        // Insertar en la hoja de tareas
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Tareas!A:H',
+            range: 'Tareas!A:G',
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
             resource: {
                 values: [[
                     nombre,
-                    descripcion || '',
-                    new Date().toISOString(),
-                    'En proceso',
-                    req.user.nombre,
-                    Date.now().toString(),
-                    Number(pesoRequerido).toFixed(2),
-                    '[]' // Array de procesos vacío
+                    peso,
+                    descripcion,
+                    fechaInicio,
+                    estado,
+                    usuario,
+                    lotes.join(';')
                 ]]
             }
         });
 
-        res.json({ 
-            success: true,
-            message: 'Tarea creada correctamente',
-            tiempoInicial: Date.now()
-        });
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al crear la tarea: ' + error.message
+        console.error('Error al crear tarea:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al crear la tarea' 
         });
     }
 });
-
 app.post('/pausar-tarea', requireAuth, async (req, res) => {
     try {
         const { tareaId, estado, tiempoTranscurrido } = req.body;
@@ -2305,7 +2131,6 @@ app.post('/pausar-tarea', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.post('/guardar-programa', requireAuth, async (req, res) => {
     try {
         const { programaciones } = req.body;
@@ -2353,7 +2178,6 @@ app.post('/guardar-programa', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-programaciones', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2379,7 +2203,6 @@ app.get('/obtener-programaciones', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/verificar-programa-semana', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2421,7 +2244,6 @@ app.get('/verificar-programa-semana', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.delete('/eliminar-programa-completo', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2457,7 +2279,6 @@ app.delete('/eliminar-programa-completo', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.post('/actualizar-estado-programa', requireAuth, async (req, res) => {
     try {
         const { fecha, producto } = req.body;
@@ -4223,6 +4044,69 @@ app.delete('/eliminar-producto-acopio', requireAuth, async (req, res) => {
         });
     }
 });
+app.post('/actualizar-pesos-lotes', requireAuth, async (req, res) => {
+    try {
+        const { productoId, lotes } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get current data
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen acopio!A:D'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === productoId);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+        }
+
+        // Get current lotes string and parse it
+        const currentLotesString = rows[rowIndex][2] || '';
+        let currentLotes = currentLotesString.split(';')
+            .filter(lote => lote.trim())
+            .map(lote => {
+                const [peso, numero] = lote.split('-').map(item => item.trim());
+                return { peso: parseFloat(peso), numero };
+            });
+
+        // Update weights for used lotes
+        lotes.forEach(loteUsado => {
+            const loteIndex = currentLotes.findIndex(l => l.numero === loteUsado.lote);
+            if (loteIndex !== -1) {
+                const pesoActual = currentLotes[loteIndex].peso;
+                const pesoUsado = parseFloat(loteUsado.peso.toString().replace(',', '.'));
+                currentLotes[loteIndex].peso = Math.max(0, pesoActual - pesoUsado);
+            }
+        });
+
+        // Convert back to string format
+        const updatedLotesString = currentLotes
+            .filter(lote => lote.peso > 0)
+            .map(lote => `${lote.peso}-${lote.numero}`)
+            .join(';');
+
+        // Update the spreadsheet
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Almacen acopio!C${rowIndex + 1}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[updatedLotesString]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al actualizar pesos de lotes:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar pesos de lotes' 
+        });
+    }
+});
+
 
 
 
@@ -4475,7 +4359,6 @@ app.post('/verificar-tarea', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al verificar la tarea' });
     }
 });
-
 app.get('/obtener-tareas', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -4496,7 +4379,6 @@ app.get('/obtener-tareas', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener las tareas' });
     }
 });
-
 app.post('/agregar-tarea', requireAuth, async (req, res) => {
     try {
         const { nombre } = req.body;
@@ -4535,7 +4417,6 @@ app.post('/agregar-tarea', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al agregar la tarea' });
     }
 });
-
 app.delete('/eliminar-tarea', requireAuth, async (req, res) => {
     try {
         const { id } = req.body;

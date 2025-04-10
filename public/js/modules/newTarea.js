@@ -27,21 +27,29 @@ export function inicializarTareas() {
     `;
     cargarTareasEnProceso();
 }
-function formatearTiempo(segundos) {
-    const horas = Math.floor(segundos / 3600);
-    const minutos = Math.floor((segundos % 3600) / 60);
-    const segs = segundos % 60;
-    return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(segs).padStart(2, '0')}`;
-}
 export async function mostrarFormularioTarea(productoPreseleccionado = null) {
     try {
         mostrarCarga();
-        const response = await fetch('/obtener-lista-tareas');
+        const response = await fetch('/obtener-almacen-acopio');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Error al cargar los productos');
+        }
+
+        if (!data.pedidos || data.pedidos.length === 0) {
+            throw new Error('No hay productos disponibles');
+        }
 
         const anuncio = document.querySelector('.anuncio');
         const contenido = anuncio.querySelector('.anuncio-contenido');
         let nombreProductoActual = productoPreseleccionado || '';
+
 
         function mostrarFormularioPrincipal() {
             contenido.innerHTML = `
@@ -82,34 +90,65 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
             const pesoInput = document.getElementById('peso-tarea');
             const pesoDisponible = document.querySelector('.peso-disponible');
             const btnMostrarLotes = document.getElementById('btn-mostrar-lotes');
-
+        
             if (!productoPreseleccionado) {
                 inputTarea.addEventListener('input', () => {
                     const inputValue = inputTarea.value.toLowerCase();
                     nombreProductoActual = inputTarea.value;
-                    const sugerencias = data.tareas.filter(tarea =>
-                        tarea.toLowerCase().includes(inputValue)
-                    );
-
+                    // Modificamos esta parte para asegurarnos que pedidos existe y tiene el formato correcto
+                    const sugerencias = data.pedidos
+                        .filter(pedido => pedido && pedido[1]) // Aseguramos que el pedido y su nombre existen
+                        .map(pedido => pedido[1]) // Tomamos el nombre del producto
+                        .filter(nombre => 
+                            nombre.toLowerCase().includes(inputValue)
+                        );
+        
                     if (inputValue && sugerencias.length > 0) {
                         sugerenciasList.innerHTML = sugerencias
-                            .map(tarea => `<div class="sugerencia-item">${tarea}</div>`)
+                            .map(nombre => `<div class="sugerencia-item">${nombre}</div>`)
                             .join('');
                         sugerenciasList.style.display = 'block';
                     } else {
                         sugerenciasList.style.display = 'none';
                     }
                 });
-
+        
+                // Mejoramos el manejo del clic en las sugerencias
                 sugerenciasList.addEventListener('click', (e) => {
                     if (e.target.classList.contains('sugerencia-item')) {
                         nombreProductoActual = e.target.textContent;
                         inputTarea.value = nombreProductoActual;
                         sugerenciasList.style.display = 'none';
+                        // Enfocamos el siguiente campo después de seleccionar
+                        document.getElementById('peso-tarea').focus();
+                    }
+                });
+        
+                // Agregamos manejo de teclado para mejor usabilidad
+                inputTarea.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && sugerenciasList.children.length > 0) {
+                        e.preventDefault();
+                        const primeraSugerencia = sugerenciasList.querySelector('.sugerencia-item');
+                        if (primeraSugerencia) {
+                            nombreProductoActual = primeraSugerencia.textContent;
+                            inputTarea.value = nombreProductoActual;
+                            sugerenciasList.style.display = 'none';
+                            document.getElementById('peso-tarea').focus();
+                        }
                     }
                 });
             }
 
+        // Mejoramos el manejo del clic en las sugerencias
+        sugerenciasList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('sugerencia-item')) {
+                nombreProductoActual = e.target.textContent;
+                inputTarea.value = nombreProductoActual;
+                sugerenciasList.style.display = 'none';
+                // Enfocamos el siguiente campo después de seleccionar
+                document.getElementById('peso-tarea').focus();
+            }
+        });
             // Manejador del botón de lotes
             if (btnMostrarLotes) {
                 btnMostrarLotes.addEventListener('click', async () => {
@@ -143,7 +182,7 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
                         mostrarNotificacion('Por favor seleccione al menos un lote', 'error');
                         return;
                     }
-                    guardarTareaConLote(lotes);
+                    guardarTareaConLote(lotes, data); // Pasamos data como parámetro
                 });
             }
 
@@ -158,22 +197,45 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
         async function cargarLotes(nombreProducto) {
             try {
                 mostrarCarga();
-                nombreProductoActual = nombreProducto;
-                const response = await fetch(`/obtener-lotes/${encodeURIComponent(nombreProducto)}`);
-                const data = await response.json();
-
+                // Primero obtenemos el ID del producto usando el nombre
+                const productoSeleccionado = data.pedidos.find(pedido => pedido[1] === nombreProducto);
+                
+                if (!productoSeleccionado) {
+                    throw new Error('Producto no encontrado');
+                }
+        
+                const productoId = productoSeleccionado[0]; // El ID está en la posición 0
+                const lotesResponse = await fetch('/obtener-almacen-acopio');
+                const lotesData = await lotesResponse.json(); // Cambiamos el nombre de la variable
+        
+                if (!lotesData.success) {
+                    throw new Error('Error al cargar los lotes');
+                }
+        
+                // Filtramos los productos por ID y obtenemos solo los pesos brutos
+                const productoInfo = lotesData.pedidos.find(pedido => pedido[0] === productoId);
+                if (!productoInfo || !productoInfo[2]) { // pesoBrutoLote está en posición 2
+                    throw new Error('No hay lotes disponibles para este producto');
+                }
+        
+                // Parseamos los lotes del formato "peso-lote;peso-lote"
+                const lotesArray = productoInfo[2].split(';').filter(lote => lote.trim());
+                
                 contenido.innerHTML = `
                     <h2><i class="fas fa-boxes"></i>Selección de Lotes</h2>
                     <div class="relleno">
                         <div class="lotes-grid">
-                            ${data.success && data.lotes.length > 0 ?
-                            data.lotes.map(lote => `
-                                    <div class="lote-item" data-lote="${lote.lote}" data-peso="${lote.peso}">
-                                        <p class="lote-numero">Lote ${lote.lote} - ${lote.peso.toString().replace('.', ',')}kg</p>
-                                    </div>
-                                `).join('') :
-                            '<div class="no-lotes">No hay lotes disponibles</div>'
-                        }
+                            ${lotesArray.length > 0 ?
+                                lotesArray.map(loteInfo => {
+                                    const [peso, lote] = loteInfo.split('-').map(item => item.trim());
+                                    return `
+                                        <div class="lote-item" data-lote="${lote}" data-peso="${peso}">
+                                            <p class="lote-numero">Lote ${lote} - ${peso.toString().replace('.', ',')}kg</p>
+                                        </div>
+                                    `;
+                                }).join('') :
+                                '<div class="no-lotes">No hay lotes disponibles</div>'
+                            }
                         </div>
                         <div class="lotes-seleccionados">
                             <h3>Lotes Seleccionados:</h3>
@@ -271,68 +333,6 @@ export async function mostrarFormularioTarea(productoPreseleccionado = null) {
         ocultarCarga();
     }
 }
-async function guardarTareaConLote(lotes) {
-    try {
-        const nombreTarea = document.getElementById('nombre-tarea').value;
-        const pesoTarea = document.getElementById('peso-tarea').value.replace(',', '.'); // Convertir coma a punto
-        const descripcionTarea = document.getElementById('descripcion-tarea').value;
-
-        if (!nombreTarea || !pesoTarea || !Array.isArray(lotes) || lotes.length === 0) {
-            mostrarNotificacion('Por favor complete todos los campos requeridos', 'error');
-            return;
-        }
-
-        // Mejorar el cálculo del peso total y la comparación
-        const pesoTotal = Array.from(lotesSeleccionados)
-            .reduce((sum, l) => {
-                if (!l || !l.peso) return sum;
-                const pesoLote = parseFloat(String(l.peso).replace(',', '.'));
-                return sum + (isNaN(pesoLote) ? 0 : pesoLote);
-            }, 0);
-
-        const pesoTareaNum = parseFloat(pesoTarea);
-
-        console.log('Peso Total Disponible:', pesoTotal.toFixed(2));
-        console.log('Peso Tarea:', pesoTareaNum.toFixed(2));
-
-        if (Number(pesoTareaNum.toFixed(2)) > Number(pesoTotal.toFixed(2))) {
-            mostrarNotificacion(`El peso no puede ser mayor al peso total disponible (${pesoTotal.toFixed(2)}kg)`, 'error');
-            return;
-        }
-
-        mostrarCarga();
-        const response = await fetch('/crear-tarea', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                nombre: nombreTarea,
-                peso: Number(pesoTareaNum.toFixed(2)),
-                descripcion: descripcionTarea,
-                fechaInicio: new Date().toISOString(),
-                estado: 'En proceso',
-                lotes: lotes
-            })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            mostrarNotificacion('Tarea iniciada correctamente', 'success');
-            document.querySelector('.anuncio').style.display = 'none';
-            await cargarTareasEnProceso();
-        } else {
-            throw new Error(data.error || 'Error al crear la tarea');
-        }
-    } catch (error) {
-        mostrarNotificacion(error.message || 'Error al crear la tarea', 'error');
-    } finally {
-        ocultarCarga();
-    }
-}
-function calcularTiempoTranscurrido(tiempoInicial) {
-    return Math.floor((Date.now() - parseInt(tiempoInicial)) / 1000);
-}
 export async function cargarTareasEnProceso() {
     try {
         const response = await fetch('/obtener-tareas-proceso');
@@ -345,7 +345,15 @@ export async function cargarTareasEnProceso() {
         const listaTareas = document.querySelector('.lista-tareas');
         if (!listaTareas) return;
 
+        // Clear existing timers
+        Object.values(cronometros).forEach(timer => clearInterval(timer));
+        
         listaTareas.innerHTML = '';
+
+        if (data.tareas.length === 0) {
+            listaTareas.innerHTML = '<div class="no-tareas">No hay tareas en proceso</div>';
+            return;
+        }
 
         data.tareas.forEach(tarea => {
             const elementoTarea = document.createElement('div');
@@ -378,6 +386,7 @@ export async function cargarTareasEnProceso() {
 
             listaTareas.appendChild(elementoTarea);
 
+            // Start timer for this task
             if (cronometros[tarea.nombre]) {
                 clearInterval(cronometros[tarea.nombre]);
             }
@@ -392,65 +401,6 @@ export async function cargarTareasEnProceso() {
     } catch (error) {
         console.error('Error al cargar tareas:', error);
         mostrarNotificacion(error.message, 'error');
-    }
-}
-export async function pausarTarea(tareaId) {
-    try {
-        const tareaElement = document.querySelector(`.tarea-item h4:contains("${tareaId}")`).closest('.tarea-item');
-        if (!tareaElement) {
-            throw new Error('Elemento de tarea no encontrado');
-        }
-
-        const btnPausar = tareaElement.querySelector('.btn-pausar');
-        const tiempoElement = tareaElement.querySelector('.tarea-tiempo');
-        const estaPausado = localStorage.getItem(`pausa-${tareaId}`) === 'true';
-
-        const response = await fetch('/pausar-tarea', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                tareaId,
-                estado: estaPausado ? 'En proceso' : 'Pausada'
-            })
-        });
-
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error(data.error || 'Error al actualizar el estado');
-        }
-
-        if (estaPausado) {
-            // Reanudar tarea
-            localStorage.setItem(`pausa-${tareaId}`, 'false');
-            btnPausar.innerHTML = '<i class="fas fa-pause"></i> Pausar';
-
-            const tiempoInicial = parseInt(tiempoElement.dataset.tiempoInicial);
-            if (cronometros[tareaId]) {
-                clearInterval(cronometros[tareaId]);
-            }
-            cronometros[tareaId] = setInterval(() => {
-                const nuevoTiempo = calcularTiempoTranscurrido(tiempoInicial);
-                tiempoElement.textContent = formatearTiempo(nuevoTiempo);
-            }, 1000);
-        } else {
-            // Pausar tarea
-            localStorage.setItem(`pausa-${tareaId}`, 'true');
-            btnPausar.innerHTML = '<i class="fas fa-play"></i> Reanudar';
-            if (cronometros[tareaId]) {
-                clearInterval(cronometros[tareaId]);
-            }
-        }
-
-        await cargarTareasEnProceso(); // Recargar las tareas para actualizar el estado
-        mostrarNotificacion(
-            estaPausado ? 'Tarea reanudada' : 'Tarea pausada',
-            'success'
-        );
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al actualizar el estado de la tarea', 'error');
     }
 }
 export function iniciarCronometro(tareaId, tiempoInicial) {
@@ -469,7 +419,135 @@ export function iniciarCronometro(tareaId, tiempoInicial) {
     actualizarCronometro();
     cronometros[tareaId] = setInterval(actualizarCronometro, 1000);
 }
+export async function finalizarTarea(tareaId) {
+    try {
+        const confirmacion = await mostrarConfirmacion(
+            '¿Finalizar esta tarea?',
+            'Esta acción moverá la tarea al historial y calculará el peso restante.'
+        );
 
+        if (!confirmacion) return;
+
+        mostrarCarga();
+        const response = await fetch('/finalizar-tarea', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tareaId })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion(`Tarea finalizada. Merma/Perdida: ${data.pesoRestante}kg`, 'success');
+            await cargarTareasEnProceso();
+        } else {
+            throw new Error(data.error || 'Error al finalizar la tarea');
+        }
+    } catch (error) {
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+function mostrarConfirmacion(titulo, mensaje) {
+    return new Promise((resolve) => {
+        const anuncio = document.querySelector('.anuncio');
+        const contenido = anuncio.querySelector('.anuncio-contenido');
+
+        contenido.innerHTML = `
+            
+            <h2><i class="fas fa-exclamation-triangle"></i>${titulo}</h2>
+            <div class="detalles-grup center">
+            <p>${mensaje}</p>
+            </div>
+            
+            <div class="anuncio-botones">
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
+            </div>
+        `;
+
+        anuncio.querySelector('.cancelar').onclick = () => {
+            anuncio.style.display = 'none';
+            resolve(false);
+        };
+
+        anuncio.querySelector('.confirmar').onclick = () => {
+            anuncio.style.display = 'none';
+            resolve(true);
+        };
+
+        anuncio.style.display = 'flex';
+    });
+}
+
+
+
+export function mostrarProcesos(tareaId) {
+    const procesosDiv = document.getElementById(`procesos-${tareaId}`);
+    if (procesosDiv) {
+        procesosDiv.style.display = procesosDiv.style.display === 'none' ? 'block' : 'none';
+    }
+}
+export function toggleProcesos(tareaId) {
+    const procesosContenido = document.getElementById(`procesos-${tareaId}`);
+    const header = procesosContenido.previousElementSibling;
+    const icon = header.querySelector('i');
+
+    if (procesosContenido.style.display === 'none') {
+        procesosContenido.style.display = 'block';
+        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+    } else {
+        procesosContenido.style.display = 'none';
+        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+    }
+}
+export function renderizarProcesos(procesos, tareaId) {
+    if (!procesos || procesos.length === 0) return '';
+
+    const procesosUnicos = procesos.reduce((acc, proceso) => {
+        if (!acc.find(p => p.descripcion === proceso.descripcion)) {
+            acc.push(proceso);
+        }
+        return acc;
+    }, []);
+
+    return `
+        <div class="procesos-acordeon">
+            <div class="procesos-header" onclick="toggleProcesos('${tareaId}')">
+                <span>Procesos (${procesosUnicos.length})</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="procesos-contenido" id="procesos-${tareaId}" style="display: none;">
+                ${procesosUnicos.map(proceso => {
+                    const estaFinalizado = proceso.estado === 'Finalizado';
+                    return `
+                        <div class="proceso-item ${estaFinalizado ? 'finalizado' : ''}" data-id="${proceso.id}">
+                            <div class="proceso-info">
+                                <div class="proceso-descripcion">${proceso.descripcion}</div>
+                                ${proceso.peso ? `<div class="proceso-peso">Peso: ${proceso.peso} kg</div>` : ''}
+                                <div class="proceso-tiempo">
+                                    <div>Inicio: ${new Date(proceso.inicio).toLocaleString()}</div>
+                                    ${proceso.fin ? `<div>Fin: ${new Date(proceso.fin).toLocaleString()}</div>` : ''}
+                                </div>
+                                <div class="proceso-estado">${proceso.estado}</div>
+                            </div>
+                            ${!estaFinalizado ? `
+                                <div class="proceso-controles">
+                                    <button class="btn-proceso-control btn-proceso-finalizar" 
+                                            onclick="finalizarProceso('${tareaId}', '${proceso.id}')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
 export async function agregarProceso(tareaId) {
     try {
         mostrarCarga();
@@ -652,165 +730,91 @@ export async function finalizarProceso(tareaId, procesoId) {
         mostrarNotificacion(error.message, 'error');
     }
 }
-export function renderizarProcesos(procesos, tareaId) {
-    if (!procesos || procesos.length === 0) return '';
 
-    return `
-        <div class="procesos-acordeon">
-            <div class="procesos-header" onclick="toggleProcesos('${tareaId}')">
-                <span>Procesos (${procesos.length})</span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
-            <div class="procesos-contenido" id="procesos-${tareaId}" style="display: none;">
-                ${procesos.map(proceso => {
-        const estaFinalizado = proceso.estado === 'Finalizado';
-        const tiempoTranscurrido = calcularTiempoTranscurrido(
-            proceso.inicio,
-            proceso.fin || new Date().toISOString()
-        );
 
-        return `
-                        <div class="proceso-item ${estaFinalizado ? 'finalizado' : ''}" data-id="${proceso.id}">
-                            <div class="proceso-info">
-                                <div class="proceso-descripcion">${proceso.descripcion}</div>
-                                <div class="proceso-peso">Peso: ${proceso.peso} kg</div>
-                                <div class="proceso-tiempo">
-                                    <div>Inicio: ${new Date(proceso.inicio).toLocaleString()}</div>
-                                    ${proceso.fin ? `<div>Fin: ${new Date(proceso.fin).toLocaleString()}</div>` : ''}
-                                    <div class="tiempo-transcurrido">Duración: ${tiempoTranscurrido}</div>
-                                </div>
-                                <div class="proceso-estado">${proceso.estado}</div>
-                            </div>
-                            ${!estaFinalizado ? `
-                                <div class="proceso-controles">
-                                    <button class="btn-proceso-control btn-proceso-finalizar" 
-                                            onclick="finalizarProceso('${tareaId}', '${proceso.id}')">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-    }).join('')}
-            </div>
-        </div>
-    `;
+
+function formatearTiempo(segundos) {
+    const horas = Math.floor(segundos / 3600);
+    const minutos = Math.floor((segundos % 3600) / 60);
+    const segs = segundos % 60;
+    return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(segs).padStart(2, '0')}`;
 }
-export function mostrarProcesos(tareaId) {
-    const procesosDiv = document.getElementById(`procesos-${tareaId}`);
-    if (procesosDiv) {
-        procesosDiv.style.display = procesosDiv.style.display === 'none' ? 'block' : 'none';
-    }
-}
-export async function pausarProceso(tareaId, procesoId) {
+async function guardarTareaConLote(lotes, data) {
     try {
-        const btnPausar = document.querySelector(`.tarea-proceso[data-id="${procesoId}"] .btn-proceso-pausar`);
-        const estaPausado = btnPausar.querySelector('i').classList.contains('fa-play');
+        const nombreTarea = document.getElementById('nombre-tarea').value;
+        const pesoTarea = document.getElementById('peso-tarea').value.replace(',', '.');
+        const descripcionTarea = document.getElementById('descripcion-tarea').value;
 
-        if (estaPausado) {
-            // Reanudar proceso
-            btnPausar.innerHTML = '<i class="fas fa-pause"></i>';
-            await fetch('/actualizar-proceso', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tareaId,
-                    procesoId,
-                    estado: 'En proceso'
-                })
-            });
-        } else {
-            // Pausar proceso
-            btnPausar.innerHTML = '<i class="fas fa-play"></i>';
-            await fetch('/actualizar-proceso', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tareaId,
-                    procesoId,
-                    estado: 'Pausado'
-                })
-            });
+        if (!nombreTarea || !pesoTarea || !Array.isArray(lotes) || lotes.length === 0) {
+            mostrarNotificacion('Por favor complete todos los campos requeridos', 'error');
+            return;
         }
-    } catch (error) {
-        mostrarNotificacion('Error al actualizar el proceso', 'error');
-    }
-}
-export function toggleProcesos(tareaId) {
-    const procesosContenido = document.getElementById(`procesos-${tareaId}`);
-    const header = procesosContenido.previousElementSibling;
-    const icon = header.querySelector('i');
 
-    if (procesosContenido.style.display === 'none') {
-        procesosContenido.style.display = 'block';
-        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
-    } else {
-        procesosContenido.style.display = 'none';
-        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
-    }
-}
-export async function finalizarTarea(tareaId) {
-    try {
-        const confirmacion = await mostrarConfirmacion(
-            '¿Finalizar esta tarea?',
-            'Esta acción moverá la tarea al historial y calculará el peso restante.'
-        );
+        // Get producto ID from the passed data
+        const productoSeleccionado = data.pedidos.find(pedido => pedido[1] === nombreTarea);
+        if (!productoSeleccionado) {
+            throw new Error('Producto no encontrado');
+        }
 
-        if (!confirmacion) return;
-
+        const productoId = productoSeleccionado[0];
         mostrarCarga();
-        const response = await fetch('/finalizar-tarea', {
+
+        // First create the task
+        const responseTarea = await fetch('/crear-tarea', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ tareaId })
+            body: JSON.stringify({
+                nombre: nombreTarea,
+                peso: Number(pesoTarea),
+                descripcion: descripcionTarea,
+                fechaInicio: new Date().toISOString(),
+                estado: 'En proceso',
+                lotes: lotes
+            })
         });
 
-        const data = await response.json();
-        if (data.success) {
-            mostrarNotificacion(`Tarea finalizada. Merma/Perdida: ${data.pesoRestante}kg`, 'success');
-            await cargarTareasEnProceso();
-        } else {
-            throw new Error(data.error || 'Error al finalizar la tarea');
+        const dataTarea = await responseTarea.json();
+        
+        if (!dataTarea.success) {
+            throw new Error(dataTarea.error || 'Error al crear la tarea');
         }
+
+        // Then update the lotes weights
+        const responseLotes = await fetch('/actualizar-pesos-lotes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                productoId,
+                lotes: Array.from(lotesSeleccionados)
+            })
+        });
+
+        const dataLotes = await responseLotes.json();
+        
+        if (!dataLotes.success) {
+            throw new Error('Error al actualizar los pesos de los lotes');
+        }
+
+        mostrarNotificacion('Tarea iniciada correctamente', 'success');
+        document.querySelector('.anuncio').style.display = 'none';
+        await cargarTareasEnProceso();
+
     } catch (error) {
-        mostrarNotificacion(error.message, 'error');
+        mostrarNotificacion(error.message || 'Error al crear la tarea', 'error');
     } finally {
         ocultarCarga();
     }
 }
-function mostrarConfirmacion(titulo, mensaje) {
-    return new Promise((resolve) => {
-        const anuncio = document.querySelector('.anuncio');
-        const contenido = anuncio.querySelector('.anuncio-contenido');
-
-        contenido.innerHTML = `
-            
-            <h2><i class="fas fa-exclamation-triangle"></i>${titulo}</h2>
-            <div class="detalles-grup center">
-            <p>${mensaje}</p>
-            </div>
-            
-            <div class="anuncio-botones">
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-                <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
-            </div>
-        `;
-
-        anuncio.querySelector('.cancelar').onclick = () => {
-            anuncio.style.display = 'none';
-            resolve(false);
-        };
-
-        anuncio.querySelector('.confirmar').onclick = () => {
-            anuncio.style.display = 'none';
-            resolve(true);
-        };
-
-        anuncio.style.display = 'flex';
-    });
+function calcularTiempoTranscurrido(tiempoInicial) {
+    return Math.floor((Date.now() - parseInt(tiempoInicial)) / 1000);
 }
+
+
+
 export async function mostrarProgramaAcopio() {
     try {
         mostrarCarga();
@@ -948,7 +952,6 @@ export async function mostrarProgramaAcopio() {
         ocultarCarga();
     }
 }
-
 export async function verProgramaciones() {
     try {
         mostrarCarga();
@@ -1004,7 +1007,6 @@ export async function verProgramaciones() {
         ocultarCarga();
     }
 }
-
 window.eliminarProgramaCompleto = async function () {
     try {
         const confirmacion = await mostrarConfirmacion(
@@ -1061,7 +1063,6 @@ window.iniciarTareaProgramada = async function (producto, fecha) {
         mostrarNotificacion(error.message, 'error');
     }
 };
-
 export async function guardarProgramacion(event) {
     if (event) event.preventDefault();
     try {
@@ -1125,7 +1126,6 @@ export async function guardarProgramacion(event) {
         ocultarCarga();
     }
 }
-
 window.agregarTareaDia = function (dia, tareas) {
     const tareasContainer = document.getElementById(`tareas-${dia}`);
     const nuevaTarea = document.createElement('div');
@@ -1143,7 +1143,6 @@ window.agregarTareaDia = function (dia, tareas) {
     `;
     tareasContainer.appendChild(nuevaTarea);
 };
-
 window.eliminarTareaDia = function (button) {
     button.closest('.tarea-programa').remove();
 };
