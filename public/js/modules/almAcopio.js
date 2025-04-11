@@ -1073,10 +1073,15 @@ export async function mostrarFormularioSalidaAcopio() {
         const pesosLotes = (producto[columnaIndex] || '').split(';');
 
         loteSelect.innerHTML = '<option value="">Seleccione un lote</option>' +
-            pesosLotes.map(item => {
-                const [peso, lote] = item.split('-');
-                return `<option value="${lote}" data-peso="${peso}">Lote ${lote} (${peso} kg)</option>`;
-            }).join('');
+            pesosLotes
+                .filter(item => {
+                    const [peso] = item.split('-');
+                    return parseFloat(peso) > 0;
+                })
+                .map(item => {
+                    const [peso, lote] = item.split('-');
+                    return `<option value="${lote}" data-peso="${peso}">Lote ${lote} (${peso} kg)</option>`;
+                }).join('');
     };
 
     productoSelect.onchange = actualizarLotes;
@@ -1129,6 +1134,12 @@ export async function mostrarFormularioSalidaAcopio() {
                 mostrarNotificacion('Salida procesada correctamente', 'success');
                 anuncio.style.display = 'none';
                 cargarAlmacenBruto();
+                setTimeout(() => {
+                    mostrarFormularioIngresoAcopio(producto);
+                    // Pre-establecer tipo a "prima" y el peso
+                    document.getElementById('tipoIngreso').value = 'prima';
+                    document.getElementById('pesoIngreso').value = peso;
+                }, 500);
             } else {
                 throw new Error(data.error);
             }

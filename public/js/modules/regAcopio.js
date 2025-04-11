@@ -102,7 +102,6 @@ function crearPedidoCard(pedido, isAdmin) {
     const estado = pedido[8] || 'Pendiente';
     const estadoClass = estado.toLowerCase().replace(' ', '-');
 
-    // Botones de administrador
     const botonesAdmin = isAdmin ? `
         <div class="acciones">
             <button class="btn-eliminar-registro">
@@ -112,11 +111,16 @@ function crearPedidoCard(pedido, isAdmin) {
                 <i class="fas fa-edit"></i> Editar
             </button>
         </div>
-    ` : (estado === 'Recibido' ? `
+    ` : (estado === 'Recibido' || estado === 'Ingresado' ? `
         <div class="acciones">
-            <button class="btn-ingresar-acopio anuncio-btn green">
-                <i class="fas fa-plus-circle"></i> Ingresar
+            <button class="btn-cambiar-estado anuncio-btn ${estado === 'Recibido' ? 'green' : 'blue'}">
+                <i class="fas fa-exchange-alt"></i> Cambiar a ${estado === 'Recibido' ? 'Ingresado' : 'Recibido'}
             </button>
+            ${estado === 'Recibido' ? `
+                <button class="btn-ingresar-acopio anuncio-btn green">
+                    <i class="fas fa-plus-circle"></i> Ingresar
+                </button>
+            ` : ''}
         </div>
     ` : '');
 
@@ -205,20 +209,79 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
             }
         });
 
-    } else if (pedido[8] === 'Recibido') {
-        const btnIngresar = registroCard.querySelector('.btn-ingresar-acopio');
-        if (btnIngresar) {
-            btnIngresar.addEventListener('click', (e) => {
+        } else {
+        // Add state change functionality for non-admin users
+        const btnCambiarEstado = registroCard.querySelector('.btn-cambiar-estado');
+        if (btnCambiarEstado) {
+            btnCambiarEstado.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const anuncio = document.querySelector('.anuncio');
-                const overlay = document.querySelector('.overlay');
+                try {
+                    mostrarCarga();
+                    const nuevoEstado = pedido[8] === 'Recibido' ? 'Ingresado' : 'Recibido';
+                    
+                    const response = await fetch('/actualizar-registro-pedido', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: pedido[0],
+                            datos: {
+                                estado: nuevoEstado
+                            }
+                        })
+                    });
 
-                if (overlay) overlay.style.display = 'flex';
-                if (anuncio) {
-                    anuncio.style.display = 'flex';
-                    window.mostrarFormularioIngresoAcopio(pedido[2]);
+                    const data = await response.json();
+                    if (data.success) {
+                        // Update the UI
+                        pedido[8] = nuevoEstado;
+                        const estadoElement = registroCard.querySelector('.registro-estado-acopio');
+                        estadoElement.textContent = nuevoEstado;
+                        estadoElement.className = `registro-estado-acopio estado-${nuevoEstado.toLowerCase()}`;
+                        
+                        // Si cambia a Recibido, mostrar formulario de ingreso automáticamente
+                        if (nuevoEstado === 'Recibido') {
+                            setTimeout(() => {
+                                const anuncio = document.querySelector('.anuncio');
+                                const overlay = document.querySelector('.overlay');
+                                if (overlay) overlay.style.display = 'flex';
+                            }, 500);
+                        }
+                        
+                        // Replace the entire card to update the buttons
+                        const newCard = crearPedidoCard(pedido, false);
+                        registroCard.replaceWith(newCard);
+                        
+                        mostrarNotificacion(`Estado actualizado a ${nuevoEstado}`, 'success');
+                    } else {
+                        throw new Error(data.error || 'Error al actualizar estado');
+                    }
+                } catch (error) {
+                    mostrarNotificacion(error.message, 'error');
+                } finally {
+                    ocultarCarga();
                 }
             });
+        }
+
+                // Configurar botón de ingreso para estado Recibido
+        if (pedido[8] === 'Recibido') {
+            const btnIngresar = registroCard.querySelector('.btn-ingresar-acopio');
+            if (btnIngresar) {
+                btnIngresar.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const anuncio = document.querySelector('.anuncio');
+                    const overlay = document.querySelector('.overlay');
+
+                    if (overlay) overlay.style.display = 'flex';
+                    if (anuncio) {
+                        anuncio.style.display = 'flex';
+                        // Aquí está el problema - Asegurarnos de pasar el nombre del producto correctamente
+                        const nombreProducto = pedido[2];
+                        console.log('Producto a seleccionar:', nombreProducto); // Para debug
+                        window.mostrarFormularioIngresoAcopio(nombreProducto);
+                    }
+                });
+            }
         }
     }
 

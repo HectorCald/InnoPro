@@ -2710,11 +2710,8 @@ app.post('/procesar-salida-acopio', requireAuth, async (req, res) => {
         const [pesoActual] = pesosLotes[loteIndex].split('-');
         const pesoRestante = parseFloat(pesoActual) - parseFloat(peso);
 
-        if (pesoRestante <= 0) {
-            pesosLotes.splice(loteIndex, 1);
-        } else {
-            pesosLotes[loteIndex] = `${pesoRestante.toFixed(1)}-${lote}`;
-        }
+        // Always keep the lot, even if weight is 0
+        pesosLotes[loteIndex] = `${Math.max(0, pesoRestante).toFixed(1)}-${lote}`;
 
         // Actualizar la hoja
         await sheets.spreadsheets.values.update({
