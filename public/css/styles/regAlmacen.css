@@ -2,7 +2,7 @@
 
 .regAlmacen-view {
     width: 100%;
-    background: var(--background) !important;
+    background: var(--primary-color) !important;
     height: calc(100vh - 3em);
     color: var(--primary-text) !important;
     overflow-y: auto;
@@ -63,7 +63,7 @@
     }
 
     .fecha-header {
-        background: var(--primary-color);
+        background: var(--cero-color);
         padding: 15px;
         display: flex;
         justify-content: space-between;
@@ -73,7 +73,7 @@
         border-radius: 15px;
 
         &:hover {
-            background: #252525;
+            background: #4d4d4d;
             color: white;
         }
 
@@ -123,7 +123,7 @@
     }
 
     .fecha-card {
-        background: var(--primary-color);
+        background: var(--cero-color);
         border-radius: 15px;
         width: 100%;
     }
@@ -135,7 +135,7 @@
     }
 
     .registro-card-acopio {
-        background: var(--background);
+        background: var(--second-color);
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
@@ -152,7 +152,7 @@
 
     .registro-header {
         padding: 15px;
-        background: var(--background);
+        background: var(--second-color);
         border-radius: 15px;
         display: flex;
         align-items: center;
@@ -179,7 +179,7 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
-        background: var(--background);
+        background: var(--second-color);
         overflow: hidden;
 
         &.active {

@@ -2,9 +2,9 @@ import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario, mostrar
 import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos, mostrarFormularioProduccion } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-import { confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso, togglePedidosArchivados, finalizarPedidos, confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, eliminarPedido, mostrarConfirmacionEliminar, mostrarIngresoMultiple } from './modules/newPedido.js';
+import { confirmarRechazo, mostrarFormularioRechazo, mostrarFormularioIngreso, procesarIngreso, finalizarPedidos, confirmarFinalizacionPedidos, mostrarSugerenciaPedido, mostrarFormularioPedido, mostrarIngresoMultiple } from './modules/newPedido.js';
 import { inicializarCompras } from './modules/compras.js';
-import { inicializarAlmacen } from './modules/almAcopio.js';
+import { inicializarAlmacen, mostrarFormularioIngresoAcopio, mostrarFormularioSalidaAcopio } from './modules/almAcopio.js';
 import { inicializarHome } from './modules/home.js';
 import { initializeMenu} from './modules/menu.js';
 import { initializePreciosPro } from './modules/preciosPro.js';
@@ -13,7 +13,6 @@ import { inicializarComprobante } from './modules/comprobante.js';
 import { cargarRegistrosAcopio } from './modules/regAcopio.js';
 import { inicializarAlmacenGral,cargarAlmacen,mostrarProductos } from './modules/almacen.js';
 import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
-import { inicializarBalanceAlmacen } from './modules/balAlmacen.js';
 
 function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
@@ -75,25 +74,21 @@ window.mostrarDetalles = mostrarDetalles;
 window.crearTarjetaRegistro = crearTarjetaRegistro;
 
 // Funciones de gestión de pedidos
-window.inicializarPedidos = inicializarPedidos;
 window.mostrarFormularioPedido = mostrarFormularioPedido;
-window.cargarPedidos = cargarPedidos;
-window.guardarPedido = guardarPedido;
-window.eliminarPedido = eliminarPedido;
-window.mostrarConfirmacionEliminar = mostrarConfirmacionEliminar;
 window.confirmarFinalizacionPedidos = confirmarFinalizacionPedidos;
 window.finalizarPedidos = finalizarPedidos;
-window.togglePedidosArchivados = togglePedidosArchivados;
-window.togglePedidosRecibidos = togglePedidosRecibidos;
 window.procesarIngreso = procesarIngreso;
 window.mostrarIngresoMultiple = mostrarIngresoMultiple;
+window.mosstrarSugerenciaPedido = mostrarSugerenciaPedido;
 
 
-// Funciones de gestión de almacén
+// Funciones de gestión de almacén Acopio
 window.inicializarAlmacen = inicializarAlmacen;
 window.mostrarFormularioRechazo = mostrarFormularioRechazo;
 window.mostrarFormularioIngreso = mostrarFormularioIngreso;
 window.confirmarRechazo = confirmarRechazo;
+window.mostrarFormularioIngresoAcopio = mostrarFormularioIngresoAcopio;
+window.mostrarFormularioSalidaAcopio = mostrarFormularioSalidaAcopio;
 
 // Funciones de gestión de compras
 window.inicializarCompras = inicializarCompras;
@@ -115,9 +110,7 @@ window.cargarRegistrosAlmacenGral = cargarRegistrosAlmacenGral;
 window.inicializarAlmacenGral = inicializarAlmacenGral;
 window.cargarAlmacen = cargarAlmacen;
 window.mostrarProductos = mostrarProductos;
-// Funciones de balance almacen
-window.inicializarBalanceAlmacen = inicializarBalanceAlmacen;
-  // This assigns the function itself This executes the function immediately and assigns its return value
+
 
 
 async function bienvenida() {

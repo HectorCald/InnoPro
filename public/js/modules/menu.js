@@ -58,18 +58,14 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
         ],
         'Acopio': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
-            { clase: 'opcion-btn', vista: 'newPedido-view', icono: 'fa-clipboard-list', texto: 'Pedido', onclick: 'onclick="inicializarPedidos()"' },
-            { clase: 'opcion-btn', vista: 'newTarea-view', icono: 'fa-tasks', texto: 'Tareas', onclick: 'onclick="inicializarTareas()"' },
-            { clase: 'opcion-btn', vista: 'almAcopio-view', icono: 'fa-warehouse', texto: 'Almacen', onclick: 'onclick="inicializarAlmacen()"' },
+            { clase: 'opcion-btn', vista: 'almAcopio-view', icono: 'fa-dolly', texto: 'Gestionar', onclick: 'onclick="inicializarAlmacen()"' },
             { clase: 'opcion-btn', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAcopio()"' }
         ],
         'Almacen': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
             { clase: 'opcion-btn', vista: 'verificarRegistros-view', icono: 'fa-check-double', texto: 'Verificar', onclick: 'onclick="cargarRegistros()"' },
-            { clase: 'opcion-btn', vista: 'almPrima-view', icono: 'fa-warehouse', texto: 'Alm Prima', onclick: 'onclick="inicializarAlmacenPrima()"' },
-            { clase: 'opcion-btn', vista: 'almacen-view', icono: 'fa-dolly', texto: 'Gestion', onclick: 'onclick="inicializarAlmacenGral()"' },
+            { clase: 'opcion-btn', vista: 'almacen-view', icono: 'fa-dolly', texto: 'Gestionar', onclick: 'onclick="inicializarAlmacenGral()"' },
             { clase: 'opcion-btn', vista: 'regAlmacen-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAlmacenGral()"' },
-            { clase: 'opcion-btn', vista: 'balAlmacen-view', icono: 'fa-history', texto: 'Balance', onclick: 'onclick="inicializarBalanceAlmacen()"' }
         ],
         'Administración': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },

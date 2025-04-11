@@ -19,6 +19,16 @@ export function inicializarAlmacen() {
                     </button>
                     <p>Tarea</p>
                 </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                       <i class="fas fa-arrow-circle-up"></i>
+                    </button>
+                    <p>Ingresos</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                       <i class="fas fa-arrow-circle-down"></i>
+                    </button>
+                    <p>Salidas</p>
+                </div>
             </div>    
             <div class="lista-productos"></div>
         </div>
@@ -28,6 +38,12 @@ export function inicializarAlmacen() {
 
     const btnAgregarTarea = container.querySelector('.btn-agregar-pedido i.fa-tasks').parentElement;
     btnAgregarTarea.onclick = () => mostrarFormularioAgregarTarea('');
+
+    const btnIngresos = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
+    btnIngresos.onclick = () => mostrarFormularioIngresoAcopio();
+
+    const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-down').parentElement;
+    btnSalidas.onclick = () => mostrarFormularioSalidaAcopio();
 
 
     mostrarProductosBruto();
@@ -331,7 +347,7 @@ window.mostrarDetalleProductoAcopio = function (producto) {
         editarProductoAcopio(producto);
     };
 };
-window.editarProductoAcopio = function(producto) {
+window.editarProductoAcopio = function (producto) {
     const [id, nombre, pesoBrutoLote, pesoPrimaLote] = producto;
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -358,17 +374,17 @@ window.editarProductoAcopio = function(producto) {
             </div>
             <div id="materiaBrutaEntries">
                 ${pesoBrutoLote ? pesoBrutoLote.split(';').map((item, index) => {
-                    const [peso, lote] = item.split('-').map(val => val.trim());
-                    const pesoFormateado = peso.replace(',', '.');
-                    return `
+        const [peso, lote] = item.split('-').map(val => val.trim());
+        const pesoFormateado = peso.replace(',', '.');
+        return `
                         <div class="campo-form entrada-peso" data-index="${index}">
                             <div class="detalle-item">
                                 <input type="number" step="0.01" id="editPesoBruto_${index}" value="${pesoFormateado}" class="edit-input" placeholder="Peso">
                                 <input type="number" id="editLoteBruto_${index}" value="${lote}" class="edit-input" placeholder="Lote">
-                                <i class="fas fa-trash delete delete-entry" onclick="eliminarEntrada(this, 'bruto')"></i>
+                                <i class="fas fa-trash delete delete-entry" data-type="bruto"></i>
                             </div>
                         </div>`;
-                }).join('') : ''}
+    }).join('') : ''}
             </div>
         </div>
         <div class="form-grup">
@@ -382,21 +398,25 @@ window.editarProductoAcopio = function(producto) {
             </div>
             <div id="materiaPrimaEntries">
                 ${pesoPrimaLote ? pesoPrimaLote.split(';').map((item, index) => {
-                    const [peso, lote] = item.split('-').map(val => val.trim());
-                    const pesoFormateado = peso.replace(',', '.');
-                    return `
+        const [peso, lote] = item.split('-').map(val => val.trim());
+        const pesoFormateado = peso.replace(',', '.');
+        return `
                         <div class="campo-form entrada-peso" data-index="${index}">
                             <div class="detalle-item">
                                 <input type="number" step="0.01" id="editPesoPrima_${index}" value="${pesoFormateado}" class="edit-input" placeholder="Peso">
                                 <input type="number" id="editLotePrima_${index}" value="${lote}" class="edit-input" placeholder="Lote">
-                                <i class="fas fa-trash delete delete-entry" onclick="eliminarEntrada(this, 'prima')"></i>
+                                <i class="fas fa-trash delete delete-entry" data-type="prima"></i>
                             </div>
                         </div>`;
-                }).join('') : ''}
+    }).join('') : ''}
             </div>
         </div>
     `;
-
+    document.querySelectorAll('.delete-entry').forEach(deleteBtn => {
+        deleteBtn.addEventListener('click', function () {
+            this.closest('.entrada-peso').remove();
+        });
+    });
     detallesGrup.style.display = 'none';
     detallesEdicion.style.display = 'flex';
     btnEditar.style.display = 'none';
@@ -406,6 +426,8 @@ window.editarProductoAcopio = function(producto) {
     setupEntryHandlers();
     setupGuardarHandler(id);
 };
+
+
 
 function mostrarConfirmacionEliminar(id, nombre) {
     const anuncio = document.querySelector('.anuncio');
@@ -459,7 +481,7 @@ function setupEntryHandlers() {
     document.querySelector('.add-peso-bruto').addEventListener('click', () => {
         const peso = document.getElementById('nuevoPesoBruto').value;
         const lote = document.getElementById('nuevoLoteBruto').value;
-        
+
         if (!peso || !lote) {
             mostrarNotificacion('Por favor ingrese peso y lote', 'error');
             return;
@@ -486,7 +508,7 @@ function setupEntryHandlers() {
     document.querySelector('.add-peso-prima').addEventListener('click', () => {
         const peso = document.getElementById('nuevoPesoPrima').value;
         const lote = document.getElementById('nuevoLotePrima').value;
-        
+
         if (!peso || !lote) {
             mostrarNotificacion('Por favor ingrese peso y lote', 'error');
             return;
@@ -572,7 +594,7 @@ function setupGuardarHandler(id) {
 function mostrarFormularioAgregarAcopio() {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
-    
+
     contenido.innerHTML = `
         <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
         <div class="relleno">
@@ -623,7 +645,7 @@ function mostrarFormularioAgregarAcopio() {
     anuncio.querySelector('.guardar').onclick = async () => {
         try {
             mostrarCarga();
-            
+
             // Recolectar datos de materia bruta
             const pesoBrutoInputs = Array.from(document.querySelectorAll('[id^="editPesoBruto_"]'));
             const loteBrutoInputs = Array.from(document.querySelectorAll('[id^="editLoteBruto_"]'));
@@ -681,7 +703,7 @@ function mostrarFormularioAgregarAcopio() {
 function mostrarFormularioAgregarTarea() {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
-    
+
 
     contenido.innerHTML = `
         <h2><i class="fas fa-tasks"></i> Gestión de Tareas</h2>
@@ -736,13 +758,13 @@ function mostrarFormularioAgregarTarea() {
                 const response = await fetch('/verificar-tarea', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         nombre: nombre,
-                        nombreNormalizado: nombreNormalizado 
+                        nombreNormalizado: nombreNormalizado
                     })
                 });
                 const data = await response.json();
-                
+
                 if (data.disponible) {
                     mensajeDisponible.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745; font-size: 1.2em; border:none;"></i>';
                 } else {
@@ -772,7 +794,7 @@ async function cargarTareas() {
         mostrarCarga();
         const response = await fetch('/obtener-tareas');
         const data = await response.json();
-        
+
         container.innerHTML = data.tareas.map(tarea => `
             <div class="detalle-item" style="padding-bottom:10px">
                 <span style="text-align:left">${tarea.nombre}</span>
@@ -810,7 +832,7 @@ async function agregarNuevaTarea() {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al agregar la tarea', 'error');
-    }finally{
+    } finally {
         ocultarCarga();
     }
 }
@@ -831,8 +853,239 @@ window.eliminarTarea = async (id) => {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al eliminar la tarea', 'error');
-    }finally{
+    } finally {
         ocultarCarga();
     }
 };
+
+
+
+export async function mostrarFormularioIngresoAcopio() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-arrow-circle-up"></i> Nuevo Ingreso</h2>
+        <div class="relleno">
+            <div class="campo-form">
+                <label>Producto:</label>
+                <select id="productoIngreso" class="edit-input" required>
+                    <option value="">Seleccione un producto</option>
+                    ${window.productosAlmacen?.map(producto => 
+                        `<option value="${producto[1]}">${producto[1]}</option>`
+                    ).join('') || ''}
+                </select>
+            </div>
+            <div class="campo-form">
+                <label>Tipo:</label>
+                <select id="tipoIngreso" class="edit-input" required>
+                    <option value="bruto">Materia Bruta</option>
+                    <option value="prima">Materia Prima</option>
+                </select>
+            </div>
+            <div class="campo-form">
+                <label>Peso (kg):</label>
+                <input type="number" step="0.1" id="pesoIngreso" class="edit-input" required>
+            </div>
+            <div class="campo-form">
+                <label>Operario:</label>
+                <input type="text" id="operarioIngreso" class="edit-input" required>
+            </div>
+            <div class="campo-form">
+                <label>Razón:</label>
+                <textarea id="razonIngreso" class="edit-input" required></textarea>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn green procesar">Procesar Ingreso</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+
+    contenido.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+
+    contenido.querySelector('.procesar').onclick = async () => {
+        try {
+            const producto = document.getElementById('productoIngreso').value;
+            const tipo = document.getElementById('tipoIngreso').value;
+            const peso = document.getElementById('pesoIngreso').value;
+            const operario = document.getElementById('operarioIngreso').value;
+            const razon = document.getElementById('razonIngreso').value;
+
+            if (!producto || !tipo || !peso || !operario || !razon) {
+                mostrarNotificacion('Por favor complete todos los campos', 'warning');
+                return;
+            }
+
+            mostrarCarga();
+            
+            // Registrar el movimiento
+            await fetch('/registrar-movimiento-acopio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipo: 'Ingreso ' + tipo,
+                    producto,
+                    cantidad: peso,
+                    operario,
+                    razon
+                })
+            });
+
+            // Procesar el ingreso
+            const response = await fetch('/procesar-ingreso-acopio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ producto, tipo, peso })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Ingreso procesado correctamente', 'success');
+                anuncio.style.display = 'none';
+                cargarAlmacenBruto();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            mostrarNotificacion(error.message, 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+}
+
+export async function mostrarFormularioSalidaAcopio() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-arrow-circle-down"></i> Nueva Salida</h2>
+        <div class="relleno">
+            <div class="campo-form">
+                <label>Producto:</label>
+                <select id="productoSalida" class="edit-input" required>
+                    <option value="">Seleccione un producto</option>
+                    ${window.productosAlmacen?.map(producto => 
+                        `<option value="${producto[1]}">${producto[1]}</option>`
+                    ).join('') || ''}
+                </select>
+            </div>
+            <div class="campo-form">
+                <label>Tipo:</label>
+                <select id="tipoSalida" class="edit-input" required>
+                    <option value="bruto">Materia Bruta</option>
+                    <option value="prima">Materia Prima</option>
+                </select>
+            </div>
+            <div class="campo-form">
+                <label>Lote:</label>
+                <select id="loteSalida" class="edit-input" required>
+                    <option value="">Seleccione un lote</option>
+                </select>
+            </div>
+            <div class="campo-form">
+                <label>Peso (kg):</label>
+                <input type="number" step="0.1" id="pesoSalida" class="edit-input" required>
+            </div>
+            <div class="campo-form">
+                <label>Prooveder:</label>
+                <input type="text" id="operarioSalida" class="edit-input" required>
+            </div>
+            <div class="campo-form">
+                <label>Razón:</label>
+                <textarea id="razonSalida" class="edit-input" required></textarea>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn green procesar">Procesar Salida</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    // Manejar cambios en producto y tipo para actualizar lotes
+    const productoSelect = document.getElementById('productoSalida');
+    const tipoSelect = document.getElementById('tipoSalida');
+    const loteSelect = document.getElementById('loteSalida');
+
+    const actualizarLotes = () => {
+        const producto = window.productosAlmacen?.find(p => p[1] === productoSelect.value);
+        if (!producto) return;
+
+        const columnaIndex = tipoSelect.value === 'bruto' ? 2 : 3;
+        const pesosLotes = (producto[columnaIndex] || '').split(';');
+
+        loteSelect.innerHTML = '<option value="">Seleccione un lote</option>' +
+            pesosLotes.map(item => {
+                const [peso, lote] = item.split('-');
+                return `<option value="${lote}" data-peso="${peso}">Lote ${lote} (${peso} kg)</option>`;
+            }).join('');
+    };
+
+    productoSelect.onchange = actualizarLotes;
+    tipoSelect.onchange = actualizarLotes;
+
+    anuncio.style.display = 'flex';
+
+    contenido.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+
+    contenido.querySelector('.procesar').onclick = async () => {
+        try {
+            const producto = document.getElementById('productoSalida').value;
+            const tipo = document.getElementById('tipoSalida').value;
+            const lote = document.getElementById('loteSalida').value;
+            const peso = document.getElementById('pesoSalida').value;
+            const operario = document.getElementById('operarioSalida').value;
+            const razon = document.getElementById('razonSalida').value;
+
+            if (!producto || !tipo || !lote || !peso || !operario || !razon) {
+                mostrarNotificacion('Por favor complete todos los campos', 'warning');
+                return;
+            }
+
+            mostrarCarga();
+
+            // Registrar el movimiento
+            await fetch('/registrar-movimiento-acopio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipo: 'Salida ' + tipo,
+                    producto,
+                    cantidad: peso,
+                    operario,
+                    razon
+                })
+            });
+
+            // Procesar la salida
+            const response = await fetch('/procesar-salida-acopio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ producto, tipo, peso, lote })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Salida procesada correctamente', 'success');
+                anuncio.style.display = 'none';
+                cargarAlmacenBruto();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            mostrarNotificacion(error.message, 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+}
+
+
 

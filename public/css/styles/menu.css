@@ -12,7 +12,7 @@
 
 .menu-secundario {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
     max-width: 600px;
@@ -49,7 +49,6 @@
     background-color: var(--tercer-color);
 }
 .opcion-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
 }
 

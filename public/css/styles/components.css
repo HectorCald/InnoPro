@@ -77,7 +77,7 @@
 
 .anuncio-contenido i {
     font-size: 15px;
-    color: var(--tercer-color);
+    color: var(--primary-text);
     margin-left: 5px;
 }
 
@@ -88,7 +88,7 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
-    color: var(--tercer-color);
+    color: var(--primary-text);
 }
 
 .anuncio-contenido p {
@@ -316,8 +316,18 @@
     background-color: var(--primary-color);
     padding: 10px;
     border-radius: 10px;
+    position: relative;
 }
-
+.producto-status-icon {
+    position: absolute;
+    right: 20px;
+    top: 65%;
+    transform: translateY(-50%);
+    display: none;
+}
+.producto-status-icon i {
+    font-size: 13px;
+}
 .form-group label {
     display: block;
     color: var(--primary-text);
@@ -328,7 +338,7 @@
     flex-direction: column;
     gap: 10px;
     padding: 10px;
-    background-color: rgb(56, 56, 56);
+    background-color: var(--primary-color);
     border-radius: 10px;
 }
 .detalles-grup.center p {
@@ -396,6 +406,7 @@
 .sugerencias-container .sugerencias-list li{
     border-bottom: 1px solid gray;
     padding-block: 10px;
+    list-style: none;
 }
 .sugerencias-container .sugerencias-list li:hover{
     background-color: var(--tercer-color);

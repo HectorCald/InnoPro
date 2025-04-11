@@ -67,7 +67,7 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
-        background: var(--primary-color) !important;
+        background: var(--cero-color) !important;
         overflow: hidden;
         display: flex;
         flex-direction: column;
@@ -101,7 +101,7 @@
     }
 
     .registro-card {
-        background: var(--primary-color) !important;
+        background: var(--cero-color) !important;
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
@@ -117,7 +117,7 @@
 
     .registro-header {
         padding: 15px;
-        background: var(--primary-color);
+        background: var(--cero-color);
         grid-template-columns: auto minmax(0, 1fr) auto auto;
         align-items: center;
         display: flex;

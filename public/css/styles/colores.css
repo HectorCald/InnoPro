@@ -1,7 +1,8 @@
 :root {
     --primary-text: #ffffff;
+    --cero-color:rgb(61, 61, 61);
     --second-color: #1a1a1a;
-    --primary-color: #212121;
+    --primary-color: #242424;
     --tercer-color: #f37500;
     --second-button: #00796f;
     --primary-button: #00a2d8;

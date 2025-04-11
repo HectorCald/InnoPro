@@ -107,23 +107,26 @@ async function obtenerAtajos() {
             'Acopio': [
                 { 
                     clase: 'opcion-btn',
-                    vista: 'newPedido-view',
+                    vista: 'home-view',
                     icono: 'fa-clipboard-list',
-                    texto: 'Pedido',
-                    onclick: 'onclick="inicializarPedidos()"'
+                    texto: 'Nuevo Pedido',
+                    detalle: 'Aqui puedes realizar un nuevo pedido de materia prima.',
+                    onclick: 'onclick="mostrarFormularioPedido()"'
                 },
                 { 
                     clase: 'opcion-btn',
-                    vista: 'newTarea-view',
-                    icono: 'fa-tasks',
-                    texto: 'Tarea',
+                    vista: 'almAcopio-view',
+                    icono: 'fa-dolly',
+                    texto: 'Gestionar Almacen',
+                    detalle: 'Aqui puedes gestionar el almacen de Acopio: (Materia Prima, Materia Bruta, Movimientos).',
                     onclick: 'onclick="inicializarTareas()"'
                 },
                 { 
                     clase: 'opcion-btn',
                     vista: 'regAcopio-view',
                     icono: 'fa-history',
-                    texto: 'Registros Ac.',
+                    texto: 'Registros Acopio.',
+                    detalle: 'Aqui puedes ver todos los registros de Acopio que hiciste: (Pedidos, Movimientos).',
                     onclick: 'onclick="cargarRegistrosAcopio()"'
                 }
             ],
@@ -132,15 +135,25 @@ async function obtenerAtajos() {
                     clase: 'opcion-btn',
                     vista: 'verificarRegistros-view',
                     icono: 'fa-check-double',
-                    texto: 'Verificar',
+                    texto: 'Verificar Registros',
+                    detalle: 'Aqui puedes verificar la cantidad real de los registros de producción.',
                     onclick: 'onclick="cargarRegistros()"'
                 },
                 { 
                     clase: 'opcion-btn',
-                    vista: 'almPrima-view',
-                    icono: 'fa-warehouse',
-                    texto: 'Alm Prima',
-                    onclick: 'onclick="inicializarAlmacenPrima()"'
+                    vista: 'almacen-view',
+                    icono: 'fa-dolly',
+                    texto: 'Gestionar Almacen',
+                    detalle: 'Aqui puedes gestionar el almacen de la empresa: (stock, Productos, ingresos, salidas).',
+                    onclick: 'onclick="inicializarAlmacenGral()"'
+                },
+                { 
+                    clase: 'opcion-btn',
+                    vista: 'regAlmacen-view',
+                    icono: 'fa-history',
+                    texto: 'Registros Almacen',
+                    detalle: 'Aqui puedes ver todos los registros de almacen que hiciste tanto ingreso como salidas.',
+                    onclick: 'onclick="cargarRegistrosAlmacenGral()"'
                 }
             ],
             'Administración': [

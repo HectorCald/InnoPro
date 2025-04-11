@@ -7,63 +7,86 @@ let filtrosActivos = {
 export async function cargarRegistrosAcopio() {
     try {
         mostrarCarga();
-        // Obtener el rol del usuario primero
         const rolResponse = await fetch('/obtener-mi-rol');
         const userData = await rolResponse.json();
         const esAdmin = userData.rol === 'Administración';
 
-        const response = await fetch('/obtener-registros-pedidos');
-        const data = await response.json();
+        // Obtener tanto pedidos como movimientos
+        const [responsePedidos, responseMovimientos] = await Promise.all([
+            fetch('/obtener-registros-pedidos'),
+            fetch('/obtener-movimientos-acopio')
+        ]);
 
-        if (data.success) {
+        const dataPedidos = await responsePedidos.json();
+        const dataMovimientos = await responseMovimientos.json();
+
+        if (dataPedidos.success && dataMovimientos.success) {
             const container = document.querySelector('.regAcopio-view');
 
-            // Header con título
+            // ... código existente ...
+
             container.innerHTML = `
-                <div class="filtros-header">
-                    <h2 class="section-title">
-                        <i class="fas fa-clipboard-list"></i> Registros Acopio
-                    </h2>
-                    <button class="btn-filtro-acopio">
-                        <i class="fas fa-filter"></i> Filtros
-                    </button>
+    <div class="filtros-header">
+        <h2 class="section-title">
+            <i class="fas fa-clipboard-list"></i> Registros Acopio
+        </h2>
+        <button class="btn-filtro-acopio">
+            <i class="fas fa-filter"></i> Filtros
+        </button>
+    </div>
+    <div class="pedidos-container">
+        <div class="fecha-card">
+            <div class="fecha-header">
+                <div class="fecha-info">
+                    <h3>Registro de Pedidos</h3>
+                    <span class="contador">${dataPedidos.pedidos.length} pedidos</span>
                 </div>
-                <div class="pedidos-container">
-                    <div class="fecha-card">
-                        <div class="fecha-header">
-                            <div class="fecha-info">
-                                <h3>Registro de Pedidos</h3>
-                                <span class="contador">${data.pedidos.length} pedidos</span>
-                            </div>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="registros-grupo"></div>
-                    </div>
-                </div>`;
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="registros-grupo registros-pedidos"></div>
+        </div>
+        
+        <div class="fecha-card">
+            <div class="fecha-header">
+                <div class="fecha-info">
+                    <h3>Registro de Movimientos</h3>
+                    <span class="contador">${dataMovimientos.movimientos.length} movimientos</span>
+                </div>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="registros-grupo registros-movimientos"></div>
+        </div>
+    </div>`;
 
-            const registrosContainer = container.querySelector('.registros-grupo');
-            const registrosOrdenados = ordenarRegistrosPorFecha(data.pedidos);
-
+            // Cargar pedidos
+            const registrosPedidosContainer = container.querySelector('.registros-pedidos');
+            const registrosOrdenados = ordenarRegistrosPorFecha(dataPedidos.pedidos);
             for (const pedido of registrosOrdenados) {
-                const pedidoCard = crearPedidoCard(pedido, esAdmin); // Pasar esAdmin como parámetro
-                registrosContainer.appendChild(pedidoCard);
+                const pedidoCard = crearPedidoCard(pedido, esAdmin);
+                registrosPedidosContainer.appendChild(pedidoCard);
             }
 
-            // Configurar evento para expandir/colapsar grupo
-            const fechaHeader = container.querySelector('.fecha-header');
-            fechaHeader.addEventListener('click', () => {
-                const registrosGrupo = container.querySelector('.registros-grupo');
-                registrosGrupo.classList.toggle('active');
-                const icono = fechaHeader.querySelector('.fa-chevron-down');
-                icono.style.transform = registrosGrupo.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
-            });
+            // Cargar movimientos
+            const movimientosContainer = container.querySelector('.registros-movimientos');
+            const movimientosOrdenados = ordenarRegistrosPorFecha(dataMovimientos.movimientos);
+            for (const movimiento of movimientosOrdenados) {
+                const movimientoCard = crearMovimientoCard(movimiento, esAdmin);
+                movimientosContainer.appendChild(movimientoCard);
+            }
 
-        } else {
-            throw new Error(data.error || 'Error al obtener los pedidos');
+            // Configurar eventos para ambos headers
+            document.querySelectorAll('.fecha-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const grupo = header.nextElementSibling;
+                    grupo.classList.toggle('active');
+                    const icono = header.querySelector('.fa-chevron-down');
+                    icono.style.transform = grupo.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
+                });
+            });
         }
     } catch (error) {
         console.error('Error:', error);
-        mostrarNotificacion('Error al cargar los pedidos: ' + error.message, 'error');
+        mostrarNotificacion('Error al cargar los registros', 'error');
     } finally {
         ocultarCarga();
     }
@@ -89,7 +112,13 @@ function crearPedidoCard(pedido, isAdmin) {
                 <i class="fas fa-edit"></i> Editar
             </button>
         </div>
-    ` : '';
+    ` : (estado === 'Recibido' ? `
+        <div class="acciones">
+            <button class="btn-ingresar-acopio anuncio-btn green">
+                <i class="fas fa-plus-circle"></i> Ingresar
+            </button>
+        </div>
+    ` : '');
 
     registroCard.innerHTML = `
         <div class="registro-header">
@@ -115,10 +144,10 @@ function crearPedidoCard(pedido, isAdmin) {
 }
 function configurarEventosRegistro(registroCard, isAdmin, pedido) {
     const header = registroCard.querySelector('.registro-header');
-    
+
     header.addEventListener('click', (e) => {
         const detalles = registroCard.querySelector('.registro-detalles');
-        
+
         // Cerrar otros registros abiertos
         document.querySelectorAll('.registro-detalles.active').forEach(otherDetalles => {
             if (otherDetalles !== detalles) {
@@ -139,10 +168,11 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
     });
 
     if (isAdmin) {
+
         // Configurar botón de editar
         const btnEditar = registroCard.querySelector('.btn-editar-registro');
         btnEditar.addEventListener('click', (e) => {
-            e.stopPropagation();
+            e.stopPropagation(); // Evitar que se active el evento del header
             mostrarFormularioEdicion(pedido);
         });
 
@@ -150,59 +180,51 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
         const btnEliminar = registroCard.querySelector('.btn-eliminar-registro');
         btnEliminar.addEventListener('click', async (e) => {
             e.stopPropagation();
-            const anuncio = document.querySelector('.anuncio');
-            const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-
-            anuncioContenido.innerHTML = `
-                <h2><i class="fas fa-trash"></i> Eliminación</h2>
-                <div class="detalles-grup center">
-                
-                </div>
-                
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn red confirmar"><i class="fas fa-trash"></i> Eliminar</button>
-                    <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-                </div>
-            `;
-
-            anuncio.style.display = 'flex';
-
-            const btnConfirmar = anuncio.querySelector('.confirmar');
-            const btnCancelar = anuncio.querySelector('.cancelar');
-
-            btnConfirmar.addEventListener('click', async () => {
+            if (confirm('¿Está seguro de eliminar este registro?')) {
                 try {
                     mostrarCarga();
                     const response = await fetch('/eliminar-registro-pedido', {
                         method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: pedido[0] })
                     });
 
                     const data = await response.json();
                     if (data.success) {
                         registroCard.remove();
-                        actualizarContador();
                         mostrarNotificacion('Registro eliminado correctamente', 'success');
+                        actualizarContador();
                     } else {
-                        throw new Error(data.error || 'Error al eliminar el registro');
+                        throw new Error(data.error);
                     }
                 } catch (error) {
-                    console.error('Error:', error);
-                    mostrarNotificacion('Error al eliminar el registro: ' + error.message, 'error');
-                }finally{
+                    mostrarNotificacion('Error al eliminar registro: ' + error.message, 'error');
+                } finally {
                     ocultarCarga();
                 }
-                anuncio.style.display = 'none';
-            });
-
-            btnCancelar.addEventListener('click', () => {
-                anuncio.style.display = 'none';
-            });
+            }
         });
+
+    } else if (pedido[8] === 'Recibido') {
+        // Configurar botón de ingresar para usuarios no admin
+        const btnIngresar = registroCard.querySelector('.btn-ingresar-acopio');
+        if (btnIngresar) {
+            btnIngresar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.mostrarFormularioIngresoAcopio();
+
+                // Esperar a que el formulario se renderice
+                setTimeout(() => {
+                    const selectProducto = document.getElementById('productoIngreso');
+                    if (selectProducto) {
+                        selectProducto.value = pedido[2];
+                        selectProducto.disabled = true;
+                    }
+                }, 100);
+            });
+        }
     }
+
 }
 function ordenarRegistrosPorFecha(registros) {
     return registros.sort((a, b) => {
@@ -232,7 +254,7 @@ function configurarFiltros2() {
     btnFiltro.addEventListener('click', () => {
         // Limpiar eventos anteriores
         limpiarEventosAnteriores();
-        
+
         anuncioContenido.innerHTML = `
             <h2><i class="fas fa-filter"></i> Filtros Acopio</h2>
             <div class="filtros-form relleno">
@@ -479,7 +501,7 @@ function mostrarFormularioEdicion(pedido) {
             }
         } catch (error) {
             mostrarNotificacion('Error al actualizar registro: ' + error.message, 'error');
-        }finally{
+        } finally {
             ocultarCarga();
         }
 
@@ -492,5 +514,108 @@ function mostrarFormularioEdicion(pedido) {
         overlay.style.display = 'none';
     });
 }
+
+
+
+function crearMovimientoCard(movimiento, isAdmin) {
+    const [id, fecha, tipo, producto, cantidad, operario, almacen, razon] = movimiento;
+    const movimientoCard = document.createElement('div');
+    movimientoCard.className = 'registro-card-acopio';
+    movimientoCard.dataset.id = id;
+    movimientoCard.dataset.fecha = fecha;
+
+    const fechaCorta = fecha.split(',')[0];
+    const [dia, mes] = fechaCorta.split('/');
+    
+    // Determinar la clase según el tipo de movimiento
+    const tipoClass = tipo.toLowerCase().includes('ingreso') ? 'tipo-ingreso' : 'tipo-salida';
+
+    movimientoCard.innerHTML = `
+        <div class="registro-header">
+            <div class="registro-fecha">${dia}/${mes}</div>
+            <div class="registro-producto-acopio">${producto}</div>
+            <div class="registro-estado-acopio ${tipoClass}">${tipo}</div>
+        </div>
+        <div class="registro-detalles">
+            <p><span>ID:</span> ${id}</p>
+            <p><span>Cantidad:</span> ${cantidad}</p>
+            <p><span>Operario:</span> ${operario}</p>
+            <p><span>Almacén:</span> ${almacen}</p>
+            <p><span>Razón:</span> ${razon || '-'}</p>
+            ${isAdmin ? `
+                <div class="acciones">
+                    <button class="btn-eliminar-registro">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                    <button class="btn-editar-registro">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                </div>
+            ` : ''}
+        </div>
+    `;
+
+    configurarEventosMovimiento(movimientoCard, isAdmin, movimiento);
+    return movimientoCard;
+}
+function configurarEventosMovimiento(movimientoCard, isAdmin, movimiento) {
+    const header = movimientoCard.querySelector('.registro-header');
+
+    header.addEventListener('click', (e) => {
+        const detalles = movimientoCard.querySelector('.registro-detalles');
+        document.querySelectorAll('.registro-detalles.active').forEach(otherDetalles => {
+            if (otherDetalles !== detalles) {
+                otherDetalles.classList.remove('active');
+            }
+        });
+        detalles.classList.toggle('active');
+    });
+
+    if (isAdmin) {
+        const btnEliminar = movimientoCard.querySelector('.btn-eliminar-movimiento');
+        if (btnEliminar) {
+            btnEliminar.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (confirm('¿Está seguro de eliminar este movimiento?')) {
+                    try {
+                        mostrarCarga();
+                        const response = await fetch('/eliminar-movimiento-acopio', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: movimiento[0] })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            movimientoCard.remove();
+                            mostrarNotificacion('Movimiento eliminado correctamente', 'success');
+                            actualizarContador();
+                        } else {
+                            throw new Error(data.error);
+                        }
+                    } catch (error) {
+                        mostrarNotificacion('Error al eliminar movimiento: ' + error.message, 'error');
+                    } finally {
+                        ocultarCarga();
+                    }
+                }
+            });
+        }
+
+        const btnEditar = movimientoCard.querySelector('.btn-editar-movimiento');
+        if (btnEditar) {
+            btnEditar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mostrarFormularioEdicionMovimiento(movimiento);
+            });
+        }
+    }
+}
+
+
+
+
+
+
 
 
