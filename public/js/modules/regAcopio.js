@@ -206,21 +206,18 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
         });
 
     } else if (pedido[8] === 'Recibido') {
-        // Configurar botón de ingresar para usuarios no admin
         const btnIngresar = registroCard.querySelector('.btn-ingresar-acopio');
         if (btnIngresar) {
             btnIngresar.addEventListener('click', (e) => {
                 e.stopPropagation();
-                window.mostrarFormularioIngresoAcopio();
+                const anuncio = document.querySelector('.anuncio');
+                const overlay = document.querySelector('.overlay');
 
-                // Esperar a que el formulario se renderice
-                setTimeout(() => {
-                    const selectProducto = document.getElementById('productoIngreso');
-                    if (selectProducto) {
-                        selectProducto.value = pedido[2];
-                        selectProducto.disabled = true;
-                    }
-                }, 100);
+                if (overlay) overlay.style.display = 'flex';
+                if (anuncio) {
+                    anuncio.style.display = 'flex';
+                    window.mostrarFormularioIngresoAcopio(pedido[2]);
+                }
             });
         }
     }
@@ -526,7 +523,7 @@ function crearMovimientoCard(movimiento, isAdmin) {
 
     const fechaCorta = fecha.split(',')[0];
     const [dia, mes] = fechaCorta.split('/');
-    
+
     // Determinar la clase según el tipo de movimiento
     const tipoClass = tipo.toLowerCase().includes('ingreso') ? 'tipo-ingreso' : 'tipo-salida';
 

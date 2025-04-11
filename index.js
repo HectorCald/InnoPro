@@ -2789,29 +2789,7 @@ app.post('/registrar-movimiento-acopio', requireAuth, async (req, res) => {
         res.json({ success: false, error: 'Error al registrar movimiento' });
     }
 });
-app.get('/obtener-movimientos-acopio', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Movimientos alm-acopio!A:H'
-        });
 
-        const rows = response.data.values || [];
-        const movimientos = rows.slice(1); // Omitir encabezados
-
-        res.json({ 
-            success: true, 
-            movimientos: movimientos 
-        });
-    } catch (error) {
-        console.error('Error:', error);
-        res.json({ 
-            success: false, 
-            error: 'Error al obtener movimientos de acopio' 
-        });
-    }
-});
 
 
 

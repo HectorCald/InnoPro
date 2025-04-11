@@ -40,7 +40,7 @@ export function inicializarAlmacen() {
     btnAgregarTarea.onclick = () => mostrarFormularioAgregarTarea('');
 
     const btnIngresos = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
-    btnIngresos.onclick = () => mostrarFormularioIngresoAcopio();
+    btnIngresos.onclick = () => mostrarFormularioIngresoAcopio('');
 
     const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-down').parentElement;
     btnSalidas.onclick = () => mostrarFormularioSalidaAcopio();
@@ -860,20 +860,20 @@ window.eliminarTarea = async (id) => {
 
 
 
-export async function mostrarFormularioIngresoAcopio() {
+export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
     const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
-    contenido.innerHTML = `
+    anuncioContenido.innerHTML = `
         <h2><i class="fas fa-arrow-circle-up"></i> Nuevo Ingreso</h2>
         <div class="relleno">
             <div class="campo-form">
                 <label>Producto:</label>
                 <select id="productoIngreso" class="edit-input" required>
                     <option value="">Seleccione un producto</option>
-                    ${window.productosAlmacen?.map(producto => 
-                        `<option value="${producto[1]}">${producto[1]}</option>`
-                    ).join('') || ''}
+                    ${window.productosAlmacen?.map(producto =>
+        `<option value="${producto[1]}" ${productoSeleccionado === producto[1] ? 'selected' : ''}>${producto[1]}</option>`
+    ).join('') || ''}
                 </select>
             </div>
             <div class="campo-form">
@@ -888,8 +888,8 @@ export async function mostrarFormularioIngresoAcopio() {
                 <input type="number" step="0.1" id="pesoIngreso" class="edit-input" required>
             </div>
             <div class="campo-form">
-                <label>Operario:</label>
-                <input type="text" id="operarioIngreso" class="edit-input" required>
+                <label>Lote:</label>
+                <input type="text" id="loteIngreso" class="edit-input" readonly>
             </div>
             <div class="campo-form">
                 <label>Razón:</label>
@@ -897,65 +897,118 @@ export async function mostrarFormularioIngresoAcopio() {
             </div>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn green procesar">Procesar Ingreso</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+            <button class="anuncio-btn green procesar">
+                <i class="fas fa-check"></i> Procesar Ingreso
+            </button>
+            <button class="anuncio-btn close cancelar">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    const productoSelect = document.getElementById('productoIngreso');
+    const tipoSelect = document.getElementById('tipoIngreso');
+    const loteInput = document.getElementById('loteIngreso');
 
-    contenido.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
+    // Función para obtener el siguiente número de lote
+    const getNextLote = () => {
+        const producto = window.productosAlmacen?.find(p => p[1] === productoSelect.value);
+        if (!producto) return '1';
+
+        const columnaIndex = tipoSelect.value === 'bruto' ? 2 : 3;
+        const lotesExistentes = (producto[columnaIndex] || '').split(';')
+            .map(item => parseInt(item.split('-')[1]) || 0);
+
+        return Math.max(0, ...lotesExistentes) + 1;
     };
 
-    contenido.querySelector('.procesar').onclick = async () => {
+    // Actualizar lote cuando cambie el producto o tipo
+    const actualizarLote = () => {
+        if (productoSelect.value && tipoSelect.value) {
+            loteInput.value = getNextLote();
+        }
+    };
+
+    productoSelect.addEventListener('change', actualizarLote);
+    tipoSelect.addEventListener('change', actualizarLote);
+
+    // Set initial lote if producto is preselected
+    if (productoSeleccionado) {
+        actualizarLote();
+    }
+
+    anuncio.style.display = 'flex';
+
+    // Rest of your existing code...
+    const btnProcesar = anuncioContenido.querySelector('.procesar');
+    const btnCancelar = anuncioContenido.querySelector('.cancelar');
+
+    btnProcesar.onclick = async () => {
         try {
-            const producto = document.getElementById('productoIngreso').value;
-            const tipo = document.getElementById('tipoIngreso').value;
+            const producto = productoSelect.value;
+            const tipo = tipoSelect.value;
             const peso = document.getElementById('pesoIngreso').value;
-            const operario = document.getElementById('operarioIngreso').value;
+            const lote = loteInput.value;
             const razon = document.getElementById('razonIngreso').value;
 
-            if (!producto || !tipo || !peso || !operario || !razon) {
-                mostrarNotificacion('Por favor complete todos los campos', 'warning');
+            if (!producto || !tipo || !peso || !razon) {
+                mostrarNotificacion('Por favor complete todos los campos', 'error');
                 return;
             }
 
             mostrarCarga();
-            
-            // Registrar el movimiento
-            await fetch('/registrar-movimiento-acopio', {
+
+            // First process the ingreso
+            const ingresoResponse = await fetch('/procesar-ingreso-acopio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    producto,
+                    tipo,
+                    peso,
+                    lote,
+                    razon
+                })
+            });
+
+            const ingresoData = await ingresoResponse.json();
+
+            if (!ingresoData.success) {
+                throw new Error(ingresoData.error || 'Error al procesar el ingreso');
+            }
+
+            // Then register the movement
+            const movimientoResponse = await fetch('/registrar-movimiento-acopio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     tipo: 'Ingreso ' + tipo,
                     producto,
                     cantidad: peso,
-                    operario,
+                    operario: 'Sistema',
                     razon
                 })
             });
 
-            // Procesar el ingreso
-            const response = await fetch('/procesar-ingreso-acopio', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ producto, tipo, peso })
-            });
+            const movimientoData = await movimientoResponse.json();
 
-            const data = await response.json();
-            if (data.success) {
-                mostrarNotificacion('Ingreso procesado correctamente', 'success');
-                anuncio.style.display = 'none';
-                cargarAlmacenBruto();
-            } else {
-                throw new Error(data.error);
+            if (!movimientoData.success) {
+                throw new Error('Error al registrar el movimiento');
             }
+
+            mostrarNotificacion('Ingreso procesado correctamente', 'success');
+            anuncio.style.display = 'none';
+            cargarAlmacenBruto();
         } catch (error) {
+            console.error('Error:', error);
             mostrarNotificacion(error.message, 'error');
         } finally {
             ocultarCarga();
         }
+    };
+
+    btnCancelar.onclick = () => {
+        anuncio.style.display = 'none';
     };
 }
 
@@ -970,9 +1023,9 @@ export async function mostrarFormularioSalidaAcopio() {
                 <label>Producto:</label>
                 <select id="productoSalida" class="edit-input" required>
                     <option value="">Seleccione un producto</option>
-                    ${window.productosAlmacen?.map(producto => 
-                        `<option value="${producto[1]}">${producto[1]}</option>`
-                    ).join('') || ''}
+                    ${window.productosAlmacen?.map(producto =>
+        `<option value="${producto[1]}">${producto[1]}</option>`
+    ).join('') || ''}
                 </select>
             </div>
             <div class="campo-form">
