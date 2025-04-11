@@ -1,13 +1,27 @@
+const frasesDiarias = [
+    "¡Un día productivo y a romperla en la calle, loco! 💪🔥",
+    "¡Hoy es un gran día para dar lo mejor! ⭐️✨",
+    "¡La actitud positiva es la clave del éxito! 🎯✨",
+    "¡Cada día es una nueva oportunidad! 🌅💫",
+    "¡Con determinación, todo es posible! 🚀💪",
+    "¡La excelencia no es un acto, es un hábito! 🏆✨",
+    "¡El éxito es la suma de pequeños esfuerzos! 📈💯",
+    "¡La calidad es la mejor publicidad! ⭐️💎",
+    "¡Juntos hacemos la diferencia! 🤝💪",
+    "¡La perseverancia vence todos los obstáculos! 🎯💫"
+];
+function obtenerFraseAleatoria() {
+    const indice = Math.floor(Math.random() * frasesDiarias.length);
+    return frasesDiarias[indice];
+}
 export async function inicializarHome() {
     const homeView = document.querySelector('.home-view');
     if (!homeView) return;
 
     try {
         mostrarCarga();
-        const highlights = await obtenerHighlights();
-        const notificaciones = await obtenerNotificaciones();
         const atajos = await obtenerAtajos();
-        const novedades = await obtenerNovedades();
+        const fraseDiaria = obtenerFraseAleatoria();
 
         // Add view class to all views
         document.querySelectorAll('.home-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .newTarea-view, .almAcopio-view, .verificarRegistros-view, .almPrima-view, .usuarios-view, .consultarRegistros-view, .compras-view')
@@ -15,22 +29,17 @@ export async function inicializarHome() {
 
         homeView.innerHTML = `
             <div class="title">
-                <h3><i class="fas fa-home"></i> Página principal</h3>
+                <h3>Inicio</h3>
+            </div>
+            <div class="welcome-header">
+                <h1>¡Frase del día!</h1>
+                <p>${fraseDiaria}</p>
             </div>
             <div class="shortcuts-container">
                 <div class="timeline">
-                    <h2>tus atajos</h2>
+                    <h2>¿Que puedes hacer?</h2>
                     ${generarAtajos(atajos)}
                 </div>
-            </div>
-
-            <div class="highlights-container">
-                ${generarHighlights(highlights)}
-            </div>
-
-            <div class="updates-section">
-                <h2>Novedades del Sistema</h2>
-                ${generarNovedades(novedades)}
             </div>
         `;
 
@@ -42,150 +51,14 @@ export async function inicializarHome() {
         ocultarCarga();
     }
 }
-async function obtenerHighlights() {
-    try {
-        mostrarCarga();
-        
-        // Obtener el rol del usuario
-        const rolResponse = await fetch('/obtener-mi-rol');
-        const rolData = await rolResponse.json();
-        const rol = rolData.rol;
-
-        let registros;
-        if (rol === 'Acopio') {
-            // Para Acopio, obtener todos los pedidos
-            const response = await fetch('/obtener-registros-pedidos');
-            const data = await response.json();
-            if (!data.success) throw new Error(data.error);
-            
-            registros = data.pedidos;
-            const pedidosPendientes = registros.filter(pedido => pedido[8] === 'Pendiente').length;
-            const pedidosRecibidos = registros.filter(pedido => pedido[8] === 'Recibido').length;
-            const pedidosEnProceso = registros.filter(pedido => pedido[8] === 'En proceso').length;
-
-            return [
-                { 
-                    valor: pedidosPendientes,
-                    etiqueta: 'Pedidos Pendientes'
-                },
-                { 
-                    valor: pedidosRecibidos,
-                    etiqueta: 'Pedidos Recibidos'
-                },
-                { 
-                    valor: pedidosEnProceso,
-                    etiqueta: 'Pedidos En Proceso'
-                }
-            ];
-        } else if (rol === 'Almacen') {
-            // Para Almacen, obtener todos los registros
-            const response = await fetch('/obtener-todos-registros');
-            const data = await response.json();
-            if (!data.success) throw new Error(data.error);
-            registros = data.registros;
-        } else {
-            // Para otros roles, obtener solo sus registros
-            const response = await fetch('/obtener-registros');
-            const data = await response.json();
-            if (!data.success) throw new Error(data.error);
-            registros = data.registros;
-        }
-
-        // Para Almacen y otros roles mantener la lógica original
-        const produccionesTotal = registros.length;
-        const produccionesVerificadas = registros.filter(registro => registro[10]).length;
-        const noVerificados = produccionesTotal - produccionesVerificadas;
-        const eficienciaVerificados = produccionesTotal > 0 
-            ? Math.round((produccionesVerificadas / produccionesTotal) * 100) 
-            : 0;
-        const eficienciaNoVerificados = produccionesTotal > 0
-            ? Math.round((noVerificados / produccionesTotal) * 100)
-            : 0;
-
-        return [
-            { 
-                valor: produccionesTotal, 
-                etiqueta: 'Total Registros' 
-            },
-            { 
-                valor: produccionesVerificadas, 
-                etiqueta: `Verificadas (${eficienciaVerificados}%)` 
-            },
-            { 
-                valor: noVerificados, 
-                etiqueta: `No Verif. (${eficienciaNoVerificados}%)` 
-            }
-        ];
-    } catch (error) {
-        console.error('Error al obtener highlights:', error);
-        return [
-            { valor: '0', etiqueta: 'Total Registros' },
-            { valor: '0', etiqueta: 'Verificadas (0%)' },
-            { valor: '0', etiqueta: 'No Verificados (0%)' }
-        ];
-    } finally {
-        ocultarCarga();
-    }
-}
-function generarHighlights(highlights) {
-    return highlights.map(h => `
-        <div class="highlight-card">
-            <div class="highlight-value">${h.valor}</div>
-            <div class="highlight-label">${h.etiqueta}</div>
-        </div>
-    `).join('');
-}
-async function obtenerNotificaciones() {
-    try {
-        mostrarCarga();
-        const response = await fetch('/obtener-notificaciones-usuario');
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error(data.error);
-        }
-
-        return data.notificaciones.map(n => ({
-            fecha: n.fecha,  // Keep the original date format
-            tiempo: calcularTiempo(n.fecha),
-            mensaje: n.mensaje
-        }));
-    } catch (error) {
-        console.error('Error al obtener notificaciones:', error);
-        return [
-            { tiempo: 'Error', mensaje: 'No se pudieron cargar las notificaciones' }
-        ];
-    }finally{
-        ocultarCarga();
-    }
-}
-function calcularTiempo(fecha) {
-    const [dia, mes, anio] = fecha.split('/');
-    const fechaNotificacion = new Date(20 + anio, mes - 1, dia);
-    const ahora = new Date();
-    const diferencia = ahora - fechaNotificacion;
-    const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-    const horas = Math.floor(diferencia / (1000 * 60 * 60));
-
-    if (dias > 0) {
-        return `Hace ${dias} día${dias > 1 ? 's' : ''}`;
-    } else {
-        return `Hace ${horas} hora${horas > 1 ? 's' : ''}`;
-    }
-}
 function inicializarEventos() {
     document.querySelectorAll('.delete-notification').forEach(button => {
         button.addEventListener('click', async (e) => {
             e.preventDefault();
-            
-            const fecha = button.dataset.fecha;
-            const mensaje = button.dataset.mensaje;
 
             // Show custom confirmation dialog
             const anuncio = document.querySelector('.anuncio');
             const overlay = document.querySelector('.overlay');
-            const confirmarBtn = anuncio.querySelector('.confirmar');
-            const cancelarBtn = anuncio.querySelector('.cancelar');
             
             // Change the announcement title
             const titulo = anuncio.querySelector('h2');
@@ -195,55 +68,6 @@ function inicializarEventos() {
             anuncio.style.display = 'flex';
             overlay.style.display = 'block';
 
-            // Handle confirm
-            confirmarBtn.onclick = async () => {
-                try {
-                    mostrarCarga();
-                    console.log('Eliminando notificación:', { fecha, mensaje }); // Debug log
-                    const response = await fetch('/eliminar-notificacion', {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ fecha, mensaje })
-                    });
-
-                    const data = await response.json();
-
-                    if (!data.success) {
-                        throw new Error(data.error || 'Error al eliminar notificación');
-                    }
-
-                    // Hide dialog and overlay
-                    anuncio.style.display = 'none';
-                    overlay.style.display = 'none';
-
-                    // Remove the notification from UI
-                    const timelineItem = button.closest('.timeline-item');
-                    timelineItem.style.opacity = '0';
-                    setTimeout(() => {
-                        timelineItem.remove();
-                        // If no notifications left, show message
-                        const timeline = document.querySelector('.timeline');
-                        if (!timeline.querySelector('.timeline-item')) {
-                            timeline.innerHTML = `
-                                <h2>Notificaciones Recientes</h2>
-                                <p class="no-notifications">No hay notificaciones</p>
-                            `;
-                        }
-                    }, 300);
-
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert(error.message || 'Error al eliminar la notificación');
-                    anuncio.style.display = 'none';
-                    overlay.style.display = 'none';
-                }finally{
-                    ocultarCarga();
-                }
-            };
-
             // Close on overlay click
             overlay.onclick = () => {
                 anuncio.style.display = 'none';
@@ -251,24 +75,6 @@ function inicializarEventos() {
             };
         });
     });
-}
-function generarNovedades(novedades) {
-    return novedades.map(n => `
-        <div class="update-card">
-            <h3>${n.titulo}</h3>
-            <p>${n.descripcion}</p>
-            <small>${n.fecha}</small>
-        </div>
-    `).join('');
-}
-async function obtenerNovedades() {
-    return [
-        {
-            titulo: 'Nueva Actualización',
-            descripcion: 'Se agregó el sistema de notificaciones. Ahora recibirás una notificación al iniciar sesión sobre temas como producción, edición de registros, eliminación de registros, entre otros.',
-            fecha: '2025-03-28'
-        }
-    ];
 }
 async function obtenerAtajos() {
     try {
@@ -283,18 +89,20 @@ async function obtenerAtajos() {
 
                 { 
                     clase: 'opcion-btn',
-                    vista: 'formProduccion-view',
+                    vista: 'home-view',
                     icono: 'fa-clipboard-list',
                     texto: 'Formulario',
-                    onclick: 'onclick="inicializarFormularioProduccion()"'
+                    detalle: 'Aqui puedes llenar el formulario un vez terminado el proceso de producción',
+                    onclick: 'onclick="mostrarFormularioProduccion()"'
                 },
                 { 
                     clase: 'opcion-btn',
                     vista: 'cuentasProduccion-view',
                     icono: 'fa-history',
                     texto: 'Registros',
+                    detalle: 'Aqui puedes ver todos los registros de producción que hiciste',
                     onclick: 'onclick="cargarRegistrosCuentas()"'
-                }
+                },
             ],
             'Acopio': [
                 { 
@@ -385,10 +193,13 @@ function generarAtajos(atajos) {
     return `
         <div class="shortcuts-grid">
             ${atajos.map(a => `
-                <button class="shortcut-card" onclick="manejarAtajo('${a.vista}', '${a.onclick.replace('onclick="', '').replace('"', '')}')">
+                <div class="shortcut-card" onclick="manejarAtajo('${a.vista}', '${a.onclick.replace('onclick="', '').replace('"', '')}')">
                     <i class="fas ${a.icono}"></i>
-                    <span>${a.texto}</span>
-                </button>
+                    <div class="info-atajo">
+                        <span>${a.texto}</span>
+                        <p>${a.detalle}</p>
+                    </div>
+                </div>
             `).join('')}
         </div>
     `;

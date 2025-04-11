@@ -121,60 +121,68 @@ class LoginPin {
     }
 }
 
-/* ==================== INICIALIZACIÓN DE LA APLICACIÓN ==================== */
+class Modal {
+    constructor() {
+        this.modal = document.getElementById('pinModal');
+        this.sinPinBtn = document.querySelector('.sin-pin');
+        this.closeBtn = document.querySelector('.modal-close');
+        this.init();
+    }
+
+    init() {
+        // Add console.log to debug
+        console.log('Modal initialized:', {
+            modal: this.modal,
+            sinPinBtn: this.sinPinBtn,
+            closeBtn: this.closeBtn
+        });
+
+        if (this.sinPinBtn) {
+            this.sinPinBtn.addEventListener('click', () => {
+                console.log('Sin PIN clicked');
+                this.openModal();
+            });
+        }
+
+        if (this.closeBtn) {
+            this.closeBtn.addEventListener('click', () => {
+                console.log('Close button clicked');
+                this.closeModal();
+            });
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.closeModal();
+            }
+        });
+    }
+
+    openModal() {
+        if (this.modal) {
+            this.modal.style.display = 'flex';
+        }
+    }
+
+    closeModal() {
+        if (this.modal) {
+            this.modal.style.display = 'none';
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const loginPin = new LoginPin();
-
-    // Manejo del tema
-    const themeToggle = document.querySelector('#themeToggle');
-    
-    // Verificar y aplicar el tema guardado
-    const currentTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    themeToggle.checked = currentTheme === 'light';
-
-    // Manejar cambios en el tema
-    themeToggle.addEventListener('change', function() {
-        const newTheme = this.checked ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-    });
+    const modal = new Modal();
 
     const btnConsulta = document.querySelector('.consultarProducto');
     if (btnConsulta) {
         btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
     }
 });
-// ... código existente ...
 
-async function initializeFirebaseMessaging() {
-    try {
-        // Importar módulos de Firebase
-        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-        const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js');
 
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyCbfR1fpCDIsE8R_9RAN9lG0H9bsk2WQeQ",
-            authDomain: "damabravaapp.firebaseapp.com",
-            projectId: "damabravaapp",
-            storageBucket: "damabravaapp.firebasestorage.app",
-            messagingSenderId: "36776613676",
-            appId: "1:36776613676:web:f031d9435399a75a9afe89",
-            measurementId: "G-NX0Z9ZPC5R"
-        };
-
-        // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const messaging = getMessaging(app);
-
-        // Resto del código...
-    } catch (error) {
-        console.error('Error al inicializar Firebase:', error);
-    }
-}
-
-// ... resto del código ...
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'flex';
@@ -184,28 +192,3 @@ function ocultarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'none';
 }
-
-// Función para aplicar el tema al cargar la página
-function aplicarTemaGuardado() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    const themeToggle = document.querySelector('#themeToggle');
-    if (themeToggle) {
-        themeToggle.checked = savedTheme === 'light';
-    }
-}
-
-// Aplicar tema al cargar
-aplicarTemaGuardado();
-// Suponiendo que tienes un botón con el id "enable-notifications"
-document.getElementById("permiso").addEventListener("click", function() {
-    if (Notification.permission === 'default') {
-        Notification.requestPermission().then(function(permission) {
-            if (permission === 'granted') {
-                console.log('Permiso concedido');
-            } else {
-                console.log('Permiso denegado');
-            }
-        });
-    }
-});

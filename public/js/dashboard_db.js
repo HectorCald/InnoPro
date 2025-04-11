@@ -1,9 +1,8 @@
 import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario, mostrarPermisos, agregarPermiso, eliminarPermiso } from './modules/users.js';
 import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
-import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos } from './modules/formProduccion.js';
+import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos, mostrarFormularioProduccion } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
 import { confirmarRechazo, mostrarFormularioRechazo, togglePedidosRecibidos, mostrarFormularioIngreso, procesarIngreso, togglePedidosArchivados, finalizarPedidos, confirmarFinalizacionPedidos, inicializarPedidos, mostrarFormularioPedido, cargarPedidos, guardarPedido, eliminarPedido, mostrarConfirmacionEliminar, mostrarIngresoMultiple } from './modules/newPedido.js';
-import { mostrarProgramaAcopio, verProgramaciones, toggleProcesos, mostrarProcesos, finalizarProceso, inicializarTareas, mostrarFormularioTarea, cargarTareasEnProceso, iniciarCronometro, agregarProceso,finalizarTarea } from './modules/newTarea.js';
 import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen } from './modules/almAcopio.js';
 import { inicializarHome } from './modules/home.js';
@@ -68,6 +67,7 @@ window.inicializarFormulario = inicializarFormulario;
 window.resetearFormulario = resetearFormulario;
 window.inicializarFormularioProduccion = inicializarFormularioProduccion;
 window.cargarProductos = cargarProductos;
+window.mostrarFormularioProduccion = mostrarFormularioProduccion;
 
 // Funciones de gestión de cuentas
 window.cargarRegistrosCuentas = cargarRegistrosCuentas;
@@ -89,17 +89,6 @@ window.procesarIngreso = procesarIngreso;
 window.mostrarIngresoMultiple = mostrarIngresoMultiple;
 
 
-// Funciones de gestión de tareas y procesos
-window.inicializarTareas = inicializarTareas;
-window.mostrarFormularioTarea = mostrarFormularioTarea;
-window.cargarTareasEnProceso = cargarTareasEnProceso;
-window.iniciarCronometro = iniciarCronometro;
-window.agregarProceso = agregarProceso;
-window.finalizarTarea = finalizarTarea;
-window.finalizarProceso = finalizarProceso;
-window.mostrarProcesos = mostrarProcesos;
-window.toggleProcesos = toggleProcesos;
-
 // Funciones de gestión de almacén
 window.inicializarAlmacen = inicializarAlmacen;
 window.mostrarFormularioRechazo = mostrarFormularioRechazo;
@@ -108,10 +97,6 @@ window.confirmarRechazo = confirmarRechazo;
 
 // Funciones de gestión de compras
 window.inicializarCompras = inicializarCompras;
-
-// Funciones de programación y acopio
-window.verProgramaciones = verProgramaciones;
-window.mostrarProgramaAcopio = mostrarProgramaAcopio;
 
 // Funciones de notificaciones y sesión
 window.mostrarNotificacion = mostrarNotificacion;
@@ -146,9 +131,11 @@ async function bienvenida() {
                 dashboard.innerHTML = `
                     <div class="bienvenida">
                         <div class="profile-section">
-                            <img src="/img/Logotipo-damabrava.png" alt="Perfil" class="profile-image">
+                            <div class="profile-picture">
+                                IP
+                            </div>
                             <div class="profile-info">
-                                <span class="profile-name">${data.nombre || 'Usuario'} <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 0.8em;"></i></span>
+                                <span class="profile-name">${data.nombre || 'Usuario'} <i class="fas fa-check-circle" style="color: orange; font-size: 0.8em;"></i></span>
                                 <span class="profile-role">@${data.rol || 'Usuario'}</span>
                             </div>
                         </div>
@@ -157,26 +144,20 @@ async function bienvenida() {
                     <div class="dashboard-buttons">
                         <button class="notifications-btn" onclick="mostrarNotificacionesPanel()">
                             <i class="fas fa-bell"></i>
-                            <span class="notification-badge" id="notificationBadge" style="display: none">0</span>
+                            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                         </button>
                     </div>
                     <div class="profile-modal">
                         <div class="modal-content">
                             <button class="close-modal"><i class="fas fa-times"></i></button>
-                            <img src="/img/Logotipo-damabrava.png" alt="Perfil" class="modal-profile-image">
+                            <div class="modal-profile-picture">
+                                InnoPro
+                            </div>
                             <div class="modal-profile-name">
                                 ${data.nombre || 'Usuario'}
-                                <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                                <i class="fas fa-check-circle" style="color:orange;"></i>
                             </div>
                             <div class="modal-profile-role">@${data.rol || 'Usuario'}</div>
-                            <div class="theme-switch">
-                                <i class="fas fa-moon theme-icon"></i>
-                                <label class="switch">
-                                    <input type="checkbox" id="themeToggle">
-                                    <span class="slider"></span>
-                                </label>
-                                <i class="fas fa-sun theme-icon"></i>
-                            </div>
                             <button class="logout-btn" onclick="manejarCierreSesion()">
                                 <i class="fas fa-sign-out-alt"></i>
                                 <span>Cerrar Sesión</span>
@@ -189,20 +170,8 @@ async function bienvenida() {
                 const modal = dashboard.querySelector('.profile-modal');
                 const modalContent = modal.querySelector('.modal-content');
                 const closeBtn = modal.querySelector('.close-modal');
-                const themeToggle = modal.querySelector('#themeToggle');
                 const menuSecundario = dashboard.querySelector('.menu-secundario');
 
-                // Verificar y aplicar el tema guardado
-                const currentTheme = localStorage.getItem('theme') || 'dark';
-                document.documentElement.setAttribute('data-theme', currentTheme);
-                themeToggle.checked = currentTheme === 'light';
-
-                // Manejar cambios en el tema
-                themeToggle.addEventListener('change', function() {
-                    const newTheme = this.checked ? 'light' : 'dark';
-                    document.documentElement.setAttribute('data-theme', newTheme);
-                    localStorage.setItem('theme', newTheme);
-                });
 
                 profileSection.addEventListener('click', () => {
                     document.querySelector('.anuncio').style.display = 'none';

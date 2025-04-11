@@ -3,18 +3,12 @@ export function initializeMenu(roles, opcionesDiv, vistas) {
     initializeMenuEvents(menuPrincipal, menuSecundario, overlay);
     initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, overlay);
 }
-
 function initializeMenuStructure(opcionesDiv) {
     const isDesktop = window.innerWidth >= 1024;
 
     opcionesDiv.innerHTML = `
         <div class="overlay"></div>
         <div class="menu-principal">
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
         </div>
         <div class="menu-secundario ${isDesktop ? 'active' : ''}"></div>
     `;
@@ -24,7 +18,6 @@ function initializeMenuStructure(opcionesDiv) {
         overlay: document.querySelector('.overlay')
     };
 }
-
 function initializeMenuEvents(menuPrincipal, menuSecundario, overlay) {
     // Desktop menu handler
     const handleDesktopMenu = () => {
@@ -61,7 +54,6 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
     const botonesRoles = {
         'Producción': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
-            { clase: 'opcion-btn', vista: 'formProduccion-view', icono: 'fa-clipboard-list', texto: 'Formulario', onclick: 'onclick="inicializarFormularioProduccion()"' },
             { clase: 'opcion-btn', vista: 'cuentasProduccion-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosCuentas()"' }
         ],
         'Acopio': [
@@ -112,7 +104,6 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                    
                 ]
             },
-            { clase: 'opcion-btn', vista: 'comprobante-view', icono: 'fa-receipt', texto: 'Comprobante', onclick: 'onclick="inicializarComprobante()"' },
             { clase: 'opcion-btn', vista: 'usuarios-view', icono: 'fa-users-cog', texto: 'Usuarios', onclick: 'onclick="cargarUsuarios()"' },
         ]
     };
@@ -129,7 +120,6 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                             <button class="${boton.clase}" data-has-submenu="true">
                                 <i class="fas ${boton.icono}"></i>
                                 <span>${boton.texto}</span>
-                                <i class="fas fa-chevron-down submenu-arrow"></i>
                             </button>
                             <div class="submenu collapsed">
                                 ${boton.submenu.map(subItem => `

@@ -1,247 +1,116 @@
-/* Mobile Styles (below 1024px) */
 .opciones {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--second-color);
     z-index: 7;
+    border-radius: 10px;
+    margin-inline: 15px;
+    margin-bottom: 10px;
+}
+
+.menu-secundario {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    padding: 5px;
+}
+
+.opcion-btn {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-
-
-    .menu-principal {
-        width: 60px;
-        height: 60px;
-        background: var(--second-button);
-        border-radius: 60px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-        transition: all 0.3s ease;
-        z-index: 7;
-    }
-
-    .hamburger {
-        width: 24px;
-        height: 20px;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        z-index: 1;
-    }
-
-    .hamburger span {
-        display: block;
-        width: 100%;
-        height: 3px;
-        background: white;
-        border-radius: 3px;
-        transition: all 0.3s ease;
-    }
-
-    .menu-principal.active .hamburger span:nth-child(1) {
-        transform: translateY(8.5px) rotate(45deg);
-    }
-
-    .menu-principal.active .hamburger span:nth-child(2) {
-        opacity: 0;
-    }
-
-    .menu-principal.active .hamburger span:nth-child(3) {
-        transform: translateY(-8.5px) rotate(-45deg);
-    }
-
-    .menu-principal i {
-        color: white;
-        font-size: 13px;
-    }
-
-    .menu-secundario {
-        position: absolute;
-        bottom: 70px;
-        right: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        transform: translateY(20px);
-        z-index: 7;
-    }
-
-    .menu-secundario.active {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-
-    .opcion-btn {
-        width: 180px;
-        height: 45px;
-        border-radius: 12px;
-        background: var(--primary-color);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: var(--primary-text);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        border: none;
-        gap: 10px;
-        z-index: 7;
-        padding: 10px;
-    }
-
-    .opcion-btn i {
-        font-size: 18px;
-    }
-
-    .opcion-btn.active {
-        background: var(--second-button) !important;
-        transform: translateX(0px);
-        color: white;
-    }
-
-    .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.692);
-        z-index: 6;
-        display: none;
-    }
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-text);
+    background: none;
+    border: none;
+    padding: 8px;
+    transition: all 0.3s ease;
+    gap: 5px;
+    width: 70px;
+    max-width: 70px;
+    border-radius: 10px;
 }
 
-/* Desktop Styles (1024px and above) */
-@media (min-width: 1024px) {
-    .opciones {
-        position: fixed;
-        top: 70px;
-        left: 0;
-        bottom: 0;
-        width: 250px;
-        background: var(--surface);
-        padding: 1em;
-        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        display: flex !important;
-        flex-direction: column;
-
-
-        .menu-principal {
-            display: none;
-        }
-        z-index: 9;
-
-        .menu-secundario {
-            position: static !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            transform: none !important;
-            margin-top: 0;
-            display: flex !important;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-            height: auto;
-            bottom: auto;
-            right: auto;
-            z-index: 9;
-        }
-
-        .opcion-btn {
-            width: 100% !important;
-            height: 45px;
-            border-radius: 8px;
-            background: var(--primary-color);
-            display: flex !important;
-            justify-content: flex-start !important;
-            align-items: center;
-            color: var(--primary-text);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            gap: 10px;
-            padding-left: 1.5em;
-        }
-
-        .opcion-btn:hover {
-            transform: translateX(5px) !important;
-            background: #a6a6a6;
-            color: white;
-        }
-
-        .opcion-btn i {
-            font-size: 18px;
-        }
-        .opcion-btn.active {
-            background: var(--second-button) !important;
-            transform: translateX(10px);
-            color: white;
-        }
-    }
-
-    .overlay {
-        display: none;
-    }
-    
-
+.opcion-btn i {
+    font-size: 20px;
+    margin-bottom: 4px;
 }
+
+.opcion-btn span {
+    font-size: 10px;
+    text-align: center;
+}
+
+.opcion-btn.active {
+    background-color: var(--tercer-color);
+}
+.opcion-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
 .submenu-container {
-    width: 100%;
-    margin-bottom: 5px;
+    position: relative;
+}
+
+.submenu {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-color);
+    border-radius: 10px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    margin-bottom: 10px;
+    min-width: 150px;
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.3s ease;
+}
+.submenu.collapsed {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(10px);
 }
 
 .submenu-arrow {
     transition: transform 0.3s ease;
-    font-size: 12px !important;
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-    width: 100%;
 }
 
-.submenu {
-    height: auto;
-    max-height: 500px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    padding-right: 50px;
-    width: auto;
-    border: 1px siolid green;
-}
-
-.submenu.collapsed {
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin: 0;
-}
-
+/* Ensure submenu items are properly styled */
 .submenu-item {
     width: 100%;
-    opacity: 0.9;
-    margin-top: 5px;
-    background-color: gray !important;
+    text-align: left;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* Mobile adjustments */
-@media (max-width: 1023px) {
-    .submenu-container {
-        width: 180px;
-    }
-    
-    .submenu {
-        background: none;
-    }
-    
-    .submenu-item {
-        padding-left: 1em;
-    }
+.submenu-item i {
+    width: 20px;
+    text-align: center;
+}
+
+/* ... rest of existing code ... */
+
+/* Ajuste para el contenido principal */
+.home-view, .formProduccion-view, .cuentasProduccion-view, 
+.newPedido-view, .newTarea-view, .almAcopio-view, 
+.verificarRegistros-view, .almPrima-view, .usuarios-view, 
+.consultarRegistros-view, .compras-view {
+    padding-bottom: 80px; /* Espacio para el menú inferior */
+}
+
+/* Eliminar estilos innecesarios del menú hamburguesa */
+.menu-principal, .hamburger, .overlay {
+    display: none;
 }

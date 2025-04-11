@@ -24,20 +24,14 @@
 @import'styles/almacen.css';
 @import'styles/regAlmacen.css';
 @import'styles/balAlmacen.css';
+body, .container{
+    background-color: var(--primary-color);
+}
 
-
-
-
-/* ... imports existentes ... */
-
-/* Add these new animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
-/* Update the views styles */
-/* Remove duplicate animations and update view styles */
 .newTarea-view,
 .usuarios-view,
 .verificarRegistros-view,
@@ -48,63 +42,12 @@
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
-    min-height: calc(100vh - 150px); /* Ensure content is visible above navigation */
-    padding-bottom: 80px; /* Add padding for navigation */
+    min-height: calc(100vh - 150px);
+    padding-bottom: 80px;
+    background-color: var(--primary-color) !important;
 }
-
 .view-active {
     display: flex;
     opacity: 1;
 }
 
-
-.carga {
-    position: absolute;
-    top: 70px;
-    left: 0;
-    width: 100%;
-    height: calc(100vh - 70px);
-    background-color: rgba(0, 0, 0, 0.352);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 999999;
-    display: none;
-    justify-content: center;
-    align-items: center;
-}
-
-.loader {
-    width: 60px;
-    height: 60px;
-    border: 5px solid rgba(128, 128, 128, 0.479);
-    border-bottom-color: var(--second-button);
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    animation: rotation 1s linear infinite;
-    position: relative;
-}
-.loader-logo {
-    font-size: 20px;
-    text-align: center;
-}
-
-@keyframes rotation {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes counter-rotation {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(-360deg);
-    }
-}

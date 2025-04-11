@@ -1,25 +1,12 @@
 :root {
     --primary-text: #ffffff;
-    --primary-color: #333333;
-    --primary-light: #919191;
-    --primary-dark: #1f1f1f;
-    --primary-button: #00796f;
-    --second-button: #00a2d8;
-    --background: #1a1a1a;
-    --surface: #2a2a2a;
+    --second-color: #1a1a1a;
+    --primary-color: #212121;
+    --tercer-color: #f37500;
+    --second-button: #00796f;
+    --primary-button: #00a2d8;
+    --background: rgb(238, 238, 238);
     --error: #ff4d4d;
     --success: #4CAF50;
 }
-/* Tema claro */
-:root[data-theme="light"] {
-    --primary-text: #333333;
-    --primary-color: #ffffff;
-    --primary-light: #b3b3b3;
-    --primary-dark: #949494;
-    --primary-button: #00796f;
-    --second-button: #0077d8;
-    --background:rgb(236, 236, 236);
-    --surface: #f5f5f5;
-    --error: #ff4d4d;
-    --success: #4CAF50;
-}
+

@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import admin from 'firebase-admin';
 
-// Configuración inicial
+
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -36,15 +36,6 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCbfR1fpCDIsE8R_9RAN9lG0H9bsk2WQeQ",
-    authDomain: "damabravaapp.firebaseapp.com",
-    projectId: "damabravaapp",
-    storageBucket: "damabravaapp.firebasestorage.app",
-    messagingSenderId: "36776613676",
-    appId: "1:36776613676:web:f031d9435399a75a9afe89",
-    measurementId: "G-NX0Z9ZPC5R"
-};
 
 /* ==================== CONFIGURACIÓN DE GOOGLE SHEETS ==================== */
 const auth = new google.auth.GoogleAuth({
@@ -67,35 +58,7 @@ app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
 /* ==================== FUNCIONES DE UTILIDAD ==================== */
-// Función para enviar notificaciones push
-async function enviarNotificacion(token, titulo, mensaje) {
-    if (!titulo || !mensaje) {
-        console.error('Título o mensaje indefinidos');
-        return false;
-    }
 
-    try {
-        const mensajeNotificacion = {
-            token: token,
-            notification: {
-                title: titulo,
-                body: mensaje
-            },
-            data: {
-                title: titulo,
-                body: mensaje
-            }
-        };
-
-        const response = await admin.messaging().send(mensajeNotificacion);
-        return true;
-    } catch (error) {
-        console.error('Error al enviar notificación:', error);
-        return false;
-    }
-}
-
-// Middleware de autenticación
 function requireAuth(req, res, next) {
     const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
     if (!token) {
@@ -109,8 +72,6 @@ function requireAuth(req, res, next) {
         return res.status(401).json({ error: 'Token inválido' });
     }
 }
-
-// Función para verificar PIN de usuario
 async function verificarPin(pin) {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -139,25 +100,25 @@ async function verificarPin(pin) {
     }
 }
 
+
+
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
     res.render('login');
 });
-
 app.get('/dashboard', requireAuth, (req, res) => {
     res.redirect('/dashboard_db')
 });
-
 app.get('/dashboard_alm', requireAuth, (req, res) => {
     res.redirect('/dashboard_db')
 });
-
 app.get('/dashboard_db', requireAuth, (req, res) => {
     res.render('dashboard_db');
 });
 app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
 });
+
 
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
 app.post('/verificar-pin', async (req, res) => {
@@ -191,17 +152,16 @@ app.post('/verificar-pin', async (req, res) => {
         res.status(500).json({ error: 'Error al verificar el PIN' });
     }
 });
-
 app.post('/cerrar-sesion', (req, res) => {
     res.clearCookie('token');
     res.json({ mensaje: 'Sesión cerrada correctamente' });
 });
 
+
 /* ==================== RUTAS DE API - DATOS DE USUARIO ==================== */
 app.get('/obtener-nombre', requireAuth, (req, res) => {
     res.json({ nombre: req.user.nombre });
 });
-
 app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -230,6 +190,148 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
         });
     }
 });
+
+
+/* ==================== API DE INICIO ==================== */
+app.get('/obtener-estadisticas-usuario', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Produccion!A2:L'
+        });
+
+        const rows = response.data.values || [];
+        const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
+        
+        // Calcular estadísticas básicas
+        const produccionesTotal = registrosUsuario.length;
+        const produccionesVerificadas = registrosUsuario.filter(row => 
+            row[9] && row[9].toString().trim() !== ''
+        ).length;
+
+        // Calcular el total en Bs
+        let totalBs = 0;
+        registrosUsuario.forEach(registro => {
+            const cantidad = registro[9] ? parseFloat(registro[9]) : parseFloat(registro[6]) || 0;
+            const gramaje = parseFloat(registro[3]) || 0;
+            const seleccion = registro[4] || '';
+            const nombre = registro[1] || '';
+            
+            // Calcular total usando la misma lógica de calcularTotal
+            const resultados = calcularTotal(nombre, cantidad, gramaje, seleccion);
+            totalBs += resultados.total;
+        });
+
+        // Calcular eficiencia
+        const eficiencia = produccionesTotal > 0 
+            ? Math.round((produccionesVerificadas / produccionesTotal) * 100) 
+            : 0;
+
+        res.json({
+            success: true,
+            estadisticas: {
+                produccionesTotal,
+                produccionesVerificadas,
+                totalBs,
+                eficiencia
+            }
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener estadísticas'
+        });
+    }
+});
+app.get('/obtener-notificaciones-usuario', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A2:C'  // A:Fecha, B:Usuario, C:Notificación
+        });
+
+        const rows = response.data.values || [];
+        const notificacionesUsuario = rows
+            .filter(row => row[1] === req.user.nombre)  // Filter by current user
+            .map(row => ({
+                fecha: row[0],
+                mensaje: row[2]
+            }))
+            .sort((a, b) => {  // Sort by date, most recent first
+                const [diaA, mesA, anioA] = a.fecha.split('/');
+                const [diaB, mesB, anioB] = b.fecha.split('/');
+                const fechaA = new Date(20 + anioA, mesA - 1, diaA);
+                const fechaB = new Date(20 + anioB, mesB - 1, diaB);
+                return fechaB - fechaA;
+            })
+            .slice(0, 5);  // Get only the 5 most recent notifications
+
+        res.json({ success: true, notificaciones: notificacionesUsuario });
+    } catch (error) {
+        console.error('Error al obtener notificaciones:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener notificaciones' 
+        });
+    }
+});
+app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
+    try {
+        const { fecha, mensaje } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get all notifications
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Notificaciones!A2:C'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => 
+            row[0] === fecha && 
+            row[1] === req.user.nombre && 
+            row[2] === mensaje
+        );
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Notificación no encontrada' 
+            });
+        }
+
+        // Get the sheet ID
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const notificacionesSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Notificaciones'
+        );
+
+        if (!notificacionesSheet) {
+            throw new Error('Hoja de Notificaciones no encontrada');
+        }
+
+        // Delete the row (add 2 to account for header row and 0-based index)
+        await sheets.spreadsheets.values.clear({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Notificaciones!A${rowIndex + 2}:C${rowIndex + 2}`
+        });
+
+        res.json({ success: true, message: 'Notificación eliminada correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar notificación:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar la notificación: ' + error.message
+        });
+    }
+});
+
 
 
 /* ==================== RUTAS DE API - GESTIÓN DE USUARIOS ==================== */
@@ -283,7 +385,6 @@ app.post('/crear-usuario', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-usuarios', requireAuth, async (req, res) => {
     try {
 
@@ -308,7 +409,6 @@ app.get('/obtener-usuarios', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
     try {
 
@@ -370,7 +470,6 @@ app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.put('/actualizar-usuario', requireAuth, async (req, res) => {
     try {
 
@@ -427,13 +526,6 @@ app.put('/actualizar-usuario', requireAuth, async (req, res) => {
             error: 'Error al actualizar PIN: ' + (error.message || 'Error desconocido') 
         });
     }
-});
-
-
-
-/* ==================== RUTAS DE API - DATOS ==================== */
-app.get('/obtener-nombre', requireAuth, (req, res) => {
-    res.json({ nombre: req.user.nombre });
 });
 
 /* ==================== API DE PRODUCTOS ==================== */
@@ -452,172 +544,6 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: 'Error al obtener lista de productos' 
-        });
-    }
-});
-
-/* ==================== RUTAS DE API - PRODUCTOS ==================== */
-app.get('/obtener-productos', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Almacen general!A2:H'
-        });
-
-        const productos = response.data.values ? response.data.values.map(row => row[1]) : [];
-        res.json({ success: true, productos });
-    } catch (error) {
-        console.error('Error al obtener productos:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener lista de productos' 
-        });
-    }
-});
-
-
-app.get('/obtener-usuarios', requireAuth, async (req, res) => {
-    try {
-
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const usuarios = rows.map(row => ({
-            pin: row[0] || '',
-            nombre: row[1] || '',
-            rol: row[2] || ''  // Cambiamos de permisos a rol
-        }));
-
-        res.json({ success: true, usuarios });
-    } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener usuarios: ' + error.message 
-        });
-    }
-});
-
-app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
-    try {
-
-        const { pin } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener todos los usuarios
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === pin);
-
-        if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Usuario no encontrado' 
-            });
-        }
-
-        // Get the sheet ID for Usuarios sheet
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw'
-        });
-        
-        const usuariosSheet = spreadsheet.data.sheets.find(sheet => 
-            sheet.properties.title === 'Usuarios'
-        );
-
-        if (!usuariosSheet) {
-            throw new Error('Hoja de Usuarios no encontrada');
-        }
-
-        // Delete the user row
-        await sheets.spreadsheets.batchUpdate({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            resource: {
-                requests: [{
-                    deleteDimension: {
-                        range: {
-                            sheetId: usuariosSheet.properties.sheetId,
-                            dimension: 'ROWS',
-                            startIndex: rowIndex + 1, // +1 because we skip header
-                            endIndex: rowIndex + 2
-                        }
-                    }
-                }]
-            }
-        });
-
-        res.json({ success: true, message: 'Usuario eliminado correctamente' });
-    } catch (error) {
-        console.error('Error al eliminar usuario:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar usuario: ' + (error.message || 'Error desconocido') 
-        });
-    }
-});
-
-app.put('/actualizar-usuario', requireAuth, async (req, res) => {
-    try {
-
-        const { pinActual, pinNuevo } = req.body;
-
-        if (!pinActual || !pinNuevo) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'PIN actual y nuevo son requeridos' 
-            });
-        }
-
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener usuarios actuales
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === pinActual);
-
-        if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Usuario no encontrado' 
-            });
-        }
-
-        // Verificar si el nuevo PIN ya existe
-        if (rows.some(row => row[0] === pinNuevo)) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'El nuevo PIN ya está en uso' 
-            });
-        }
-
-        // Actualizar PIN
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Usuarios!A${rowIndex + 2}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[pinNuevo]]
-            }
-        });
-
-        res.json({ success: true, message: 'PIN actualizado correctamente' });
-    } catch (error) {
-        console.error('Error al actualizar PIN:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar PIN: ' + (error.message || 'Error desconocido') 
         });
     }
 });
@@ -688,7 +614,6 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -705,7 +630,6 @@ app.get('/obtener-todos-registros', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener registros' });
     }
 });
-
 app.get('/obtener-registros', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -721,7 +645,6 @@ app.get('/obtener-registros', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener registros' });
     }
 });
-
 app.post('/registrar-produccion', requireAuth, async (req, res) => {
     try {
         const {
@@ -807,7 +730,6 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
     try {
 
@@ -826,7 +748,6 @@ app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.post('/registrar-pago', requireAuth, async (req, res) => {
     try {
         const { id, total } = req.body;
@@ -864,7 +785,6 @@ app.post('/registrar-pago', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al registrar el pago' });
     }
 });
-
 app.put('/actualizar-registro', requireAuth, async (req, res) => {
     try {
         const { 
@@ -924,8 +844,6 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
         });
     }
 });
-
-
 
 
 /* ==================== API DE VERIFICACION ==================== */
@@ -1029,7 +947,6 @@ app.post('/registrar-desglose', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
 app.post('/obtener-extras-registros', async (req, res) => {
     try {
         const { registrosIds } = req.body;
@@ -1058,6 +975,7 @@ app.post('/obtener-extras-registros', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
 
 /* ==================== API DE PERMISOS ==================== */
 app.put('/actualizar-permisos', requireAuth, async (req, res) => {
@@ -1100,7 +1018,6 @@ app.put('/actualizar-permisos', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-permisos/:pin', requireAuth, async (req, res) => {
     try {
 
@@ -1128,7 +1045,6 @@ app.get('/obtener-permisos/:pin', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.post('/agregar-permiso', requireAuth, async (req, res) => {
     try {
 
@@ -1171,7 +1087,6 @@ app.post('/agregar-permiso', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al agregar permiso' });
     }
 });
-
 app.delete('/eliminar-permiso', requireAuth, async (req, res) => {
     try {
 
@@ -1210,7 +1125,6 @@ app.delete('/eliminar-permiso', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al eliminar permiso' });
     }
 });
-
 app.get('/obtener-mis-permisos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1244,7 +1158,6 @@ app.get('/obtener-mis-permisos', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-lista-roles', requireAuth, async (req, res) => {
     try {
 
@@ -1263,7 +1176,6 @@ app.get('/obtener-lista-roles', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1294,13 +1206,6 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
 });
 
 /* ==================== API DE PEDIDOS ==================== */
-
-app.get('/obtener-usuario-actual', requireAuth, (req, res) => {
-    res.json({ 
-        nombre: req.user.nombre,
-        rol: req.user.rol 
-    });
-});
 app.get('/obtener-pedidos-pendientes', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1678,360 +1583,6 @@ app.post('/finalizar-pedidos', requireAuth, async (req, res) => {
         });
     }
 });
-
-
-
-
-/* ==================== API DE TAREAS Y PROCESOS ==================== */
-app.get('/obtener-tareas-proceso', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Tareas!A:G'
-        });
-
-        const rows = response.data.values || [];
-        const tareas = rows.slice(1).filter(row => row[4] === 'En proceso').map(row => ({
-            nombre: row[0] || '',
-            pesoInicial: row[1] || 0,
-            descripcion: row[2] || '',
-            fechaInicio: row[3] || '',
-            estado: row[4] || '',
-            usuario: row[5] || '',
-            procesos: row[6] ? row[6].split(';')
-                .filter(proceso => proceso.trim())
-                .map(proceso => {
-                    const [descripcion, estado = 'En proceso'] = proceso.split('|');
-                    return { 
-                        id: Math.random().toString(36).substr(2, 9),
-                        descripcion: descripcion.trim(),
-                        estado: estado.trim(),
-                        inicio: new Date().toISOString()
-                    };
-                }) : [],
-            tiempoInicial: new Date(row[3]).getTime()
-        }));
-
-        res.json({ success: true, tareas });
-    } catch (error) {
-        console.error('Error al obtener tareas:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener las tareas en proceso' 
-        });
-    }
-});
-app.get('/obtener-siguiente-lote/:producto', requireAuth, async (req, res) => {
-    try {
-        const { producto } = req.params;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get current lots from Almacen Bruto
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Bruto!A:C'
-        });
-
-        const rows = response.data.values || [];
-        const productoRows = rows.filter(row => row[0] === producto);
-        
-        let siguienteLote = 1;
-        if (productoRows.length > 0) {
-            // Get all lot numbers for this product
-            const lotes = productoRows.map(row => parseInt(row[2] || 0));
-            siguienteLote = Math.max(...lotes, 0) + 1;
-        }
-
-        res.json({ success: true, siguienteLote });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener el siguiente lote' 
-        });
-    }
-});
-app.post('/actualizar-estado-tarea', requireAuth, async (req, res) => {
-    try {
-        const { tareaId, estado, tiempoTranscurrido } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener la tarea actual
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Tareas!A2:F'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === tareaId) + 2;
-
-        if (rowIndex < 2) {
-            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
-        }
-
-        // Actualizar estado y tiempo
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Tareas!D${rowIndex}:E${rowIndex}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[estado, tiempoTranscurrido]]
-            }
-        });
-
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-app.post('/agregar-proceso-tarea', requireAuth, async (req, res) => {
-    try {
-        const { tareaId, descripcion } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get current task data
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Tareas!A2:H'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === tareaId) + 2;
-
-        if (rowIndex < 2) {
-            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
-        }
-
-        // Get existing processes or create new array
-        const procesos = rows[rowIndex - 2][7] ? JSON.parse(rows[rowIndex - 2][7]) : [];
-        
-        // Add new process without initial peso
-        const nuevoProceso = {
-            id: Date.now().toString(),
-            descripcion,
-            inicio: new Date().toISOString(),
-            estado: 'En proceso'
-        };
-        procesos.push(nuevoProceso);
-
-        // Update sheet with new process data
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Tareas!H${rowIndex}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[JSON.stringify(procesos)]]
-            }
-        });
-
-        res.json({ success: true, proceso: nuevoProceso });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-app.post('/actualizar-proceso', requireAuth, async (req, res) => {
-    try {
-        const { tareaId, procesoId, estado, fin, peso } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get current task data
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Tareas!A2:H'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === tareaId) + 2;
-
-        if (rowIndex < 2) {
-            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
-        }
-
-        // Update process
-        const procesos = JSON.parse(rows[rowIndex - 2][7] || '[]');
-        const procesoIndex = procesos.findIndex(p => p.id === procesoId);
-
-        if (procesoIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Proceso no encontrado' });
-        }
-
-        // Update process with final weight
-        procesos[procesoIndex] = {
-            ...procesos[procesoIndex],
-            estado,
-            fin: fin ? new Date().toISOString() : procesos[procesoIndex].fin,
-            peso: peso
-        };
-
-        // Update processes in task
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Tareas!H${rowIndex}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[JSON.stringify(procesos)]]
-            }
-        });
-
-        res.json({ success: true, proceso: procesos[procesoIndex] });
-    } catch (error) {
-        console.error('Error al actualizar proceso:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-app.post('/finalizar-tarea', requireAuth, async (req, res) => {
-    try {
-        const { tareaId, tiempoCronometro } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener información de la tarea
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Tareas!A2:H'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === tareaId);
-        
-        if (rowIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
-        }
-
-        const tarea = rows[rowIndex];
-        const procesos = tarea[7] ? JSON.parse(tarea[7]) : [];
-        const pesoInicial = parseFloat(tarea[6] || 0);
-        let pesoFinal;
-
-        // Determinar peso final basado en si hay procesos o no
-        if (procesos.length === 0) {
-            // Si no hay procesos, usar el peso inicial como peso final
-            pesoFinal = pesoInicial;
-        } else {
-            // Si hay procesos, usar el peso del último proceso
-            const ultimoProceso = procesos[procesos.length - 1];
-            pesoFinal = parseFloat(ultimoProceso.peso || 0);
-        }
-
-        // Obtener siguiente número de lote para Almacen Prima
-        const almacenPrimaResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Prima!A:C'
-        });
-
-        const almacenPrimaRows = almacenPrimaResponse.data.values || [];
-        const productoRows = almacenPrimaRows.filter(row => row[0] === tareaId);
-        
-        // Calcular siguiente número de lote
-        let siguienteLote = 1;
-        if (productoRows.length > 0) {
-            const lotes = productoRows.map(row => parseInt(row[2] || 0));
-            siguienteLote = Math.max(...lotes, 0) + 1;
-        }
-
-        // Registrar en Almacen Prima
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Prima!A:C',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[
-                    tareaId,
-                    pesoFinal.toFixed(2),
-                    siguienteLote
-                ]]
-            }
-        });
-
-        // Registrar movimiento en Movimientos alm-prima
-        const fechaActual = new Date().toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit'
-        });
-
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Movimientos alm-prima!A:E',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[
-                    fechaActual,
-                    tareaId,
-                    pesoFinal.toFixed(2),
-                    'Ingreso',
-                    siguienteLote
-                ]]
-            }
-        });
-
-        // Registrar en Historial_tareas
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Historial_tareas!A2',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[
-                    tarea[0], // nombre
-                    tarea[1], // descripción
-                    tarea[2], // fecha inicio
-                    new Date().toISOString(), // fecha fin
-                    tiempoCronometro,
-                    pesoInicial.toFixed(2), // peso inicial
-                    pesoFinal.toFixed(2), // peso final
-                    (pesoInicial - pesoFinal).toFixed(2), // merma
-                    tarea[7] // procesos
-                ]]
-            }
-        });
-
-        // Eliminar tarea de la hoja Tareas
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID
-        });
-        
-        const tareasSheet = spreadsheet.data.sheets.find(sheet => 
-            sheet.properties.title === 'Tareas'
-        );
-
-        if (!tareasSheet) {
-            throw new Error('Hoja de Tareas no encontrada');
-        }
-
-        await sheets.spreadsheets.batchUpdate({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            resource: {
-                requests: [{
-                    deleteDimension: {
-                        range: {
-                            sheetId: tareasSheet.properties.sheetId,
-                            dimension: 'ROWS',
-                            startIndex: rowIndex + 1,
-                            endIndex: rowIndex + 2
-                        }
-                    }
-                }]
-            }
-        });
-
-        res.json({
-            success: true,
-            message: 'Tarea finalizada correctamente',
-            pesoRestante: (pesoInicial - pesoFinal).toFixed(2),
-            pesoProcesado: pesoFinal.toFixed(2),
-            loteAlmacenPrima: siguienteLote
-        });
-    } catch (error) {
-        console.error('Error al finalizar tarea:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al finalizar la tarea: ' + error.message
-        });
-    }
-});
 app.get('/obtener-lista-pedidos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2047,301 +1598,8 @@ app.get('/obtener-lista-pedidos', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener la lista de pedidos' });
     }
 });
-app.post('/crear-tarea', requireAuth, async (req, res) => {
-    try {
-        const { nombre, peso, descripcion, fechaInicio, estado, lotes } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
 
-        // Obtener el usuario desde el token
-        const token = req.cookies.token;
-        const decodedToken = jwt.verify(token, JWT_SECRET);
-        const usuario = decodedToken.nombre;
 
-        // Insertar en la hoja de tareas
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Tareas!A:G',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[
-                    nombre,
-                    peso,
-                    descripcion,
-                    fechaInicio,
-                    estado,
-                    usuario,
-                    lotes.join(';')
-                ]]
-            }
-        });
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error al crear tarea:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al crear la tarea' 
-        });
-    }
-});
-app.post('/pausar-tarea', requireAuth, async (req, res) => {
-    try {
-        const { tareaId, estado, tiempoTranscurrido } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Tareas!A:H'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === tareaId) + 1;
-
-        if (rowIndex < 1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Tarea no encontrada' 
-            });
-        }
-
-        // Actualizar estado y tiempo transcurrido
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Tareas!D${rowIndex}:F${rowIndex}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[
-                    estado,
-                    estado === 'Pausada' ? tiempoTranscurrido : rows[rowIndex - 1][5],
-                    Date.now().toString()
-                ]]
-            }
-        });
-
-        res.json({ 
-            success: true,
-            tiempoGuardado: tiempoTranscurrido
-        });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar el estado de la tarea' 
-        });
-    }
-});
-app.post('/guardar-programa', requireAuth, async (req, res) => {
-    try {
-        const { programaciones } = req.body;
-        
-        if (!programaciones || !Array.isArray(programaciones)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Datos de programación inválidos'
-            });
-        }
-
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Format the data for Google Sheets
-        const values = programaciones.map(prog => [
-            prog.fecha,
-            prog.dia,
-            prog.producto,
-            prog.estado || 'Pendiente',
-            prog.usuario || req.user.nombre,
-            new Date().toISOString()  // Timestamp
-        ]);
-
-        // Append the new programaciones
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Programa acopio!A2:F',
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: values
-            }
-        });
-
-        res.json({ 
-            success: true, 
-            message: 'Programación guardada correctamente',
-            count: values.length
-        });
-    } catch (error) {
-        console.error('Error en guardar-programa:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al guardar la programación: ' + error.message
-        });
-    }
-});
-app.get('/obtener-programaciones', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Programa acopio!A2:D'
-        });
-
-        const rows = response.data.values || [];
-        const programaciones = rows.map(row => ({
-            fecha: row[0],
-            dia: row[1],
-            producto: row[2],
-            estado: row[3]
-        }));
-
-        res.json({ success: true, programaciones });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener programaciones: ' + error.message
-        });
-    }
-});
-app.get('/verificar-programa-semana', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get current week's dates
-        const today = new Date();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay() + 1);
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Programa acopio!A2:D'
-        });
-
-        const rows = response.data.values || [];
-        const programasSemana = rows.filter(row => {
-            if (!row[0]) return false;
-            const fecha = new Date(row[0]);
-            return fecha >= startOfWeek && fecha <= endOfWeek;
-        });
-
-        res.json({
-            success: true,
-            existePrograma: programasSemana.length > 0,
-            programaciones: programasSemana.map(row => ({
-                fecha: row[0],
-                dia: row[1],
-                producto: row[2],
-                estado: row[3] || 'Pendiente'
-            }))
-        });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al verificar programa'
-        });
-    }
-});
-app.delete('/eliminar-programa-completo', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get the sheet ID for Programa acopio sheet
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID
-        });
-        
-        const programaSheet = spreadsheet.data.sheets.find(sheet => 
-            sheet.properties.title === 'Programa acopio'
-        );
-
-        if (!programaSheet) {
-            throw new Error('Hoja de Programa no encontrada');
-        }
-
-        // Clear all content except header
-        await sheets.spreadsheets.values.clear({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Programa acopio!A2:F'
-        });
-
-        res.json({ 
-            success: true, 
-            message: 'Programa eliminado completamente' 
-        });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al eliminar el programa: ' + error.message
-        });
-    }
-});
-app.post('/actualizar-estado-programa', requireAuth, async (req, res) => {
-    try {
-        const { fecha, producto } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get all records from Programa acopio sheet
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Programa acopio!A:D'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[2] === producto
-        );
-
-        if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Programa no encontrado' 
-            });
-        }
-
-        // Get the sheet ID for Programa acopio sheet
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID
-        });
-        
-        const programaSheet = spreadsheet.data.sheets.find(sheet => 
-            sheet.properties.title === 'Programa acopio'
-        );
-
-        if (!programaSheet) {
-            throw new Error('Hoja de Programa no encontrada');
-        }
-
-        // Delete the row
-        await sheets.spreadsheets.batchUpdate({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            resource: {
-                requests: [{
-                    deleteDimension: {
-                        range: {
-                            sheetId: programaSheet.properties.sheetId,
-                            dimension: 'ROWS',
-                            startIndex: rowIndex,
-                            endIndex: rowIndex + 1
-                        }
-                    }
-                }]
-            }
-        });
-
-        res.json({ success: true, message: 'Programa actualizado correctamente' });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al actualizar el programa: ' + error.message
-        });
-    }
-});
 
 /* ==================== API DE COMPRAS ==================== */
 app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
@@ -2376,7 +1634,6 @@ app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
     try {
         const { id} = req.body;
@@ -2439,7 +1696,6 @@ app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.post('/entregar-pedido', requireAuth, async (req, res) => {
     try {
         const { id, cantidad, proveedor, precio, observaciones, estado } = req.body;
@@ -2490,386 +1746,6 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
     }
 });
 
-/* ==================== API DE ALMACENES ==================== */
-
-app.get('/obtener-productos-almacen', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen bruto!A2:D'
-        });
-
-        const rows = response.data.values || [];
-        const productos = rows.map(row => ({
-            nombre: row[0] || '',
-            cantidad: parseFloat(row[1]) || 0,
-            lote: row[2] || '',
-            ultimaActualizacion: row[3] || new Date().toISOString()
-        }));
-
-        res.json({ success: true, productos });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener productos del almacén'
-        });
-    }
-});
-
-app.get('/obtener-detalle-producto/:nombre', requireAuth, async (req, res) => {
-    try {
-        const nombreProducto = decodeURIComponent(req.params.nombre);
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Obtener datos actuales del producto
-        const productoResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Bruto!A2:C'
-        });
-
-        const rows = productoResponse.data.values || [];
-        const productosConMismoNombre = rows.filter(row => row[0] === nombreProducto);
-
-        if (productosConMismoNombre.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Producto no encontrado'
-            });
-        }
-
-        // Calcular cantidad total y agrupar por lotes
-        const cantidadTotal = productosConMismoNombre.reduce((sum, row) => sum + (parseFloat(row[1]) || 0), 0);
-        const lotes = productosConMismoNombre.map(row => ({
-            lote: row[2],
-            cantidad: parseFloat(row[1]) || 0,
-            ultimaActualizacion: row[3] || new Date().toISOString()
-        }));
-
-        // Verificar si existe la hoja de movimientos
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID
-        });
-
-        const movimientosSheet = spreadsheet.data.sheets.find(sheet => 
-            sheet.properties.title === 'Movimientos alm-bruto'
-        );
-
-        let movimientos = [];
-        let movimientosPorLote = {};
-        
-        if (movimientosSheet) {
-            const historialResponse = await sheets.spreadsheets.values.get({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Movimientos alm-bruto!A2:E'
-            });
-
-            // Obtener y ordenar todos los movimientos por fecha
-            movimientos = (historialResponse.data.values || [])
-                .filter(row => row[1] === nombreProducto && row[0])
-                .sort((a, b) => {
-                    const [diaA, mesA, anioA] = a[0].split('/');
-                    const [diaB, mesB, anioB] = b[0].split('/');
-                    const fechaA = new Date(20 + anioA, mesA - 1, diaA);
-                    const fechaB = new Date(20 + anioB, mesB - 1, diaB);
-                    return fechaB - fechaA;
-                })
-                .slice(0, 5)
-                .map(row => ({
-                    fecha: row[0],
-                    cantidad: parseFloat(row[2]) || 0,
-                    tipo: row[3],
-                    lote: row[4]
-                }));
-
-            // Agrupar movimientos por lote
-            movimientosPorLote = lotes.reduce((acc, lote) => {
-                acc[lote.lote] = movimientos.filter(m => m.lote === lote.lote);
-                return acc;
-            }, {});
-        }
-
-        res.json({
-            success: true,
-            producto: {
-                nombre: nombreProducto,
-                cantidad: cantidadTotal,
-                lotes: lotes
-            },
-            movimientos,
-            movimientosPorLote
-        });
-    } catch (error) {
-        console.error('Error detallado:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener detalles del producto: ' + error.message
-        });
-    }
-});
-
-app.get('/obtener-productos-almacen-prima', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen prima!A2:D'
-        });
-
-        const rows = response.data.values || [];
-        const productos = rows.map(row => ({
-            nombre: row[0] || '',
-            cantidad: parseFloat(row[1]) || 0,
-            lote: row[2] || '',
-            ultimaActualizacion: row[3] || new Date().toISOString()
-        }));
-
-        res.json({ success: true, productos });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener productos del almacén'
-        });
-    }
-});
-
-app.get('/obtener-detalle-producto-prima/:nombre', requireAuth, async (req, res) => {
-    try {
-        const nombreProducto = decodeURIComponent(req.params.nombre);
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Obtener datos actuales del producto
-        const productoResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen prima!A2:C'
-        });
-
-        const rows = productoResponse.data.values || [];
-        const productosConMismoNombre = rows.filter(row => row[0] === nombreProducto);
-
-        if (productosConMismoNombre.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Producto no encontrado'
-            });
-        }
-
-        // Calcular cantidad total y agrupar por lotes
-        const cantidadTotal = productosConMismoNombre.reduce((sum, row) => sum + (parseFloat(row[1]) || 0), 0);
-        const lotes = productosConMismoNombre.map(row => ({
-            lote: row[2],
-            cantidad: parseFloat(row[1]) || 0,
-            ultimaActualizacion: row[3] || new Date().toISOString()
-        }));
-
-        // Verificar si existe la hoja de movimientos
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID
-        });
-
-        const movimientosSheet = spreadsheet.data.sheets.find(sheet => 
-            sheet.properties.title === 'Movimientos alm-prima'
-        );
-
-        let movimientos = [];
-        let movimientosPorLote = {};
-        
-        if (movimientosSheet) {
-            const historialResponse = await sheets.spreadsheets.values.get({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Movimientos alm-prima!A2:E'
-            });
-
-            // Obtener y ordenar todos los movimientos por fecha
-            movimientos = (historialResponse.data.values || [])
-                .filter(row => row[1] === nombreProducto && row[0])
-                .sort((a, b) => {
-                    const [diaA, mesA, anioA] = a[0].split('/');
-                    const [diaB, mesB, anioB] = b[0].split('/');
-                    const fechaA = new Date(20 + anioA, mesA - 1, diaA);
-                    const fechaB = new Date(20 + anioB, mesB - 1, diaB);
-                    return fechaB - fechaA;
-                })
-                .slice(0, 5)
-                .map(row => ({
-                    fecha: row[0],
-                    cantidad: parseFloat(row[2]) || 0,
-                    tipo: row[3],
-                    lote: row[4]
-                }));
-
-            // Agrupar movimientos por lote
-            movimientosPorLote = lotes.reduce((acc, lote) => {
-                acc[lote.lote] = movimientos.filter(m => m.lote === lote.lote);
-                return acc;
-            }, {});
-        }
-
-        res.json({
-            success: true,
-            producto: {
-                nombre: nombreProducto,
-                cantidad: cantidadTotal,
-                lotes: lotes
-            },
-            movimientos,
-            movimientosPorLote
-        });
-    } catch (error) {
-        console.error('Error detallado:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener detalles del producto: ' + error.message
-        });
-    }
-});
-
-
-
-/* ==================== API DE HOME ==================== */
-app.get('/obtener-estadisticas-usuario', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Produccion!A2:L'
-        });
-
-        const rows = response.data.values || [];
-        const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
-        
-        // Calcular estadísticas básicas
-        const produccionesTotal = registrosUsuario.length;
-        const produccionesVerificadas = registrosUsuario.filter(row => 
-            row[9] && row[9].toString().trim() !== ''
-        ).length;
-
-        // Calcular el total en Bs
-        let totalBs = 0;
-        registrosUsuario.forEach(registro => {
-            const cantidad = registro[9] ? parseFloat(registro[9]) : parseFloat(registro[6]) || 0;
-            const gramaje = parseFloat(registro[3]) || 0;
-            const seleccion = registro[4] || '';
-            const nombre = registro[1] || '';
-            
-            // Calcular total usando la misma lógica de calcularTotal
-            const resultados = calcularTotal(nombre, cantidad, gramaje, seleccion);
-            totalBs += resultados.total;
-        });
-
-        // Calcular eficiencia
-        const eficiencia = produccionesTotal > 0 
-            ? Math.round((produccionesVerificadas / produccionesTotal) * 100) 
-            : 0;
-
-        res.json({
-            success: true,
-            estadisticas: {
-                produccionesTotal,
-                produccionesVerificadas,
-                totalBs,
-                eficiencia
-            }
-        });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener estadísticas'
-        });
-    }
-});
-
-app.get('/obtener-notificaciones-usuario', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Notificaciones!A2:C'  // A:Fecha, B:Usuario, C:Notificación
-        });
-
-        const rows = response.data.values || [];
-        const notificacionesUsuario = rows
-            .filter(row => row[1] === req.user.nombre)  // Filter by current user
-            .map(row => ({
-                fecha: row[0],
-                mensaje: row[2]
-            }))
-            .sort((a, b) => {  // Sort by date, most recent first
-                const [diaA, mesA, anioA] = a.fecha.split('/');
-                const [diaB, mesB, anioB] = b.fecha.split('/');
-                const fechaA = new Date(20 + anioA, mesA - 1, diaA);
-                const fechaB = new Date(20 + anioB, mesB - 1, diaB);
-                return fechaB - fechaA;
-            })
-            .slice(0, 5);  // Get only the 5 most recent notifications
-
-        res.json({ success: true, notificaciones: notificacionesUsuario });
-    } catch (error) {
-        console.error('Error al obtener notificaciones:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener notificaciones' 
-        });
-    }
-});
-
-app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
-    try {
-        const { fecha, mensaje } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get all notifications
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Notificaciones!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[1] === req.user.nombre && 
-            row[2] === mensaje
-        );
-
-        if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Notificación no encontrada' 
-            });
-        }
-
-        // Get the sheet ID
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID
-        });
-        
-        const notificacionesSheet = spreadsheet.data.sheets.find(sheet => 
-            sheet.properties.title === 'Notificaciones'
-        );
-
-        if (!notificacionesSheet) {
-            throw new Error('Hoja de Notificaciones no encontrada');
-        }
-
-        // Delete the row (add 2 to account for header row and 0-based index)
-        await sheets.spreadsheets.values.clear({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Notificaciones!A${rowIndex + 2}:C${rowIndex + 2}`
-        });
-
-        res.json({ success: true, message: 'Notificación eliminada correctamente' });
-    } catch (error) {
-        console.error('Error al eliminar notificación:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al eliminar la notificación: ' + error.message
-        });
-    }
-});
-
 
 /* ==================== API DE PRECIOS DE PRODUCCIÓN ==================== */
 app.get('/obtener-precios-base', requireAuth, async (req, res) => {
@@ -2902,7 +1778,6 @@ app.get('/obtener-precios-base', requireAuth, async (req, res) => {
         
     }
 });
-
 app.post('/actualizar-precios-base', requireAuth, async (req, res) => {
     try {
         const { etiquetado, sellado, envasado, cernidoBolsa, cernidoBotes } = req.body;
@@ -2926,7 +1801,6 @@ app.post('/actualizar-precios-base', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.post('/guardar-producto-especial', requireAuth, async (req, res) => {
     try {
         const { producto, base, multiplicador, gramajeMin, gramajeMax } = req.body;
@@ -2968,7 +1842,6 @@ app.post('/guardar-producto-especial', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-reglas-especiales', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2996,7 +1869,6 @@ app.get('/obtener-reglas-especiales', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
     try {
         const reglaAEliminar = req.body;
@@ -3039,47 +1911,10 @@ app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
     }
 });
 
-/* ==================== RUTAS DE API - NOTIFICACIONES ==================== */
-app.post('/register-fcm-token', async (req, res) => {
-    try {
-        const { token } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Guardar el token en Google Sheets
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'FCMTokens!A:B',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[new Date().toISOString(), token]]
-            }
-        });
-
-        // Enviar notificación de prueba con valores específicos
-        const resultado = await enviarNotificacion(
-            token,
-            'Bienvenido a Damabrava',
-            'Las notificaciones se han activado correctamente'
-        );
-
-        if (!resultado) {
-            throw new Error('Error al enviar la notificación de prueba');
-        }
-
-        res.json({ success: true, message: 'Token FCM registrado correctamente' });
-    } catch (error) {
-        console.error('Error al registrar token FCM:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al registrar token FCM: ' + error.message 
-        });
-    }
-});
 
 
 /* ==================== RUTAS DE API DE ADVERTENCIA ==================== */
-// Agregar esta ruta junto con las demás rutas de API
+
 app.get('/obtener-notificaciones', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -3292,297 +2127,6 @@ app.post('/registrar-notificacion', requireAuth, async (req, res) => {
     }
 });
 
-/* ==================== RUTAS DE API - COMPROBANTES ==================== */
-app.post('/registrar-comprobante', requireAuth, async (req, res) => {
-    try {
-        const comprobante = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!A2:J',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[
-                    comprobante.id,
-                    comprobante.numero,
-                    comprobante.fecha,
-                    comprobante.nombre,
-                    comprobante.telefono,
-                    comprobante.carnet,
-                    comprobante.detalle,
-                    comprobante.subtotal,
-                    comprobante.total,
-                    comprobante.metodoPago
-                ]]
-            }
-        });
-
-        res.json({ success: true, message: 'Comprobante registrado correctamente' });
-    } catch (error) {
-        console.error('Error al registrar comprobante:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al registrar el comprobante: ' + error.message 
-        });
-    }
-});
-app.get('/obtener-comprobantes', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!A2:J'
-        });
-
-        const rows = response.data.values || [];
-        const comprobantes = rows.map(row => ({
-            id: row[0],
-            numero: row[1],
-            total: row[8]
-        }));
-
-        res.json({ success: true, comprobantes });
-    } catch (error) {
-        console.error('Error al obtener comprobantes:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener comprobantes: ' + error.message
-        });
-    }
-});
-app.get('/obtener-detalle-comprobante/:id', requireAuth, async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        if (!id) {
-            console.error('Error: ID no proporcionado');
-            return res.status(400).json({ 
-                success: false, 
-                error: 'ID de comprobante no proporcionado' 
-            });
-        }
-
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!A2:K'  // Updated range to include column K
-        });
-
-        const rows = response.data.values || [];
-        const comprobanteData = rows.find(row => row[0] === id);
-        
-        if (!comprobanteData) {
-            console.error(`Comprobante con ID ${id} no encontrado en la hoja de cálculo`);
-            return res.status(404).json({ 
-                success: false, 
-                error: `Comprobante con ID ${id} no encontrado` 
-            });
-        }
-
-        const comprobante = {
-            id: comprobanteData[0],
-            numero: comprobanteData[1],
-            fecha: comprobanteData[2],
-            nombre: comprobanteData[3],
-            telefono: comprobanteData[4],
-            carnet: comprobanteData[5],
-            detalle: comprobanteData[6],
-            subtotal: comprobanteData[7],
-            total: comprobanteData[8],
-            metodoPago: comprobanteData[9],
-            firma: comprobanteData[10] || null  // Added firma field
-        };
-
-        res.json({ success: true, comprobante });
-    } catch (error) {
-        console.error('Error al obtener detalle del comprobante:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error interno del servidor' 
-        });
-    }
-});
-app.post('/guardar-firma/:id', requireAuth, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { firma } = req.body;
-        
-        if (!id || !firma) {
-            return res.status(400).json({
-                success: false,
-                error: 'ID y firma son requeridos'
-            });
-        }
-
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get current comprobantes
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!A2:K'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === id);
-
-        if (rowIndex === -1) {
-            return res.status(404).json({
-                success: false,
-                error: 'Comprobante no encontrado'
-            });
-        }
-
-        // Update the firma column (K)
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Comprobantes!K${rowIndex + 2}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[firma]]
-            }
-        });
-
-        res.json({
-            success: true,
-            message: 'Firma guardada correctamente'
-        });
-    } catch (error) {
-        console.error('Error al guardar firma:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al guardar la firma: ' + error.message
-        });
-    }
-});
-app.post('/guardar-pdf/:id', requireAuth, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { pdfBase64 } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener el índice de la fila del comprobante
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!A2:A'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === id);
-
-        if (rowIndex === -1) {
-            throw new Error('Comprobante no encontrado');
-        }
-
-        // Guardar el PDF base64 en la columna L
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Comprobantes!L${rowIndex + 2}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[pdfBase64]]
-            }
-        });
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error al guardar PDF:', error);
-        res.status(500).json({ success: false, error: 'Error al guardar el PDF' });
-    }
-});
-app.get('/descargar-pdf/:id', requireAuth, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener el índice de la fila del comprobante
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Comprobantes!A2:L'
-        });
-
-        const rows = response.data.values || [];
-        const comprobanteRow = rows.find(row => row[0] === id);
-
-        if (!comprobanteRow || !comprobanteRow[11]) { // 11 es el índice de la columna L
-            throw new Error('PDF no encontrado');
-        }
-
-        const pdfBase64 = comprobanteRow[11];
-        const pdfBuffer = Buffer.from(pdfBase64.split(',')[1], 'base64');
-
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=comprobante-${id}.pdf`);
-        res.send(pdfBuffer);
-    } catch (error) {
-        console.error('Error al descargar PDF:', error);
-        res.status(500).json({ success: false, error: 'Error al descargar el PDF' });
-    }
-});
-app.delete('/eliminar-registro-pedido', requireAuth, async (req, res) => {
-    try {
-        const { id } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // First, get the spreadsheet to find the correct sheet ID
-        const spreadsheet = await sheets.spreadsheets.get({
-            spreadsheetId: process.env.SPREADSHEET_ID
-        });
-        
-        const pedidosSheet = spreadsheet.data.sheets.find(sheet => 
-            sheet.properties.title === 'Pedidos'
-        );
-
-        if (!pedidosSheet) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Hoja de Pedidos no encontrada' 
-            });
-        }
-
-        // Get all records to find the row to delete
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A2:M'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === id);
-
-        if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Registro no encontrado' 
-            });
-        }
-
-        // Delete the row using the correct sheet ID
-        await sheets.spreadsheets.batchUpdate({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            requestBody: {
-                requests: [{
-                    deleteDimension: {
-                        range: {
-                            sheetId: pedidosSheet.properties.sheetId,
-                            dimension: 'ROWS',
-                            startIndex: rowIndex + 1, // +1 because we started from A2
-                            endIndex: rowIndex + 2
-                        }
-                    }
-                }]
-            }
-        });
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error al eliminar registro:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el registro' 
-        });
-    }
-});
 
 
 /* ==================== RUTAS DE API REGISTROS ACOPIO -  ==================== */
@@ -3702,7 +2246,7 @@ app.delete('/eliminar-registro-pedido', requireAuth, async (req, res) => {
     }
 });
 
-/* ==================== RUTAS DE API ALMACENES ==================== */
+/* ==================== RUTAS DE API ALMACEN GENERAL ==================== */
 app.get('/obtener-almacen-general', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -3722,7 +2266,7 @@ app.get('/obtener-almacen-general', requireAuth, async (req, res) => {
             error: 'Error al obtener los prodcutos'
         });
     }
-}); 
+});
 app.delete('/eliminar-producto-almacen', requireAuth, async (req, res) => {
     try {
         const { id } = req.body;
@@ -3879,7 +2423,7 @@ app.post('/agregar-producto-almacen', requireAuth, async (req, res) => {
 });
 
 
-
+/* ==================== RUTAS DE API ALMACEN ACOPIO ==================== */
 app.get('/obtener-almacen-acopio', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -4044,72 +2588,10 @@ app.delete('/eliminar-producto-acopio', requireAuth, async (req, res) => {
         });
     }
 });
-app.post('/actualizar-pesos-lotes', requireAuth, async (req, res) => {
-    try {
-        const { productoId, lotes } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Get current data
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen acopio!A:D'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === productoId);
-
-        if (rowIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Producto no encontrado' });
-        }
-
-        // Get current lotes string and parse it
-        const currentLotesString = rows[rowIndex][2] || '';
-        let currentLotes = currentLotesString.split(';')
-            .filter(lote => lote.trim())
-            .map(lote => {
-                const [peso, numero] = lote.split('-').map(item => item.trim());
-                return { peso: parseFloat(peso), numero };
-            });
-
-        // Update weights for used lotes
-        lotes.forEach(loteUsado => {
-            const loteIndex = currentLotes.findIndex(l => l.numero === loteUsado.lote);
-            if (loteIndex !== -1) {
-                const pesoActual = currentLotes[loteIndex].peso;
-                const pesoUsado = parseFloat(loteUsado.peso.toString().replace(',', '.'));
-                currentLotes[loteIndex].peso = Math.max(0, pesoActual - pesoUsado);
-            }
-        });
-
-        // Convert back to string format
-        const updatedLotesString = currentLotes
-            .filter(lote => lote.peso > 0)
-            .map(lote => `${lote.peso}-${lote.numero}`)
-            .join(';');
-
-        // Update the spreadsheet
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Almacen acopio!C${rowIndex + 1}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[updatedLotesString]]
-            }
-        });
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error al actualizar pesos de lotes:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar pesos de lotes' 
-        });
-    }
-});
 
 
 
-
+/* ==================== RUTAS DE API ALMACEN INGRESOS, SALIDAS, FORMATO, PRECIOS, REGISTRAR MOVIMIENTOS ==================== */
 app.put('/ingresar-stock-almacen', requireAuth, async (req, res) => {
     try {
         const { id, cantidad } = req.body;
@@ -4331,8 +2813,71 @@ app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
         res.json({ success: false, error: 'Error al registrar movimiento' });
     }
 });
+app.post('/agregar-tag',requireAuth, async (req, res) => {
+    try {
+        const { nombreTag } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get first row only
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:I2'
+        });
+        
+        const rows = response.data.values || [];
+        if (rows.length > 0) {
+            const currentTags = rows[0][8] || '';
+            const newTags = currentTags ? `${currentTags};${nombreTag}` : nombreTag;
+
+            // Update only first row with new tag
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: 'Almacen general!I2',
+                valueInputOption: 'USER_ENTERED',
+                resource: { values: [[newTags]] }
+            });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+app.delete('/eliminar-tag',requireAuth, async (req, res) => {
+    try {
+        const { tag } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Get all products
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:I'
+        });
+        
+        const rows = response.data.values || [];
+        const updatedRows = rows.map(row => {
+            const currentTags = (row[8] || '').split(';').filter(t => t !== tag).join(';');
+            return [...row.slice(0, 8), currentTags];
+        });
+
+        // Update all rows with removed tag
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:I' + (rows.length + 1),
+            valueInputOption: 'USER_ENTERED',
+            resource: { values: updatedRows }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 
+/* ==================== RUTAS DE API TAREAS (ACOPIO) ==================== */
 app.post('/verificar-tarea', requireAuth, async (req, res) => {
     try {
         const { nombre, nombreNormalizado } = req.body;
@@ -4471,70 +3016,7 @@ app.delete('/eliminar-tarea', requireAuth, async (req, res) => {
 
 
 
-app.post('/agregar-tag', async (req, res) => {
-    try {
-        const { nombreTag } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get first row only
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen general!A2:I2'
-        });
-        
-        const rows = response.data.values || [];
-        if (rows.length > 0) {
-            const currentTags = rows[0][8] || '';
-            const newTags = currentTags ? `${currentTags};${nombreTag}` : nombreTag;
-
-            // Update only first row with new tag
-            await sheets.spreadsheets.values.update({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Almacen general!I2',
-                valueInputOption: 'USER_ENTERED',
-                resource: { values: [[newTags]] }
-            });
-        }
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-app.delete('/eliminar-tag', async (req, res) => {
-    try {
-        const { tag } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Get all products
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen general!A2:I'
-        });
-        
-        const rows = response.data.values || [];
-        const updatedRows = rows.map(row => {
-            const currentTags = (row[8] || '').split(';').filter(t => t !== tag).join(';');
-            return [...row.slice(0, 8), currentTags];
-        });
-
-        // Update all rows with removed tag
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen general!A2:I' + (rows.length + 1),
-            valueInputOption: 'USER_ENTERED',
-            resource: { values: updatedRows }
-        });
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-
+/* ==================== RUTAS DE API MOVIMIENTOS Y/O REGISTROS ALMACEN GENERAL ==================== */
 app.get('/obtener-movimientos-almacen', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -4688,6 +3170,8 @@ app.delete('/eliminar-movimiento-almacen', requireAuth, async (req, res) => {
     }
 });
 
+
+
 /* ==================== RUTAS DE API - BALANCE ALMACÉN ==================== */
 app.get('/obtener-balance-almacen', requireAuth, async (req, res) => {
     try {
@@ -4721,6 +3205,7 @@ app.get('/obtener-balance-almacen', requireAuth, async (req, res) => {
     }
 });
 
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {
@@ -4728,5 +3213,4 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// Exportar para Vercel
 export default app;

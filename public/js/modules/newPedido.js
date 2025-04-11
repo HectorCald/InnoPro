@@ -596,59 +596,224 @@ export async function togglePedidosRecibidos() {
 }
 
 
-export async function mostrarFormularioIngreso(id,producto, hoja) {
+export async function mostrarFormularioIngreso(id, producto, hoja) {
     try {
         mostrarCarga();
-        const response = await fetch(`/obtener-siguiente-lote/${encodeURIComponent(producto)}`);
-        const response2 = await fetch(`/obtener-pedidos-recibidos/${encodeURIComponent(id)}`);
-        const data = await response.json();
-        const data2 = await response2.json();
-        const siguienteLote = data.success ? data.siguienteLote : '?';
+        console.log('Iniciando solicitud para:', producto, 'ID:', id);
+
+        // Get acopio data and pedido info with error handling
+        let acopioResponse, pedidoResponse;
+        try {
+            acopioResponse = await fetch(`/obtener-almacen-acopio/${encodeURIComponent(producto)}`);
+            pedidoResponse = await fetch(`/obtener-pedidos-recibidos/${encodeURIComponent(id)}`);
+            
+            console.log('Estado respuesta acopio:', acopioResponse.status);
+            console.log('Estado respuesta pedido:', pedidoResponse.status);
+        } catch (fetchError) {
+            console.error('Error en fetch:', fetchError);
+            throw new Error(`Error de conexión: ${fetchError.message}`);
+        }
+
+        // Validate responses
+        if (!acopioResponse.ok || !pedidoResponse.ok) {
+            console.error('Estado acopio:', acopioResponse.status);
+            console.error('Estado pedido:', pedidoResponse.status);
+            throw new Error('Error en la respuesta del servidor');
+        }
+
+        // Validate content type
+        const acopioContentType = acopioResponse.headers.get("content-type");
+        const pedidoContentType = pedidoResponse.headers.get("content-type");
         
-        const pedidoInfo = data2.pedidos && data2.pedidos.length > 0 ? data2.pedidos[0] : null;
+        if (!acopioContentType?.includes("application/json") || !pedidoContentType?.includes("application/json")) {
+            console.error('Content-Type acopio:', acopioContentType);
+            console.error('Content-Type pedido:', pedidoContentType);
+            throw new Error('Respuesta del servidor no es JSON válido');
+        }
+
+        // Parse JSON responses
+        let acopioData, pedidoData;
+        try {
+            acopioData = await acopioResponse.json();
+            pedidoData = await pedidoResponse.json();
+        } catch (jsonError) {
+            console.error('Error al parsear JSON:', jsonError);
+            throw new Error('Error al procesar la respuesta del servidor');
+        }
+
+        // Validate data
+        if (!acopioData.success || !pedidoData.success) {
+            console.error('Datos acopio:', acopioData);
+            console.error('Datos pedido:', pedidoData);
+            throw new Error('Error al obtener datos del producto o pedido');
+        }
+
+        // Calculate next lote number
+        let siguienteLote = 1;
+        if (acopioData.producto?.C) {
+            const lotesArray = acopioData.producto.C.split(';').filter(Boolean);
+            if (lotesArray.length > 0) {
+                const lotes = lotesArray
+                    .map(item => {
+                        const match = item.match(/\d+$/);
+                        return match ? parseInt(match[0]) : 0;
+                    })
+                    .filter(num => !isNaN(num));
+                
+                if (lotes.length > 0) {
+                    siguienteLote = Math.max(...lotes) + 1;
+                }
+            }
+        }
+
+        // Get pedido info
+        const pedidoInfo = pedidoData.pedidos && pedidoData.pedidos.length > 0 ? pedidoData.pedidos[0] : null;
         
-        // Check if it's a multiple entry
-        if (pedidoInfo?.obsCompras > 1) {
+        if (!pedidoInfo) {
+            throw new Error('No se encontró información del pedido');
+        }
+
+        // Handle multiple or single entry
+        if (pedidoInfo.obsCompras > 1) {
             const anuncio = document.querySelector('.anuncio');
             anuncio.style.display = 'flex';
             anuncio.innerHTML = `
                 <div class="anuncio-contenido">
                     <h2><i class="fas fa-exclamation-circle"></i> Ingreso Múltiple</h2>
                     <div class="detalles-grup center">
-                    <p>Se detectó que hay ${pedidoInfo.obsCompras} unidades para ingresar.</p>
-                    <p>¿Desea realizar un ingreso múltiple?</p>
+                        <p>Se detectó que hay ${pedidoInfo.obsCompras} unidades para ingresar.</p>
+                        <p>¿Desea realizar un ingreso múltiple?</p>
                     </div>
                     <div class="anuncio-botones">
-                        <button class="anuncio-btn gray" onclick="window.procesarIngresoNormal('${producto}', '${hoja}')">No</button>
-                        <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${producto}', '${hoja}')">Sí</button>
+                        <button class="anuncio-btn gray" onclick="window.procesarIngresoNormal('${id}', '${producto}', '${hoja}')">No</button>
+                        <button class="anuncio-btn green" onclick="window.procesarIngresoMultiple('${id}', '${producto}', '${hoja}')">Sí</button>
                         <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
             `;
 
-            // Add the functions to window object
-            window.procesarIngresoNormal = (producto, hoja) => {
+            // Add window functions
+            window.procesarIngresoNormal = () => {
                 mostrarFormularioIngresoNormal(id, producto, hoja, pedidoInfo, siguienteLote);
             };
 
-            window.procesarIngresoMultiple = (producto, hoja) => {
+            window.procesarIngresoMultiple = () => {
                 mostrarIngresoMultiple(id, producto, hoja, pedidoInfo, siguienteLote);
             };
-
-            window.inicializarPedidos = inicializarPedidos;
-            window.procesarIngreso = procesarIngreso;
-
-            return; // Stop here if it's multiple entry
+        } else {
+            mostrarFormularioIngresoNormal(id, producto, hoja, pedidoInfo, siguienteLote);
         }
 
-        // If not multiple entry, show normal form
-        mostrarFormularioIngresoNormal(producto, hoja, pedidoInfo, siguienteLote);
-        window.inicializarPedidos = inicializarPedidos;
+        // Make procesarIngreso available globally
         window.procesarIngreso = procesarIngreso;
 
     } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar el formulario de ingreso', 'error');
+        console.error('Error en mostrarFormularioIngreso:', error);
+        mostrarNotificacion(error.message || 'Error al cargar el formulario de ingreso', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+export async function procesarIngreso(id, producto, hoja, esMultiple = false) {
+    try {
+        mostrarCarga();
+        const pesoInput = document.getElementById('peso-ingreso');
+        const observacionesInput = document.getElementById('observaciones-ingreso');
+        const peso = parseFloat(pesoInput.value);
+        const observaciones = observacionesInput.value.trim();
+
+        if (isNaN(peso) || peso <= 0) {
+            mostrarNotificacion('Por favor ingrese un peso válido', 'error');
+            return;
+        }
+
+        // Get current lotes from acopio
+        const acopioResponse = await fetch(`/obtener-almacen-acopio/${encodeURIComponent(producto)}`);
+        
+        // Check response
+        if (!acopioResponse.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+
+        const contentType = acopioResponse.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error('Respuesta del servidor no es JSON válido');
+        }
+
+        const acopioData = await acopioResponse.json();
+        
+        // Calculate next lote number
+        let siguienteLote = 1;
+        if (acopioData.success && acopioData.producto?.C) {
+            const lotesArray = acopioData.producto.C.split(';').filter(Boolean);
+            if (lotesArray.length > 0) {
+                const lotes = lotesArray
+                    .map(item => {
+                        const match = item.match(/\d+$/);
+                        return match ? parseInt(match[0]) : 0;
+                    })
+                    .filter(num => !isNaN(num));
+                
+                if (lotes.length > 0) {
+                    siguienteLote = Math.max(...lotes) + 1;
+                }
+            }
+        }
+
+        // Update acopio with new lote
+        const updateResponse = await fetch('/actualizar-producto-acopio', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                producto,
+                campo: 'C',
+                valor: `${peso}-${siguienteLote}`,
+                operacion: 'AGREGAR_LOTE'
+            })
+        });
+
+        if (!updateResponse.ok) {
+            throw new Error('Error al actualizar el acopio');
+        }
+
+        // Continue with normal ingreso process
+        const response = await fetch('/procesar-ingreso', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                id,
+                producto, 
+                peso, 
+                hoja, 
+                observaciones,
+                esMultiple,
+                lote: siguienteLote
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Error en la respuesta del servidor');
+        }
+
+        if (data.success) {
+            actualizarResumenIngresos(producto, peso, observaciones);
+            mostrarNotificacion('Ingreso procesado correctamente', 'success');
+            
+            if (!esMultiple) {
+                cerrarFormularioPedido();
+            }
+        } else {
+            throw new Error(data.error || 'Error al procesar el ingreso');
+        }
+    } catch (error) {
+        console.error('Error en procesarIngreso:', error);
+        mostrarNotificacion(error.message || 'Error al procesar el ingreso', 'error');
+        throw error;
     } finally {
         ocultarCarga();
     }
@@ -771,58 +936,7 @@ export async function mostrarIngresoMultiple(id, producto, hoja, pedidoInfo, sig
     }
 };
 }
-export async function procesarIngreso(id, producto, hoja, esMultiple = false) {
-    try {
-        mostrarCarga();
-        const pesoInput = document.getElementById('peso-ingreso');
-        const observacionesInput = document.getElementById('observaciones-ingreso');
-        const peso = parseFloat(pesoInput.value);
-        const observaciones = observacionesInput.value.trim();
 
-        if (isNaN(peso) || peso <= 0) {
-            mostrarNotificacion('Por favor ingrese un peso válido', 'error');
-            return;
-        }
-
-        console.log('Enviando ingreso:', { producto, peso, hoja, esMultiple });
-        const response = await fetch('/procesar-ingreso', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                id,
-                producto, 
-                peso, 
-                hoja, 
-                observaciones,
-                esMultiple
-            })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || 'Error en la respuesta del servidor');
-        }
-
-        if (data.success) {
-            actualizarResumenIngresos(producto, peso, observaciones);
-            mostrarNotificacion('Ingreso procesado correctamente', 'success');
-            
-            if (!esMultiple) {
-                cerrarFormularioPedido();
-            }
-        } else {
-            throw new Error(data.error || 'Error al procesar el ingreso');
-        }
-    } catch (error) {
-        console.error('Error en procesarIngreso:', error);
-        mostrarNotificacion(error.message || 'Error al procesar el ingreso', 'error');
-        throw error; // Re-throw para que pueda ser manejado por el llamador
-    } finally {
-        ocultarCarga();
-    }
-}
 
 
 

@@ -1,14 +1,22 @@
 <!-- ==================== HEADER ==================== -->
 <%- include('partials/header') %>
-
     <div class="login-container">
-        
         <div class="login-header">
-            <img src="./img/logotipo.webp" alt="Logo Damabrava">
-            <h1>Bienvenido</h1>
-            <p>Ingresa tu PIN para continuar</p>
+            <h1 class="animated-title">
+                <span class="text-animation">
+                    <span class="letter-group">
+                        <span class="static">I</span>
+                        <span class="expand">nno</span>
+                    </span>
+                    <span class="letter-group">
+                        <span class="static">P</span>
+                        <span class="expand">ro</span>
+                    </span>
+                </span>
+            </h1>
+            <p class="slogan">Empresa damabrava<span class="underline-animation"></span></p>
         </div>
-
+        <p>Ingresa tu PIN para continuar</p>
         <div class="pin-section">
             <div class="pin-dots">
                 <span class="pin-dot"></span>
@@ -17,6 +25,14 @@
                 <span class="pin-dot"></span>
             </div>
             <div class="error-message"></div>
+            <p class="sin-pin">No tengo un PIN</p>
+        </div>
+        <div class="modal" id="pinModal">
+            <div class="modal-content">
+                <h2>¿No tienes PIN?</h2>
+                <p>Por favor, contacta con el administrador del sistema para obtener tu PIN de acceso.</p>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
         </div>
 
         <div class="keyboard-section">
@@ -37,21 +53,16 @@
                 </button>
             </div>
         </div>
-        <div class="theme-switch">
-            <i class="fas fa-moon theme-icon"></i>
-            <label class="switch">
-                <input type="checkbox" id="themeToggle">
-                <span class="slider"></span>
-            </label>
-            <i class="fas fa-sun theme-icon"></i>
-            
-        </div>
+        <p>&copy; 2025 damabrava. Todos los derechos reservados.</p>
     </div>
-    
+
 
     <div class="carga">
         <div class="loader">
-            <p class="loader-logo"><i class="fas fa-pepper-hot"></i></p>
+            <div class="square"></div>
+            <div class="square"></div>
+            <div class="square"></div>
+            <div class="square"></div>
         </div>
     </div>
 
