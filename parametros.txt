@@ -33,3 +33,4 @@ compras: <i class="fas fa-shopping-cart"></i>
 Ajustes: <i class="fas fa-cog"></i>
 Gestion: <i class="fas fa-dolly"></i>
 Otros: <i class="fas fa-ellipsis-h"></i>
+Inicio: <i class="fas fa-home"></i>

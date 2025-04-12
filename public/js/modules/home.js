@@ -28,9 +28,7 @@ export async function inicializarHome() {
             .forEach(v => v.classList.add('view'));
 
         homeView.innerHTML = `
-            <div class="title">
-                <h3>Inicio</h3>
-            </div>
+            <div class="title"><h3><i class="fas fa-home"></i> Inicio</h3> </div>
             <div class="welcome-header">
                 <h1>¡Frase del día!</h1>
                 <p>${fraseDiaria}</p>
