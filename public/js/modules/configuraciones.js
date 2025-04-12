@@ -27,7 +27,7 @@ export async function inicializarConfiguraciones() {
                 <div class="config-section app-info">
                     <h2><i class="fas fa-info-circle"></i> Información de la Aplicación</h2>
                     <div class="app-details">
-                        <p><strong>Versión:</strong> 1.0.0</p>
+                        <p><strong>Versión:</strong> Beta: 1.0.0</p>
                         <p><strong>Última actualización:</strong> ${new Date().toLocaleDateString()}</p>
                         <p><strong>Desarrollado por:</strong> Damabrava</p>
                     </div>

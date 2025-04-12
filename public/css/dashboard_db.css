@@ -26,7 +26,7 @@
 @import'styles/balAlmacen.css';
 @import'styles/configuraciones.css';
 body, .container{
-    background-color: var(--primary-color);
+    background-color: var(--primary-color) !important;
 }
 
 @keyframes fadeIn {
@@ -39,7 +39,8 @@ body, .container{
 .consultarRegistros-view,
 .formProduccion-view,
 .cuentasProduccion-view,
-.newPedido-view, .homew-view {
+.newPedido-view,
+.home-vew{
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
