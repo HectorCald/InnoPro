@@ -13,6 +13,7 @@ import { inicializarComprobante } from './modules/comprobante.js';
 import { cargarRegistrosAcopio } from './modules/regAcopio.js';
 import { inicializarAlmacenGral,cargarAlmacen,mostrarProductos } from './modules/almacen.js';
 import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
+import { inicializarConfiguraciones } from './modules/configuraciones.js';
 
 function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
@@ -93,7 +94,8 @@ window.inicializarAlmacenGral = inicializarAlmacenGral;
 window.cargarAlmacen = cargarAlmacen;
 window.mostrarProductos = mostrarProductos;
 
-
+// Funciones de configuraciones
+window.inicializarConfiguraciones = inicializarConfiguraciones;
 
 async function bienvenida() {
     try {
@@ -258,7 +260,7 @@ async function obtenerRolUsuario() {
 async function iniciarApp() {
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.balAlmacen-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
+    const vistas = document.querySelectorAll('.configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
 
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => {
@@ -308,6 +310,9 @@ export async function registrarNotificacion(origen, destino, mensaje) {
         console.error('Error al registrar notificación:', error);
         throw error;
     }
+}
+export function inicializarGestionProduccion(){
+    mostrarNotificacion('No se puede acceder a esta pestaña por el momento','warning')
 }
 
 document.addEventListener('DOMContentLoaded', () => {

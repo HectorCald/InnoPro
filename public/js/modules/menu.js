@@ -95,18 +95,22 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
     const botonesRoles = {
         'Producción': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
-            { clase: 'opcion-btn', vista: 'cuentasProduccion-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosCuentas()"' }
+            { clase: 'opcion-btn', vista: 'cuentasProduccion-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosCuentas()"' },
+            { clase: 'opcion-btn disabled-btn', vista: '', icono: 'fa-dolly', texto: 'Gestion', onclick: 'onclick="mostrarNotificacion(\'Esta pestaña esta aun esta en desarrollo.\', \'warning\'); setTimeout(() => document.querySelector(\'.opcion-btn[data-vista=\\\'home-view\\\']\').click(), 100)"' },
+            { clase: 'opcion-btn', vista: 'configuraciones-view', icono: 'fa-cog', texto: 'Ajustes', onclick: 'onclick="inicializarConfiguraciones()"' }
         ],
         'Acopio': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
             { clase: 'opcion-btn', vista: 'almAcopio-view', icono: 'fa-dolly', texto: 'Gestionar', onclick: 'onclick="inicializarAlmacen()"' },
-            { clase: 'opcion-btn', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAcopio()"' }
+            { clase: 'opcion-btn', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAcopio()"' },
+            { clase: 'opcion-btn', vista: 'configuraciones-view', icono: 'fa-cog', texto: 'Ajustes', onclick: 'onclick="inicializarConfiguraciones()"' }
         ],
         'Almacen': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
             { clase: 'opcion-btn', vista: 'verificarRegistros-view', icono: 'fa-check-double', texto: 'Verificar', onclick: 'onclick="cargarRegistros()"' },
             { clase: 'opcion-btn', vista: 'almacen-view', icono: 'fa-dolly', texto: 'Gestionar', onclick: 'onclick="inicializarAlmacenGral()"' },
             { clase: 'opcion-btn', vista: 'regAlmacen-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAlmacenGral()"' },
+            { clase: 'opcion-btn', vista: 'configuraciones-view', icono: 'fa-cog', texto: 'Ajustes', onclick: 'onclick="inicializarConfiguraciones()"' }
         ],
         'Administración': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
@@ -140,7 +144,16 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
 
                 ]
             },
-            { clase: 'opcion-btn', vista: 'usuarios-view', icono: 'fa-users-cog', texto: 'Usuarios', onclick: 'onclick="inicializarUsuarios()"' },
+            {
+                clase: 'opcion-btn submenu-trigger',
+                icono: 'fa-ellipsis-h',
+                texto: 'Otros',
+                submenu: [
+                    { clase: 'opcion-btn submenu-item', vista: 'usuarios-view', icono: 'fa-users-cog', texto: 'Usuarios', onclick: 'onclick="inicializarUsuarios()"' },
+                    { clase: 'opcion-btn submenu-item', vista: 'configuraciones-view', icono: 'fa-cog', texto: 'Ajustes', onclick: 'onclick="inicializarConfiguraciones()"' }
+                ]
+            }
+
         ]
     };
 
@@ -200,7 +213,7 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                         });
                     });
 
-                                       // Add click events to submenu items
+                    // Add click events to submenu items
                     submenu.querySelectorAll('.submenu-item').forEach(item => {
                         item.addEventListener('click', async (e) => {
                             e.preventDefault();

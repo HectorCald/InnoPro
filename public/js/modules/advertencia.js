@@ -162,6 +162,13 @@ function configurarManejadoresEventos(advertenciaDiv) {
             document.querySelector('.container').classList.remove('no-touch');
         });
     }
+    advertenciaDiv.addEventListener('click', (e) => {
+        if (e.target === advertenciaDiv) {
+            advertenciaDiv.style.display = 'none';
+            document.querySelector('.container').classList.remove('no-touch');
+        }
+    });
+
 
     // Configurar botones de eliminar individuales
     const deleteButtons = advertenciaDiv.querySelectorAll('.btn-eliminar-notif');

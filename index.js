@@ -2510,6 +2510,133 @@ app.get('/obtener-movimientos-acopio', requireAuth, async (req, res) => {
         });
     }
 });
+app.delete('/eliminar-movimiento-acopio', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get the spreadsheet to find the sheet ID
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const movimientosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Movimientos alm-acopio'
+        );
+
+        if (!movimientosSheet) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Hoja de movimientos no encontrada' 
+            });
+        }
+
+        // Get all records to find the row to delete
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-acopio!A2:H'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Movimiento no encontrado' 
+            });
+        }
+
+        // Delete the row
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            requestBody: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: movimientosSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1,
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al eliminar movimiento:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el movimiento' 
+        });
+    }
+});
+app.put('/actualizar-movimiento-acopio', requireAuth, async (req, res) => {
+    try {
+        const { id, tipo, producto, cantidad, operario, almacen, razon } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Validate required fields
+        if (!id || !tipo || !producto || !cantidad || !operario || !almacen) {
+            return res.status(400).json({
+                success: false,
+                error: 'Todos los campos son requeridos'
+            });
+        }
+
+        // Find the movement
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Movimientos alm-acopio!A:H'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                error: 'Movimiento no encontrado'
+            });
+        }
+
+        // Keep original date
+        const fechaOriginal = rows[rowIndex][1];
+
+        // Update the movement
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Movimientos alm-acopio!A${rowIndex + 1}:H${rowIndex + 1}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[
+                    id,
+                    fechaOriginal,
+                    tipo,
+                    producto,
+                    cantidad,
+                    operario,
+                    almacen,
+                    razon || ''
+                ]]
+            }
+        });
+
+        res.json({
+            success: true,
+            message: 'Movimiento actualizado correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar movimiento:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el movimiento'
+        });
+    }
+});
 
 
 

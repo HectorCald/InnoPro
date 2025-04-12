@@ -51,6 +51,7 @@
 .opcion-btn.active {
     background-color: var(--tercer-color);
 }
+
 .opcion-btn:hover {
     transform: translateY(-2px);
 }
@@ -74,6 +75,7 @@
     visibility: visible;
     transition: all 0.3s ease;
 }
+
 .submenu.collapsed {
     opacity: 0;
     visibility: hidden;
@@ -105,17 +107,28 @@
 /* ... rest of existing code ... */
 
 /* Ajuste para el contenido principal */
-.home-view, .formProduccion-view, .cuentasProduccion-view, 
-.newPedido-view, .newTarea-view, .almAcopio-view, 
-.verificarRegistros-view, .almPrima-view, .usuarios-view, 
-.consultarRegistros-view, .compras-view {
-    padding-bottom: 80px; /* Espacio para el menú inferior */
+.home-view,
+.formProduccion-view,
+.cuentasProduccion-view,
+.newPedido-view,
+.newTarea-view,
+.almAcopio-view,
+.verificarRegistros-view,
+.almPrima-view,
+.usuarios-view,
+.consultarRegistros-view,
+.compras-view {
+    padding-bottom: 80px;
+    /* Espacio para el menú inferior */
 }
 
 /* Eliminar estilos innecesarios del menú hamburguesa */
-.menu-principal, .hamburger, .overlay {
+.menu-principal,
+.hamburger,
+.overlay {
     display: none;
 }
+
 .submenu-container {
     position: relative;
 }
@@ -129,13 +142,14 @@
     border-radius: 10px;
     padding: 5px;
     margin-bottom: 5px;
-    min-width: 120px;
+    min-width: auto;
     opacity: 1;
     visibility: visible;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     width: auto;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 5px;
@@ -159,6 +173,7 @@
     gap: 5px;
     background-color: var(--second-color);
 }
+
 /* Existing mobile styles */
 .opciones {
     position: fixed;
@@ -197,7 +212,7 @@
         padding: 90px 10px 20px 10px;
         gap: 10px;
         justify-content: flex-start;
-       padding-top: 10px;
+        padding-top: 10px;
     }
 
     .opcion-btn {
@@ -211,10 +226,12 @@
         padding-left: 50px;
         background-color: var(--primary-color);
     }
+
     .opcion-btn span {
         font-size: 13px;
         text-align: center;
     }
+
     .submenu {
         left: 100%;
         bottom: auto;
@@ -225,8 +242,11 @@
         z-index: 8888;
         gap: 10px;
         background-color: var(--cero-color);
+        width: auto !important;
+        flex-direction: row;
     }
-    .submenu-item{
+
+    .submenu-item {
         display: flex;
         gap: 10px;
         width: 130px !important;
@@ -238,17 +258,40 @@
     .submenu.collapsed {
         transform: translateY(-50%) translateX(-10px);
     }
+
     /* Ajustar el contenido principal */
-    .home-view, .formProduccion-view, .cuentasProduccion-view, 
-    .newPedido-view, .newTarea-view, .almAcopio-view, 
-    .verificarRegistros-view, .almPrima-view, .usuarios-view, 
-    .consultarRegistros-view, .compras-view, .regAcopio-view, .almacen-view, .regAlmacen-view {
+    .home-view,
+    .formProduccion-view,
+    .cuentasProduccion-view,
+    .newPedido-view,
+    .newTarea-view,
+    .almAcopio-view,
+    .verificarRegistros-view,
+    .almPrima-view,
+    .usuarios-view,
+    .consultarRegistros-view,
+    .compras-view,
+    .regAcopio-view,
+    .almacen-view,
+    .regAlmacen-view {
         height: 90vh !important;
     }
-    .carga{
+
+    .carga {
         margin-top: 70px;
         margin-left: 250px;
         height: calc(100vh - 70px);
         width: calc(100% - 250px);
     }
+
+    .disabled-btn {
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none !important;
+}
+
+.disabled-btn:hover, .disabled-btn.active {
+    background: var(--secondary-color) !important;
+    transform: none !important;
+}
 }

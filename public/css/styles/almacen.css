@@ -95,7 +95,7 @@
 
         .search-bar {
             position: relative;
-            width: 300px;
+            width: 100%;
 
             input {
                 min-width: 100%;
@@ -122,14 +122,14 @@
 
             .filter-btn {
                 padding: 8px 16px;
-                border: 1px solid #2c2c2c;
+                border: 1px solid var(--cero-color);
                 border-radius: 8px;
                 background: var(--cero-color);
                 color: var(--primary-text);
                 cursor: pointer;
                 transition: all 0.3s ease;
                 height: 40px;
-                width: 40px;
+                width: 100%;
 
                 &.active {
                     background: var(--second-button);

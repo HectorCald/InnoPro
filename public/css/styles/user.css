@@ -43,7 +43,7 @@
 
     .almacen-botones {
         display: flex;
-        gap: 10px;
+        gap: 50px;
         justify-content: center;
         margin-bottom: 10px;
     }

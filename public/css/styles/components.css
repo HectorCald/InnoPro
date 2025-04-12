@@ -25,6 +25,7 @@
     color: var(--primary-text) !important;
     animation: aparecer 0.3s ease-out;
     padding: 15px;
+    padding-right: 10px;
     border-radius: 10px;
     width: 90%;
     max-width: 400px;
@@ -60,14 +61,17 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        background: rgb(71, 71, 71);
+        background: gray;
         border-radius: 10px;
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        background: gray;
+        background: #626262;
     }
 
+    /* For Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #626262 rgba(128, 128, 128, 0.1);
     margin: 0;
     gap: 5px !important;
     position: relative;

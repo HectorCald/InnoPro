@@ -1,0 +1,144 @@
+@import'styles/colores.css';
+
+.configuraciones-view {
+    width: 100%;
+    background: var(--primary-color) !important;
+    height: calc(100vh - 150px);
+    color: var(--primary-text) !important;
+    overflow-y: auto;
+    padding: 15px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    display: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+
+    .title {
+        padding-block: 15px;
+        border-bottom: 1px solid rgb(83, 83, 83);
+
+        h2 {
+            font-size: 17px;
+        }
+    }
+
+
+    .config-section {
+        background: var(--second-color);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .config-section h2 {
+        color: var(--primary-text);
+        font-size: 17px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .perfil-info {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .perfil-info p {
+        margin: 5px 0;
+        color: gray;
+    }
+
+    .btn-cambiar-pin {
+        background: var(--tercer-color);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        width: fit-content;
+    }
+
+    .btn-cambiar-pin:hover {
+        background: gray;
+    }
+
+    .ajustes-lista {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .ajuste-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* Switch toggle */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked+.slider {
+        background-color: var(--cero-color);
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(26px);
+    }
+
+    .app-details {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        color: gray;
+    }
+}

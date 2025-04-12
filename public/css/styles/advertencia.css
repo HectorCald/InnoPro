@@ -19,7 +19,7 @@
     background-color: var(--second-color);
     border-radius: 10px;
     max-width: 500px;
-    width: 95%;
+    width: 90%;
     max-height: 85vh;
     position: relative;
     overflow: hidden;
@@ -54,6 +54,9 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+
+    scrollbar-width: thin;
+    scrollbar-color: #626262 rgba(128, 128, 128, 0.1);
 }
 
 /* Estilos del scrollbar */

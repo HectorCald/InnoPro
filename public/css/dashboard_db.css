@@ -24,6 +24,7 @@
 @import'styles/almacen.css';
 @import'styles/regAlmacen.css';
 @import'styles/balAlmacen.css';
+@import'styles/configuraciones.css';
 body, .container{
     background-color: var(--primary-color);
 }

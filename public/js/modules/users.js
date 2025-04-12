@@ -18,7 +18,7 @@ export function inicializarUsuarios() {
                     <button class="btn-agregar-pedido">
                         <i class="fas fa-user-slash"></i>
                     </button>
-                    <p>Desactivar Usuario</p>
+                    <p>Desactivar/Activar</p>
                 </div>
             </div>    
             <div class="lista-productos">
@@ -71,7 +71,7 @@ export async function cargarUsuarios() {
                 </div>
             `).join('');
 
-            // Agregar event listeners a las tarjetas
+            // Add card click listeners
             container.querySelectorAll('.product-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const pin = card.dataset.pin;
@@ -79,14 +79,23 @@ export async function cargarUsuarios() {
                 });
             });
 
-            // Configurar búsqueda
+            // Configure search functionality
             const searchInput = document.getElementById('searchUsuario');
             const searchIcon = document.querySelector('.search-icon');
+
+            function normalizarTexto(texto) {
+                return texto.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
 
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = normalizarTexto(e.target.value);
                 const cards = container.querySelectorAll('.product-card');
 
+                // Toggle search icon
                 if (e.target.value.length > 0) {
                     searchIcon.classList.remove('fa-search');
                     searchIcon.classList.add('fa-times');
@@ -98,17 +107,18 @@ export async function cargarUsuarios() {
                 cards.forEach(card => {
                     const nombre = normalizarTexto(card.querySelector('.product-name span').textContent);
                     const rol = normalizarTexto(card.querySelector('.registro-estado-acopio').textContent);
-
-                    card.style.display = (nombre.includes(searchTerm) || rol.includes(searchTerm)) ? 'grid' : 'none';
+                    const matches = nombre.includes(searchTerm) || rol.includes(searchTerm);
+                    card.style.display = matches ? 'grid' : 'none';
                 });
             });
 
+            // Clear search functionality
             searchIcon.addEventListener('click', () => {
                 if (searchInput.value.length > 0) {
                     searchInput.value = '';
                     searchIcon.classList.remove('fa-times');
                     searchIcon.classList.add('fa-search');
-                    document.querySelectorAll('.product-card').forEach(card => {
+                    container.querySelectorAll('.product-card').forEach(card => {
                         card.style.display = 'grid';
                     });
                 }
@@ -413,7 +423,6 @@ async function mostrarDetallesUsuario(pin) {
     }
 }
 
-// No olvides exportar las funciones
 export {
     mostrarFormularioAgregarUsuario,
     mostrarFormularioDesactivarUsuario,

@@ -191,29 +191,7 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
         const btnEliminar = registroCard.querySelector('.btn-eliminar-registro');
         btnEliminar.addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (confirm('¿Está seguro de eliminar este registro?')) {
-                try {
-                    mostrarCarga();
-                    const response = await fetch('/eliminar-registro-pedido', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: pedido[0] })
-                    });
-
-                    const data = await response.json();
-                    if (data.success) {
-                        registroCard.remove();
-                        mostrarNotificacion('Registro eliminado correctamente', 'success');
-                        actualizarContador();
-                    } else {
-                        throw new Error(data.error);
-                    }
-                } catch (error) {
-                    mostrarNotificacion('Error al eliminar registro: ' + error.message, 'error');
-                } finally {
-                    ocultarCarga();
-                }
-            }
+            mostrarConfirmacionEliminar(pedido, registroCard);
         });
 
         } else {
@@ -589,6 +567,123 @@ function mostrarFormularioEdicion(pedido) {
         overlay.style.display = 'none';
     });
 }
+function mostrarConfirmacionEliminar(pedido, registroCard) {
+    const anuncio = document.querySelector('.anuncio');
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+
+    anuncioContenido.innerHTML = `
+        <h2><i class="fas fa-trash"></i> Eliminar Registro</h2>
+        <div class="form-grup">
+            <p>¿Está seguro que desea eliminar este registro?</p>
+            <div class="detalles-eliminacion">
+                <p><strong>ID:</strong> ${pedido[0]}</p>
+                <p><strong>Fecha:</strong> ${pedido[1]}</p>
+                <p><strong>Producto:</strong> ${pedido[2]}</p>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn red confirmar-eliminacion">
+                <i class="fas fa-trash"></i> Eliminar
+            </button>
+            <button class="anuncio-btn close cancelar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+
+    const btnConfirmar = anuncioContenido.querySelector('.confirmar-eliminacion');
+    const btnCancelar = anuncioContenido.querySelector('.cancelar');
+
+    btnConfirmar.addEventListener('click', async () => {
+        try {
+            mostrarCarga();
+            const response = await fetch('/eliminar-registro-pedido', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: pedido[0] })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                registroCard.remove();
+                mostrarNotificacion('Registro eliminado correctamente', 'success');
+                actualizarContador();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            mostrarNotificacion('Error al eliminar registro: ' + error.message, 'error');
+        } finally {
+            ocultarCarga();
+            anuncio.style.display = 'none';
+        }
+    });
+
+    btnCancelar.addEventListener('click', () => {
+        anuncio.style.display = 'none';
+    });
+
+    anuncio.style.display = 'flex';
+}
+function mostrarFormularioRechazo(id, nombre) {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-times-circle"></i> Rechazar Pedido</h2>
+        <div class="form-grup">
+            <p><strong>ID:</strong> ${id}</p>
+            <p><strong>Producto:</strong> ${nombre}</p>
+            <div class="fomr-grup">
+                <p>Razón del rechazo:</p>
+                <textarea id="razonRechazo" class="edit-input" rows="4" placeholder="Explique la razón del rechazo..."></textarea>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn red confirmar-rechazo"><i class="fas fa-times"></i> Confirmar Rechazo</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    // Event listeners
+    const btnConfirmar = contenido.querySelector('.confirmar-rechazo');
+    const btnCancelar = contenido.querySelector('.cancelar');
+    const razonInput = contenido.querySelector('#razonRechazo');
+
+    btnConfirmar.onclick = async () => {
+        const razon = razonInput.value.trim();
+        if (!razon) {
+            mostrarNotificacion('Debe ingresar una razón para el rechazo', 'error');
+            return;
+        }
+
+        try {
+            mostrarCarga();
+            const response = await fetch('/rechazar-pedido', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, razon })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Pedido rechazado correctamente', 'success');
+                anuncio.style.display = 'none';
+                cargarRegistrosAcopio(); // Recargar la vista
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            mostrarNotificacion('Error al rechazar el pedido: ' + error.message, 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+
+    btnCancelar.onclick = () => anuncio.style.display = 'none';
+    anuncio.style.display = 'flex';
+}
+
 
 
 
@@ -657,37 +752,15 @@ function configurarEventosMovimiento(movimientoCard, isAdmin, movimiento) {
     });
 
     if (isAdmin) {
-        const btnEliminar = movimientoCard.querySelector('.btn-eliminar-movimiento');
+        const btnEliminar = movimientoCard.querySelector('.btn-eliminar-registro');
         if (btnEliminar) {
-            btnEliminar.addEventListener('click', async (e) => {
+            btnEliminar.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (confirm('¿Está seguro de eliminar este movimiento?')) {
-                    try {
-                        mostrarCarga();
-                        const response = await fetch('/eliminar-movimiento-acopio', {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id: movimiento[0] })
-                        });
-
-                        const data = await response.json();
-                        if (data.success) {
-                            movimientoCard.remove();
-                            mostrarNotificacion('Movimiento eliminado correctamente', 'success');
-                            actualizarContador();
-                        } else {
-                            throw new Error(data.error);
-                        }
-                    } catch (error) {
-                        mostrarNotificacion('Error al eliminar movimiento: ' + error.message, 'error');
-                    } finally {
-                        ocultarCarga();
-                    }
-                }
+                mostrarConfirmacionEliminarMovimiento(movimiento, movimientoCard);
             });
         }
 
-        const btnEditar = movimientoCard.querySelector('.btn-editar-movimiento');
+        const btnEditar = movimientoCard.querySelector('.btn-editar-registro');
         if (btnEditar) {
             btnEditar.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -696,67 +769,172 @@ function configurarEventosMovimiento(movimientoCard, isAdmin, movimiento) {
         }
     }
 }
-
-
-
-function mostrarFormularioRechazo(id, nombre) {
+function mostrarFormularioEdicionMovimiento(movimiento) {
     const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+    const [id, fecha, tipo, producto, cantidad, operario, almacen, razon] = movimiento;
 
-    contenido.innerHTML = `
-        <h2><i class="fas fa-times-circle"></i> Rechazar Pedido</h2>
-        <div class="form-grup">
-            <p><strong>ID:</strong> ${id}</p>
-            <p><strong>Producto:</strong> ${nombre}</p>
-            <div class="fomr-grup">
-                <p>Razón del rechazo:</p>
-                <textarea id="razonRechazo" class="edit-input" rows="4" placeholder="Explique la razón del rechazo..."></textarea>
+    anuncioContenido.innerHTML = `
+        <h2><i class="fas fa-edit"></i> Editar Movimiento</h2>
+        <div class="relleno">
+            <div class="campo-form">
+                <label for="edit-tipo">Tipo:</label>
+                <select id="edit-tipo">
+                    <option value="Ingreso" ${tipo === 'Ingreso' ? 'selected' : ''}>Ingreso</option>
+                    <option value="Salida" ${tipo === 'Salida' ? 'selected' : ''}>Salida</option>
+                </select>
+            </div>
+            <div class="campo-form">
+                <label for="edit-producto">Producto:</label>
+                <input type="text" id="edit-producto" value="${producto || ''}">
+            </div>
+            <div class="campo-form">
+                <label for="edit-cantidad">Cantidad:</label>
+                <input type="number" id="edit-cantidad" value="${cantidad || ''}">
+            </div>
+            <div class="campo-form">
+                <label for="edit-operario">Operario:</label>
+                <input type="text" id="edit-operario" value="${operario || ''}">
+            </div>
+            <div class="campo-form">
+                <label for="edit-almacen">Almacén:</label>
+                <input type="text" id="edit-almacen" value="${almacen || ''}" readonly>
+            </div>
+            <div class="campo-form">
+                <label for="edit-razon">Razón:</label>
+                <textarea id="edit-razon">${razon || ''}</textarea>
             </div>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn red confirmar-rechazo"><i class="fas fa-times"></i> Confirmar Rechazo</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+            <button class="anuncio-btn green guardar">
+                <i class="fas fa-save"></i> Guardar
+            </button>
+            <button class="anuncio-btn close cancelar">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     `;
 
-    // Event listeners
-    const btnConfirmar = contenido.querySelector('.confirmar-rechazo');
-    const btnCancelar = contenido.querySelector('.cancelar');
-    const razonInput = contenido.querySelector('#razonRechazo');
+    const btnGuardar = anuncioContenido.querySelector('.guardar');
+    const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
-    btnConfirmar.onclick = async () => {
-        const razon = razonInput.value.trim();
-        if (!razon) {
-            mostrarNotificacion('Debe ingresar una razón para el rechazo', 'error');
-            return;
-        }
-
+    btnGuardar.addEventListener('click', async () => {
         try {
             mostrarCarga();
-            const response = await fetch('/rechazar-pedido', {
+            const datosActualizados = {
+                tipo: document.getElementById('edit-tipo').value,
+                producto: document.getElementById('edit-producto').value,
+                cantidad: document.getElementById('edit-cantidad').value,
+                operario: document.getElementById('edit-operario').value,
+                almacen: document.getElementById('edit-almacen').value,
+                razon: document.getElementById('edit-razon').value
+            };
+
+            const response = await fetch('/actualizar-movimiento-acopio', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, razon })
+                body: JSON.stringify({
+                    id: id,
+                    ...datosActualizados
+                })
             });
 
             const data = await response.json();
             if (data.success) {
-                mostrarNotificacion('Pedido rechazado correctamente', 'success');
-                anuncio.style.display = 'none';
-                cargarRegistrosAcopio(); // Recargar la vista
+                // Update the movement card
+                const movimientoCard = document.querySelector(`.registro-card-acopio[data-id="${id}"]`);
+                if (movimientoCard) {
+                    const newMovimiento = [
+                        id, fecha, datosActualizados.tipo,
+                        datosActualizados.producto, datosActualizados.cantidad,
+                        datosActualizados.operario, datosActualizados.almacen,
+                        datosActualizados.razon
+                    ];
+                    const newCard = crearMovimientoCard(newMovimiento, true);
+                    movimientoCard.replaceWith(newCard);
+                }
+                mostrarNotificacion('Movimiento actualizado correctamente', 'success');
             } else {
                 throw new Error(data.error);
             }
         } catch (error) {
-            mostrarNotificacion('Error al rechazar el pedido: ' + error.message, 'error');
+            mostrarNotificacion('Error al actualizar movimiento: ' + error.message, 'error');
         } finally {
             ocultarCarga();
+            anuncio.style.display = 'none';
         }
-    };
+    });
 
-    btnCancelar.onclick = () => anuncio.style.display = 'none';
+    btnCancelar.addEventListener('click', () => {
+        anuncio.style.display = 'none';
+    });
+
     anuncio.style.display = 'flex';
 }
+
+function mostrarConfirmacionEliminarMovimiento(movimiento, movimientoCard) {
+    const anuncio = document.querySelector('.anuncio');
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+    const [id, fecha, tipo, producto] = movimiento;
+
+    anuncioContenido.innerHTML = `
+        <h2><i class="fas fa-trash"></i> Eliminar Movimiento</h2>
+        <div class="form-grup">
+            <p>¿Está seguro que desea eliminar este movimiento?</p>
+            <div class="detalles-eliminacion">
+                <p><strong>ID:</strong> ${id}</p>
+                <p><strong>Fecha:</strong> ${fecha}</p>
+                <p><strong>Tipo:</strong> ${tipo}</p>
+                <p><strong>Producto:</strong> ${producto}</p>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn red confirmar-eliminacion">
+                <i class="fas fa-trash"></i> Eliminar
+            </button>
+            <button class="anuncio-btn close cancelar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+
+    const btnConfirmar = anuncioContenido.querySelector('.confirmar-eliminacion');
+    const btnCancelar = anuncioContenido.querySelector('.cancelar');
+
+    btnConfirmar.addEventListener('click', async () => {
+        try {
+            mostrarCarga();
+            const response = await fetch('/eliminar-movimiento-acopio', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                movimientoCard.remove();
+                mostrarNotificacion('Movimiento eliminado correctamente', 'success');
+                actualizarContador();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            mostrarNotificacion('Error al eliminar movimiento: ' + error.message, 'error');
+        } finally {
+            ocultarCarga();
+            anuncio.style.display = 'none';
+        }
+    });
+
+    btnCancelar.addEventListener('click', () => {
+        anuncio.style.display = 'none';
+    });
+
+    anuncio.style.display = 'flex';
+}
+
+
+
 
 
 
