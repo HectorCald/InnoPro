@@ -169,7 +169,7 @@ async function obtenerAtajos() {
                     vista: 'regAlmacen-view',
                     icono: 'fa-search',
                     texto: 'Registros Almacen',
-                    detalle: 'Aqui gestionar todos los registros de Almacen. (Eliminar, Editar, Movimientos)',
+                    detalle: 'Aqui puedes gestionar todos los registros de Almacen. (Eliminar, Editar, Movimientos)',
                     onclick: 'onclick="cargarRegistrosAlmacenGral()"'
                 },
                 { 
@@ -177,7 +177,7 @@ async function obtenerAtajos() {
                     vista: 'verificarRegistros-view',
                     icono: 'fa-search',
                     texto: 'Registros Producción',
-                    detalle: 'Aqui gestionar todos los registros de producción. (Eliminar, Editar, Pagar, Calcular pagos)',
+                    detalle: 'Aqui puedes gestionar todos los registros de producción. (Eliminar, Editar, Pagar, Calcular pagos)',
                     onclick: 'onclick="cargarRegistros()"'
                 },
                 { 
@@ -185,7 +185,7 @@ async function obtenerAtajos() {
                     vista: 'regAcopio-view',
                     icono: 'fa-search',
                     texto: 'Registros Acopio',
-                    detalle: 'Aqui gestionar todos los registros de Acopio. (Eliminar, Editar, Movimientos)',
+                    detalle: 'Aqui puedes gestionar todos los registros de Acopio. (Eliminar, Editar, Movimientos)',
                     onclick: 'onclick="cargarRegistrosAcopio()"'
                 },
             ]
