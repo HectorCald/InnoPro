@@ -39,7 +39,7 @@ body, .container{
 .consultarRegistros-view,
 .formProduccion-view,
 .cuentasProduccion-view,
-.newPedido-view {
+.newPedido-view, .homew-view {
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
