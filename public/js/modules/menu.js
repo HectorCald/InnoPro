@@ -96,7 +96,7 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
         'Producción': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
             { clase: 'opcion-btn', vista: 'cuentasProduccion-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosCuentas()"' },
-            { clase: 'opcion-btn disabled-btn', vista: '', icono: 'fa-dolly', texto: 'Gestion', onclick: 'onclick="mostrarNotificacion(\'Esta pestaña esta aun esta en desarrollo.\', \'warning\'); setTimeout(() => document.querySelector(\'.opcion-btn[data-vista=\\\'home-view\\\']\').click(), 100)"' },
+            { clase: 'opcion-btn disabled-btn', vista: '', icono: 'fa-dolly', texto: 'Gestion', onclick: 'onclick="mostrarNotificacion(\'Esta pestaña aun esta en desarrollo.\', \'warning\'); setTimeout(() => document.querySelector(\'.opcion-btn[data-vista=\\\'home-view\\\']\').click(), 100)"' },
             { clase: 'opcion-btn', vista: 'configuraciones-view', icono: 'fa-cog', texto: 'Ajustes', onclick: 'onclick="inicializarConfiguraciones()"' }
         ],
         'Acopio': [
