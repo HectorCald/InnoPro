@@ -217,7 +217,7 @@ async function mostrarFormularioDesactivarUsuario() {
     const anuncioContenido = document.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-user-cog"></i> Cambiar Estado de Usuario</h2>
+        <h2><i class="fas fa-user-cog"></i> Estado Usuario</h2>
         <div class="relleno">
             <div class="campo-form">
                 <label for="pin">PIN del usuario:</label>
@@ -329,7 +329,7 @@ async function mostrarDetallesUsuario(pin) {
         </div>
         <div class="campo-form">
             <label for="nuevo-pin">Nuevo PIN:</label>
-            <input type="text" id="nuevo-pin" class="form-input" placeholder="Nuevo PIN de 4 dígitos" maxlength="4">
+            <input type="text" id="nuevo-pin" class="form-input" placeholder="PIN de 4 dígitos" maxlength="4">
         </div>
         <div class="campo-form">
             <label for="nuevo-rol">Nuevo Rol:</label>
