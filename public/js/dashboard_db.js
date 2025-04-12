@@ -1,8 +1,8 @@
-import { cargarUsuarios, editarUsuario, eliminarUsuario, agregarUsuario, mostrarPermisos, agregarPermiso, eliminarPermiso } from './modules/users.js';
+import { inicializarUsuarios, cargarUsuarios, mostrarDetallesUsuario, mostrarFormularioAgregarUsuario, mostrarFormularioDesactivarUsuario } from './modules/users.js';
 import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos, mostrarFormularioProduccion } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-import { confirmarRechazo, mostrarFormularioRechazo, mostrarFormularioIngreso, procesarIngreso, finalizarPedidos, confirmarFinalizacionPedidos, mostrarSugerenciaPedido, mostrarFormularioPedido, mostrarIngresoMultiple } from './modules/newPedido.js';
+import { finalizarPedidos, confirmarFinalizacionPedidos, mostrarSugerenciaPedido, mostrarFormularioPedido } from './modules/newPedido.js';
 import { inicializarCompras } from './modules/compras.js';
 import { inicializarAlmacen, mostrarFormularioIngresoAcopio, mostrarFormularioSalidaAcopio } from './modules/almAcopio.js';
 import { inicializarHome } from './modules/home.js';
@@ -32,26 +32,13 @@ window.inicializarHome = inicializarHome;
 
 
 // Funciones de gestión de usuarios y permisos
-window.mostrarPermisos = mostrarPermisos;
-window.agregarPermiso = agregarPermiso;
-window.eliminarPermiso = eliminarPermiso;
-window.editarUsuario = editarUsuario;
-window.eliminarUsuario = eliminarUsuario;
-window.agregarUsuario = agregarUsuario;
+window.inicializarUsuarios = inicializarUsuarios;
 window.cargarUsuarios = cargarUsuarios;
-window.toggleAcciones = (pin) => {
-    const acciones = document.getElementById(`acciones-${pin}`);
-    if (acciones) {
-        // Cerrar todas las demás acciones primero
-        document.querySelectorAll('.acciones').forEach(acc => {
-            if (acc.id !== `acciones-${pin}`) {
-                acc.classList.remove('active');
-            }
-        });
-        // Toggle las acciones del usuario seleccionado
-        acciones.classList.toggle('active');
-    }
-};
+window.mostrarDetallesUsuario = mostrarDetallesUsuario;
+window.mostrarFormularioAgregarUsuario = mostrarFormularioAgregarUsuario;
+window.mostrarFormularioDesactivarUsuario = mostrarFormularioDesactivarUsuario;
+
+
 
 // Funciones de gestión de registros y pagos
 window.cargarRegistros = cargarRegistros;
@@ -77,16 +64,11 @@ window.crearTarjetaRegistro = crearTarjetaRegistro;
 window.mostrarFormularioPedido = mostrarFormularioPedido;
 window.confirmarFinalizacionPedidos = confirmarFinalizacionPedidos;
 window.finalizarPedidos = finalizarPedidos;
-window.procesarIngreso = procesarIngreso;
-window.mostrarIngresoMultiple = mostrarIngresoMultiple;
 window.mosstrarSugerenciaPedido = mostrarSugerenciaPedido;
 
 
 // Funciones de gestión de almacén Acopio
 window.inicializarAlmacen = inicializarAlmacen;
-window.mostrarFormularioRechazo = mostrarFormularioRechazo;
-window.mostrarFormularioIngreso = mostrarFormularioIngreso;
-window.confirmarRechazo = confirmarRechazo;
 window.mostrarFormularioIngresoAcopio = mostrarFormularioIngresoAcopio;
 window.mostrarFormularioSalidaAcopio = mostrarFormularioSalidaAcopio;
 
@@ -250,7 +232,15 @@ export function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) 
         }
     }, duracion);
 }
-
+function limpiarVista(vista) {
+    const container = document.querySelector(vista);
+    if (container) {
+        container.innerHTML = '';
+        // Remover cualquier event listener específico si es necesario
+    }
+}
+limpiarVista('.almacen-view');
+limpiarVista('.almAcopio-view');
 async function obtenerRolUsuario() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -359,6 +349,8 @@ window.mostrarNotificacionesPanel = async function() {
             document.querySelector('.container').classList.remove('no-touch');
         } else {
             await cargarNotificaciones();
+            advertenciaDiv.style.display = 'flex';
+            document.querySelector('.container').classList.add('no-touch');
         }
     } catch (error) {
         console.error('Error al mostrar notificaciones:', error);

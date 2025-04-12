@@ -2,8 +2,8 @@
 
 .compras-view {
     width: 100%;
-    background-color: var(--background) !important;
-    height: calc(100vh - 3em);
+    background-color: var(--primary-color) !important;
+    height: calc(100vh - 145px);
     color: white;
     overflow-y: auto;
     padding: 15px;
@@ -20,9 +20,26 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 
+    .title {
+        padding-block: 15px;
+        border-bottom: 1px solid rgb(83, 83, 83);
+
+        h3 {
+            font-size: 17px;
+            margin: 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        i {
+            font-size: 17px;
+        }
+    }
+
     .compras-header {
         padding-block: 15px;
-        background: #252525;
+        background: var(--second-color);
         border-radius: 8px;
         margin-bottom: 1em;
     }
@@ -39,10 +56,11 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 1em;
+
     }
 
     .pedidos-section {
-        background: #252525;
+        background-color: var(--cero-color);
         border-radius: 8px;
         padding: 1em;
     }
@@ -195,7 +213,7 @@
     }
 
     .entregados-section {
-        background: #252525;
+        background-color: var(--second-color);
         border-radius: 8px;
         padding: 1em;
         margin-top: 1em;
@@ -230,5 +248,25 @@
 
     .btn-copiar i {
         font-size: 0.9em;
+    }
+
+    .section-header.collapsible {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-arrow {
+        margin-left: auto;
+        transition: transform 0.3s ease;
+    }
+
+    .pedidos-list.collapsed {
+        display: none;
+    }
+
+    .section-header.collapsible:hover {
+        background-color: rgba(0, 0, 0, 0.05);
     }
 }

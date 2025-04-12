@@ -84,99 +84,92 @@ function mostrarAdvertencias(notificaciones) {
     configurarManejadoresEventos(advertenciaDiv);
 }
 
+// Función para parsear la fecha del formato dd/mm/yy
+function parsearFecha(fechaStr) {
+    if (!fechaStr) return new Date();
+    const [dia, mes, año] = fechaStr.split('/');
+    return new Date(2000 + parseInt(año), parseInt(mes) - 1, parseInt(dia));
+}
+
+// Función para calcular la clase según el tiempo
+export function calcularClaseNotificacion(fecha) {
+    const fechaNotif = parsearFecha(fecha);
+    const diasTranscurridos = Math.floor((new Date() - fechaNotif) / (1000 * 60 * 60 * 24));
+    
+    if (diasTranscurridos <= 3) return 'reciente';
+    if (diasTranscurridos <= 5) return 'dias-3';
+    if (diasTranscurridos <= 7) return 'dias-5';
+    if (diasTranscurridos <= 14) return 'dias-7';
+    return 'dias-14';
+}
+
 function mostrarInterfazNotificaciones(advertenciaDiv, notificaciones) {
     advertenciaDiv.innerHTML = `
         <div class="advertencia-contenido">
-            <h2><i class="fas fa-exclamation-triangle"></i> Notificaciones</h2>
+            <div class="advertencia-header">
+                <h2>
+                    <i class="fas fa-bell"></i>
+                    Notificaciones (${notificaciones.length})
+                </h2>
+                <button class="btn-cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             <div class="notificaciones-lista">
                 ${notificaciones.map(notif => `
-                    <div class="notificacion-item" data-id="${notif.id}" data-destino="${notif.destino}">
+                    <div class="notificacion-item" 
+                         data-id="${notif.id}" 
+                         data-destino="${notif.destino}">
                         <div class="notif-header">
                             <div class="notif-info">
                                 <span class="fecha">${notif.fecha}</span>
                                 <span class="origen">De: ${notif.origen}</span>
                             </div>
+                            <span class="tiempo-tag ${calcularClaseNotificacion(notif.fecha)}">
+                                ${Math.abs(Math.floor((new Date() - parsearFecha(notif.fecha)) / (1000 * 60 * 60 * 24)))} días
+                            </span>
                         </div>
                         <p class="mensaje">${notif.notificacion}</p>
                     </div>
                 `).join('')}
             </div>
-            <div class="confirmacion-lectura" style="display: none;">
+            <div class="confirmacion-lectura">
                 <input type="checkbox" id="confirmarLectura">
-                <span>He leido todo</span>
+                <span>He leído todas las notificaciones</span>
             </div>
             <div class="anuncio-botones">
-                <button class="btn-aceptar">Aceptar</button>
-                <button class="btn-aceptar-eliminar">Eliminar</button>
+                <button class="btn-eliminar-todas">
+                    <i class="fas fa-trash"></i>
+                    Eliminar todas las notificaciones
+                </button>
             </div>
         </div>
     `;
 }
 
 function configurarManejadoresEventos(advertenciaDiv) {
+    // Configurar el botón eliminar todas
+    const btnEliminarTodas = advertenciaDiv.querySelector('.btn-eliminar-todas');
+    if (btnEliminarTodas) {
+        btnEliminarTodas.addEventListener('click', eliminarNotificacionesUsuarioActual);
+    }
+
+    // Configurar el botón cerrar
+    const btnCerrar = advertenciaDiv.querySelector('.btn-cerrar');
+    if (btnCerrar) {
+        btnCerrar.addEventListener('click', () => {
+            advertenciaDiv.style.display = 'none';
+            document.querySelector('.container').classList.remove('no-touch');
+        });
+    }
+
     // Configurar botones de eliminar individuales
     const deleteButtons = advertenciaDiv.querySelectorAll('.btn-eliminar-notif');
     deleteButtons.forEach(btn => {
         btn.addEventListener('click', eliminarNotificacionIndividual);
     });
-
-    // Configurar el botón de aceptar
-    const btnAceptar = advertenciaDiv.querySelector('.btn-aceptar');
-    btnAceptar.addEventListener('click', () => {
-        advertenciaDiv.style.display = 'none';
-        document.querySelector('.container').classList.remove('no-touch');
-    });
-
-    // Configurar el botón aceptar y eliminar
-    const btnAceptarEliminar = advertenciaDiv.querySelector('.btn-aceptar-eliminar');
-    btnAceptarEliminar.addEventListener('click', eliminarNotificacionesUsuarioActual);
 }
 
-async function eliminarNotificacionIndividual(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    const id = e.currentTarget.dataset.id;
-    console.log('Attempting to delete notification with ID:', id);
-
-    try {
-        mostrarCarga();
-        const response = await fetch('/eliminar-notificacion-advertencia', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            const notifItem = e.currentTarget.closest('.notificacion-item');
-            notifItem.remove();
-
-            // Update notification count
-            const advertenciaDiv = document.querySelector('.advertencia');
-            const remainingNotifs = advertenciaDiv.querySelectorAll('.notificacion-item').length;
-            const badge = document.getElementById('notificationBadge');
-            
-            if (badge) {
-                if (remainingNotifs > 0) {
-                    badge.textContent = remainingNotifs;
-                    badge.style.display = 'flex';
-                } else {
-                    badge.style.display = 'none';
-                    advertenciaDiv.style.display = 'none';
-                    document.querySelector('.container').classList.remove('no-touch');
-                }
-            }
-            mostrarNotificacion('Notificación eliminada correctamente', 'success');
-        } else {
-            throw new Error(data.error || 'Error al eliminar la notificación');
-        }
-    } catch (error) {
-        console.error('Error deleting notification:', error);
-        mostrarNotificacion('Error al eliminar la notificación', 'error');
-    } finally {
-        ocultarCarga();
-    }
-}
 
 async function eliminarNotificacionesUsuarioActual() {
     const advertenciaDiv = document.querySelector('.advertencia');

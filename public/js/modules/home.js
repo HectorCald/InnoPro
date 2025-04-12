@@ -159,25 +159,28 @@ async function obtenerAtajos() {
             'Administración': [
                 { 
                     clase: 'opcion-btn',
-                    vista: 'usuarios-view',
-                    icono: 'fa-users-cog',
-                    texto: 'Usuarios',
-                    onclick: 'onclick="cargarUsuarios()"'
-                },
-                { 
-                    clase: 'opcion-btn',
-                    vista: 'consultarRegistros-view',
+                    vista: 'verificarRegistros-view',
                     icono: 'fa-search',
-                    texto: 'Consultar',
-                    onclick: 'onclick="inicializarConsulta()"'
+                    texto: 'Registros Almacen',
+                    detalle: 'Aqui gestionar todos los registros de Almacen. (Eliminar, Editar, Movimientos)',
+                    onclick: 'onclick="cargarRegistrosAlmacenGral()"'
                 },
                 { 
                     clase: 'opcion-btn',
-                    vista: 'compras-view',
-                    icono: 'fa-shopping-cart',
-                    texto: 'Compras',
-                    onclick: 'onclick="inicializarCompras()"'
-                }
+                    vista: 'verificarRegistros-view',
+                    icono: 'fa-search',
+                    texto: 'Registros Producción',
+                    detalle: 'Aqui gestionar todos los registros de producción. (Eliminar, Editar, Pagar, Calcular pagos)',
+                    onclick: 'onclick="cargarRegistros()"'
+                },
+                { 
+                    clase: 'opcion-btn',
+                    vista: 'verificarRegistros-view',
+                    icono: 'fa-search',
+                    texto: 'Registros Acopio',
+                    detalle: 'Aqui gestionar todos los registros de Acopio. (Eliminar, Editar, Movimientos)',
+                    onclick: 'onclick="cargarRegistrosAcopio()"'
+                },
             ]
         };
 
@@ -191,7 +194,7 @@ async function obtenerAtajos() {
         });
 
         // Limit to 3 shortcuts
-        return atajosUsuario.slice(0, 3);
+        return atajosUsuario.slice(0, 5);
 
     } catch (error) {
         console.error('Error al obtener atajos:', error);

@@ -29,3 +29,4 @@ salidas: <i class="fas fa-arrow-circle-down"></i>
 ingreso: <i class="fas fa-arrow-circle-up"></i>
 Registros: fa-history
 Gestion:fa-dolly
+compras: <i class="fas fa-shopping-cart"></i>

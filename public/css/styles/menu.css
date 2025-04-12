@@ -8,6 +8,9 @@
     border-radius: 10px;
     margin-inline: 15px;
     margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .menu-secundario {
@@ -112,4 +115,140 @@
 /* Eliminar estilos innecesarios del menú hamburguesa */
 .menu-principal, .hamburger, .overlay {
     display: none;
+}
+.submenu-container {
+    position: relative;
+}
+
+.submenu {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--cero-color);
+    border-radius: 10px;
+    padding: 5px;
+    margin-bottom: 5px;
+    min-width: 120px;
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.submenu.collapsed {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(5px);
+}
+
+.submenu-item {
+    width: 100px;
+    text-align: left;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--second-color);
+}
+/* Existing mobile styles */
+.opciones {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--second-color);
+    z-index: 7;
+    border-radius: 10px;
+    margin-inline: 15px;
+    margin-bottom: 10px;
+}
+
+/* Add media query for large screens */
+@media screen and (min-width: 1024px) {
+    .opciones {
+        top: 70px;
+        left: 0;
+        bottom: 0;
+        right: auto;
+        width: 250px;
+        margin: 0;
+        border-radius: 0;
+        background: var(--second-color);
+        position: fixed;
+        z-index: 999;
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+
+    .menu-secundario {
+        flex-direction: column;
+        max-width: 100%;
+        height: auto;
+        padding: 90px 10px 20px 10px;
+        gap: 10px;
+        justify-content: flex-start;
+       padding-top: 10px;
+    }
+
+    .opcion-btn {
+        width: 230px;
+        max-width: 230px;
+        padding: 15px;
+        z-index: 7;
+        display: flex;
+        flex-direction: row;
+        justify-content: left;
+        padding-left: 50px;
+        background-color: var(--primary-color);
+    }
+    .opcion-btn span {
+        font-size: 13px;
+        text-align: center;
+    }
+    .submenu {
+        left: 100%;
+        bottom: auto;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-left: 10px;
+        margin-bottom: 0;
+        z-index: 8888;
+        gap: 10px;
+        background-color: var(--cero-color);
+    }
+    .submenu-item{
+        display: flex;
+        gap: 10px;
+        width: 130px !important;
+        padding: 15px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .submenu.collapsed {
+        transform: translateY(-50%) translateX(-10px);
+    }
+    /* Ajustar el contenido principal */
+    .home-view, .formProduccion-view, .cuentasProduccion-view, 
+    .newPedido-view, .newTarea-view, .almAcopio-view, 
+    .verificarRegistros-view, .almPrima-view, .usuarios-view, 
+    .consultarRegistros-view, .compras-view, .regAcopio-view, .almacen-view, .regAlmacen-view {
+        height: 90vh !important;
+    }
+    .carga{
+        margin-top: 70px;
+        margin-left: 250px;
+        height: calc(100vh - 70px);
+        width: calc(100% - 250px);
+    }
 }

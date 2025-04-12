@@ -30,7 +30,7 @@ export function inicializarAlmacen() {
                     <p>Salidas</p>
                 </div>
             </div>    
-            <div class="lista-productos"></div>
+            <div class="lista-productos acopio-productos"></div>
         </div>
     `;
     const btnAgregarAcopio = container.querySelector('.btn-agregar-pedido i.fa-plus-circle').parentElement;
@@ -49,7 +49,7 @@ export function inicializarAlmacen() {
     mostrarProductosBruto();
 }
 export function mostrarProductosBruto() {
-    const container = document.querySelector('.lista-productos');
+    const container = document.querySelector('.acopio-productos');
     container.style.display = 'flex';
 
     container.innerHTML = `
@@ -1011,7 +1011,6 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
         anuncio.style.display = 'none';
     };
 }
-
 export async function mostrarFormularioSalidaAcopio() {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -1046,7 +1045,7 @@ export async function mostrarFormularioSalidaAcopio() {
                 <input type="number" step="0.1" id="pesoSalida" class="edit-input" required>
             </div>
             <div class="campo-form">
-                <label>Prooveder:</label>
+                <label>Operador:</label>
                 <input type="text" id="operarioSalida" class="edit-input" required>
             </div>
             <div class="campo-form">

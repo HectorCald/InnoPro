@@ -1,509 +1,421 @@
+export function inicializarUsuarios() {
+    const container = document.querySelector('.usuarios-view');
+    container.style.display = 'flex';
+
+    container.innerHTML = `
+        <div class="title">
+            <h3><i class="fas fa-users"></i> Gestión de Usuarios</h3>
+        </div>
+        <div class="almacenGral-container">
+            <div class="almacen-botones">
+                <div class="cuadro-btn">
+                    <button class="btn-agregar-pedido">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <p>Agregar Usuario</p>
+                </div>
+                <div class="cuadro-btn">
+                    <button class="btn-agregar-pedido">
+                        <i class="fas fa-user-slash"></i>
+                    </button>
+                    <p>Desactivar Usuario</p>
+                </div>
+            </div>    
+            <div class="lista-productos">
+                <div class="almacen-container">
+                    <div class="almacen-header">
+                        <div class="search-bar">
+                            <input type="text" id="searchUsuario" placeholder="Buscar usuario...">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                    </div>
+                    <div class="products-grid" id="usersContainer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-user-plus').parentElement;
+    btnAgregar.onclick = () => mostrarFormularioAgregarUsuario();
+
+    const btnDesactivar = container.querySelector('.btn-agregar-pedido i.fa-user-slash').parentElement;
+    btnDesactivar.onclick = () => mostrarFormularioDesactivarUsuario();
+
+    cargarUsuarios();
+}
+
 export async function cargarUsuarios() {
     try {
         mostrarCarga();
         const response = await fetch('/obtener-usuarios', {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         });
+
         const data = await response.json();
-
         if (data.success) {
-            const usuariosView = document.querySelector('.usuarios-view');
-            if (!usuariosView) return;
-
-            usuariosView.innerHTML = `
-                <div class="usuarios-container">
-                    <div class="usuarios-header">
-                        <h2>Usuarios</h2>
-                        <button class="btn-crear-usuario" onclick="agregarUsuario()">
-                            <i class="fas fa-user-plus"></i> Crear Usuario
-                        </button>
-                    </div>
-                    <div class="usuarios-table">
-                        <div class="table-header">
-                            <div class="header-cell">PIN</div>
-                            <div class="header-cell">Nombre</div>
-                            <div class="header-cell">Rol</div>
+            const container = document.getElementById('usersContainer');
+            container.innerHTML = data.usuarios.map(usuario => `
+                <div class="product-card" data-pin="${usuario.pin}">
+                    <div class="product-info">
+                        <div class="product-name">
+                            <i class="fas fa-user-circle"></i>
+                            <span>${usuario.nombre}</span>
                         </div>
-                        <div class="table-body">
-                            ${data.usuarios.map(usuario => `
-                                <div class="usuario-row">
-                                    <div class="usuario-info" onclick="toggleAcciones('${usuario.pin}')">
-                                        <div class="cell">${usuario.pin}</div>
-                                        <div class="cell">${usuario.nombre}</div>
-                                        <div class="cell">${usuario.rol}</div>
-                                    </div>
-                                    <div class="acciones-dropdown" id="acciones-${usuario.pin}">
-                                        <button onclick="mostrarPermisos('${usuario.pin}')">
-                                            <i class="fas fa-key"></i> Roles
-                                        </button>
-                                        <button onclick="editarUsuario('${usuario.pin}')">
-                                            <i class="fas fa-edit"></i> Editar
-                                        </button>
-                                        <button onclick="eliminarUsuario('${usuario.pin}')">
-                                            <i class="fas fa-trash"></i> Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
+                        <div class="product-quantity">
+                            <div class="registro-estado-acopio">${usuario.rol}</div>
                         </div>
                     </div>
                 </div>
-            `;
-        } else {
-            mostrarNotificacion(data.error || 'Error al cargar usuarios', 'error');
+            `).join('');
+
+            // Agregar event listeners a las tarjetas
+            container.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const pin = card.dataset.pin;
+                    mostrarDetallesUsuario(pin);
+                });
+            });
+
+            // Configurar búsqueda
+            const searchInput = document.getElementById('searchUsuario');
+            const searchIcon = document.querySelector('.search-icon');
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = normalizarTexto(e.target.value);
+                const cards = container.querySelectorAll('.product-card');
+
+                if (e.target.value.length > 0) {
+                    searchIcon.classList.remove('fa-search');
+                    searchIcon.classList.add('fa-times');
+                } else {
+                    searchIcon.classList.remove('fa-times');
+                    searchIcon.classList.add('fa-search');
+                }
+
+                cards.forEach(card => {
+                    const nombre = normalizarTexto(card.querySelector('.product-name span').textContent);
+                    const rol = normalizarTexto(card.querySelector('.registro-estado-acopio').textContent);
+
+                    card.style.display = (nombre.includes(searchTerm) || rol.includes(searchTerm)) ? 'grid' : 'none';
+                });
+            });
+
+            searchIcon.addEventListener('click', () => {
+                if (searchInput.value.length > 0) {
+                    searchInput.value = '';
+                    searchIcon.classList.remove('fa-times');
+                    searchIcon.classList.add('fa-search');
+                    document.querySelectorAll('.product-card').forEach(card => {
+                        card.style.display = 'grid';
+                    });
+                }
+            });
         }
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al cargar usuarios', 'error');
-    }
-    finally{
+    } finally {
         ocultarCarga();
     }
 }
-export async function eliminarUsuario(pin) {
+
+async function mostrarFormularioAgregarUsuario() {
     const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
-    const btnConfirmar = anuncio.querySelector('.confirmar');
-    const btnCancelar = anuncio.querySelector('.cancelar');
+    const anuncioContenido = document.querySelector('.anuncio-contenido');
 
-    btnConfirmar.textContent = 'Eliminar';
-    btnConfirmar.style.backgroundColor = '#f44336';
-
-    // Personalizar el contenido del anuncio
-    contenido.querySelector('h2').textContent = '¿Eliminar usuario?';
-    contenido.querySelector('p').textContent = 'Esta acción no se puede deshacer';
-
-    // Mostrar el anuncio y aplicar el efecto blur
-    anuncio.style.display = 'flex';
-    document.querySelector('.container').classList.add('no-touch');
-
-    // Manejar la confirmación
-    btnConfirmar.onclick = async () => {
-        try {
-            mostrarCarga();
-            const response = await fetch('/eliminar-usuario', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({ pin })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                mostrarNotificacion('Usuario eliminado correctamente', 'success');
-                cargarUsuarios(); // Recargar la lista de usuarios
-            } else {
-                mostrarNotificacion(data.error || 'Error al eliminar usuario', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al eliminar usuario', 'error');
-        }
-        finally{
-            ocultarCarga();
-        }
-
-        // Cerrar el anuncio y quitar el efecto blur
-        anuncio.style.display = 'none';
-        document.querySelector('.container').classList.remove('no-touch');
-    };
-
-    // Manejar la cancelación
-    btnCancelar.onclick = () => {
-        anuncio.style.display = 'none';
-        document.querySelector('.container').classList.remove('no-touch');
-    };
-}
-export async function agregarUsuario() {
-    try {
-        mostrarCarga();
-        const responseRoles = await fetch('/obtener-lista-roles', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
-        });
-        
-        const dataRoles = await responseRoles.json();
-        const roles = dataRoles.success ? dataRoles.roles : [];
-
-        const anuncio = document.querySelector('.anuncio');
-        const contenido = anuncio.querySelector('.anuncio-contenido');
-        const btnConfirmar = anuncio.querySelector('.confirmar');
-        const btnCancelar = anuncio.querySelector('.cancelar');
-
-        btnCancelar.style.display = 'block';
-        btnConfirmar.textContent = 'Crear';
-        btnConfirmar.style.backgroundColor = '#4CAF50';
-
-        contenido.querySelector('h2').textContent = 'Nuevo Usuario';
-        contenido.querySelector('p').innerHTML = `
-            <div class="form-group">
-                <label>Nombre del Usuario</label>
-                <input type="text" id="nombre-usuario" required>
+    anuncioContenido.innerHTML = `
+        <h2><i class="fas fa-user-plus"></i> Agregar Usuario</h2>
+        <div class="relleno">
+            <div class="campo-form">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" class="form-input" placeholder="Nombre del usuario">
             </div>
-            <div class="form-group">
-                <label>PIN (4 dígitos)</label>
-                <input type="text" id="pin-usuario" maxlength="4" pattern="[0-9]{4}" required>
+            <div class="campo-form">
+                <label for="pin">PIN:</label>
+                <input type="text" id="pin" class="form-input" placeholder="PIN de 4 dígitos" maxlength="4">
             </div>
-            <div class="form-group">
-                <label>Selecciona un Rol</label>
-                <div class="roles-container">
-                    ${roles.map(rol => `
-                        <div class="rol-option" data-rol="${rol}" onclick="seleccionarRol(this)">
-                            <span>${rol}</span>
-                        </div>
-                    `).join('')}
-                </div>
-                <input type="hidden" id="rol-seleccionado">
+            <div class="campo-form">
+                <label for="rol">Rol:</label>
+                <select id="rol" class="form-input">
+                    <option value="Administración">Administrador</option>
+                    <option value="Acopio">Acopio</option>
+                    <option value="Producción">Producción</option>
+                    <option value="Almacen">Almacen</option>
+                    <option value="Ventas">Ventas</option>
+                    <option value="Compras">Compras</option>
+                </select>
             </div>
-        `;
-
-        // Show the dialog
-        anuncio.style.display = 'flex';
-
-        // Handle form submission
-        btnConfirmar.onclick = async () => {
-            const nombre = document.getElementById('nombre-usuario').value;
-            const pin = document.getElementById('pin-usuario').value;
-            const rol = document.getElementById('rol-seleccionado').value;
-
-            if (!nombre || !pin || !rol) {
-                mostrarNotificacion('Por favor complete todos los campos', 'error');
-                return;
-            }
-
-            try {
-                mostrarCarga();
-                const response = await fetch('/crear-usuario', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, pin, rol })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    mostrarNotificacion('Usuario creado exitosamente', 'success');
-                    cargarUsuarios();
-                    anuncio.style.display = 'none';
-                } else {
-                    throw new Error(data.error);
-                }
-            } catch (error) {
-                mostrarNotificacion(error.message || 'Error al crear usuario', 'error');
-            }
-            finally{
-                ocultarCarga();
-            }
-        };
-        btnCancelar.onclick = () => {
-            anuncio.style.display = 'none';
-            document.querySelector('.container').classList.remove('no-touch');
-        };
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar roles', 'error');
-    }
-    finally{
-        ocultarCarga();
-    }
-}
-function seleccionarRol(elemento) {
-    // Remove selection from all roles
-    document.querySelectorAll('.rol-option').forEach(el => {
-        el.classList.remove('selected');
-    });
-    
-    // Add selection to clicked role
-    elemento.classList.add('selected');
-    
-    // Update hidden input
-    document.getElementById('rol-seleccionado').value = elemento.dataset.rol;
-}
-window.seleccionarRol = seleccionarRol;
-export function editarUsuario(pin) {
-    const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
-    const btnConfirmar = anuncio.querySelector('.confirmar');
-    const btnCancelar = anuncio.querySelector('.cancelar');
-
-    btnConfirmar.textContent = 'Guardar';
-    btnConfirmar.style.backgroundColor = '#2196F3';
-    btnCancelar.style.display = 'block';
-
-    // Personalizar el contenido del anuncio
-    contenido.querySelector('h2').textContent = 'Editar Usuario';
-    contenido.querySelector('p').innerHTML = `
-        <div class="form-group">
-            <p>PIN Actual</p>
-            <input type="text" id="pin-actual" value="${pin}" readonly>
         </div>
-        <div class="form-group">
-            <p>Nuevo PIN</p>
-            <input type="number" id="nuevo-pin" required>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    // Mostrar el anuncio
     anuncio.style.display = 'flex';
-    document.querySelector('.container').classList.add('no-touch');
 
-    // Manejar la confirmación
-    btnConfirmar.onclick = async () => {
-        const nuevoPIN = document.getElementById('nuevo-pin').value;
+    const confirmed = await new Promise(resolve => {
+        const btnConfirmar = anuncioContenido.querySelector('.confirmar');
+        const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
-        if (!nuevoPIN) {
-            mostrarNotificacion('Por favor ingrese el nuevo PIN', 'error');
-            return;
-        }
-
-        try {
-            mostrarCarga();
-            const response = await fetch('/actualizar-usuario', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({ 
-                    pinActual: pin,
-                    pinNuevo: nuevoPIN
-                })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                mostrarNotificacion('PIN actualizado correctamente', 'success');
-                cargarUsuarios(); // Recargar la lista
-            } else {
-                mostrarNotificacion(data.error || 'Error al actualizar PIN', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al actualizar PIN', 'error');
-        }
-        finally{
-            ocultarCarga();
-        }
-
-        // Cerrar el anuncio
-        anuncio.style.display = 'none';
-        document.querySelector('.container').classList.remove('no-touch');
-    };
-
-    // Manejar la cancelación
-    btnCancelar.onclick = () => {
-        anuncio.style.display = 'none';
-        document.querySelector('.container').classList.remove('no-touch');
-    };
-}
-export async function mostrarPermisos(pin) {
-    const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
-    const btnConfirmar = anuncio.querySelector('.confirmar');
-    const btnCancelar = anuncio.querySelector('.cancelar');
-
-    btnConfirmar.textContent = 'Cerrar';
-    btnConfirmar.style.backgroundColor = '#2196F3';
-    btnCancelar.style.display = 'none';
-
-    // Personalizar el contenido del anuncio
-    contenido.querySelector('h2').textContent = 'Gestión de Roles';
-    
-    try {
-        mostrarCarga();
-        // Obtener roles actuales del usuario
-        // Obtener permisos actuales del usuario
-        const responsePermisos = await fetch(`/obtener-permisos/${pin}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
+        btnConfirmar.addEventListener('click', () => {
+            const formData = {
+                nombre: document.getElementById('nombre').value,
+                pin: document.getElementById('pin').value,
+                rol: document.getElementById('rol').value
+            };
+            anuncio.style.display = 'none';
+            resolve(formData);
         });
 
-        // Obtener lista completa de permisos disponibles
-        const responseListaPermisos = await fetch('/obtener-lista-permisos', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
+        btnCancelar.addEventListener('click', () => {
+            anuncio.style.display = 'none';
+            resolve(false);
         });
+    });
 
-        const dataPermisos = await responsePermisos.json();
-        const dataListaPermisos = await responseListaPermisos.json();
-        
-        if (dataPermisos.success && dataListaPermisos.success) {
-            const permisosActuales = dataPermisos.permisos;
-            const todosLosPermisos = dataListaPermisos.permisos;
+    if (!confirmed) return;
 
-            contenido.querySelector('p').innerHTML = `
-                <div class="permisos-lista">
-                    <p>PIN: ${pin}</p>
-                    <div class="permisos-container">
-                        <h3>Roles Actuales</h3>
-                        <div class="permisos-actuales">
-                            ${permisosActuales.length > 0 
-                                ? permisosActuales.map(permiso => `
-                                    <div class="permiso-item" id="permiso-${permiso.replace(/\s/g, '-')}">
-                                        <span><i class="fas fa-check-circle"></i> ${permiso}</span>
-                                        <button class="btn-eliminar-permiso" onclick="eliminarPermiso('${pin}', '${permiso}')">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                `).join('')
-                                : '<p class="no-permisos">Este usuario no tiene permisos asignados</p>'
-                            }
-                        </div>
-                        <h3>Roles Disponibles</h3>
-                        <div class="permisos-disponibles">
-                            ${todosLosPermisos
-                                .filter(permiso => !permisosActuales.includes(permiso))
-                                .map(permiso => `
-                                    <div class="permiso-disponible" onclick="agregarPermiso('${pin}', '${permiso}')">
-                                        <i class="fas fa-plus-circle"></i>
-                                        ${permiso}
-                                    </div>
-                                `).join('')
-                            }
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            contenido.querySelector('p').innerHTML = `
-                <div class="error-mensaje">
-                    <i class="fas fa-exclamation-circle"></i>
-                    Error al cargar los permisos
-                </div>
-            `;
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        contenido.querySelector('p').innerHTML = `
-            <div class="error-mensaje">
-                <i class="fas fa-exclamation-circle"></i>
-                Error al cargar los permisos
-            </div>
-        `;
-    }
-    finally{
-        ocultarCarga();
-    }
-
-    // Mostrar el anuncio
-    anuncio.style.display = 'flex';
-    document.querySelector('.container').classList.add('no-touch');
-
-    // Manejar el cierre
-    const cerrarAnuncio = () => {
-        anuncio.style.display = 'none';
-        document.querySelector('.container').classList.remove('no-touch');
-    };
-
-    btnConfirmar.onclick = cerrarAnuncio;
-    btnCancelar.onclick = cerrarAnuncio;
-}
-export async function agregarPermiso(pin, permiso, event) {  // Add event parameter
     try {
         mostrarCarga();
-        const response = await fetch('/agregar-permiso', {
+        const response = await fetch('/agregar-usuario', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({ pin, permiso })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(confirmed)
         });
 
         const data = await response.json();
         if (data.success) {
-            // Get the clicked element directly from the DOM
-            const permisoDisponible = document.querySelector(`.permiso-disponible[onclick*="${permiso}"]`);
-            if (permisoDisponible) {
-                permisoDisponible.style.animation = 'fadeOut 0.3s ease-out forwards';
-                setTimeout(() => {
-                    permisoDisponible.remove();
-                    
-                    // Add to current permissions
-                    const permisosActuales = document.querySelector('.permisos-actuales');
-                    if (permisosActuales) {
-                        const noPermisos = permisosActuales.querySelector('.no-permisos');
-                        if (noPermisos) noPermisos.remove();
-
-                        const nuevoPermiso = document.createElement('div');
-                        nuevoPermiso.className = 'permiso-item permiso-agregado';
-                        nuevoPermiso.id = `permiso-${permiso.replace(/\s/g, '-')}`;
-                        nuevoPermiso.innerHTML = `
-                            <span><i class="fas fa-check-circle"></i> ${permiso}</span>
-                            <button class="btn-eliminar-permiso" onclick="eliminarPermiso('${pin}', '${permiso}')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        `;
-                        permisosActuales.appendChild(nuevoPermiso);
-                    }
-                }, 300);
-            }
-            
-            mostrarNotificacion('Permiso agregado correctamente', 'success');
+            mostrarNotificacion('Usuario agregado correctamente', 'success');
+            await cargarUsuarios();
         } else {
-            mostrarNotificacion(data.error || 'Error al agregar permiso', 'error');
+            throw new Error(data.error || 'Error al agregar usuario');
         }
     } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al agregar permiso', 'error');
-    }
-    finally{
+        mostrarNotificacion(error.message, 'error');
+    } finally {
         ocultarCarga();
     }
 }
-export async function eliminarPermiso(pin, permiso) {
+
+
+async function mostrarFormularioDesactivarUsuario() {
+    const anuncio = document.querySelector('.anuncio');
+    const anuncioContenido = document.querySelector('.anuncio-contenido');
+
+    anuncioContenido.innerHTML = `
+        <h2><i class="fas fa-user-cog"></i> Cambiar Estado de Usuario</h2>
+        <div class="relleno">
+            <div class="campo-form">
+                <label for="pin">PIN del usuario:</label>
+                <input type="text" id="pin" class="form-input" placeholder="Ingrese PIN" maxlength="4">
+            </div>
+            <div class="campo-form">
+                <label for="estado">Nuevo Estado:</label>
+                <select id="estado" class="form-input">
+                    <option value="Activo">Activar</option>
+                    <option value="Inactivo">Desactivar</option>
+                </select>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn blue confirmar"><i class="fas fa-save"></i> Guardar Cambios</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+
+    const confirmed = await new Promise(resolve => {
+        const btnConfirmar = anuncioContenido.querySelector('.confirmar');
+        const btnCancelar = anuncioContenido.querySelector('.cancelar');
+
+        btnConfirmar.addEventListener('click', () => {
+            const formData = {
+                pin: document.getElementById('pin').value,
+                estado: document.getElementById('estado').value
+            };
+            anuncio.style.display = 'none';
+            resolve(formData);
+        });
+
+        btnCancelar.addEventListener('click', () => {
+            anuncio.style.display = 'none';
+            resolve(false);
+        });
+    });
+
+    if (!confirmed) return;
+
     try {
         mostrarCarga();
-        const response = await fetch('/eliminar-permiso', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({ pin, permiso })
+        const response = await fetch('/cambiar-estado-usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',  // Add this line
+            body: JSON.stringify(confirmed)
         });
 
         const data = await response.json();
         if (data.success) {
-            // Eliminar visualmente el permiso actual
-            const permisoElement = document.getElementById(`permiso-${permiso.replace(/\s/g, '-')}`);
-            if (permisoElement) {
-                permisoElement.style.animation = 'fadeOut 0.3s ease-out forwards';
-                setTimeout(() => {
-                    permisoElement.remove();
-                    
-                    // Agregar el permiso a la sección de disponibles
-                    const permisosDisponibles = document.querySelector('.permisos-disponibles');
-                    if (permisosDisponibles) {
-                        const nuevoPermisoDisponible = document.createElement('div');
-                        nuevoPermisoDisponible.className = 'permiso-disponible';
-                        nuevoPermisoDisponible.onclick = () => agregarPermiso(pin, permiso);
-                        nuevoPermisoDisponible.innerHTML = `
-                            <i class="fas fa-plus-circle"></i>
-                            ${permiso}
-                        `;
-                        nuevoPermisoDisponible.style.animation = 'fadeIn 0.3s ease-in forwards';
-                        permisosDisponibles.appendChild(nuevoPermisoDisponible);
-                    }
-                }, 300);
-            }
-            mostrarNotificacion('Permiso eliminado correctamente', 'success');
+            mostrarNotificacion(`Usuario ${confirmed.estado.toLowerCase()} correctamente`, 'success');
+            await cargarUsuarios();
         } else {
-            mostrarNotificacion(data.error || 'Error al eliminar permiso', 'error');
+            throw new Error(data.error || 'Error al cambiar estado del usuario');
         }
     } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al eliminar permiso', 'error');
-    }
-    finally{
+        mostrarNotificacion(error.message, 'error');
+    } finally {
         ocultarCarga();
     }
 }
+
+async function mostrarDetallesUsuario(pin) {
+    try {
+        mostrarCarga();
+        const response = await fetch('/obtener-usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ pin })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Error al obtener detalles del usuario');
+        }
+
+        const usuario = data.usuario;
+        const anuncio = document.querySelector('.anuncio');
+        const anuncioContenido = document.querySelector('.anuncio-contenido');
+
+        anuncioContenido.innerHTML = `
+    <h2><i class="fas fa-user-circle"></i> Detalles del Usuario</h2>
+    <div class="relleno">
+        <div class="detalles-grup">
+            <div class="detalle-item">
+                <i class="fas fa-user"></i>
+                <p>Nombre:</p> 
+                <span>${usuario.nombre}</span>
+            </div>
+            <div class="detalle-item">
+                <i class="fas fa-user-tag"></i>
+                <p>Rol:</p>
+                <span> ${usuario.rol}</span>
+            </div>
+            <div class="detalle-item">
+                <i class="fas fa-key"></i>
+                <p>PIN:</p>
+                <span> ${usuario.pin}</span>
+            </div>
+            <div class="detalle-item">
+                <i class="fas fa-circle${usuario.estado ? ' text-success' : ' text-danger'}"></i>
+                <p>Estado:</p> 
+                <span>${usuario.estado ? 'Activo' : 'Inactivo'}</span>
+            </div>
+        </div>
+        <div class="campo-form">
+            <label for="nuevo-pin">Nuevo PIN:</label>
+            <input type="text" id="nuevo-pin" class="form-input" placeholder="Nuevo PIN de 4 dígitos" maxlength="4">
+        </div>
+        <div class="campo-form">
+            <label for="nuevo-rol">Nuevo Rol:</label>
+            <select id="nuevo-rol" class="form-input">
+                <option value="Administración">Administrador</option>
+                <option value="Acopio">Acopio</option>
+                <option value="Producción">Producción</option>
+                <option value="Almacen">Almacen</option>
+                <option value="Ventas">Ventas</option>
+                <option value="Compras">Compras</option>
+            </select>
+        </div>
+    </div>
+    <div class="anuncio-botones">
+        <button class="anuncio-btn blue actualizar-pin"><i class="fas fa-key"></i> Actualizar PIN</button>
+        <button class="anuncio-btn green actualizar-rol"><i class="fas fa-user-tag"></i> Actualizar Rol</button>
+        <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+    </div>
+`;
+
+        anuncio.style.display = 'flex';
+
+        const btnActualizarPin = anuncioContenido.querySelector('.actualizar-pin');
+        const btnActualizarRol = anuncioContenido.querySelector('.actualizar-rol');
+        const btnCancelar = anuncioContenido.querySelector('.cancelar');
+
+        btnActualizarPin.onclick = async () => {
+            const nuevoPIN = document.getElementById('nuevo-pin').value;
+            if (nuevoPIN && nuevoPIN.length === 4) {
+                try {
+                    const response = await fetch('/actualizar-pin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            pin: usuario.pin,
+                            nuevoPIN: nuevoPIN
+                        })
+                    });
+        
+                    const data = await response.json();
+                    if (data.success) {
+                        mostrarNotificacion('PIN actualizado correctamente', 'success');
+                        anuncio.style.display = 'none';
+                        await cargarUsuarios();
+                    } else {
+                        throw new Error(data.error || 'Error al actualizar PIN');
+                    }
+                } catch (error) {
+                    mostrarNotificacion(error.message, 'error');
+                }
+            } else {
+                mostrarNotificacion('El PIN debe tener 4 dígitos', 'error');
+            }
+        };
+        btnActualizarRol.onclick = async () => {
+            const nuevoRol = document.getElementById('nuevo-rol').value;
+            try {
+                const response = await fetch('/actualizar-rol', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        pin: usuario.pin,
+                        nuevoRol: nuevoRol
+                    })
+                });
+        
+                const data = await response.json();
+                if (data.success) {
+                    mostrarNotificacion('Rol actualizado correctamente', 'success');
+                    anuncio.style.display = 'none';
+                    await cargarUsuarios();
+                } else {
+                    throw new Error(data.error || 'Error al actualizar rol');
+                }
+            } catch (error) {
+                mostrarNotificacion(error.message, 'error');
+            }
+        };
+        
+        
+
+        btnCancelar.onclick = () => anuncio.style.display = 'none';
+
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+
+// No olvides exportar las funciones
+export {
+    mostrarFormularioAgregarUsuario,
+    mostrarFormularioDesactivarUsuario,
+    mostrarDetallesUsuario
+};

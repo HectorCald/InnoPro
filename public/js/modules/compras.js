@@ -4,7 +4,9 @@ export function inicializarCompras() {
     const container = document.querySelector('.compras-view');
     container.style.display = 'flex';
     container.innerHTML = `
-        <div class="pedidos-container">
+            <div class="title">
+                <h3><i class="fas fa-shopping-cart"></i> Compras Acopio</h3>
+            </div>
             <div class="entregados-section">
                 <div class="section-header">
                     <h3><i class="fas fa-check-circle"></i> Resumen de Entregas</h3>
@@ -15,25 +17,70 @@ export function inicializarCompras() {
                 <div class="resumen-mensaje"></div>
             </div>
             <div class="pedidos-section">
-                <div class="section-header">
+                <div class="section-header collapsible">
                     <h3><i class="fas fa-clock"></i> Pedidos Pendientes</h3>
                     <span class="contador-pendientes">0</span>
+                    <i class="fas fa-chevron-down section-arrow"></i>
                 </div>
-                <div class="pedidos-list pendientes"></div>
+                <div class="pedidos-list pendientes collapsed"></div>
             </div>
             <div class="pedidos-section">
-                <div class="section-header">
+                <div class="section-header collapsible">
+                    <h3><i class="fas fa-spinner"></i> En Proceso</h3>
+                    <span class="contador-proceso">0</span>
+                    <i class="fas fa-chevron-down section-arrow"></i>
+                </div>
+                <div class="pedidos-list proceso collapsed"></div>
+            </div>
+            <div class="pedidos-section">
+                <div class="section-header collapsible">
                     <h3><i class="fas fa-times-circle"></i> Pedidos Rechazados</h3>
                     <span class="contador-rechazados">0</span>
+                    <i class="fas fa-chevron-down section-arrow"></i>
                 </div>
-                <div class="pedidos-list rechazados"></div>
+                <div class="pedidos-list rechazados collapsed"></div>
             </div>
-        </div>
-        
     `;
 
+    // Agregar eventos para los headers desplegables
+    const headers = container.querySelectorAll('.section-header.collapsible');
+    headers.forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('.section-arrow');
+            const comprasView = document.querySelector('.compras-view');
+
+            // Cerrar otras secciones primero
+            headers.forEach(otherHeader => {
+                if (otherHeader !== header) {
+                    const otherContent = otherHeader.nextElementSibling;
+                    const otherArrow = otherHeader.querySelector('.section-arrow');
+                    otherContent.classList.add('collapsed');
+                    if (otherArrow) {
+                        otherArrow.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
+
+            // Toggle la sección actual
+            content.classList.toggle('collapsed');
+            arrow.style.transform = content.classList.contains('collapsed') ? 'rotate(0deg)' : 'rotate(180deg)';
+
+            // Si la sección está abierta, hacer scroll hasta el header
+            if (!content.classList.contains('collapsed')) {
+                setTimeout(() => {
+                    const headerRect = header.getBoundingClientRect();
+                    const headerOffset = headerRect.top + comprasView.scrollTop - 90; // 10px de margen superior
+                    comprasView.scrollTo({
+                        top: headerOffset,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            }
+        });
+    });
+
     cargarPedidos();
-    ocultarCarga();
 }
 async function cargarPedidos() {
     try {
@@ -43,16 +90,22 @@ async function cargarPedidos() {
         const resPendientes = await fetch('/obtener-pedidos-estado/Pendiente');
         const dataPendientes = await resPendientes.json();
 
+        // Cargar pedidos en proceso
+        const resProceso = await fetch('/obtener-pedidos-estado/En proceso');
+        const dataProceso = await resProceso.json();
+
         // Cargar pedidos rechazados
         const resRechazados = await fetch('/obtener-pedidos-estado/Rechazado');
         const dataRechazados = await resRechazados.json();
 
         // Actualizar contadores
         document.querySelector('.contador-pendientes').textContent = dataPendientes.pedidos.length;
+        document.querySelector('.contador-proceso').textContent = dataProceso.pedidos.length;
         document.querySelector('.contador-rechazados').textContent = dataRechazados.pedidos.length;
 
         // Mostrar pedidos
         mostrarPedidos(dataPendientes.pedidos, 'pendientes');
+        mostrarPedidos(dataProceso.pedidos, 'proceso');
         mostrarPedidos(dataRechazados.pedidos, 'rechazados');
     } catch (error) {
         console.error('Error:', error);
@@ -149,7 +202,7 @@ export async function eliminarPedido(button) {
         if (!confirmed) return;
 
         mostrarCarga();
-        const response = await fetch('/eliminar-pedido-compras', {
+        const response = await fetch('/eliminar-pedido', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -185,7 +238,6 @@ export async function entregarPedido(button) {
             <h2><i class="fas fa-check-circle"></i>Entregar Pedido</h2>
             <div class="relleno">
                 <p>Entrega de: ${nombre} (${id})</p>
-                <div class="anuncio-form">
                     <div class="campo-form">
                         <label for="cantidad">Cantidad:</label>
                         <input type="number" id="cantidad" class="form-input" placeholder="Cantidad en Kg.">
@@ -199,6 +251,10 @@ export async function entregarPedido(button) {
                         <input type="number" id="precio" class="form-input" placeholder="0.00" step="0.01">
                     </div>
                     <div class="campo-form">
+                        <label for="precio">Transporte y otros:</label>
+                        <input type="number" id="transporte" class="form-input" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="campo-form">
                         <label for="observaciones">Cantidad:</label>
                         <div style="display: flex; gap: 10px;">
                             <input type="number" id="observaciones" class="form-input" style="flex: 2;" placeholder="Cantidad">
@@ -208,7 +264,6 @@ export async function entregarPedido(button) {
                             </select>
                         </div>
                     </div>
-                </div>
                 <p>Estado:</p>  
                 <div class="campo-form">
                     <div class="anuncio-botones" style="margin-top: 10px;">
@@ -244,17 +299,22 @@ export async function entregarPedido(button) {
             const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
             const handleConfirm = () => {
-                const cantidad = document.getElementById('observaciones').value;
-                const unidad = document.getElementById('unidad').value;
-                const estadoSeleccionado = anuncioContenido.querySelector('.filter-btn.active').dataset.status;
+                // Obtener y validar todos los valores
+                const transporteInput = document.getElementById('transporte');
+                const transporteValue = transporteInput ? transporteInput.value : '0';
+                console.log('Valor del input transporte:', transporteValue); // Debugging
+
                 const formData = {
                     cantidad: document.getElementById('cantidad').value,
                     proveedor: document.getElementById('proveedor').value,
                     precio: document.getElementById('precio').value,
-                    observaciones: cantidad,
-                    unidad: unidad,
-                    estado: estadoSeleccionado
+                    transporte: transporteValue,
+                    observaciones: document.getElementById('observaciones').value,
+                    unidad: document.getElementById('unidad').value,
+                    estado: anuncioContenido.querySelector('.filter-btn.active').dataset.status
                 };
+
+                console.log('FormData completo:', formData); // Debugging
                 handleClick(formData);
             };
 
@@ -278,6 +338,7 @@ export async function entregarPedido(button) {
         const userData = await userResponse.json();
         const usuarioActual = userData.nombre;
 
+
         const response = await fetch('/entregar-pedido', {
             method: 'POST',
             headers: {
@@ -288,9 +349,10 @@ export async function entregarPedido(button) {
                 cantidad: confirmed.cantidad,
                 proveedor: confirmed.proveedor,
                 precio: confirmed.precio,
+                transporte: confirmed.transporte || '0', // Aseguramos que se envíe el valor
                 observaciones: confirmed.observaciones,
                 unidad: confirmed.unidad,
-                estado: confirmed.estado  // Including the state in the request
+                estado: confirmed.estado
             })
         });
 

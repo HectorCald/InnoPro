@@ -6,9 +6,9 @@
     top: 70px !important;
     left: 0;
     width: 100%;
-    height: calc(100vh - 60px) !important;
-    background-color: rgba(0, 0, 0, 0.352);
-    backdrop-filter: blur(8px);
+    height: calc(100vh - 70px) !important;
+    background-color: rgba(24, 24, 24, 0.352);
+    backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(8px);
     z-index: 9;
     display: none;
@@ -29,11 +29,13 @@
     width: 90%;
     max-width: 400px;
     max-height: 85vh;
+    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     position: absolute;
     z-index: 8;
+    border: 1px solid var(--cero-color);
 }
 .anuncio-contenido .relleno{
     background: none;
@@ -53,22 +55,19 @@
     }
 
     &::-webkit-scrollbar-track {
-        background: rgba(128, 128, 128, 0.1);
+        background: var(--second-color);
         border-radius: 10px;
     }
 
     &::-webkit-scrollbar-thumb {
-        background: #626262;
+        background: rgb(71, 71, 71);
         border-radius: 10px;
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        background: #626262;
+        background: gray;
     }
 
-    /* For Firefox */
-    scrollbar-width: thin;
-    scrollbar-color: #626262 rgba(128, 128, 128, 0.1);
     margin: 0;
     gap: 5px !important;
     position: relative;
@@ -116,7 +115,6 @@
     transition: all 0.3s ease;
     width: 100%;
     padding: 8px;
-    margin-bottom: 5px;
     background: none;
     color: white;
 }

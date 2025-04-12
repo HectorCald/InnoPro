@@ -1,158 +1,189 @@
+@import'styles/colores.css';
+
+/* Contenedor principal */
 .advertencia {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.875);
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 10000;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    z-index: 1000;
+}
 
-    .advertencia-contenido::-webkit-scrollbar {
-        display: none;
-    }
+/* Contenido modal */
+.advertencia-contenido {
+    background-color: var(--second-color);
+    border-radius: 10px;
+    max-width: 500px;
+    width: 95%;
+    max-height: 85vh;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
-    .advertencia-contenido {
-        background-color: var(--background);
-        padding: 15px;
-        border-radius: 15px;
-        max-width: 500px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
+}
 
-    .advertencia-contenido h2 {
-        color: var(--primary-text);
-        margin-bottom: 10px;
-        text-align: center;
-        font-size: 16px;
-    }
+/* Encabezado */
+.advertencia-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-    .notificaciones-lista {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
+.advertencia-header h2 {
+    color: var(--primary-text);
+    margin: 0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-    .notificacion-item {
-        background-color: var(--primary-color);
-        padding: 1em;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-    }
+/* Lista de notificaciones */
+.notificaciones-lista {
+    padding: 20px;
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
-    .notif-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.5em;
-        font-size: 12px;
-        color: var(--primary-text);
-        align-items: center;
-    }
+/* Estilos del scrollbar */
+.notificaciones-lista::-webkit-scrollbar {
+    width: 8px;
+}
 
-    .notif-info {
-        display: flex;
-        width: 100%;
-        justify-content: space-between;
-        margin-right: 70px;
-    }
+.notificaciones-lista::-webkit-scrollbar-track {
+    background: var(--second-color);
+    border-radius: 10px;
+}
 
-    .btn-eliminar-notif {
-        background: none;
-        border: none;
-        color: var(--danger-color);
-        cursor: pointer;
-        padding: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: background-color 0.3s;
-    }
+.notificaciones-lista::-webkit-scrollbar-thumb {
+    background: rgb(71, 71, 71);
+    border-radius: 10px;
+}
 
-    .btn-eliminar-notif:hover {
-        background-color: rgba(220, 53, 69, 0.1);
-    }
+.notificaciones-lista::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+/* Item de notificación */
+.notificacion-item {
+    padding: 15px;
+    border-radius: 10px;
+    background-color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    padding-right: 80px;
+}
 
-    .btn-eliminar-notif i {
-        font-size: 12px;
-    }
+.notif-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
 
+.notif-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
 
-    .mensaje {
-        color: var(--primary-text);
-        margin: 0;
-        padding: 10px;
-        border-radius: 10px;
-        font-size: 13px;
-    }
-    .anuncio-botones{
-        display: flex;
-        flex-direction: row;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    .btn-aceptar {
-        display: block;
-        padding: 10px;
-        background-color: var(--second-button);
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        width: 100%;
-    }
+.fecha {
+    font-size: 12px;
+    opacity: 0.8;
+}
 
-    .btn-aceptar-eliminar {
-        display: block;
-        padding-inline: 10px;
-        background-color: red;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        width: 100%;
-    }
+.origen {
+    font-weight: bold;
+    font-size: 13px;
+}
 
-    .btn-aceptar:hover {
-        background-color: var(--accent-color-hover);
-    }
+.mensaje {
+    font-size: 12px;
+    line-height: 1.4;
+}
 
-    .consejo {
-        text-align: center;
-        font-size: 13px;
-        margin-bottom: 5px;
-        color: gray;
-    }
-    .confirmacion-lectura {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 30px;
-        padding: 10px;
-        gap: 10px;
-    }
-    .confirmacion-lectura input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-        border-radius: 10px;
-        accent-color: green;
-        cursor: pointer;
-    }
+/* Etiqueta de tiempo */
+.tiempo-tag {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
 
-    .confirmacion-lectura span {
-        font-size: 13px;
-        user-select: none;
-        text-align: center;
-        margin: 0;
-    }
+/* Colores de las etiquetas según tiempo */
+.tiempo-tag.reciente { background-color: #4CAF50; color: white; }
+.tiempo-tag.dias-3 { background-color: #8BC34A; color: white; }
+.tiempo-tag.dias-5 { background-color: #FFC107; color: black; }
+.tiempo-tag.dias-7 { background-color: #FF9800; color: white; }
+.tiempo-tag.dias-14 { background-color: #f44336; color: white; }
+
+/* Confirmación de lectura */
+.confirmacion-lectura {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.confirmacion-lectura input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-color);
+}
+
+.confirmacion-lectura span {
+    font-size: 14px;
+}
+
+/* Botones */
+.btn-eliminar-todas {
+    width: 100%;
+    padding: 12px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 14px;
+    margin: 10px;
+}
+
+.btn-eliminar-todas:hover {
+    background-color: #780000;
+}
+
+.btn-cerrar {
+    background: none;
+    border: none;
+    color: var(--primary-text);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.btn-cerrar:hover {
+    background-color: var(--hover-color);
 }

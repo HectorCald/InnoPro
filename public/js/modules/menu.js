@@ -2,6 +2,47 @@ export function initializeMenu(roles, opcionesDiv, vistas) {
     const { menuPrincipal, menuSecundario, overlay } = initializeMenuStructure(opcionesDiv);
     initializeMenuEvents(menuPrincipal, menuSecundario, overlay);
     initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, overlay);
+    const container = document.querySelector('.container');
+    vistas.forEach(vista => {
+        vista.addEventListener('scroll', () => {
+            document.querySelectorAll('.submenu:not(.collapsed)').forEach(submenu => {
+                submenu.classList.add('collapsed');
+                const arrow = submenu.parentElement.querySelector('.submenu-arrow');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+    });
+
+    if (container) {
+        // Ocultar en scroll
+        container.addEventListener('scroll', () => {
+            document.querySelectorAll('.submenu:not(.collapsed)').forEach(submenu => {
+                submenu.classList.add('collapsed');
+                const arrow = submenu.parentElement.querySelector('.submenu-arrow');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+
+        // Ocultar al hacer clic en cualquier vista
+        container.addEventListener('click', (e) => {
+            if (!e.target.closest('.submenu-container')) {
+                document.querySelectorAll('.submenu:not(.collapsed)').forEach(submenu => {
+                    submenu.classList.add('collapsed');
+                    const arrow = submenu.parentElement.querySelector('.submenu-arrow');
+                    if (arrow) {
+                        arrow.style.transform = 'rotate(0deg)';
+                    }
+                });
+            }
+        });
+    }
+
+    menuSecundario.addEventListener('click', (e) => e.stopPropagation());
+
 }
 function initializeMenuStructure(opcionesDiv) {
     const isDesktop = window.innerWidth >= 1024;
@@ -85,9 +126,8 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                 texto: 'Producción',
                 submenu: [
                     { clase: 'opcion-btn submenu-item', vista: 'verificarRegistros-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistros()"' },
-                    { clase: 'opcion-btn submenu-item', vista: 'almPrima-view', icono: 'fa-warehouse', texto: 'Alm Prima', onclick: 'onclick="inicializarAlmacenPrima()"' },
                     { clase: 'opcion-btn submenu-item', vista: 'preciosPro-view', icono: 'fa-dollar-sign', texto: 'Precios', onclick: 'onclick="initializePreciosPro()"' }
-                   
+
                 ]
             },
             {
@@ -97,10 +137,10 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                 submenu: [
                     { clase: 'opcion-btn submenu-item', vista: 'almacen-view', icono: 'fa-dolly', texto: 'Gestion', onclick: 'onclick="inicializarAlmacenGral()"' },
                     { clase: 'opcion-btn submenu-item', vista: 'regAlmacen-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAlmacenGral()"' }
-                   
+
                 ]
             },
-            { clase: 'opcion-btn', vista: 'usuarios-view', icono: 'fa-users-cog', texto: 'Usuarios', onclick: 'onclick="cargarUsuarios()"' },
+            { clase: 'opcion-btn', vista: 'usuarios-view', icono: 'fa-users-cog', texto: 'Usuarios', onclick: 'onclick="inicializarUsuarios()"' },
         ]
     };
 
@@ -141,49 +181,34 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                     submenuButton.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        
+
                         // Toggle submenu
                         submenu.classList.toggle('collapsed');
-                        arrow.style.transform = submenu.classList.contains('collapsed') ? 'rotate(0)' : 'rotate(180deg)';
-                        
+                        if (arrow) {
+                            arrow.style.transform = submenu.classList.contains('collapsed') ? 'rotate(0deg)' : 'rotate(180deg)';
+                        }
+
                         // Close other submenus
                         document.querySelectorAll('.submenu:not(.collapsed)').forEach(other => {
                             if (other !== submenu) {
                                 other.classList.add('collapsed');
-                                const otherArrow = other.previousElementSibling.querySelector('.submenu-arrow');
+                                const otherArrow = other.parentElement.querySelector('.submenu-arrow');
                                 if (otherArrow) {
-                                    otherArrow.style.transform = 'rotate(0)';
+                                    otherArrow.style.transform = 'rotate(0deg)';
                                 }
                             }
                         });
                     });
 
-                    // Add click events to submenu items
+                                       // Add click events to submenu items
                     submenu.querySelectorAll('.submenu-item').forEach(item => {
                         item.addEventListener('click', async (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                    
-                            // Remove active class from all buttons except the parent submenu trigger
-                            menuSecundario.querySelectorAll('.opcion-btn').forEach(b => {
-                                if (!b.dataset.hasSubmenu) {
-                                    b.classList.remove('active');
-                                }
-                            });
-                            
-                            // Add active class to clicked item
-                            item.classList.add('active');
-                            
-                            // Keep parent submenu open and active
-                            const parentContainer = item.closest('.submenu-container');
-                            const submenu = parentContainer.querySelector('.submenu');
-                            submenu.classList.remove('collapsed');
-                            const arrow = parentContainer.querySelector('.submenu-arrow');
-                            arrow.style.transform = 'rotate(180deg)';
-                    
+
                             const vistaId = item.dataset.vista;
                             const vistaActual = document.querySelector(`.${vistaId}`);
-                            
+
                             if (vistaActual) {
                                 // Hide all views
                                 vistas.forEach(vista => {
@@ -205,32 +230,33 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                                     });
                                 }, 300);
 
-                                // Handle mobile menu
-                                if (window.innerWidth < 1024) {
-                                    menuPrincipal.classList.remove('active');
-                                    menuSecundario.classList.remove('active');
-                                    overlay.style.display = 'none';
-                                }
+                                // Update active states
+                                menuSecundario.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('active'));
+                                item.classList.add('active');
+                                submenuButton.classList.add('active');
+
+                                // Close submenu after selection
+                                submenu.classList.add('collapsed');
                             }
                         });
                     });
                     window.actualizarBotonActivo = (vistaId) => {
                         const targetButton = menuSecundario.querySelector(`[data-vista="${vistaId}"]`);
                         if (!targetButton) return;
-                    
+
                         // Remove active class from all buttons
                         menuSecundario.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('active'));
-                        
+
                         // Add active class to target button
                         targetButton.classList.add('active');
-                        
+
                         // If target is submenu item, keep parent active and open
                         const parentContainer = targetButton.closest('.submenu-container');
                         if (parentContainer) {
                             const parentTrigger = parentContainer.querySelector('[data-has-submenu]');
                             const submenu = parentContainer.querySelector('.submenu');
                             const arrow = parentContainer.querySelector('.submenu-arrow');
-                            
+
                             parentTrigger.classList.add('active');
                             submenu.classList.remove('collapsed');
                             arrow.style.transform = 'rotate(180deg)';

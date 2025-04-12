@@ -77,13 +77,23 @@ async function verificarPin(pin) {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2:C'
+            range: 'Usuarios!A2:D'  // Changed to include column D (estado)
         });
         const rows = response.data.values || [];
         const usuario = rows.find(row => row[0] === pin);
         
         if (usuario) {
             const nombre = usuario[1];
+            const estado = usuario[3]; // Get estado from column D
+
+            // Check if user is inactive
+            if (estado !== 'Activo') {
+                return { 
+                    valido: false,
+                    mensaje: 'Usuario inactivo'
+                };
+            }
+
             const rol = (nombre === 'Almacen_adm' || nombre === 'Administrador') ? 'admin' : 
                        nombre === 'Almacen' ? 'almacen' : 'user';
             
@@ -630,85 +640,7 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
 });
 
 
-
-
-
-
 /* ==================== RUTAS DE API - GESTIÓN DE USUARIOS ==================== */
-app.post('/crear-usuario', requireAuth, async (req, res) => {
-    try {
-        const { nombre, pin, rol } = req.body;
-
-        if (!nombre || !pin || !rol) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Faltan datos requeridos' 
-            });
-        }
-
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Verificar si el PIN ya existe
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        if (rows.some(row => row[0] === pin)) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'El PIN ya está en uso' 
-            });
-        }
-
-        // Agregar nuevo usuario
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[pin, nombre, rol]]
-            }
-        });
-
-        res.json({
-            success: true,
-            message: 'Usuario creado exitosamente'
-        });
-    } catch (error) {
-        console.error('Error al crear usuario:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al crear usuario: ' + error.message
-        });
-    }
-});
-app.get('/obtener-usuarios', requireAuth, async (req, res) => {
-    try {
-
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const usuarios = rows.map(row => ({
-            pin: row[0] || '',
-            nombre: row[1] || '',
-            rol: row[2] || ''  // Cambiamos de permisos a rol
-        }));
-
-        res.json({ success: true, usuarios });
-    } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener usuarios: ' + error.message 
-        });
-    }
-});
 app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
     try {
 
@@ -718,7 +650,7 @@ app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
         // Obtener todos los usuarios
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2:C'
+            range: 'Usuarios!A2:D'
         });
 
         const rows = response.data.values || [];
@@ -770,63 +702,202 @@ app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
         });
     }
 });
-app.put('/actualizar-usuario', requireAuth, async (req, res) => {
+app.get('/obtener-usuarios', requireAuth, async (req, res) => {
     try {
-
-        const { pinActual, pinNuevo } = req.body;
-
-        if (!pinActual || !pinNuevo) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'PIN actual y nuevo son requeridos' 
-            });
-        }
-
         const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener usuarios actuales
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
+            range: 'Usuarios!A2:D' // A:PIN, B:Nombre, C:Rol, D:Estado
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === pinActual);
+        const usuarios = rows.map(row => ({
+            pin: row[0] || '',
+            nombre: row[1] || '',
+            rol: row[2] || '',
+            estado: row[3] === 'Activo'
+        }));
 
-        if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Usuario no encontrado' 
-            });
-        }
-
-        // Verificar si el nuevo PIN ya existe
-        if (rows.some(row => row[0] === pinNuevo)) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'El nuevo PIN ya está en uso' 
-            });
-        }
-
-        // Actualizar PIN
-        await sheets.spreadsheets.values.update({
+        res.json({ success: true, usuarios });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al obtener usuarios' });
+    }
+});
+app.post('/obtener-usuario', requireAuth, async (req, res) => {
+    try {
+        const { pin } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Usuarios!A${rowIndex + 2}`,
-            valueInputOption: 'RAW',
+            range: 'Usuarios!A2:D'
+        });
+
+        const rows = response.data.values || [];
+        const usuarioRow = rows.find(row => row[0] === pin);
+
+        if (!usuarioRow) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+
+        const usuario = {
+            pin: usuarioRow[0],
+            nombre: usuarioRow[1],
+            rol: usuarioRow[2],
+            estado: usuarioRow[3] === 'Activo'
+        };
+
+        res.json({ success: true, usuario });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al obtener usuario' });
+    }
+});
+app.post('/agregar-usuario', requireAuth, async (req, res) => {
+    try {
+        const { nombre, pin, rol } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Verificar si el PIN ya existe
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:A'
+        });
+
+        const pines = response.data.values || [];
+        if (pines.flat().includes(pin)) {
+            return res.status(400).json({ success: false, error: 'El PIN ya está en uso' });
+        }
+
+        // Agregar nuevo usuario
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:D',
+            valueInputOption: 'USER_ENTERED',
             resource: {
-                values: [[pinNuevo]]
+                values: [[pin, nombre, rol, 'Activo']]
             }
         });
 
-        res.json({ success: true, message: 'PIN actualizado correctamente' });
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error al actualizar PIN:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar PIN: ' + (error.message || 'Error desconocido') 
-        });
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al agregar usuario' });
     }
 });
+app.post('/cambiar-estado-usuario', requireAuth, async (req, res) => {
+    try {
+        const { pin, estado } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Encontrar la fila del usuario
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:D'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pin);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+
+        // Actualizar estado
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Usuarios!D${rowIndex + 2}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[estado]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al cambiar estado del usuario' });
+    }
+});
+app.post('/actualizar-pin', requireAuth, async (req, res) => {
+    try {
+        const { pin, nuevoPIN } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Verificar si el nuevo PIN ya existe
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:A'
+        });
+
+        const pines = response.data.values || [];
+        if (pines.flat().includes(nuevoPIN)) {
+            return res.status(400).json({ success: false, error: 'El nuevo PIN ya está en uso' });
+        }
+
+        // Encontrar y actualizar el PIN
+        const usuariosResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:D'
+        });
+
+        const rows = usuariosResponse.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pin);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Usuarios!A${rowIndex + 2}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[nuevoPIN]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al actualizar PIN' });
+    }
+});
+app.post('/actualizar-rol', requireAuth, async (req, res) => {
+    try {
+        const { pin, nuevoRol } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Encontrar la fila del usuario
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:D'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pin);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+
+        // Actualizar rol
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Usuarios!C${rowIndex + 2}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[nuevoRol]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al actualizar rol' });
+    }
+});
+
 
 /* ==================== API DE PRODUCTOS ==================== */
 app.get('/obtener-productos', requireAuth, async (req, res) => {
@@ -847,8 +918,6 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
         });
     }
 });
-
-
 
 
 /* ==================== API DE VERIFICACION ==================== */
@@ -983,204 +1052,6 @@ app.post('/obtener-extras-registros', async (req, res) => {
 
 
 /* ==================== API DE PERMISOS ==================== */
-app.put('/actualizar-permisos', requireAuth, async (req, res) => {
-    try {
-
-        const { pin, permisos } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Get current users
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === pin);
-        
-        if (rowIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
-        }
-
-        // Update permissions
-        const nuevosPermisos = permisos.join(', ');
-
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Usuarios!C${rowIndex + 2}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[nuevosPermisos]]
-            }
-        });
-
-        res.json({ success: true, message: 'Permisos actualizados correctamente' });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar permisos: ' + error.message 
-        });
-    }
-});
-app.get('/obtener-permisos/:pin', requireAuth, async (req, res) => {
-    try {
-
-        const { pin } = req.params;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const usuario = rows.find(row => row[0] === pin);
-
-        if (!usuario) {
-            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
-        }
-
-        const permisos = usuario[2] ? usuario[2].split(',').map(p => p.trim()) : [];
-        res.json({ success: true, permisos });
-    } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener permisos: ' + error.message 
-        });
-    }
-});
-app.post('/agregar-permiso', requireAuth, async (req, res) => {
-    try {
-
-        const { pin, permiso } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener permisos actuales
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === pin);
-        
-        if (rowIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
-        }
-
-        // Actualizar permisos
-        const permisosActuales = rows[rowIndex][2] ? rows[rowIndex][2].split(',').map(p => p.trim()) : [];
-        if (permisosActuales.includes(permiso)) {
-            return res.status(400).json({ success: false, error: 'El permiso ya existe' });
-        }
-
-        const nuevosPermisos = [...permisosActuales, permiso].join(', ');
-
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Usuarios!C${rowIndex + 2}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[nuevosPermisos]]
-            }
-        });
-
-        res.json({ success: true, message: 'Permiso agregado correctamente' });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ success: false, error: 'Error al agregar permiso' });
-    }
-});
-app.delete('/eliminar-permiso', requireAuth, async (req, res) => {
-    try {
-
-        const { pin, permiso } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener permisos actuales
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === pin);
-        
-        if (rowIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
-        }
-
-        // Actualizar permisos
-        const permisosActuales = rows[rowIndex][2] ? rows[rowIndex][2].split(',').map(p => p.trim()) : [];
-        const nuevosPermisos = permisosActuales.filter(p => p !== permiso).join(', ');
-
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Usuarios!C${rowIndex + 2}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[nuevosPermisos]]
-            }
-        });
-
-        res.json({ success: true, message: 'Permiso eliminado correctamente' });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ success: false, error: 'Error al eliminar permiso' });
-    }
-});
-app.get('/obtener-mis-permisos', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:C'
-        });
-
-        const rows = response.data.values || [];
-        const usuario = rows.find(row => row[1] === req.user.nombre);
-
-        if (!usuario || !usuario[2]) {
-            return res.json({ success: true, permisos: [] });
-        }
-
-        // Split permissions and clean them
-        const permisos = usuario[2]
-            .split(',')
-            .map(p => p.trim())
-            .filter(p => p !== '');
-
-        console.log('Usuario:', usuario[1]);
-        console.log('Permisos encontrados:', permisos);
-        
-        res.json({ success: true, permisos });
-    } catch (error) {
-        console.error('Error al obtener permisos:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener permisos' 
-        });
-    }
-});
-app.get('/obtener-lista-roles', requireAuth, async (req, res) => {
-    try {
-
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Permisos!A2:A' // Ahora esta hoja contiene roles
-        });
-
-        const roles = response.data.values ? response.data.values.map(row => row[0]) : [];
-        res.json({ success: true, roles });
-    } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener lista de roles: ' + error.message 
-        });
-    }
-});
 app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1211,282 +1082,6 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
 });
 
 /* ==================== API DE PEDIDOS ==================== */
-app.get('/obtener-pedidos-pendientes', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:L'
-        });
-
-        const rows = response.data.values || [];
-        const pedidosPendientes = rows
-            .slice(1) // Saltar la fila de encabezados
-            .filter(row => row[8] === 'Pendiente')
-            .map(row => ({
-                fecha: row[1],
-                nombre: row[2],
-                cantidad: row[3],
-                observaciones: row[4] || ''
-            }));
-        res.json({ success: true, pedidos: pedidosPendientes });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener pedidos pendientes'
-        });
-    }
-});
-app.get('/obtener-pedidos-recibidos', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:L'
-        });
-
-        const rows = response.data.values || [];
-        const pedidosRecibidos = rows
-            .slice(1) // Saltar la fila de encabezados
-            .filter(row => row[8] === 'Recibido')
-            .map(row => ({
-                id: row[0],
-                fecha: row[1],
-                nombre: row[2],
-                proveedor: row[6] || '',
-                obsCompras: row[10] || '',
-                medida: row[11] || '',
-            }));
-
-        res.json({ success: true, pedidos: pedidosRecibidos });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener pedidos recibidos'
-        });
-    }
-});
-app.post('/actualizar-pedido-recibido/:id', requireAuth, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Obtener datos actuales
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:L'
-        });
-
-        const rows = response.data.values;
-        const rowIndex = rows.findIndex(row => {
-            return row[0] === id && 
-                   row[8] === 'Recibido' &&
-                   row[10] && parseInt(row[10]) > 0;
-        });
-
-        if (rowIndex === -1) {
-            return res.json({ success: false, error: 'Producto no encontrado' });
-        }
-
-        // Actualizar cantidad
-        const cantidadActual = parseInt(rows[rowIndex][10] || 0);
-        const nuevaCantidad = Math.max(0, cantidadActual - 1);
-        
-        // Si la nueva cantidad es 0, actualizar estado a "Ingresado"
-        if (nuevaCantidad === 0) {
-            await sheets.spreadsheets.values.update({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: `Pedidos!I${rowIndex + 1}`,
-                valueInputOption: 'RAW',
-                resource: {
-                    values: [['Ingresado']]
-                }
-            });
-        }
-
-        // Actualizar la cantidad
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Pedidos!K${rowIndex + 1}`,
-            valueInputOption: 'RAW',
-            resource: {
-                values: [[nuevaCantidad]]
-            }
-        });
-
-        res.json({ 
-            success: true, 
-            nuevaCantidad: nuevaCantidad
-        });
-
-    } catch (error) {
-        console.error('Error en actualizar-pedido-recibido:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar el pedido' 
-        });
-    }
-});
-app.get('/obtener-pedidos-recibidos/:id', requireAuth, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:L'
-        });
-
-        const rows = response.data.values || [];
-        const pedidosRecibidos = rows
-            .slice(1) // Skip headers
-            .filter(row => 
-                row[0] == id && // Product name matches
-                row[8] === 'Recibido' // Status is Received
-            )
-            .map(row => ({
-                fecha: row[1],
-                nombre: row[2],
-                cantidad: row[3],
-                observaciones: row[4] || '',
-                cantidadRecibida: row[5] || '',
-                proveedor: row[6] || '',
-                precio: row[7] || '',
-                obsCompras: row[10] || '',
-                medida: row[11] || ''
-            }));
-            console.log(pedidosRecibidos)
-
-        res.json({ 
-            success: true, 
-            pedidos: pedidosRecibidos 
-        });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener pedidos recibidos del producto'
-        });
-    }
-});
-app.post('/procesar-ingreso', requireAuth, async (req, res) => {
-    try {
-        const {id, producto, peso, observaciones, esMultiple } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener datos actuales de la hoja de pedidos
-        const pedidosResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Pedidos!A:L`
-        });
-
-        const pedidos = pedidosResponse.data.values || [];
-        const rowIndex = pedidos.findIndex(row => row[0] === id && row[8] === 'Recibido');
-
-        if (rowIndex === -1) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Producto no encontrado o no está en estado Recibido'
-            });
-        }
-
-        // Obtener lotes existentes de Almacen Bruto
-        const almacenResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Bruto!A:C'
-        });
-
-        const almacenRows = almacenResponse.data.values || [];
-        const productosExistentes = almacenRows.filter(row => row[0] === producto);
-        
-        // Calcular siguiente número de lote
-        let siguienteLote = 1;
-        if (productosExistentes.length > 0) {
-            const lotes = productosExistentes.map(row => parseInt(row[2] || 0));
-            siguienteLote = Math.max(...lotes, 0) + 1;
-        }
-
-        // Agregar nueva entrada a Almacen Bruto
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Almacen Bruto!A:C',
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-                values: [[producto, peso, siguienteLote]]
-            }
-        });
-
-        // Solo actualizar estado si no es ingreso múltiple
-        if (!esMultiple) {
-            await sheets.spreadsheets.values.update({
-                spreadsheetId: process.env.SPREADSHEET_ID,
-                range: `Pedidos!I${rowIndex + 1}:J${rowIndex + 1}`,
-                valueInputOption: 'RAW',
-                resource: {
-                    values: [['Ingresado', observaciones || '']]
-                }
-            });
-        }
-
-        res.json({ 
-            success: true, 
-            message: 'Ingreso procesado correctamente',
-            hojaEliminada: false
-        });
-
-    } catch (error) {
-        console.error('Error en procesar-ingreso:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al procesar el ingreso: ' + error.message 
-        });
-    }
-});
-app.post('/rechazar-pedido', requireAuth, async (req, res) => {
-    try {
-        const { id, hoja, producto, razon } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Obtener datos actuales
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `${hoja}!A:L`
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === id);
-
-        if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Producto no encontrado' 
-            });
-        }
-
-        // Actualizar estado y razón en una sola operación
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `${hoja}!I${rowIndex + 1}:J${rowIndex + 1}`,
-            valueInputOption: 'USER_ENTERED',
-            resource: {
-                values: [['Rechazado', razon]]
-            }
-        });
-
-        res.json({ 
-            success: true, 
-            message: 'Pedido rechazado correctamente' 
-        });
-    } catch (error) {
-        console.error('Error en rechazar-pedido:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al procesar el rechazo del pedido' 
-        });
-    }
-});
 app.get('/buscar-producto-pendiente/:nombre', requireAuth, async (req, res) => {
     try {
         const { nombre } = req.params;
@@ -1603,42 +1198,6 @@ app.get('/obtener-lista-pedidos', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener la lista de pedidos' });
     }
 });
-
-
-
-/* ==================== API DE COMPRAS ==================== */
-app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
-    try {
-        const { estado } = req.params;
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:L'
-        });
-
-        const rows = response.data.values || [];
-        const pedidos = rows
-            .slice(1) // Skip headers
-            .filter(row => row[8] === estado)
-            .map(row => ({
-                id:row[0],
-                fecha: row[1],
-                nombre: row[2],
-                cantidad: row[3],
-                observaciones: row[4] || '',
-                cantidadRecibida: row[5] || '',
-                proveedor: row[6] || '',
-                precio: row[7] || ''
-            }));
-        res.json({ success: true, pedidos });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: `Error al obtener pedidos ${estado}`
-        });
-    }
-});
 app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
     try {
         const { nombre, fecha } = req.body;
@@ -1710,15 +1269,99 @@ app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
         });
     }
 });
-app.post('/entregar-pedido', requireAuth, async (req, res) => {
+app.put('/rechazar-pedido', requireAuth, async (req, res) => {
     try {
-        const { id, cantidad, proveedor, precio, observaciones, estado } = req.body;
+        const { id, razon } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Obtener datos actuales
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:N'  // Extendemos el rango hasta K para incluir la unidad
+            range: 'Pedidos!A2:M'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Pedido no encontrado' 
+            });
+        }
+
+        // Actualizar estado y razón
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Pedidos!I${rowIndex + 2}:J${rowIndex + 2}`,
+            valueInputOption: 'RAW',
+            resource: {
+                values: [['Rechazado', razon]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al rechazar pedido:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al rechazar el pedido' 
+        });
+    }
+});
+
+
+
+
+/* ==================== API DE COMPRAS ==================== */
+app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
+    try {
+        const { estado } = req.params;
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:L'
+        });
+
+        const rows = response.data.values || [];
+        const pedidos = rows
+            .slice(1) // Skip headers
+            .filter(row => row[8] === estado)
+            .map(row => ({
+                id:row[0],
+                fecha: row[1],
+                nombre: row[2],
+                cantidad: row[3],
+                observaciones: row[4] || '',
+                cantidadRecibida: row[5] || '',
+                proveedor: row[6] || '',
+                precio: row[7] || ''
+            }));
+        res.json({ success: true, pedidos });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: `Error al obtener pedidos ${estado}`
+        });
+    }
+});
+app.post('/entregar-pedido', requireAuth, async (req, res) => {
+    try {
+        const { id, cantidad, proveedor, precio, transporte, observaciones, estado } = req.body;
+        
+        // Validación y valor por defecto para transporte
+        const transporteValidado = transporte === '' || transporte === undefined || transporte === null ? '0' : transporte;
+        
+        console.log('Valor de transporte recibido:', transporte); // Para debugging
+        console.log('Valor de transporte validado:', transporteValidado); // Para debugging
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener datos actuales
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:N'
         });
 
         const rows = response.data.values || [];
@@ -1731,21 +1374,22 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
         }
 
-        // Actualizar el pedido con cantidad y unidad separadas
+        // Actualizar el pedido incluyendo el campo de transporte validado
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Pedidos!F${rowIndex + 1}:M${rowIndex + 1}`,
+            range: `Pedidos!F${rowIndex + 1}:N${rowIndex + 1}`,
             valueInputOption: 'RAW',
             resource: {
                 values: [[
-                    cantidad,           // E - Cantidad recibida
-                    proveedor,         // F - Proveedor
-                    precio,            // G - Precio
-                    estado === 'llego' ? 'Recibido' : 'En proceso',  // H - Estado según selección
-                    '',                // I - Observaciones
-                    observaciones,     // J - Cantidad en unidades
-                    req.body.unidad,    // K - Unidad (Bls. o Cja.)
-                    `${observaciones} ${req.body.unidad}`, // L - Observaciones completas
+                    cantidad,
+                    proveedor,
+                    precio,
+                    estado === 'llego' ? 'Recibido' : 'En proceso',
+                    '',
+                    observaciones,
+                    req.body.unidad,
+                    `${observaciones} ${req.body.unidad}`,
+                    transporteValidado    // Usando el valor validado
                 ]]
             }
         });
@@ -1759,6 +1403,67 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
         });
     }
 });
+app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Obtener todos los pedidos
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Pedidos!A:L'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Pedido no encontrado' 
+            });
+        }
+
+        // Get the sheet ID
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const pedidosSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Pedidos'
+        );
+
+        if (!pedidosSheet) {
+            throw new Error('Hoja de Pedidos no encontrada');
+        }
+
+        // Delete the row
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: pedidosSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex,
+                            endIndex: rowIndex + 1
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ success: true, message: 'Pedido eliminado correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar pedido:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el pedido: ' + error.message 
+        });
+    }
+});
+
 
 
 /* ==================== API DE PRECIOS DE PRODUCCIÓN ==================== */
@@ -1928,7 +1633,6 @@ app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
 
 
 /* ==================== RUTAS DE API DE ADVERTENCIA ==================== */
-
 app.get('/obtener-notificaciones', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2140,7 +1844,6 @@ app.post('/registrar-notificacion', requireAuth, async (req, res) => {
         });
     }
 });
-
 
 
 /* ==================== RUTAS DE API REGISTROS ACOPIO -  ==================== */
@@ -2604,9 +2307,7 @@ app.delete('/eliminar-producto-acopio', requireAuth, async (req, res) => {
 });
 
 
-
 /* ==================== API DE ALMACEN ACOPIO(INGRESOS, SALIDAS, MOVIMIENTOS) ==================== */
-
 app.post('/procesar-ingreso-acopio', requireAuth, async (req, res) => {
     try {
         const { producto, tipo, peso } = req.body;
@@ -3236,9 +2937,6 @@ app.delete('/eliminar-tarea', requireAuth, async (req, res) => {
 });
 
 
-
-
-
 /* ==================== RUTAS DE API MOVIMIENTOS Y/O REGISTROS ALMACEN GENERAL ==================== */
 app.get('/obtener-movimientos-almacen', requireAuth, async (req, res) => {
     try {
@@ -3393,40 +3091,6 @@ app.delete('/eliminar-movimiento-almacen', requireAuth, async (req, res) => {
     }
 });
 
-
-
-/* ==================== RUTAS DE API - BALANCE ALMACÉN ==================== */
-app.get('/obtener-balance-almacen', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Movimientos alm-gral!A2:G'
-        });
-
-        const rows = response.data.values || [];
-        const movimientos = rows.map(row => ({
-            id: row[0],
-            fecha: row[1],
-            tipo: row[2],
-            producto: row[3],
-            cantidad: parseInt(row[4]),
-            operario: row[5],
-            almacen: row[6]
-        }));
-
-        res.json({
-            success: true,
-            movimientos: movimientos
-        });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al obtener datos del balance'
-        });
-    }
-});
 
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */

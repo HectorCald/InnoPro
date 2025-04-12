@@ -1,6 +1,8 @@
 
 export function inicializarAlmacenGral() {
     const container = document.querySelector('.almacen-view');
+    if (!container) return; 
+    container.innerHTML = '';
     container.innerHTML = `
         <div class="title">
             <h3><i class="fas fa-warehouse"></i> Gestión de Almacen</h3>
@@ -33,7 +35,7 @@ export function inicializarAlmacenGral() {
                     <p>Pedidos</p>
                 </div>
             </div>    
-            <div class="lista-productos"></div>
+            <div class="almacen-general-productos"></div>
         </div>
     `;
 
@@ -474,7 +476,7 @@ export async function cargarAlmacen() {
             throw new Error(data.error || 'Error al cargar los productos');
         }
 
-        const productsContainer = document.getElementById('productsContainer');
+        const productsContainer = document.getElementById('productsContainer-general');
         window.productosAlmacen = data.pedidos;
         productsContainer.innerHTML = '';
 
@@ -1193,12 +1195,14 @@ function mostrarConfirmacionEliminar(id, nombre) {
     };
 };
 export function mostrarProductos() {
-    const container = document.querySelector('.lista-productos');
+    const container = document.querySelector('.almacen-general-productos');
+    if (!container) return;
+    container.innerHTML = '';
     container.style.display = 'flex';
 
     container.innerHTML = `
-        <div class="almacen-container">
-            <div class="almacen-header">
+        <div class="almacen-container-general">
+            <div class="almacen-header-general">
                 <div class="search-bar">
                     <input type="text" id="searchProductAcopio" placeholder="Buscar producto...">
                     <i class="fas fa-search search-icon"></i>
@@ -1212,7 +1216,7 @@ export function mostrarProductos() {
                     </button>
                 </div>
             </div>
-            <div class="products-grid" id="productsContainer">
+            <div class="products-grid" id="productsContainer-general">
             </div>
         </div>
     `;

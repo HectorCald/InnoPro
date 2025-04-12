@@ -111,16 +111,23 @@ function crearPedidoCard(pedido, isAdmin) {
                 <i class="fas fa-edit"></i> Editar
             </button>
         </div>
-    ` : (estado === 'Recibido' || estado === 'Ingresado' ? `
+    ` : (estado.toLowerCase() === 'recibido' ? `
         <div class="acciones">
-            <button class="btn-cambiar-estado anuncio-btn ${estado === 'Recibido' ? 'green' : 'blue'}">
-                <i class="fas fa-exchange-alt"></i> Cambiar a ${estado === 'Recibido' ? 'Ingresado' : 'Recibido'}
+            <button class="btn-cambiar-estado anuncio-btn green">
+                <i class="fas fa-exchange-alt"></i> Cambiar a Ingresado
             </button>
-            ${estado === 'Recibido' ? `
-                <button class="btn-ingresar-acopio anuncio-btn green">
-                    <i class="fas fa-plus-circle"></i> Ingresar
-                </button>
-            ` : ''}
+            <button class="btn-ingresar-acopio anuncio-btn green">
+                <i class="fas fa-plus-circle"></i> Ingresar
+            </button>
+            <button class="btn-rechazar anuncio-btn red" data-id="${pedido[0]}" data-nombre="${pedido[2]}">
+                <i class="fas fa-times-circle"></i> Rechazar
+            </button>
+        </div>
+    ` : estado.toLowerCase() === 'ingresado' ? `
+        <div class="acciones">
+            <button class="btn-cambiar-estado anuncio-btn blue">
+                <i class="fas fa-exchange-alt"></i> Cambiar a Recibido
+            </button>
         </div>
     ` : '');
 
@@ -282,7 +289,15 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
                     }
                 });
             }
+            const btnRechazar = registroCard.querySelector('.btn-rechazar');
+            if (btnRechazar) {
+                btnRechazar.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    mostrarFormularioRechazo(btnRechazar.dataset.id, btnRechazar.dataset.nombre);
+                });
+            }
         }
+
     }
 
 }
@@ -629,6 +644,16 @@ function configurarEventosMovimiento(movimientoCard, isAdmin, movimiento) {
             }
         });
         detalles.classList.toggle('active');
+
+        // Add smooth scrolling to center
+        if (detalles.classList.contains('active')) {
+            setTimeout(() => {
+                movimientoCard.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }, 100);
+        }
     });
 
     if (isAdmin) {
@@ -672,6 +697,66 @@ function configurarEventosMovimiento(movimientoCard, isAdmin, movimiento) {
     }
 }
 
+
+
+function mostrarFormularioRechazo(id, nombre) {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-times-circle"></i> Rechazar Pedido</h2>
+        <div class="form-grup">
+            <p><strong>ID:</strong> ${id}</p>
+            <p><strong>Producto:</strong> ${nombre}</p>
+            <div class="fomr-grup">
+                <p>Razón del rechazo:</p>
+                <textarea id="razonRechazo" class="edit-input" rows="4" placeholder="Explique la razón del rechazo..."></textarea>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn red confirmar-rechazo"><i class="fas fa-times"></i> Confirmar Rechazo</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    // Event listeners
+    const btnConfirmar = contenido.querySelector('.confirmar-rechazo');
+    const btnCancelar = contenido.querySelector('.cancelar');
+    const razonInput = contenido.querySelector('#razonRechazo');
+
+    btnConfirmar.onclick = async () => {
+        const razon = razonInput.value.trim();
+        if (!razon) {
+            mostrarNotificacion('Debe ingresar una razón para el rechazo', 'error');
+            return;
+        }
+
+        try {
+            mostrarCarga();
+            const response = await fetch('/rechazar-pedido', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, razon })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Pedido rechazado correctamente', 'success');
+                anuncio.style.display = 'none';
+                cargarRegistrosAcopio(); // Recargar la vista
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            mostrarNotificacion('Error al rechazar el pedido: ' + error.message, 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+
+    btnCancelar.onclick = () => anuncio.style.display = 'none';
+    anuncio.style.display = 'flex';
+}
 
 
 

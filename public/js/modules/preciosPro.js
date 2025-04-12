@@ -171,44 +171,44 @@ function mostrarDetallesRegla(regla) {
     
     anuncioContenido.innerHTML = `
         <h2>Detalles de Regla Especial</h2>
-        <div class="detalles-regla">
-            <div class="detalle-grupo">
-                <label>Producto:</label>
+        <div class="detalles-grup">
+            <div class="detalle-item">
+                <p>Producto:</p>
                 <span>${regla.producto}</span>
             </div>
             ${regla.etiquetado !== '1' ? `
-                <div class="detalle-grupo">
-                    <label>Etiquetado:</label>
+                <div class="detalle-item">
+                    <p>Etiquetado:</p>
                     <span>${regla.etiquetado}x</span>
                 </div>
             ` : ''}
             ${regla.sellado !== '1' ? `
-                <div class="detalle-grupo">
-                    <label>Sellado:</label>
+                <div class="detalle-item">
+                    <p>Sellado:</p>
                     <span>${regla.sellado}x</span>
                 </div>
             ` : ''}
             ${regla.envasado !== '1' ? `
-                <div class="detalle-grupo">
-                    <label>Envasado:</label>
+                <div class="detalle-item">
+                    <p>Envasado:</p>
                     <span>${regla.envasado}x</span>
                 </div>
             ` : ''}
             ${regla.cernido !== '1' ? `
-                <div class="detalle-grupo">
-                    <label>Cernido:</label>
+                <div class="detalle-item">
+                    <p>Cernido:</p>
                     <span>${regla.cernido}</span>
                 </div>
             ` : ''}
             ${regla.gramajeMin && regla.gramajeMax ? `
-                <div class="detalle-grupo">
-                    <label>Rango de Gramaje:</label>
+                <div class="detalle-item">
+                    <p>Rango de Gramaje:</p>
                     <span>${regla.gramajeMin} - ${regla.gramajeMax}</span>
                 </div>
             ` : ''}
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn cancelar">Cerrar</button>
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
