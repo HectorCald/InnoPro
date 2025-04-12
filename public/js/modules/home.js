@@ -49,6 +49,7 @@ export async function inicializarHome() {
         homeView.innerHTML = '<p>Error al cargar la página principal</p>';
     } finally {
         ocultarCarga();
+        scrollToTop('.home-view');
     }
 }
 function inicializarEventos() {
@@ -159,7 +160,15 @@ async function obtenerAtajos() {
             'Administración': [
                 { 
                     clase: 'opcion-btn',
-                    vista: 'verificarRegistros-view',
+                    vista: 'compras-view',
+                    icono: 'fa-shopping-cart',
+                    texto: 'Compras Materia Prima',
+                    detalle: 'Aqui puedes gestionar las compras de materia prima y entregarlas hacia acopio.',
+                    onclick: 'onclick="inicializarCompras()"'
+                },
+                { 
+                    clase: 'opcion-btn',
+                    vista: 'regAlmacen-view',
                     icono: 'fa-search',
                     texto: 'Registros Almacen',
                     detalle: 'Aqui gestionar todos los registros de Almacen. (Eliminar, Editar, Movimientos)',
@@ -175,7 +184,7 @@ async function obtenerAtajos() {
                 },
                 { 
                     clase: 'opcion-btn',
-                    vista: 'verificarRegistros-view',
+                    vista: 'regAcopio-view',
                     icono: 'fa-search',
                     texto: 'Registros Acopio',
                     detalle: 'Aqui gestionar todos los registros de Acopio. (Eliminar, Editar, Movimientos)',

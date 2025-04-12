@@ -22,7 +22,7 @@ export async function cargarRegistrosAlmacenGral() {
             container.innerHTML = `
                 <div class="filtros-header">
                     <h2 class="section-title">
-                        <i class="fas fa-clipboard-list"></i> Movimientos de Almacén
+                        <i class="fas fa-clipboard-list"></i> Registros Almacén
                     </h2>
                     <button class="btn-filtro-acopio">
                         <i class="fas fa-filter"></i> Filtros
