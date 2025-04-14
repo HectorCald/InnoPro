@@ -430,8 +430,9 @@ function mostrarFormularioRegistroMP() {
                     <input type="number" id="pesoInicialMP" class="edit-input" step="0.01" min="0" placeholder="(Kg)">
                 </div>
             </div>
-            <div class="productos-seleccionados">
-                <p>Materias Primas:</p>
+            <p>Materias Primas:</p>
+            <div class="form-grup">
+                
                 <div class="lista-productos-seleccionados"></div>
             </div>
             <p>Agregar Materia Prima:</p>
