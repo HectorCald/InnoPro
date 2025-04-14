@@ -406,7 +406,7 @@ function mostrarFormularioRegistroMP() {
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-calculator"></i> Registrar Cálculo de Materia Prima</h2>
+        <h2><i class="fas fa-calculator"></i> Registrar</h2>
         <div class="relleno">
             <div class="form-grup">
                 <div class="campo-form">
@@ -781,6 +781,10 @@ function editarRegistroMP(registro) {
                     <p>Peso Inicial:</p>
                     <input type="number" id="pesoInicialMP" class="edit-input" step="0.01" min="0" value="${registro.pesoInicial}">
                 </div>
+                <div class="campo-form">
+                    <p>Peso Final:</p>
+                    <input type="number" id="pesoFinalMP" class="edit-input" step="0.01" min="0" value="${registro.pesoFinal}">
+                </div>
             </div>
             <div class="productos-seleccionados">
                 <p>Materias Primas:</p>
@@ -843,14 +847,14 @@ function editarRegistroMP(registro) {
         } catch (error) {
             console.error('Error al cargar usuarios:', error);
             mostrarNotificacion('Error al cargar usuarios', 'error');
-        } finally {
+        }finally {
             ocultarCarga();
         }
     }
 
     async function cargarProductosAlmacen() {
         try {
-            mostrarCarga(); // Changed from cargarCarga() to mostrarCarga()
+            mostrarCarga();
             const response = await fetch('/obtener-almacen-general');
             if (!response.ok) throw new Error('Error al cargar productos');
 
@@ -859,85 +863,85 @@ function editarRegistroMP(registro) {
         } catch (error) {
             console.error('Error al cargar productos:', error);
             mostrarNotificacion('Error al cargar productos', 'error');
-        } finally {
+        }finally {
             ocultarCarga();
         }
     }
 
     function configurarBuscadorProductos() {
-    const inputBuscar = document.getElementById('buscarProducto');
-    const sugerencias = document.querySelector('.sugerencias-container');
-    const productoSeleccionado = document.querySelector('.producto-seleccionado');
-    let productos = [];
+        const inputBuscar = document.getElementById('buscarProducto');
+        const sugerencias = document.querySelector('.sugerencias-container');
+        const productoSeleccionado = document.querySelector('.producto-seleccionado');
+        let productos = [];
 
-    async function cargarProductos() {
-        try {
-            mostrarCarga();
-            const response = await fetch('/obtener-productos');
-            if (!response.ok) throw new Error('Error al cargar productos');
-            const data = await response.json();
-            productos = data.productos;
-        } catch (error) {
-            console.error('Error al cargar productos:', error);
-            mostrarNotificacion('Error al cargar productos', 'error');
-        } finally {
-            ocultarCarga();
-        }
-    }
-
-    // Load products when initializing
-    cargarProductos();
-
-    inputBuscar.addEventListener('input', () => {
-        const busqueda = inputBuscar.value.toLowerCase().trim();
-
-        if (busqueda.length < 2) {
-            sugerencias.style.display = 'none';
-            return;
+        async function cargarProductos() {
+            try {
+                mostrarCarga();
+                const response = await fetch('/obtener-productos');
+                if (!response.ok) throw new Error('Error al cargar productos');
+                const data = await response.json();
+                productos = data.productos;
+            } catch (error) {
+                console.error('Error al cargar productos:', error);
+                mostrarNotificacion('Error al cargar productos', 'error');
+            }finally{
+                ocultarCarga();
+            }
         }
 
-        const productosFiltrados = productos.filter(producto =>
-            producto.toLowerCase().includes(busqueda)
-        );
+        // Load products when initializing
+        cargarProductos();
 
-        if (productosFiltrados.length > 0) {
-            sugerencias.innerHTML = `
-                <ul class="sugerencias-list">
-                    ${productosFiltrados.map(producto => `
-                        <li class="sugerencia-item">${producto}</li>
-                    `).join('')}
-                </ul>
-            `;
-            sugerencias.style.display = 'block';
+        inputBuscar.addEventListener('input', () => {
+            const busqueda = inputBuscar.value.toLowerCase().trim();
 
-            sugerencias.querySelectorAll('.sugerencia-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    document.getElementById('nombreProductoSeleccionado').textContent = item.textContent;
-                    inputBuscar.value = '';
-                    sugerencias.style.display = 'none';
-                    productoSeleccionado.style.display = 'block';
+            if (busqueda.length < 2) {
+                sugerencias.style.display = 'none';
+                return;
+            }
+
+            const productosFiltrados = productos.filter(producto =>
+                producto.toLowerCase().includes(busqueda)
+            );
+
+            if (productosFiltrados.length > 0) {
+                sugerencias.innerHTML = `
+                    <ul class="sugerencias-list">
+                        ${productosFiltrados.map(producto => `
+                            <li class="sugerencia-item">${producto}</li>
+                        `).join('')}
+                    </ul>
+                `;
+                sugerencias.style.display = 'block';
+
+                sugerencias.querySelectorAll('.sugerencia-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        document.getElementById('nombreProductoSeleccionado').textContent = item.textContent;
+                        inputBuscar.value = '';
+                        sugerencias.style.display = 'none';
+                        productoSeleccionado.style.display = 'block';
+                    });
                 });
-            });
-        } else {
-            sugerencias.innerHTML = '<div class="no-sugerencias">No se encontraron productos</div>';
-            sugerencias.style.display = 'block';
-        }
-    });
+            } else {
+                sugerencias.innerHTML = '<div class="no-sugerencias">No se encontraron productos</div>';
+                sugerencias.style.display = 'block';
+            }
+        });
 
-    // Close suggestions when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!inputBuscar.contains(e.target) && !sugerencias.contains(e.target)) {
-            sugerencias.style.display = 'none';
-        }
-    });
+        // Close suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!inputBuscar.contains(e.target) && !sugerencias.contains(e.target)) {
+                sugerencias.style.display = 'none';
+            }
+        });
 
-    // Close suggestions when pressing Escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            sugerencias.style.display = 'none';
-        }
-    });
-}
+        // Close suggestions when pressing Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                sugerencias.style.display = 'none';
+            }
+        });
+    }
 
     function configurarBotonAgregar() {
         const btnAgregar = document.querySelector('.agregar-a-lista');
@@ -967,25 +971,23 @@ function editarRegistroMP(registro) {
 
     function actualizarListaProductos() {
         const listaProductos = document.querySelector('.lista-productos-seleccionados');
-        mostrarCarga();
         listaProductos.innerHTML = `
             <div class="pedidos-agregados detalles-grup" style="background:none;">
                 ${materiasSeleccionadas.map((mp, index) => `
                     <div class="campo-form">
-                    <div class="detalle-item">
-                        <p>${mp.nombre}</p>
-                    </div>
-                    <div class="detalle-item">
-                        <span>${mp.gramaje}g. - ${mp.cantidad}u.</span>
                         <div class="detalle-item">
-                            <i class="fas fa-times btn-eliminar delete" data-index="${index}"></i>
+                            <p>${mp.nombre}</p>
+                        </div>
+                        <div class="detalle-item">
+                            <span>${mp.gramaje}g. - ${mp.cantidad}u.</span>
+                            <div class="detalle-item">
+                                <i class="fas fa-times btn-eliminar delete" data-index="${index}"></i>
+                            </div>
                         </div>
                     </div>
-                </div>
                 `).join('')}
             </div>
         `;
-        ocultarCarga();
 
         listaProductos.querySelectorAll('.btn-eliminar').forEach(btn => {
             btn.onclick = (e) => {
@@ -1017,8 +1019,9 @@ function editarRegistroMP(registro) {
         const nombre = document.getElementById('nombreMP').value;
         const responsable = document.getElementById('responsableMP').value;
         const pesoInicial = document.getElementById('pesoInicialMP').value;
+        const pesoFinal = document.getElementById('pesoFinalMP').value;
 
-        if (!fecha || !nombre || !responsable || !pesoInicial || materiasSeleccionadas.length === 0) {
+        if (!fecha || !nombre || !responsable || !pesoInicial || !pesoFinal || materiasSeleccionadas.length === 0) {
             mostrarNotificacion('Por favor complete todos los campos', 'error');
             return;
         }
@@ -1029,6 +1032,7 @@ function editarRegistroMP(registro) {
             nombre,
             responsable,
             pesoInicial,
+            pesoFinal,
             materiaPrima: materiasSeleccionadas.map(mp => mp.nombre).join('-'),
             gramaje: materiasSeleccionadas.map(mp => mp.gramaje).join('-'),
             cantidadProducida: materiasSeleccionadas.map(mp => mp.cantidad).join('-')
@@ -1050,7 +1054,7 @@ function editarRegistroMP(registro) {
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion('Error al actualizar el registro', 'error');
-        } finally {
+        }finally {
             ocultarCarga();
         }
     };

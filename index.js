@@ -3438,7 +3438,10 @@ app.put('/actualizar-registro-mp', requireAuth, async (req, res) => {
             materiaPrima,
             gramaje,
             pesoInicial,
-            cantidadProducida
+            pesoFinal,
+            cantidadProducida,
+            pesoMerma,
+            observaciones
         } = req.body;
 
         const sheets = google.sheets({ version: 'v4', auth });
@@ -3459,25 +3462,29 @@ app.put('/actualizar-registro-mp', requireAuth, async (req, res) => {
             });
         }
 
+        // Keep existing values if not provided in the request
+        const currentRow = rows[rowIndex];
+        const updatedValues = [
+            id,
+            fecha || currentRow[1],
+            nombre || currentRow[2],
+            responsable || currentRow[3],
+            materiaPrima || currentRow[4],
+            gramaje || currentRow[5],
+            pesoInicial || currentRow[6],
+            pesoFinal || currentRow[7],
+            cantidadProducida || currentRow[8],
+            pesoMerma || currentRow[9],
+            observaciones || currentRow[10] || ''
+        ];
+
         // Update the record
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: `Materia prima!A${rowIndex + 2}:K${rowIndex + 2}`,
             valueInputOption: 'USER_ENTERED',
             resource: {
-                values: [[
-                    id,
-                    fecha,
-                    nombre,
-                    responsable,
-                    materiaPrima,
-                    gramaje,
-                    pesoInicial,
-                    '', // pesoFinal (mantener vacío)
-                    cantidadProducida,
-                    '', // pesoMerma (mantener vacío)
-                    rows[rowIndex][10] || '' // mantener observaciones existentes
-                ]]
+                values: [updatedValues]
             }
         });
 
