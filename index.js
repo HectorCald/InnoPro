@@ -76,17 +76,17 @@ async function verificarPin(pin) {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Usuarios!A2:D'  // Changed to include column D (estado)
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:E'  // Cambiado para incluir columna E
         });
         const rows = response.data.values || [];
         const usuario = rows.find(row => row[0] === pin);
         
         if (usuario) {
             const nombre = usuario[1];
-            const estado = usuario[3]; // Get estado from column D
+            const estado = usuario[3];
+            const funcionesExtra = usuario[4] ? usuario[4].split(',').map(f => f.trim()) : []; // Obtener funciones extras
 
-            // Check if user is inactive
             if (estado !== 'Activo') {
                 return { 
                     valido: false,
@@ -100,7 +100,8 @@ async function verificarPin(pin) {
             return { 
                 valido: true, 
                 nombre: nombre,
-                rol: rol
+                rol: rol,
+                funcionesExtra: funcionesExtra // Agregar funciones extras al resultado
             };
         }
         return { valido: false };
@@ -177,7 +178,7 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A:C'
+            range: 'Usuarios!A:E'
         });
 
         const rows = response.data.values || [];
@@ -191,7 +192,9 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
 
         res.json({ 
             nombre: usuario[1],
-            rol: usuario[2]
+            rol: usuario[2],
+            Estado: usuario[3],
+            Extras: usuario[4]
         });
     } catch (error) {
         console.error('Error al obtener rol:', error);
@@ -707,7 +710,7 @@ app.get('/obtener-usuarios', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:D' // A:PIN, B:Nombre, C:Rol, D:Estado
+            range: 'Usuarios!A2:E' // A:PIN, B:Nombre, C:Rol, D:Estado, E:funciones extras
         });
 
         const rows = response.data.values || [];
@@ -715,9 +718,9 @@ app.get('/obtener-usuarios', requireAuth, async (req, res) => {
             pin: row[0] || '',
             nombre: row[1] || '',
             rol: row[2] || '',
-            estado: row[3] === 'Activo'
+            estado: row[3] === 'Activo',
+            extras: row[4] ||''
         }));
-
         res.json({ success: true, usuarios });
     } catch (error) {
         console.error('Error:', error);
@@ -730,7 +733,7 @@ app.post('/obtener-usuario', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:D'
+            range: 'Usuarios!A2:E'
         });
 
         const rows = response.data.values || [];
@@ -744,7 +747,8 @@ app.post('/obtener-usuario', requireAuth, async (req, res) => {
             pin: usuarioRow[0],
             nombre: usuarioRow[1],
             rol: usuarioRow[2],
-            estado: usuarioRow[3] === 'Activo'
+            estado: usuarioRow[3] === 'Activo',
+            extras: usuarioRow[4],
         };
 
         res.json({ success: true, usuario });
@@ -895,6 +899,40 @@ app.post('/actualizar-rol', requireAuth, async (req, res) => {
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ success: false, error: 'Error al actualizar rol' });
+    }
+});
+app.post('/actualizar-extras', requireAuth, async (req, res) => {
+    try {
+        const { pin, nuevosExtras } = req.body;
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        // Find user's row
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Usuarios!A2:E'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === pin);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        }
+
+        // Update extras (column E)
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Usuarios!E${rowIndex + 2}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[nuevosExtras]]
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al actualizar extras' });
     }
 });
 
@@ -1349,36 +1387,30 @@ app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
 });
 app.post('/entregar-pedido', requireAuth, async (req, res) => {
     try {
-        const { id, cantidad, proveedor, precio, transporte, observaciones, estado } = req.body;
-        
-        // Validación y valor por defecto para transporte
+        const { id, cantidad, proveedor, precio, transporte, observaciones, estado} = req.body;
         const transporteValidado = transporte === '' || transporte === undefined || transporte === null ? '0' : transporte;
-        
-        console.log('Valor de transporte recibido:', transporte); // Para debugging
-        console.log('Valor de transporte validado:', transporteValidado); // Para debugging
 
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Obtener datos actuales
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Pedidos!A:N'
+            range: 'Pedidos!A2:N'
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === id && 
-            row[8] === 'Pendiente'
-        );
+
+        
+        const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
             return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
         }
 
-        // Actualizar el pedido incluyendo el campo de transporte validado
+        // Corregir el cálculo del rango sumando 2 para compensar el encabezado
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Pedidos!F${rowIndex + 1}:N${rowIndex + 1}`,
+            range: `Pedidos!F${rowIndex + 2}:N${rowIndex + 2}`, // Sumamos 2 porque el índice empieza en 0 y hay un encabezado
             valueInputOption: 'RAW',
             resource: {
                 values: [[
@@ -1390,7 +1422,7 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
                     observaciones,
                     req.body.unidad,
                     `${observaciones} ${req.body.unidad}`,
-                    transporteValidado    // Usando el valor validado
+                    transporteValidado
                 ]]
             }
         });
@@ -3215,6 +3247,250 @@ app.delete('/eliminar-movimiento-almacen', requireAuth, async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: 'Error al eliminar el movimiento' 
+        });
+    }
+});
+
+
+
+app.get('/obtener-registros-mp', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Materia prima!A2:K'  // Ajusta el rango según tu hoja
+        });
+
+        const rows = response.data.values || [];
+        const registros = rows.map((row, index) => ({
+            id: `RMP-${index + 1}`,
+            fecha: row[1] || '',
+            nombre: row[2] || '',
+            responsable: row[3] || '',
+            materiaPrima: row[4] || '',
+            gramaje: row[5] || '',
+            pesoInicial: row[6] || '',
+            pesoFinal: row[7] || '',
+            cantidadProducida: row[8] || '',
+            pesoMerma: row[9] || '',
+            observaciones: row[10] || ''
+        }));
+
+        res.json({
+            success: true,
+            registros: registros
+        });
+
+    } catch (error) {
+        console.error('Error al obtener registros:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener los registros'
+        });
+    }
+});
+app.post('/registrar-calculo-mp', requireAuth, async (req, res) => {
+    try {
+        const {
+            fecha,
+            nombre,
+            responsable,
+            materiaPrima,
+            gramaje,
+            pesoInicial,
+            pesoFinal,
+            cantidadProducida,
+            pesoMerma,
+            observaciones
+        } = req.body;
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get current records to determine next ID
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Materia prima!A:A'
+        });
+
+        const rows = response.data.values || [];
+        let lastId = 0;
+        
+        rows.forEach(row => {
+            if (row[0] && row[0].startsWith('RMP-')) {
+                const num = parseInt(row[0].split('-')[1]);
+                if (!isNaN(num) && num > lastId) {
+                    lastId = num;
+                }
+            }
+        });
+
+        const newId = `RMP-${lastId + 1}`;
+
+        // Insert new record
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Materia prima!A:K',
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[
+                    newId,
+                    fecha,
+                    nombre,
+                    responsable,
+                    materiaPrima,
+                    gramaje,
+                    pesoInicial,
+                    pesoFinal,
+                    cantidadProducida,
+                    pesoMerma,
+                    observaciones || ''
+                ]]
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Registro guardado correctamente',
+            id: newId 
+        });
+
+    } catch (error) {
+        console.error('Error al registrar cálculo MP:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al guardar el registro'
+        });
+    }
+});
+app.delete('/eliminar-registro-mp/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get the spreadsheet to find the sheet ID
+        const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID
+        });
+        
+        const mpSheet = spreadsheet.data.sheets.find(sheet => 
+            sheet.properties.title === 'Materia prima'
+        );
+
+        if (!mpSheet) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Hoja de Materia Prima no encontrada' 
+            });
+        }
+
+        // Get all records to find the row to delete
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Materia prima!A2:K'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Registro no encontrado' 
+            });
+        }
+
+        // Delete the row using batchUpdate
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            requestBody: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: mpSheet.properties.sheetId,
+                            dimension: 'ROWS',
+                            startIndex: rowIndex + 1, // +1 because we started from A2
+                            endIndex: rowIndex + 2
+                        }
+                    }
+                }]
+            }
+        });
+
+        res.json({ 
+            success: true,
+            message: 'Registro eliminado correctamente'
+        });
+    } catch (error) {
+        console.error('Error al eliminar registro:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al eliminar el registro' 
+        });
+    }
+});
+app.put('/actualizar-registro-mp', requireAuth, async (req, res) => {
+    try {
+        const {
+            id,
+            fecha,
+            nombre,
+            responsable,
+            materiaPrima,
+            gramaje,
+            pesoInicial,
+            cantidadProducida
+        } = req.body;
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Get current records to find the row to update
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Materia prima!A2:K'
+        });
+
+        const rows = response.data.values || [];
+        const rowIndex = rows.findIndex(row => row[0] === id);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                error: 'Registro no encontrado'
+            });
+        }
+
+        // Update the record
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: `Materia prima!A${rowIndex + 2}:K${rowIndex + 2}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[
+                    id,
+                    fecha,
+                    nombre,
+                    responsable,
+                    materiaPrima,
+                    gramaje,
+                    pesoInicial,
+                    '', // pesoFinal (mantener vacío)
+                    cantidadProducida,
+                    '', // pesoMerma (mantener vacío)
+                    rows[rowIndex][10] || '' // mantener observaciones existentes
+                ]]
+            }
+        });
+
+        res.json({
+            success: true,
+            message: 'Registro actualizado correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar registro:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el registro'
         });
     }
 });

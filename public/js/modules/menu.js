@@ -1,35 +1,12 @@
-export function initializeMenu(roles, opcionesDiv, vistas) {
-    const { menuPrincipal, menuSecundario, overlay } = initializeMenuStructure(opcionesDiv);
-    initializeMenuEvents(menuPrincipal, menuSecundario, overlay);
-    initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, overlay);
-    const container = document.querySelector('.container');
-    vistas.forEach(vista => {
-        vista.addEventListener('scroll', () => {
-            document.querySelectorAll('.submenu:not(.collapsed)').forEach(submenu => {
-                submenu.classList.add('collapsed');
-                const arrow = submenu.parentElement.querySelector('.submenu-arrow');
-                if (arrow) {
-                    arrow.style.transform = 'rotate(0deg)';
-                }
-            });
-        });
-    });
-
-    if (container) {
-        // Ocultar en scroll
-        container.addEventListener('scroll', () => {
-            document.querySelectorAll('.submenu:not(.collapsed)').forEach(submenu => {
-                submenu.classList.add('collapsed');
-                const arrow = submenu.parentElement.querySelector('.submenu-arrow');
-                if (arrow) {
-                    arrow.style.transform = 'rotate(0deg)';
-                }
-            });
-        });
-
-        // Ocultar al hacer clic en cualquier vista
-        container.addEventListener('click', (e) => {
-            if (!e.target.closest('.submenu-container')) {
+export function initializeMenu(roles, opcionesDiv, vistas, funcionesExtras = []) {
+    try {
+        const { menuPrincipal, menuSecundario, overlay } = initializeMenuStructure(opcionesDiv);
+        initializeMenuEvents(menuPrincipal, menuSecundario, overlay);
+        const extrasArray = Array.isArray(funcionesExtras) ? funcionesExtras : [];
+        initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, overlay, extrasArray);
+        const container = document.querySelector('.container');
+        vistas.forEach(vista => {
+            vista.addEventListener('scroll', () => {
                 document.querySelectorAll('.submenu:not(.collapsed)').forEach(submenu => {
                     submenu.classList.add('collapsed');
                     const arrow = submenu.parentElement.querySelector('.submenu-arrow');
@@ -37,12 +14,41 @@ export function initializeMenu(roles, opcionesDiv, vistas) {
                         arrow.style.transform = 'rotate(0deg)';
                     }
                 });
-            }
+            });
         });
+
+        if (container) {
+            // Ocultar en scroll
+            container.addEventListener('scroll', () => {
+                document.querySelectorAll('.submenu:not(.collapsed)').forEach(submenu => {
+                    submenu.classList.add('collapsed');
+                    const arrow = submenu.parentElement.querySelector('.submenu-arrow');
+                    if (arrow) {
+                        arrow.style.transform = 'rotate(0deg)';
+                    }
+                });
+            });
+
+            // Ocultar al hacer clic en cualquier vista
+            container.addEventListener('click', (e) => {
+                if (!e.target.closest('.submenu-container')) {
+                    document.querySelectorAll('.submenu:not(.collapsed)').forEach(submenu => {
+                        submenu.classList.add('collapsed');
+                        const arrow = submenu.parentElement.querySelector('.submenu-arrow');
+                        if (arrow) {
+                            arrow.style.transform = 'rotate(0deg)';
+                        }
+                    });
+                }
+            });
+        }
+
+        menuSecundario.addEventListener('click', (e) => e.stopPropagation());
+
+    } catch (error) {
+        console.error('Error al inicializar el menú:', error);
+        throw error;
     }
-
-    menuSecundario.addEventListener('click', (e) => e.stopPropagation());
-
 }
 function initializeMenuStructure(opcionesDiv) {
     const isDesktop = window.innerWidth >= 1024;
@@ -91,7 +97,7 @@ function initializeMenuEvents(menuPrincipal, menuSecundario, overlay) {
 
     menuSecundario.addEventListener('click', (e) => e.stopPropagation());
 }
-function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, overlay) {
+function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, overlay, funcionesExtras = []) {
     const botonesRoles = {
         'Producción': [
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio', onclick: 'onclick="inicializarHome()"' },
@@ -156,8 +162,19 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
 
         ]
     };
+    const funcionesExtrasConfig = {
+        'CalcularMP': {
+            clase: 'opcion-btn submenu-item',
+            vista: 'calcularMP-view',
+            icono: 'fa-puzzle-piece',
+            texto: 'Calcular MP',
+            onclick: 'onclick="inicializarCalcularMP()"'
+        }
+    };
+
 
     let esElPrimero = true;
+
 
     roles.forEach(rolActual => {
         const botonesRol = botonesRoles[rolActual];
@@ -274,7 +291,9 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                             submenu.classList.remove('collapsed');
                             arrow.style.transform = 'rotate(180deg)';
                         }
+
                     };
+
                 } else {
                     // Regular button without submenu (existing code)
                     const btnHTML = `
@@ -300,9 +319,104 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                         esElPrimero = false;
                     }
                 }
+
+
             });
         }
     });
+    if (funcionesExtras && funcionesExtras.length > 0) {
+        console.log('Procesando funciones extras:', funcionesExtras);
+        const botonesExtras = funcionesExtras
+            .map(funcion => {
+                console.log('Configuración para función:', funcion);
+                return funcionesExtrasConfig[funcion];
+            })
+            .filter(Boolean);
+
+        console.log('Botones extras generados:', botonesExtras);
+
+        if (botonesExtras.length > 0) {
+            const submenuHTML = `
+                <div class="submenu-container">
+                    <button class="opcion-btn submenu-trigger" data-has-submenu="true">
+                        <i class="fas fa-puzzle-piece"></i>
+                        <span>Plugins</span>
+                    </button>
+                    <div class="submenu collapsed">
+                        ${botonesExtras.map(boton => `
+                            <button class="${boton.clase}" 
+                                    data-vista="${boton.vista}" 
+                                    ${boton.onclick}>
+                                <i class="fas ${boton.icono}"></i>
+                                <span>${boton.texto}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            menuSecundario.insertAdjacentHTML('beforeend', submenuHTML);
+
+            // Agregar eventos al nuevo submenu
+            const lastContainer = menuSecundario.querySelector('.submenu-container:last-child');
+            const submenuButton = lastContainer.querySelector('[data-has-submenu]');
+            const submenu = lastContainer.querySelector('.submenu');
+
+            // Evento para el botón del submenu
+            submenuButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                submenu.classList.toggle('collapsed');
+
+                // Cerrar otros submenus
+                document.querySelectorAll('.submenu:not(.collapsed)').forEach(other => {
+                    if (other !== submenu) {
+                        other.classList.add('collapsed');
+                    }
+                });
+            });
+
+            // Agregar eventos a los items del submenu
+            submenu.querySelectorAll('.submenu-item').forEach(item => {
+                item.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const vistaId = item.dataset.vista;
+                    const vistaActual = document.querySelector(`.${vistaId}`);
+
+                    if (vistaActual) {
+                        // Ocultar todas las vistas
+                        vistas.forEach(vista => {
+                            vista.style.opacity = '0';
+                            setTimeout(() => vista.style.display = 'none', 300);
+                        });
+
+                        // Ejecutar función onclick
+                        const onclickFn = item.getAttribute('onclick')?.replace('onclick="', '').replace('"', '');
+                        if (window[onclickFn]) {
+                            await window[onclickFn]();
+                        }
+
+                        // Mostrar vista seleccionada
+                        setTimeout(() => {
+                            vistaActual.style.display = 'flex';
+                            requestAnimationFrame(() => {
+                                vistaActual.style.opacity = '1';
+                            });
+                        }, 300);
+
+                        // Actualizar estados activos
+                        menuSecundario.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('active'));
+                        item.classList.add('active');
+                        submenuButton.classList.add('active');
+
+                        // Cerrar submenu después de la selección
+                        submenu.classList.add('collapsed');
+                    }
+                });
+            });
+        }
+    }
 
     // Handle regular button clicks
     menuSecundario.querySelectorAll('.opcion-btn:not([data-has-submenu])').forEach(boton => {

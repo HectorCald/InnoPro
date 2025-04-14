@@ -51,7 +51,7 @@ export async function inicializarGestionPro() {
                 </div>
             </div>
             <div class="chart-container">
-                <p class="titulo-grafico"><i class="fas fa-info-circle"></i> Esta grafico muestra el flujo de registros de los ultimos 15 dias</p>
+                <p class="titulo-grafico"><i class="fas fa-info-circle"></i> Este grafico muestra el flujo de los ultimos 15 registros</p>
                 <canvas id="productionChart"></canvas>
             </div>
         `;

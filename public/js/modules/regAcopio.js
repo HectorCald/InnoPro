@@ -27,13 +27,27 @@ export async function cargarRegistrosAcopio() {
 
             container.innerHTML = `
     <div class="filtros-header">
-        <h2 class="section-title">
-            <i class="fas fa-clipboard-list"></i> Registros Acopio
-        </h2>
-        <button class="btn-filtro-acopio">
-            <i class="fas fa-filter"></i> Filtros
-        </button>
-    </div>
+            <h2 class="section-title">
+                <i class="fas fa-clipboard-list"></i> Registros Acopio
+            </h2>
+            <button class="btn-filtro-acopio">
+                <i class="fas fa-filter"></i> Filtros
+            </button>
+        </div>
+        <div class="filter-options-acopio">
+            <button class="filter-btn-acopio" data-estado="todos">
+                <i class="fas fa-list"></i> <p>Todos</p>
+            </button>
+            <button class="filter-btn-acopio" data-estado="Pendiente">
+                <i class="fas fa-clock"></i> <p>Pendiente</p>
+            </button>
+            <button class="filter-btn-acopio" data-estado="Recibido">
+                <i class="fas fa-check"></i> <p>Recibido</p>
+            </button>
+            <button class="filter-btn-acopio" data-estado="En proceso">
+                <i class="fas fa-spinner"></i> <p>En proceso</p>
+            </button>
+        </div>
     <div class="pedidos-container">
         <div class="fecha-card">
             <div class="fecha-header">
@@ -57,7 +71,7 @@ export async function cargarRegistrosAcopio() {
             <div class="registros-grupo registros-movimientos"></div>
         </div>
     </div>`;
-
+    configurarFiltrosBotones();
             // Cargar pedidos
             const registrosPedidosContainer = container.querySelector('.registros-pedidos');
             const registrosOrdenados = ordenarRegistrosPorFecha(dataPedidos.pedidos);
@@ -91,6 +105,8 @@ export async function cargarRegistrosAcopio() {
         ocultarCarga();
     }
     configurarFiltros2();
+
+    
 }
 function crearPedidoCard(pedido, isAdmin) {
     const [dia, mes, año] = pedido[1].split('/');
@@ -194,7 +210,7 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
             mostrarConfirmacionEliminar(pedido, registroCard);
         });
 
-        } else {
+    } else {
         // Add state change functionality for non-admin users
         const btnCambiarEstado = registroCard.querySelector('.btn-cambiar-estado');
         if (btnCambiarEstado) {
@@ -203,7 +219,7 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
                 try {
                     mostrarCarga();
                     const nuevoEstado = pedido[8] === 'Recibido' ? 'Ingresado' : 'Recibido';
-                    
+
                     const response = await fetch('/actualizar-registro-pedido', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
@@ -222,7 +238,7 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
                         const estadoElement = registroCard.querySelector('.registro-estado-acopio');
                         estadoElement.textContent = nuevoEstado;
                         estadoElement.className = `registro-estado-acopio estado-${nuevoEstado.toLowerCase()}`;
-                        
+
                         // Si cambia a Recibido, mostrar formulario de ingreso automáticamente
                         if (nuevoEstado === 'Recibido') {
                             setTimeout(() => {
@@ -231,11 +247,11 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
                                 if (overlay) overlay.style.display = 'flex';
                             }, 500);
                         }
-                        
+
                         // Replace the entire card to update the buttons
                         const newCard = crearPedidoCard(pedido, false);
                         registroCard.replaceWith(newCard);
-                        
+
                         mostrarNotificacion(`Estado actualizado a ${nuevoEstado}`, 'success');
                     } else {
                         throw new Error(data.error || 'Error al actualizar estado');
@@ -248,7 +264,7 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
             });
         }
 
-                // Configurar botón de ingreso para estado Recibido
+        // Configurar botón de ingreso para estado Recibido
         if (pedido[8] === 'Recibido') {
             const btnIngresar = registroCard.querySelector('.btn-ingresar-acopio');
             if (btnIngresar) {
@@ -414,6 +430,25 @@ function aplicarFiltros2() {
 
     actualizarContador();
 }
+function configurarFiltrosBotones() {
+    const filterButtons = document.querySelectorAll('.filter-btn-acopio');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remover active de todos los botones
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Añadir active al botón clickeado
+            button.classList.add('active');
+
+            // Actualizar filtro activo
+            filtrosActivos.estado = button.dataset.estado;
+
+            // Aplicar filtros
+            aplicarFiltros2();
+        });
+    });
+}
+
 function actualizarContador() {
     const registrosVisibles = document.querySelectorAll('.registro-card-acopio:not([style*="display: none"])').length;
     const contadores = document.querySelectorAll('.contador');
@@ -597,7 +632,7 @@ function mostrarConfirmacionEliminar(pedido, registroCard) {
     btnConfirmar.addEventListener('click', async () => {
         try {
             mostrarCarga();
-            const response = await fetch('/eliminar-registro-pedido', {
+            const response = await fetch('/eliminar-pedido', {  // Cambiado a usar el endpoint existente
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: pedido[0] })
@@ -609,7 +644,7 @@ function mostrarConfirmacionEliminar(pedido, registroCard) {
                 mostrarNotificacion('Registro eliminado correctamente', 'success');
                 actualizarContador();
             } else {
-                throw new Error(data.error);
+                throw new Error(data.error || 'Error al eliminar el registro');
             }
         } catch (error) {
             mostrarNotificacion('Error al eliminar registro: ' + error.message, 'error');
@@ -871,7 +906,6 @@ function mostrarFormularioEdicionMovimiento(movimiento) {
 
     anuncio.style.display = 'flex';
 }
-
 function mostrarConfirmacionEliminarMovimiento(movimiento, movimientoCard) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');

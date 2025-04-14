@@ -15,6 +15,7 @@ import { inicializarAlmacenGral,cargarAlmacen,mostrarProductos } from './modules
 import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
 import { inicializarConfiguraciones } from './modules/configuraciones.js';
 import { inicializarGestionPro } from './modules/gestionPro.js';
+import { inicializarCalcularMP } from './modules/calcularMP.js';
 
 function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
@@ -100,6 +101,9 @@ window.inicializarConfiguraciones = inicializarConfiguraciones;
 
 // Funciones de gestion produccion
 window.inicializarGestionPro = inicializarGestionPro;
+
+// Funciones de calcular materia prima
+window.inicializarCalcularMP = inicializarCalcularMP;
 
 async function bienvenida() {
     try {
@@ -251,35 +255,56 @@ async function obtenerRolUsuario() {
     try {
         const response = await fetch('/obtener-mi-rol');
         const data = await response.json();
-        if (!data.rol) {
-            console.error('No se encontró rol en la respuesta');
-            return null;
-        }
-        return data.rol;
+        console.log('Datos obtenidos:', data);
+        
+        return {
+            rol: data.rol,
+            funcionesExtra: data.Extras ? [data.Extras] : [] // Convertir Extras a array
+        };
     } catch (error) {
-        console.error('Error al obtener rol del usuario:', error);
+        console.error('Error al obtener rol:', error);
         return null;
     }
 }
+
 async function iniciarApp() {
-    const rol = await obtenerRolUsuario();
-    const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
+    try {
+        const userData = await obtenerRolUsuario();
+        if (!userData || !userData.rol) {
+            throw new Error('No se pudo obtener la información del usuario');
+        }
 
-    // Ocultar todas las vistas inicialmente
-    vistas.forEach(vista => {
-        vista.style.display = 'none';
-        vista.style.opacity = '0';
-        vista.style.backgroundColor = '#1a1a1a';
-        vista.style.color = '#ffffff';
-    });
+        const opcionesDiv = document.querySelector('.opciones');
+        if (!opcionesDiv) {
+            throw new Error('No se encontró el contenedor de opciones');
+        }
 
-    // Dividir los roles si hay múltiples
-    const roles = rol ? rol.split(',').map(r => r.trim()) : [];
+        const vistas = document.querySelectorAll('.calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
 
-    // Inicializar el menú
-    initializeMenu(roles, opcionesDiv, vistas);
-    await cargarNotificaciones();
+        // Ocultar todas las vistas inicialmente
+        vistas.forEach(vista => {
+            if (vista) {
+                vista.style.display = 'none';
+                vista.style.opacity = '0';
+                vista.style.backgroundColor = '#1a1a1a';
+                vista.style.color = '#ffffff';
+            }
+        });
+
+        const roles = userData.rol.split(',').map(r => r.trim());
+        console.log('Roles:', roles);
+        console.log('Funciones Extra:', userData.funcionesExtra);
+
+        // Asegurarse de que funcionesExtra sea un array
+        const funcionesExtra = Array.isArray(userData.funcionesExtra) ? userData.funcionesExtra : [];
+        
+        // Inicializar el menú
+        await initializeMenu(roles, opcionesDiv, vistas, funcionesExtra);
+        await cargarNotificaciones();
+    } catch (error) {
+        console.error('Error al iniciar la aplicación:', error);
+        mostrarNotificacion('Error al cargar el menú: ' + error.message, 'error');
+    }
 }
 
 function mostrarCarga() {

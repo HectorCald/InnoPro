@@ -39,6 +39,67 @@
         width: 100%;
     }
 
+    .filter-options-acopio {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        min-height: min-content;
+        margin-bottom: 15px;
+        overflow-x: auto;
+        padding: 5px;
+        justify-content: flex-start !important;
+        align-items: center;
+
+        /* Ocultar scrollbar pero mantener funcionalidad */
+        &::-webkit-scrollbar {
+            display: none;
+        }
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+
+    .filter-btn-acopio {
+        padding: 10px 15px;
+        border-radius: 10px;
+        background-color: var(--cero-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        flex: 0 0 auto;
+        white-space: nowrap;
+        border: none;
+        gap: 10px;
+        cursor: pointer;
+        min-width: fit-content;
+        height: fit-content;
+    }
+
+    .filter-btn-acopio.active {
+        background: var(--second-button);
+        border-color: var(--second-button);
+        color: white;
+    }
+
+    .filter-btn-acopio i {
+        font-size: 14px;
+    }
+
+    .filter-btn-acopio p {
+        margin: 0;
+    }
+
+    @media screen and (max-width: 768px) {
+        .filter-options-acopio {
+            justify-content: center;
+        }
+
+        .filter-btn-acopio {
+            font-size: 13px;
+            padding: 8px 12px;
+        }
+    }
+
     .btn-filtro-acopio {
         background: none;
         border: none;
@@ -61,11 +122,13 @@
 
         font-size: 15px;
     }
-    .pedidos-container{
+
+    .pedidos-container {
         display: flex;
         flex-direction: column;
         gap: 10px;
     }
+
     .fecha-header {
         background: var(--cero-color);
         padding: 15px;
@@ -276,6 +339,7 @@
             transform: translateY(-2px);
         }
     }
+
     .fa-chevron-down {
         transition: transform 0.3s ease;
 
@@ -283,12 +347,14 @@
             transform: rotate(180deg);
         }
     }
+
     .no-registros {
         color: #aaa;
         text-align: center;
         padding: 15px;
         font-size: 15px;
     }
+
     .registro-estado-acopio {
         padding: 4px 8px;
         border-radius: 15px;
@@ -301,6 +367,7 @@
         background-color: #6c757d;
         /* gris */
     }
+
     .estado-recibido {
         background-color: #17a2b8;
         /* celeste */
@@ -315,6 +382,7 @@
         background-color: #27ae60;
         color: white;
     }
+
     .estado-en-proceso {
         background-color: #ffc107;
         /* amarillo */
@@ -332,14 +400,15 @@
         background-color: #17a2b8;
         /* celeste */
     }
+
     .tipo-ingreso {
         background-color: #27ae60;
         color: white;
     }
-    
+
     .tipo-salida {
         background-color: #e74c3c;
         color: white;
     }
-    
+
 }

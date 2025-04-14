@@ -57,7 +57,7 @@ export async function cargarUsuarios() {
         if (data.success) {
             const container = document.getElementById('usersContainer');
             container.innerHTML = data.usuarios.map(usuario => `
-                <div class="product-card" data-pin="${usuario.pin}">
+                <div class="product-card" data-pin="${usuario.pin}" data-extras="${usuario.extras || ''}">
                     <div class="product-info">
                         <div class="product-name">
                             <i class="fas fa-user-circle"></i>
@@ -66,6 +66,7 @@ export async function cargarUsuarios() {
                         <div class="product-quantity">
                             <div class="registro-estado-acopio">${usuario.rol}</div>
                         </div>
+                        ${usuario.extras && usuario.extras !== '' ? `<div class="extras-indicator"><i class="fas fa-puzzle-piece"></i></div>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -294,6 +295,7 @@ async function mostrarDetallesUsuario(pin) {
         }
 
         const usuario = data.usuario;
+        
         const anuncio = document.querySelector('.anuncio');
         const anuncioContenido = document.querySelector('.anuncio-contenido');
 
@@ -321,6 +323,11 @@ async function mostrarDetallesUsuario(pin) {
                 <p>Estado:</p> 
                 <span>${usuario.estado ? 'Activo' : 'Inactivo'}</span>
             </div>
+            <div class="detalle-item">
+                <i class="fas fa-puzzle-piece"></i>
+                <p>Plugins:</p> 
+                <span>${usuario.extras && usuario.extras !== '' ? usuario.extras : 'Sin extras asignados'}</span>
+            </div>
         </div>
         <div class="campo-form">
             <label for="nuevo-pin">Nuevo PIN:</label>
@@ -337,14 +344,21 @@ async function mostrarDetallesUsuario(pin) {
                 <option value="Compras">Compras</option>
             </select>
         </div>
+        <div class="campo-form">
+            <label for="nuevo-extras">Extras:</label>
+            <select id="nuevo-extras" class="form-input">
+                <option value="">Sin extras</option>
+                <option value="CalcularMP" ${usuario.extras === 'CacularMP' ? 'selected' : ''}>Calcular MP</option>
+            </select>
+        </div>
     </div>
-    <div class="anuncio-botones" style="flex-direction:column;">
+ <div class="anuncio-botones" style="flex-direction:column;">
         <button class="anuncio-btn blue actualizar-pin"><i class="fas fa-key"></i> Actualizar PIN</button>
         <button class="anuncio-btn green actualizar-rol"><i class="fas fa-user-tag"></i> Actualizar Rol</button>
+        <button class="anuncio-btn purple actualizar-extras"><i class="fas fa-puzzle-piece"></i> Actualizar Extras</button>
         <button class="anuncio-btn red eliminar-usuario"><i class="fas fa-trash"></i> Eliminar Usuario</button>
         <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-    </div>
-`;
+    </div>`;
 
 
         anuncio.style.display = 'flex';
@@ -353,8 +367,36 @@ async function mostrarDetallesUsuario(pin) {
         const btnActualizarRol = anuncioContenido.querySelector('.actualizar-rol');
         const btnCancelar = anuncioContenido.querySelector('.cancelar');
         const btnEliminar = anuncioContenido.querySelector('.eliminar-usuario');
+        const btnActualizarExtras = anuncioContenido.querySelector('.actualizar-extras');
 
+        btnActualizarExtras.onclick = async () => {
+            const nuevosExtras = document.getElementById('nuevo-extras').value;
+            try {
+                mostrarCarga();
+                const response = await fetch('/actualizar-extras', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        pin: usuario.pin,
+                        nuevosExtras: nuevosExtras
+                    })
+                });
 
+                const data = await response.json();
+                if (data.success) {
+                    mostrarNotificacion('Extras actualizados correctamente', 'success');
+                    anuncio.style.display = 'none';
+                    await cargarUsuarios();
+                } else {
+                    throw new Error(data.error || 'Error al actualizar extras');
+                }
+            } catch (error) {
+                mostrarNotificacion(error.message, 'error');
+            }finally {
+                ocultarCarga();
+            }
+        };
         btnEliminar.onclick = () => {
             // Mostrar confirmación en el mismo anuncio
             anuncioContenido.innerHTML = `
@@ -400,12 +442,11 @@ async function mostrarDetallesUsuario(pin) {
 
             btnCancelar.onclick = () => mostrarDetallesUsuario(usuario.pin);
         };
-
-
         btnActualizarPin.onclick = async () => {
             const nuevoPIN = document.getElementById('nuevo-pin').value;
             if (nuevoPIN && nuevoPIN.length === 4) {
                 try {
+                    mostrarCarga();
                     const response = await fetch('/actualizar-pin', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -415,7 +456,7 @@ async function mostrarDetallesUsuario(pin) {
                             nuevoPIN: nuevoPIN
                         })
                     });
-        
+
                     const data = await response.json();
                     if (data.success) {
                         mostrarNotificacion('PIN actualizado correctamente', 'success');
@@ -427,6 +468,9 @@ async function mostrarDetallesUsuario(pin) {
                 } catch (error) {
                     mostrarNotificacion(error.message, 'error');
                 }
+                finally {
+                    ocultarCarga();
+                }
             } else {
                 mostrarNotificacion('El PIN debe tener 4 dígitos', 'error');
             }
@@ -434,6 +478,7 @@ async function mostrarDetallesUsuario(pin) {
         btnActualizarRol.onclick = async () => {
             const nuevoRol = document.getElementById('nuevo-rol').value;
             try {
+                mostrarCarga();
                 const response = await fetch('/actualizar-rol', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -443,7 +488,7 @@ async function mostrarDetallesUsuario(pin) {
                         nuevoRol: nuevoRol
                     })
                 });
-        
+
                 const data = await response.json();
                 if (data.success) {
                     mostrarNotificacion('Rol actualizado correctamente', 'success');
@@ -454,10 +499,12 @@ async function mostrarDetallesUsuario(pin) {
                 }
             } catch (error) {
                 mostrarNotificacion(error.message, 'error');
+            }finally {
+                ocultarCarga();
             }
         };
-        
-        
+
+
 
         btnCancelar.onclick = () => anuncio.style.display = 'none';
 

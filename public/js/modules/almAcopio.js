@@ -53,27 +53,27 @@ export function mostrarProductosBruto() {
     container.style.display = 'flex';
 
     container.innerHTML = `
-        <div class="almacen-container">
+           <div class="almacen-container">
             <div class="almacen-header">
-                <div class="search-bar">
+                <div class="search-bar-acopio">
                     <input type="text" id="searchProductAcopio" placeholder="Buscar producto...">
-                    <i class="fas fa-search search-icon"></i>
+                    <i class="fas fa-search search-icon-acopio"></i>
                 </div>
                 <div class="filter-options">
                     <button class="filter-btn" data-filter="all">
-                        <i class="fas fa-sort-amount-down"></i>
+                        <i class="fas fa-sort-amount-down"></i> <p>100-0</p>
                     </button>
                     <button class="filter-btn giro" data-filter="low">
-                        <i class="fas fa-sort-amount-up"></i>
+                        <i class="fas fa-sort-amount-up"></i> <p>0-100</p>
                     </button>
                     <button class="filter-btn" data-view="both" title="Mostrar ambos">
-                        <i class="fas fa-boxes"></i>
+                        <i class="fas fa-boxes"></i> <p>Todos</p>
                     </button>
                     <button class="filter-btn" data-view="bruto" title="Solo Bruto">
-                        <i class="fas fa-cubes"></i>
+                        <i class="fas fa-cubes"></i> <p>Prima</p>
                     </button>
                     <button class="filter-btn" data-view="prima" title="Solo Prima">
-                        <i class="fas fa-box"></i>
+                        <i class="fas fa-box"></i> <p>Bruto</p>
                     </button>
                 </div>
             </div>
@@ -94,8 +94,7 @@ export function mostrarProductosBruto() {
     }
 
     const searchInput = document.getElementById('searchProductAcopio');
-    const searchIcon = document.querySelector('.search-icon');
-
+    const searchIcon = document.querySelector('.search-icon-acopio');
     searchInput.addEventListener('focus', () => {
         const almacenView = document.querySelector('.almAcopio-view');
         if (almacenView) {
@@ -109,6 +108,8 @@ export function mostrarProductosBruto() {
     searchInput.addEventListener('input', (e) => {
         const searchTerm = normalizarTexto(e.target.value);
         const products = document.querySelectorAll('.product-card');
+        const productsContainer = document.getElementById('productsContainer');
+        let productsFound = false;
 
         // Change icon based on input value
         if (e.target.value.length > 0) {
@@ -121,8 +122,30 @@ export function mostrarProductosBruto() {
 
         products.forEach(product => {
             const productName = normalizarTexto(product.querySelector('.product-name span').textContent);
-            product.style.display = productName.includes(searchTerm) ? 'grid' : 'none';
+            if (productName.includes(searchTerm)) {
+                product.style.display = 'grid';
+                productsFound = true;
+            } else {
+                product.style.display = 'none';
+            }
         });
+
+        // Show/hide no results message
+        const noResultsMessage = document.querySelector('.no-results-message');
+        if (!productsFound && searchTerm) {
+            if (!noResultsMessage) {
+                productsContainer.innerHTML += `
+                    <div class="no-results-message" style="width: 100%; text-align: center; padding: 20px; color: var(--primary-text);">
+                        <i class="fas fa-search" style="font-size: 40px; margin-bottom: 10px;"></i>
+                        <p>No se encontraron productos que contengan "${e.target.value}..."</p>
+                    </div>
+                `;
+            }
+        } else {
+            if (noResultsMessage) {
+                noResultsMessage.remove();
+            }
+        }
     });
     searchIcon.addEventListener('click', () => {
         if (searchInput.value.length > 0) {

@@ -231,6 +231,9 @@ export async function entregarPedido(button) {
         const id = card.dataset.id;
         const nombre = card.dataset.nombre;
 
+        // Obtener el estado actual del pedido
+        const estadoActual = card.closest('.pedidos-list').classList.contains('proceso') ? 'En proceso' : 'Pendiente';
+
         const anuncio = document.querySelector('.anuncio');
         const anuncioContenido = document.querySelector('.anuncio-contenido');
 

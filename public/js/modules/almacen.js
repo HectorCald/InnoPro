@@ -1204,16 +1204,16 @@ export function mostrarProductos() {
         <div class="almacen-container-general">
             <div class="almacen-header-general">
                 <div class="search-bar">
-                    <input type="text" id="searchProductAcopio" placeholder="Buscar producto...">
-                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchProduct" placeholder="Buscar producto...">
+                    <i class="fas fa-search search-icon2"></i>
                 </div>
                 <div class="filter-options">
                     <button class="filter-btn" data-filter="all">
-                        <i class="fas fa-sort-amount-down"></i>
+                        <p><i class="fas fa-sort-amount-down"></i> Mayor a menor</p>
                     </button>
                     <button class="filter-btn giro" data-filter="low">
-                        <i class="fas fa-sort-amount-up"></i>
-                    </button>
+                        <p><i class="fas fa-sort-amount-up"></i> Menor a mayor</p>
+                   </button>
                 </div>
             </div>
             <div class="products-grid" id="productsContainer-general">
@@ -1232,8 +1232,8 @@ export function mostrarProductos() {
             .trim();                         // Elimina espacios al inicio y final
     }
 
-    const searchInput = document.getElementById('searchProductAcopio');
-    const searchIcon = document.querySelector('.search-icon');
+    const searchInput = document.getElementById('searchProduct');
+    const searchIcon = document.querySelector('.search-icon2');
     
 
     // Add focus event handler
@@ -1250,6 +1250,8 @@ export function mostrarProductos() {
     searchInput.addEventListener('input', (e) => {
         const searchTerm = normalizarTexto(e.target.value);
         const products = document.querySelectorAll('.product-card');
+        const productsContainer = document.getElementById('productsContainer-general');
+        let productsFound = false;
 
         // Change icon based on input value
         if (e.target.value.length > 0) {
@@ -1262,8 +1264,30 @@ export function mostrarProductos() {
 
         products.forEach(product => {
             const productName = normalizarTexto(product.querySelector('.product-name span').textContent);
-            product.style.display = productName.includes(searchTerm) ? 'grid' : 'none';
+            if (productName.includes(searchTerm)) {
+                product.style.display = 'grid';
+                productsFound = true;
+            } else {
+                product.style.display = 'none';
+            }
         });
+
+        // Mostrar mensaje si no se encuentran productos
+        const noResultsMessage = document.querySelector('.no-results-message');
+        if (!productsFound && searchTerm) {
+            if (!noResultsMessage) {
+                productsContainer.innerHTML += `
+                    <div class="no-results-message" style="width: 100%; text-align: center; padding: 20px; color: var(--primary-text);">
+                        <i class="fas fa-search" style="font-size: 40px; margin-bottom: 10px;"></i>
+                        <p>No se encontraron productos que contengan "${e.target.value}..."</p>
+                    </div>
+                `;
+            }
+        } else {
+            if (noResultsMessage) {
+                noResultsMessage.remove();
+            }
+        }
     });
     searchIcon.addEventListener('click', () => {
         if (searchInput.value.length > 0) {
@@ -1278,21 +1302,20 @@ export function mostrarProductos() {
     });
 
 
-    const filterButtons = document.querySelectorAll('.filter-btn');
+        const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
             filterButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
 
             const filter = button.dataset.filter;
-            const products = Array.from(document.querySelectorAll('.product-card'));
+            // Modificar el selector para que solo seleccione productos del contenedor general
+            const products = Array.from(document.querySelector('#productsContainer-general').querySelectorAll('.product-card'));
 
             products.sort((a, b) => {
-                // Extraer solo los números usando una expresión regular más robusta
                 const stockA = parseInt(a.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
                 const stockB = parseInt(b.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
 
-                // Si no hay número, tratarlo como 0
                 const numA = isNaN(stockA) ? 0 : stockA;
                 const numB = isNaN(stockB) ? 0 : stockB;
 
