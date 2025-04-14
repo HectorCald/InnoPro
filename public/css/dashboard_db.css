@@ -25,6 +25,9 @@
 @import'styles/regAlmacen.css';
 @import'styles/balAlmacen.css';
 @import'styles/configuraciones.css';
+@import'styles/gestionPro.css';
+
+
 body, .container{
     background-color: var(--primary-color) !important;
 }

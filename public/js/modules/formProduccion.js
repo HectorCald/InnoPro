@@ -26,7 +26,7 @@ export function inicializarFormularioProduccion() {
 }
 export function mostrarFormularioProduccion() {
     if (!verificarHorario()) {
-        mostrarNotificacion('No se pueden registrar producciones fuera del horario permitido (8:00 AM - 6:15 PM)', 'error');
+        mostrarNotificacion('No se pueden registrar producciones fuera del horario permitido (8:00 AM - 7:00 PM)', 'error');
         return;
     }
 
@@ -454,8 +454,7 @@ function verificarHorario() {
     const minutos = ahora.getMinutes();
     const tiempoActual = hora * 60 + minutos; // Convertir a minutos
 
-    const inicioJornada = 8 * 60; // 8:00 AM en minutos
-    const finJornada = 20 * 60; // 6:15 PM en minutos
+    const inicioJornada = 8 * 60;     const finJornada = 19 * 60; 
 
     return tiempoActual >= inicioJornada && tiempoActual <= finJornada;
 }

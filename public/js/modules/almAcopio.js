@@ -96,6 +96,16 @@ export function mostrarProductosBruto() {
     const searchInput = document.getElementById('searchProductAcopio');
     const searchIcon = document.querySelector('.search-icon');
 
+    searchInput.addEventListener('focus', () => {
+        const almacenView = document.querySelector('.almAcopio-view');
+        if (almacenView) {
+            const searchBarPosition = searchInput.getBoundingClientRect().top + window.scrollY;
+            almacenView.scrollTo({
+                top: searchBarPosition - 80, // 20px offset from top
+                behavior: 'smooth'
+            });
+        }
+    });
     searchInput.addEventListener('input', (e) => {
         const searchTerm = normalizarTexto(e.target.value);
         const products = document.querySelectorAll('.product-card');

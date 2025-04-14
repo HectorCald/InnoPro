@@ -102,6 +102,14 @@ async function obtenerAtajos() {
                     detalle: 'Aqui puedes ver todos los registros de producción que hiciste',
                     onclick: 'onclick="cargarRegistrosCuentas()"'
                 },
+                { 
+                    clase: 'opcion-btn',
+                    vista: 'gestionPro-view',
+                    icono: 'fa-chart-line',
+                    texto: 'Estadisticas de registros',
+                    detalle: 'Aqui puedes ver las estadisticas de tu registros de producción.',
+                    onclick: 'onclick="inicializarGestionPro()"'
+                }
             ],
             'Acopio': [
                 { 
@@ -118,7 +126,7 @@ async function obtenerAtajos() {
                     icono: 'fa-dolly',
                     texto: 'Gestionar Almacen',
                     detalle: 'Aqui puedes gestionar el almacen de Acopio: (Materia Prima, Materia Bruta, Movimientos).',
-                    onclick: 'onclick="inicializarTareas()"'
+                    onclick: 'onclick="inicializarAlmacen()"'
                 },
                 { 
                     clase: 'opcion-btn',

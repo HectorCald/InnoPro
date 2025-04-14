@@ -899,6 +899,7 @@ app.post('/actualizar-rol', requireAuth, async (req, res) => {
 });
 
 
+
 /* ==================== API DE PRODUCTOS ==================== */
 app.get('/obtener-productos', requireAuth, async (req, res) => {
     try {

@@ -14,6 +14,7 @@ import { cargarRegistrosAcopio } from './modules/regAcopio.js';
 import { inicializarAlmacenGral,cargarAlmacen,mostrarProductos } from './modules/almacen.js';
 import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
 import { inicializarConfiguraciones } from './modules/configuraciones.js';
+import { inicializarGestionPro } from './modules/gestionPro.js';
 
 function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
@@ -96,6 +97,9 @@ window.mostrarProductos = mostrarProductos;
 
 // Funciones de configuraciones
 window.inicializarConfiguraciones = inicializarConfiguraciones;
+
+// Funciones de gestion produccion
+window.inicializarGestionPro = inicializarGestionPro;
 
 async function bienvenida() {
     try {
@@ -260,7 +264,7 @@ async function obtenerRolUsuario() {
 async function iniciarApp() {
     const rol = await obtenerRolUsuario();
     const opcionesDiv = document.querySelector('.opciones');
-    const vistas = document.querySelectorAll('.configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
+    const vistas = document.querySelectorAll('gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view, .almAcopio-view, .almPrima-view');
 
     // Ocultar todas las vistas inicialmente
     vistas.forEach(vista => {
@@ -314,6 +318,37 @@ export async function registrarNotificacion(origen, destino, mensaje) {
 export function inicializarGestionProduccion(){
     mostrarNotificacion('No se puede acceder a esta pestaña por el momento','warning')
 }
+function centrarInputEnFoco() {
+    document.addEventListener('focusin', (e) => {
+        if (e.target.tagName.toLowerCase() === 'input' || 
+            e.target.tagName.toLowerCase() === 'select' || 
+            e.target.tagName.toLowerCase() === 'textarea') {
+            
+            const contenedorRelleno = e.target.closest('.relleno');
+            if (contenedorRelleno) {
+                // Esperar un momento para asegurar que el teclado móvil se ha mostrado
+                setTimeout(() => {
+                    const inputRect = e.target.getBoundingClientRect();
+                    const contenedorRect = contenedorRelleno.getBoundingClientRect();
+                    
+                    // Calcular la posición del scroll para centrar el input
+                    const scrollOffset = (
+                        inputRect.top + 
+                        contenedorRelleno.scrollTop - 
+                        contenedorRect.top - 
+                        (contenedorRect.height / 2) + 
+                        (inputRect.height / 2)
+                    );
+                    
+                    contenedorRelleno.scrollTo({
+                        top: scrollOffset,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            }
+        }
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     let anuncio = document.querySelector('.anuncio');
@@ -339,6 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarApp();
     bienvenida();
     inicializarHome(); 
+    centrarInputEnFoco();
 });
 window.mostrarNotificacionesPanel = async function() {
     try {

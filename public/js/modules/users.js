@@ -44,7 +44,6 @@ export function inicializarUsuarios() {
 
     cargarUsuarios();
 }
-
 export async function cargarUsuarios() {
     try {
         mostrarCarga();
@@ -131,7 +130,6 @@ export async function cargarUsuarios() {
         ocultarCarga();
     }
 }
-
 async function mostrarFormularioAgregarUsuario() {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = document.querySelector('.anuncio-contenido');
@@ -210,8 +208,6 @@ async function mostrarFormularioAgregarUsuario() {
         ocultarCarga();
     }
 }
-
-
 async function mostrarFormularioDesactivarUsuario() {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = document.querySelector('.anuncio-contenido');
@@ -282,7 +278,6 @@ async function mostrarFormularioDesactivarUsuario() {
         ocultarCarga();
     }
 }
-
 async function mostrarDetallesUsuario(pin) {
     try {
         mostrarCarga();
@@ -343,18 +338,69 @@ async function mostrarDetallesUsuario(pin) {
             </select>
         </div>
     </div>
-    <div class="anuncio-botones">
+    <div class="anuncio-botones" style="flex-direction:column;">
         <button class="anuncio-btn blue actualizar-pin"><i class="fas fa-key"></i> Actualizar PIN</button>
         <button class="anuncio-btn green actualizar-rol"><i class="fas fa-user-tag"></i> Actualizar Rol</button>
+        <button class="anuncio-btn red eliminar-usuario"><i class="fas fa-trash"></i> Eliminar Usuario</button>
         <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
     </div>
 `;
+
 
         anuncio.style.display = 'flex';
 
         const btnActualizarPin = anuncioContenido.querySelector('.actualizar-pin');
         const btnActualizarRol = anuncioContenido.querySelector('.actualizar-rol');
         const btnCancelar = anuncioContenido.querySelector('.cancelar');
+        const btnEliminar = anuncioContenido.querySelector('.eliminar-usuario');
+
+
+        btnEliminar.onclick = () => {
+            // Mostrar confirmación en el mismo anuncio
+            anuncioContenido.innerHTML = `
+                <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
+                <div class="detalles-grup center">
+                    <p>¿Está seguro que desea eliminar el usuario "${usuario.nombre}"?</p>
+                    <p>Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn red confirmar-eliminacion">Confirmar</button>
+                    <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+
+            // Manejadores para la confirmación
+            const btnConfirmarEliminacion = anuncioContenido.querySelector('.confirmar-eliminacion');
+            const btnCancelar = anuncioContenido.querySelector('.cancelar');
+
+            btnConfirmarEliminacion.onclick = async () => {
+                try {
+                    mostrarCarga();
+                    const response = await fetch('/eliminar-usuario', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ pin: usuario.pin })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        mostrarNotificacion('Usuario eliminado correctamente', 'success');
+                        anuncio.style.display = 'none';
+                        await cargarUsuarios();
+                    } else {
+                        throw new Error(data.error || 'Error al eliminar usuario');
+                    }
+                } catch (error) {
+                    mostrarNotificacion(error.message, 'error');
+                } finally {
+                    ocultarCarga();
+                }
+            };
+
+            btnCancelar.onclick = () => mostrarDetallesUsuario(usuario.pin);
+        };
+
 
         btnActualizarPin.onclick = async () => {
             const nuevoPIN = document.getElementById('nuevo-pin').value;

@@ -1,0 +1,113 @@
+@import'styles/colores.css';
+
+.gestionPro-view {
+    width: 100%;
+    background: var(--primary-color) !important;
+    height: calc(100vh - 145px);
+    color: var(--primary-text) !important;
+    overflow-y: auto;
+    padding: 15px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    .title {
+        padding-block: 15px;
+        border-bottom: 1px solid rgb(83, 83, 83);
+
+        h3 {
+            font-size: 17px;
+        }
+    }
+
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 1em;
+    }
+
+    .stat-card {
+        background: var(--second-color);
+        border-radius: 10px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        transition: transform 0.3s ease;
+        width: 100%;
+        cursor: pointer;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .stat-card i {
+        font-size: 15px;
+        color: var(--accent-color);
+    }
+
+    .stat-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-info p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--primary-text);
+    }
+
+    .stat-number {
+        font-size: 40px;
+        font-weight: bold;
+        color: var(--accent-color);
+    }
+
+
+    .titulo-grafico{
+        font-size: 13px;
+        color: gray;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    .chart-container {
+        background: var(--second-color);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 10px;
+        height: 250px !important;
+        position: relative;
+    }
+
+    .stat-card.total i {
+        color: #4CAF50;
+    }
+
+    .stat-card.verified i {
+        color: #2196F3;
+    }
+
+    .stat-card.unverified i {
+        color: #FFC107;
+    }
+
+    .stat-card.total .stat-number {
+        color: #4CAF50;
+    }
+
+    .stat-card.verified .stat-number {
+        color: #2196F3;
+    }
+
+    .stat-card.unverified .stat-number {
+        color: #FFC107;
+    }
+}
