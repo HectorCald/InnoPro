@@ -310,11 +310,12 @@
     border: 1px solid #4c4c4c;
     font-size: 16px;
     padding: 10px;
-    border-radius: 15px;
+    border-radius: 10px;
 }
 .anuncio-contenido select option {
     background: var(--primary-color);
     color: var(--primary-text);
+    font-size: 15px !important;
 }
 .form-grup{
     background-color: var(--primary-color);

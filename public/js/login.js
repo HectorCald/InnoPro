@@ -91,6 +91,7 @@ class LoginPin {
         } 
     }
 
+
     getRedirectUrl(rol) {
         const routes = {
             'admin': '/dashboard_db',
@@ -100,21 +101,13 @@ class LoginPin {
         return routes[rol] || routes.default;
     }
 
-    showLoading() {
-        document.querySelector('.loading-screen').style.display = 'flex';
-    }
-
-    hideLoading() {
-        document.querySelector('.loading-screen').style.display = 'none';
-    }
-
     showSuccess(nombre) {
         this.errorMessage.style.color = 'var(--success)';
         this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
     }
 
     showError(message = 'PIN incorrecto. Intente nuevamente.') {
-        this.hideLoading();
+        // Eliminar la llamada a hideLoading()
         this.errorMessage.style.color = 'var(--error)';
         this.errorMessage.textContent = message;
         this.resetPin();
@@ -130,23 +123,15 @@ class Modal {
     }
 
     init() {
-        // Add console.log to debug
-        console.log('Modal initialized:', {
-            modal: this.modal,
-            sinPinBtn: this.sinPinBtn,
-            closeBtn: this.closeBtn
-        });
 
         if (this.sinPinBtn) {
             this.sinPinBtn.addEventListener('click', () => {
-                console.log('Sin PIN clicked');
                 this.openModal();
             });
         }
 
         if (this.closeBtn) {
             this.closeBtn.addEventListener('click', () => {
-                console.log('Close button clicked');
                 this.closeModal();
             });
         }

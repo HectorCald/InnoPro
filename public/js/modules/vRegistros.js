@@ -916,7 +916,6 @@ function configurarFiltros() {
 
         const cerrarModal = () => {
             anuncio.style.display = 'none';
-            overlay.style.display = 'none';
             document.querySelector('.container').classList.remove('no-touch');
         };
 

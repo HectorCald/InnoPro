@@ -1,4 +1,6 @@
 /* =============== FUNCIONES DE INCIO HOME =============== */
+import { mostrarCarga, ocultarCarga } from '../dashboard_db.js';
+import { scrollToTop } from '../dashboard_db.js';
 const frasesDiarias = [
     "¡Un día productivo y a romperla en la calle, loco! 💪🔥",
     "¡Hoy es un gran día para dar lo mejor! ⭐️✨",
@@ -52,29 +54,30 @@ export async function inicializarHome() {
     }
 }
 function inicializarEventos() {
-    document.querySelectorAll('.delete-notification').forEach(button => {
-        button.addEventListener('click', async (e) => {
-            e.preventDefault();
+    const deleteButtons = document.querySelectorAll('.delete-notification');
+    const anuncio = document.querySelector('.anuncio');
+    const overlay = document.querySelector('.overlay');
+    
+    if (deleteButtons.length && anuncio && overlay) {
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                
+                const titulo = anuncio.querySelector('h2');
+                if (titulo) {
+                    titulo.textContent = '¿Eliminar notificación?';
+                }
 
-            // Show custom confirmation dialog
-            const anuncio = document.querySelector('.anuncio');
-            const overlay = document.querySelector('.overlay');
-            
-            // Change the announcement title
-            const titulo = anuncio.querySelector('h2');
-            titulo.textContent = '¿Eliminar notificación?';
+                anuncio.style.display = 'flex';
+                overlay.style.display = 'block';
 
-            // Show dialog and overlay
-            anuncio.style.display = 'flex';
-            overlay.style.display = 'block';
-
-            // Close on overlay click
-            overlay.onclick = () => {
-                anuncio.style.display = 'none';
-                overlay.style.display = 'none';
-            };
+                overlay.onclick = () => {
+                    anuncio.style.display = 'none';
+                    overlay.style.display = 'none';
+                };
+            });
         });
-    });
+    }
 }
 
 /* =============== FUNCIONES DE INCIO DE ATAJOS =============== */
@@ -264,8 +267,10 @@ function manejarAtajo(vista, accion) {
 
     // Execute the action
     const cleanAction = accion.replace('window.', '').replace('()', '');
-    if (window[cleanAction]) {
+    if (typeof window[cleanAction] === 'function') {
         window[cleanAction]();
+    } else {
+        console.warn(`La función ${cleanAction} no está definida`);
     }
 }
 window.manejarAtajo = manejarAtajo;

@@ -308,14 +308,37 @@ async function guardarPreciosBase() {
     try {
         mostrarCarga();
         const nuevosPrecios = {
-            etiquetado: document.getElementById('etiquetado-base').value,
-            sellado: document.getElementById('sellado-base').value,
-            envasado: document.getElementById('envasado-base').value,
-            cernidoBolsa: document.getElementById('cernido-bolsa-base').value,
-            cernidoBotes: document.getElementById('cernido-botes-base').value
+            etiquetado: document.getElementById('etiquetado-base')?.value,
+            sellado: document.getElementById('sellado-base')?.value,
+            envasado: document.getElementById('envasado-base')?.value,
+            cernidoBolsa: document.getElementById('cernido-bolsa-base')?.value
         };
 
-        const response = await fetch('/actualizar-precios-base', {
+        // Verificar si todos los campos tienen valor
+        if (!nuevosPrecios.etiquetado || !nuevosPrecios.sellado || 
+            !nuevosPrecios.envasado || !nuevosPrecios.cernidoBolsa) {
+            mostrarNotificacion('Por favor, complete todos los campos', 'warning');
+            return;
+        }
+
+        // Obtener valores actuales
+        const response = await fetch('/obtener-precios-base');
+        const data = await response.json();
+        const preciosActuales = data.preciosBase;
+
+        // Verificar si hubo cambios
+        const huboCambios = 
+            preciosActuales.etiquetado != nuevosPrecios.etiquetado ||
+            preciosActuales.sellado != nuevosPrecios.sellado ||
+            preciosActuales.envasado != nuevosPrecios.envasado ||
+            preciosActuales.cernidoBolsa != nuevosPrecios.cernidoBolsa;
+
+        if (!huboCambios) {
+            mostrarNotificacion('No se realizaron cambios en los precios base', 'info');
+            return;
+        }
+
+        const updateResponse = await fetch('/actualizar-precios-base', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -323,17 +346,17 @@ async function guardarPreciosBase() {
             body: JSON.stringify(nuevosPrecios)
         });
 
-        const result = await response.json();
+        const result = await updateResponse.json();
         if (result.success) {
-            alert('Precios actualizados correctamente');
+            mostrarNotificacion('Precios actualizados correctamente', 'success');
         } else {
             throw new Error(result.error || 'Error al actualizar los precios');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al guardar los cambios: ' + error.message);
-    }finally{
-
+        mostrarNotificacion('Error al guardar los cambios: ' + error.message, 'error');
+    } finally {
+        ocultarCarga();
     }
 }
 

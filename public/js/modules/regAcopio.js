@@ -280,7 +280,7 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
                         anuncio.style.display = 'flex';
                         // Aquí está el problema - Asegurarnos de pasar el nombre del producto correctamente
                         const nombreProducto = pedido[2];
-                        console.log('Producto a seleccionar:', nombreProducto); // Para debug
+
                         window.mostrarFormularioIngresoAcopio(nombreProducto);
                     }
                 });
@@ -391,18 +391,20 @@ function configurarFiltros2() {
             document.getElementById('filtro-fecha-desde-acopio').value = '';
             document.getElementById('filtro-fecha-hasta-acopio').value = '';
             document.getElementById('filtro-estado-acopio').value = 'todos';
-
+    
             filtrosActivos = {
                 nombre: '',
                 fechaDesde: '',
                 fechaHasta: '',
                 estado: 'todos'
             };
-
-            aplicarFiltros();
+    
+            // Change this line from aplicarFiltros to aplicarFiltros2
+            aplicarFiltros2();
             localStorage.removeItem('filtrosRegistrosAcopio');
             anuncio.style.display = 'none';
         });
+    
 
         btnCancelar.addEventListener('click', () => {
             anuncio.style.display = 'none';
@@ -413,15 +415,22 @@ function configurarFiltros2() {
     const filtrosGuardados = localStorage.getItem('filtrosRegistrosAcopio');
     if (filtrosGuardados) {
         filtrosActivos = JSON.parse(filtrosGuardados);
-        aplicarFiltros();
+        // Change this line from aplicarFiltros to aplicarFiltros2
+        aplicarFiltros2();
     }
 }
 function aplicarFiltros2() {
     const registros = document.querySelectorAll('.registro-card-acopio');
     registros.forEach(registro => {
-        const nombre = registro.querySelector('.registro-producto-acopio').textContent.toLowerCase();
+        const nombreElement = registro.querySelector('.registro-producto-acopio');
+        const estadoElement = registro.querySelector('.registro-estado-acopio');
+        
+        // Skip if required elements are not found
+        if (!nombreElement || !estadoElement) return;
+
+        const nombre = nombreElement.textContent.toLowerCase();
         const fecha = registro.dataset.fecha;
-        const estado = registro.querySelector('.registro-estado-acopio').textContent;
+        const estado = estadoElement.textContent;
 
         const cumpleFiltros =
             (!filtrosActivos.nombre || nombre.includes(filtrosActivos.nombre)) &&

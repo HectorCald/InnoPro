@@ -200,12 +200,12 @@ export async function mostrarFormularioPedido(producto) {
 
         document.addEventListener('click', (e) => {
             const div = document.querySelector('.sugerencias-container');
-            if (!e.target.closest('#nombre-pedido') && !e.target.closest('#sugerencias-pedido')) {
+            // Verificar que div existe antes de intentar acceder a su propiedad style
+            if (div && !e.target.closest('#nombre-pedido') && !e.target.closest('#sugerencias-pedido')) {
                 div.style.display = 'none';
             }
         });
 
-        anuncio.querySelector('.confirmar').onclick = guardarPedido;
         anuncio.style.display = 'flex';
 
     } catch (error) {

@@ -17,7 +17,7 @@ import { inicializarConfiguraciones } from './modules/configuraciones.js';
 import { inicializarGestionPro } from './modules/gestionPro.js';
 import { inicializarCalcularMP } from './modules/calcularMP.js';
 
-function scrollToTop(ventana) {
+export function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
     if (container) {
         container.scrollTo({
@@ -99,6 +99,9 @@ window.inicializarGestionPro = inicializarGestionPro;
 
 // Funciones de calcular materia prima
 window.inicializarCalcularMP = inicializarCalcularMP;
+
+window.ocultarCarga = ocultarCarga;
+window.mostrarCarga = mostrarCarga;
 
 /* =============== FUNCIONES DE INICIO APLICACION=============== */
 async function bienvenida() {
@@ -190,7 +193,6 @@ async function obtenerRolUsuario() {
     try {
         const response = await fetch('/obtener-mi-rol');
         const data = await response.json();
-        console.log('Datos obtenidos:', data);
         
         return {
             rol: data.rol,
@@ -203,14 +205,18 @@ async function obtenerRolUsuario() {
 }
 async function iniciarApp() {
     try {
+        const opcionesDiv = document.querySelector('.opciones');
         const userData = await obtenerRolUsuario();
-        if (!userData || !userData.rol) {
-            throw new Error('No se pudo obtener la información del usuario');
+        
+        // Verificar que existan los elementos necesarios
+        if (!opcionesDiv) {
+            console.warn('No se encontró el contenedor de opciones');
+            return; // Salir si no existe
         }
 
-        const opcionesDiv = document.querySelector('.opciones');
-        if (!opcionesDiv) {
-            throw new Error('No se encontró el contenedor de opciones');
+        if (!userData || !userData.rol) {
+            console.warn('No se pudo obtener la información del usuario');
+            return;
         }
 
         const vistas = document.querySelectorAll('.calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
@@ -226,8 +232,6 @@ async function iniciarApp() {
         });
 
         const roles = userData.rol.split(',').map(r => r.trim());
-        console.log('Roles:', roles);
-        console.log('Funciones Extra:', userData.funcionesExtra);
 
         // Asegurarse de que funcionesExtra sea un array
         const funcionesExtra = Array.isArray(userData.funcionesExtra) ? userData.funcionesExtra : [];
@@ -257,6 +261,10 @@ async function manejarCierreSesion() {
 /* =============== FUNCIONES DE NOTIFICAIONES FLOTANTES =============== */
 export function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {
     const notificador = document.querySelector('.notificador');
+    if (!notificador) {
+        console.warn('No se encontró el contenedor de notificaciones');
+        return;
+    }
     const notificacion = document.createElement('div');
     notificacion.className = `notificacion ${tipo}`;
 
@@ -309,13 +317,18 @@ limpiarVista('.almacen-view');
 limpiarVista('.almAcopio-view');
 
 /* =============== FUNCIONES DE CARGA LOANDERS =============== */
-function mostrarCarga() {
+export function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
-    cargaDiv.style.display = 'flex';
+    if (cargaDiv) { // Verificar que existe
+        cargaDiv.style.display = 'flex';
+    }
 }
-function ocultarCarga() {
+
+export function ocultarCarga() {
     const cargaDiv = document.querySelector('.carga');
-    cargaDiv.style.display = 'none';
+    if (cargaDiv) { // Verificar que existe
+        cargaDiv.style.display = 'none';
+    }
 }
 
 /* =============== FUNCIONES DE REGSITRO DE NOTIFIACION INICIAL =============== */
@@ -380,7 +393,7 @@ function centrarInputEnFoco() {
 
 
 /* =============== FUNCIONES LLAMDO =============== */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     let anuncio = document.querySelector('.anuncio');
     let dashboard = document.querySelector('.dashboard');
     
@@ -399,11 +412,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // The anuncio click event is sufficient to handle the closing
+    try {
+        await iniciarApp();
+        await inicializarHome();
+    } catch (error) {
+        console.error('Error durante la inicialización:', error);
+    }
 
-    iniciarApp();
     bienvenida();
-    inicializarHome(); 
     centrarInputEnFoco();
 });
 

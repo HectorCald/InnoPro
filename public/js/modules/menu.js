@@ -70,8 +70,8 @@ function initializeMenuEvents(menuPrincipal, menuSecundario, overlay) {
     // Desktop menu handler
     const handleDesktopMenu = () => {
         if (window.innerWidth >= 1024) {
-            menuSecundario.classList.add('active');
-            overlay.classList.remove('active');
+            if (menuSecundario) menuSecundario.classList.add('active');
+            if (overlay) overlay.classList.remove('active');
         }
     };
 
@@ -79,24 +79,32 @@ function initializeMenuEvents(menuPrincipal, menuSecundario, overlay) {
     window.addEventListener('resize', handleDesktopMenu);
 
     // Mobile menu events
-    menuPrincipal.addEventListener('click', (e) => {
-        if (window.innerWidth < 1024) {
-            e.stopPropagation();
-            menuPrincipal.classList.toggle('active');
-            menuSecundario.classList.toggle('active');
-            overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
-        }
-    });
+    if (menuPrincipal && menuSecundario && overlay) {
+        menuPrincipal.addEventListener('click', (e) => {
+            if (window.innerWidth < 1024) {
+                e.stopPropagation();
+                menuPrincipal.classList.toggle('active');
+                menuSecundario.classList.toggle('active');
+                overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+            }
+        });
+    }
 
     document.addEventListener('click', () => {
-        if (window.innerWidth < 1024 && menuPrincipal.classList.contains('active')) {
+        if (window.innerWidth < 1024 && 
+            menuPrincipal && 
+            menuSecundario && 
+            overlay && 
+            menuPrincipal.classList.contains('active')) {
             menuPrincipal.classList.remove('active');
             menuSecundario.classList.remove('active');
             overlay.style.display = 'none';
         }
     });
 
-    menuSecundario.addEventListener('click', (e) => e.stopPropagation());
+    if (menuSecundario) {
+        menuSecundario.addEventListener('click', (e) => e.stopPropagation());
+    }
 }
 function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, overlay, funcionesExtras = []) {
     const botonesRoles = {

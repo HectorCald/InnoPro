@@ -1,4 +1,4 @@
-/* ==================== IMPORTACIONES Y CONFIGURACIÓN INICIAL ==================== */
+/* ==================== IMPORTACIONES==================== */
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -32,7 +32,25 @@ const auth = new google.auth.GoogleAuth({
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(join(__dirname, 'public')));
+app.use(express.static(join(__dirname, 'public'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+            res.setHeader('X-Content-Type-Options', 'nosniff');
+        }
+    }
+}));
+app.get('*.css', (req, res, next) => {
+    res.type('text/css');
+    next();
+});
+app.use('/css', express.static(join(__dirname, 'public/css'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+    }
+}));
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 

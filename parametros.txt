@@ -1,38 +1,38 @@
-TAMAÑOS DE LETRA Y ESPACIIOS:
-padding: 15px;
-font-size: 17px;  //Principal
-font-size: 15px;  //Secundario
-font-size: 13px;  //Terceario
-gap: 10px
+---TAMAÑOS DE LETRA Y ESPACIIOS:
+    padding: 15px;
+    font-size: 17px;  //Principal
+    font-size: 15px;  //Secundario
+    font-size: 13px;  //Terceario
+    gap: 10px
 
 
-ICONOS:
-Cerrar: <i class="fas fa-times"></i>
-Guardar: <i class="fas fa-save"></i>
-Ver: <i class="fas fa-eye"></i>
-Agregar: <i class="fas fa-plus-circle"></i> 
-Finalizar: <i class="fas fa-check-circle"></i>
-Confirmar: <i class="fas fa-check"></i>
-Aplicar: <i class="fas fa-check-circle"></i>
-Limpiar: <i class="fas fa-eraser"></i>
-Editar: <i class="fas fa-edit"></i>
-Filtros: <i class="fas fa-filter"></i>
-Almacén: <i class="fas fa-warehouse"></i>
-Mayor a menor (Descendente): <i class="fas fa-sort-amount-down"></i>
-Menor a mayor (Ascendente): <i class="fas fa-sort-amount-up"></i>
-Registrar: <i class="fas fa-save"></i>
-Pagar:<i class="fas fa-dollar-sign"></i>
-Info: <i class="fas fa-info-circle"></i>
-Producto: <i class="fas fa-box"></i>
-Parametros: <i class="fas fa-cog"></i>
-Eliminar: <i class="fas fa-trash"></i>
-salidas: <i class="fas fa-arrow-circle-down"></i>
-ingreso: <i class="fas fa-arrow-circle-up"></i>
-Registros: fa-history
-Gestion:fa-dolly
-compras: <i class="fas fa-shopping-cart"></i>
-Ajustes: <i class="fas fa-cog"></i>
-Gestion: <i class="fas fa-dolly"></i>
-Otros: <i class="fas fa-ellipsis-h"></i>
-Inicio: <i class="fas fa-home"></i>
-funcion extra: <i class="fas fa-puzzle-piece"></i>
+---ICONOS:
+    Cerrar: <i class="fas fa-times"></i>
+    Guardar: <i class="fas fa-save"></i>
+    Ver: <i class="fas fa-eye"></i>
+    Agregar: <i class="fas fa-plus-circle"></i> 
+    Finalizar: <i class="fas fa-check-circle"></i>
+    Confirmar: <i class="fas fa-check"></i>
+    Aplicar: <i class="fas fa-check-circle"></i>
+    Limpiar: <i class="fas fa-eraser"></i>
+    Editar: <i class="fas fa-edit"></i>
+    Filtros: <i class="fas fa-filter"></i>
+    Almacén: <i class="fas fa-warehouse"></i>
+    Mayor a menor (Descendente): <i class="fas fa-sort-amount-down"></i>
+    Menor a mayor (Ascendente): <i class="fas fa-sort-amount-up"></i>
+    Registrar: <i class="fas fa-save"></i>
+    Pagar:<i class="fas fa-dollar-sign"></i>
+    Info: <i class="fas fa-info-circle"></i>
+    Producto: <i class="fas fa-box"></i>
+    Parametros: <i class="fas fa-cog"></i>
+    Eliminar: <i class="fas fa-trash"></i>
+    salidas: <i class="fas fa-arrow-circle-down"></i>
+    ingreso: <i class="fas fa-arrow-circle-up"></i>
+    Registros: fa-history
+    Gestion:fa-dolly
+    compras: <i class="fas fa-shopping-cart"></i>
+    Ajustes: <i class="fas fa-cog"></i>
+    Gestion: <i class="fas fa-dolly"></i>
+    Otros: <i class="fas fa-ellipsis-h"></i>
+    Inicio: <i class="fas fa-home"></i>
+    funcion extra: <i class="fas fa-puzzle-piece"></i>
