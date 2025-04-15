@@ -1,5 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
 
+/* ===== VISTA DE USUARIOS ===== */
 .usuarios-view {
     width: 100%;
     background: var(--primary-color) !important;
@@ -11,13 +13,14 @@
     flex-direction: column;
     gap: 1em;
 
+    /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
         display: none;
     }
-
     -ms-overflow-style: none;
     scrollbar-width: none;
 
+    /* ===== TÍTULO ===== */
     .title {
         padding-block: 15px;
         border-bottom: 1px solid rgb(83, 83, 83);
@@ -35,12 +38,14 @@
         }
     }
 
+    /* ===== CONTENEDOR GENERAL DE ALMACÉN ===== */
     .almacenGral-container {
         display: flex;
         flex-direction: column;
         gap: 10px;
     }
 
+    /* ===== BOTONES DE ALMACÉN ===== */
     .almacen-botones {
         display: flex;
         gap: 50px;
@@ -77,6 +82,7 @@
         }
     }
 
+    /* ===== CONTENEDOR Y ENCABEZADO DE ALMACÉN ===== */
     .almacen-container {
         padding: 0;
         width: 100%;
@@ -88,11 +94,11 @@
         justify-content: center;
         align-items: center;
         flex-wrap: wrap;
-        align-items: center;
         margin-bottom: 20px;
         gap: 10px;
         max-width: 100%;
 
+        /* ===== BARRA DE BÚSQUEDA ===== */
         .search-bar {
             position: relative;
             min-width: 100%;
@@ -116,6 +122,7 @@
             }
         }
 
+        /* ===== OPCIONES DE FILTRO ===== */
         .filter-options {
             display: flex;
             gap: 10px;
@@ -146,7 +153,7 @@
         }
     }
 
-
+    /* ===== GRID DE PRODUCTOS ===== */
     .products-grid {
         display: flex;
         flex-direction: column;
@@ -154,6 +161,7 @@
         margin-top: 20px;
     }
 
+    /* ===== MEDIA QUERY PARA PANTALLAS GRANDES ===== */
     @media screen and (min-width: 768px) {
         .products-grid {
             display: grid;
@@ -161,23 +169,23 @@
             gap: 10px;
             margin-top: 20px;
         }
-        .almacen-header{
+        .almacen-header {
             justify-content: space-between;
 
-
-            .search-bar{
+            .search-bar {
                 min-width: 300px;
             }
-            .filter-options{
+            .filter-options {
                 width: auto;
 
-                .filter-btn{
+                .filter-btn {
                     width: auto;
-               }
+                }
             }
         }
     }
 
+    /* ===== TARJETA DE PRODUCTO ===== */
     .product-card {
         background: var(--cero-color);
         border-radius: 12px;
@@ -214,6 +222,7 @@
         }
     }
 
+    /* ===== ESTADOS DE STOCK ===== */
     .low-stock {
         border-left: 4px solid #ff4444;
     }
@@ -226,6 +235,7 @@
         border-left: 4px solid #00C851;
     }
 
+    /* ===== ESTADOS DE PRODUCTO ===== */
     .estado-bruto {
         background-color: var(--tercer-color);
         color: white;

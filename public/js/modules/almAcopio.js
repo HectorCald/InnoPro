@@ -1,3 +1,4 @@
+/* =============== FUNCIONES DE INICIO DE ALMACEN ACOPIO =============== */
 export function inicializarAlmacen() {
     const container = document.querySelector('.almAcopio-view');
     // Asegurarnos que el contenedor esté visible
@@ -315,6 +316,8 @@ export async function cargarAlmacenBruto() {
         scrollToTop('.almacen-view');
     }
 }
+
+/* =============== FUNCIONES DE DETALLES Y EDICION DE PRODUCTOSA DEL ALMACEN =============== */
 window.mostrarDetalleProductoAcopio = function (producto) {
     const [id, nombre, pesoBrutoLote, pesoPrimaLote] = producto;
     const anuncio = document.querySelector('.anuncio');
@@ -461,8 +464,7 @@ window.editarProductoAcopio = function (producto) {
     setupGuardarHandler(id);
 };
 
-
-
+/* =============== FUNCIONES DE AGREGAR UN NUEVO PRODUCTO Y ELIMINAR =============== */
 function mostrarConfirmacionEliminar(id, nombre) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -731,9 +733,7 @@ function mostrarFormularioAgregarAcopio() {
     };
 }
 
-
-
-
+/* =============== FUNCIONES DE AGREGAR UNA TAREA A LA LISTA, CARGAR, MOSTRAR Y ELIMINAR =============== */
 function mostrarFormularioAgregarTarea() {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -892,8 +892,7 @@ window.eliminarTarea = async (id) => {
     }
 };
 
-
-
+/* =============== FUNCIONES DE INGRESO Y SALDIAS DEL ALMACEN ACOPIO =============== */
 export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');

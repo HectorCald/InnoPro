@@ -1,6 +1,7 @@
+/* ===== IMPORTS ===== */
 @import'styles/colores.css';
 
-/* Contenedor principal */
+/* ===== MODAL CONTAINER ===== */
 .advertencia {
     position: fixed;
     top: 0;
@@ -14,7 +15,7 @@
     z-index: 1000;
 }
 
-/* Contenido modal */
+/* ===== MODAL CONTENT ===== */
 .advertencia-contenido {
     background-color: var(--second-color);
     border-radius: 10px;
@@ -25,10 +26,9 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-
 }
 
-/* Encabezado */
+/* ===== HEADER STYLES ===== */
 .advertencia-header {
     padding: 20px;
     border-bottom: 1px solid var(--border-color);
@@ -46,7 +46,7 @@
     gap: 10px;
 }
 
-/* Lista de notificaciones */
+/* ===== NOTIFICATIONS LIST ===== */
 .notificaciones-lista {
     padding: 20px;
     overflow-y: auto;
@@ -54,12 +54,11 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-
     scrollbar-width: thin;
     scrollbar-color: #626262 rgba(128, 128, 128, 0.1);
 }
 
-/* Estilos del scrollbar */
+/* ===== SCROLLBAR STYLES ===== */
 .notificaciones-lista::-webkit-scrollbar {
     width: 8px;
 }
@@ -77,7 +76,8 @@
 .notificaciones-lista::-webkit-scrollbar-thumb:hover {
     background: var(--primary-color);
 }
-/* Item de notificación */
+
+/* ===== NOTIFICATION ITEM ===== */
 .notificacion-item {
     padding: 15px;
     border-radius: 10px;
@@ -116,7 +116,7 @@
     line-height: 1.4;
 }
 
-/* Etiqueta de tiempo */
+/* ===== TIME TAGS ===== */
 .tiempo-tag {
     padding: 4px 8px;
     border-radius: 12px;
@@ -128,14 +128,14 @@
     right: 10px;
 }
 
-/* Colores de las etiquetas según tiempo */
+/* Time tag variations */
 .tiempo-tag.reciente { background-color: #4CAF50; color: white; }
 .tiempo-tag.dias-3 { background-color: #8BC34A; color: white; }
 .tiempo-tag.dias-5 { background-color: #FFC107; color: black; }
 .tiempo-tag.dias-7 { background-color: #FF9800; color: white; }
 .tiempo-tag.dias-14 { background-color: #f44336; color: white; }
 
-/* Confirmación de lectura */
+/* ===== READ CONFIRMATION ===== */
 .confirmacion-lectura {
     display: flex;
     align-items: center;
@@ -155,7 +155,7 @@
     font-size: 14px;
 }
 
-/* Botones */
+/* ===== BUTTONS ===== */
 .btn-eliminar-todas {
     width: 100%;
     padding: 12px;

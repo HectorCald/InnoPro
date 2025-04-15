@@ -1,3 +1,4 @@
+/* =============== FUNCIONES DE INICIO ALMACEN GENERAL =============== */
 let filtrosActivos = {
     nombre: '',
     fechaDesde: '',
@@ -66,7 +67,6 @@ export async function cargarRegistrosAlmacenGral() {
     }
     configurarFiltros2();
 }
-
 function crearMovimientoCard(movimiento, isAdmin) {
     try {
         const [id, fechaCompleta, tipo, producto, cantidad, operario, almacen] = movimiento;
@@ -235,6 +235,8 @@ function ordenarRegistrosPorFecha(registros) {
         }
     });
 }
+
+/* =============== FUNCIONES DE FILTROS =============== */
 function configurarFiltros2() {
     try {
         const btnFiltro = document.querySelector('.btn-filtro-acopio');
@@ -380,7 +382,6 @@ function configurarFiltros2() {
         mostrarNotificacion('Error al configurar filtros', 'error');
     }
 }
-
 function aplicarFiltros2() {
     try {
         const registros = document.querySelectorAll('.registro-card-acopio');
@@ -417,6 +418,8 @@ function aplicarFiltros2() {
         mostrarNotificacion('Error al aplicar filtros', 'error');
     }
 }
+
+/* =============== FUNCIONES DE UTILIDAD =============== */
 function actualizarContador() {
     const registrosVisibles = document.querySelectorAll('.registro-card-acopio:not([style*="display: none"])').length;
     const contadores = document.querySelectorAll('.contador');
@@ -426,6 +429,7 @@ function actualizarContador() {
     });
 }
 
+/* =============== FUNCIONES DE EDICION DE REGISTRO =============== */
 function mostrarFormularioEdicion(movimiento) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');

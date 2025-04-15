@@ -1,5 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
 
+/* ===== CONTENEDOR PRINCIPAL ===== */
 .almacen-view {
     width: 100%;
     background: var(--primary-color) !important;
@@ -11,13 +13,14 @@
     flex-direction: column;
     gap: 1em;
 
+    /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
         display: none;
     }
-
     -ms-overflow-style: none;
     scrollbar-width: none;
 
+    /* ===== TÍTULO DE LA SECCIÓN ===== */
     .title {
         padding-block: 15px;
         border-bottom: 1px solid rgb(83, 83, 83);
@@ -35,12 +38,20 @@
         }
     }
 
+    /* ===== CONTENEDORES GENERALES ===== */
     .almacenGral-container-general {
         display: flex;
         flex-direction: column;
         gap: 10px;
     }
 
+    .almacen-container-general {
+        padding: 0;
+        width: 100%;
+        margin-bottom: 60px;
+    }
+
+    /* ===== SECCIÓN DE BOTONES ===== */
     .almacen-botones {
         display: flex;
         gap: 10px;
@@ -77,12 +88,7 @@
         }
     }
 
-    .almacen-container-general {
-        padding: 0;
-        width: 100%;
-        margin-bottom: 60px;
-    }
-
+    /* ===== CABECERA Y BÚSQUEDA ===== */
     .almacen-header-general {
         display: flex;
         justify-content: center;
@@ -145,7 +151,7 @@
         }
     }
 
-
+    /* ===== GRID DE PRODUCTOS ===== */
     .products-grid {
         display: flex;
         flex-direction: column;
@@ -153,33 +159,7 @@
         margin-top: 20px;
     }
 
-    @media screen and (min-width: 768px) {
-        .almacen-header-general {
-            justify-content: space-between;
-            flex-wrap: nowrap;
-            
-            .search-bar {
-                min-width: auto;
-                width: 300px;
-                flex-shrink: 0;
-            }
-
-            .filter-options {
-                width: auto;
-                justify-content: flex-end;
-
-                .filter-btn {
-                    width: auto;
-                }
-            }
-        }
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-    }
-
+    /* ===== TARJETA DE PRODUCTO ===== */
     .product-card {
         background: var(--cero-color);
         border-radius: 10px;
@@ -216,6 +196,7 @@
         }
     }
 
+    /* ===== INDICADORES DE STOCK ===== */
     .low-stock {
         border-left: 4px solid #ff4444;
     }
@@ -227,8 +208,10 @@
     .high-stock {
         border-left: 4px solid #00C851;
     }
+
+    /* ===== MENSAJE SIN RESULTADOS ===== */
     .no-results-message {
-        grid-column: 1 / -1; /* Hace que ocupe todas las columnas disponibles */
+        grid-column: 1 / -1;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -237,16 +220,44 @@
         border-radius: 10px;
         padding: 30px;
         margin: 20px 0;
+
+        i {
+            color: var(--second-button);
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin: 0;
+            font-size: 15px;
+        }
     }
 
-    .no-results-message i {
-        color: var(--second-button);
-        margin-bottom: 15px;
-    }
+    /* ===== DISEÑO RESPONSIVO ===== */
+    @media screen and (min-width: 768px) {
+        .almacen-header-general {
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            
+            .search-bar {
+                min-width: auto;
+                width: 300px;
+                flex-shrink: 0;
+            }
 
-    .no-results-message p {
-        margin: 0;
-        font-size: 15px;
+            .filter-options {
+                width: auto;
+                justify-content: flex-end;
+
+                .filter-btn {
+                    width: auto;
+                }
+            }
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
     }
 }
-

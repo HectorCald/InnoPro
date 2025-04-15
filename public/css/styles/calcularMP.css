@@ -1,5 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
 
+/* ===== CONTENEDOR PRINCIPAL ===== */
 .calcularMP-view {
     width: 100%;
     background: var(--primary-color) !important;
@@ -11,13 +13,14 @@
     flex-direction: column;
     gap: 1em;
 
+    /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
         display: none;
     }
-
     -ms-overflow-style: none;
     scrollbar-width: none;
 
+    /* ===== TÍTULO DE LA SECCIÓN ===== */
     .title {
         padding-block: 15px;
         border-bottom: 1px solid rgb(83, 83, 83);
@@ -35,6 +38,7 @@
         }
     }
 
+    /* ===== CONTENEDOR Y BOTONES MP ===== */
     .mp-container {
         display: flex;
         flex-direction: column;
@@ -77,6 +81,7 @@
         }
     }
 
+    /* ===== CABECERA Y BÚSQUEDA ===== */
     .mp-header {
         display: flex;
         justify-content: center;
@@ -110,6 +115,7 @@
         }
     }
 
+    /* ===== GRID DE REGISTROS ===== */
     .registros-grid {
         display: flex;
         flex-direction: column;
@@ -117,23 +123,7 @@
         margin-top: 20px;
     }
 
-    @media screen and (min-width: 768px) {
-        .registros-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .mp-header {
-            justify-content: space-between;
-
-            .search-bar {
-                max-width: 300px;
-            }
-        }
-    }
-
+    /* ===== TARJETA DE REGISTRO ===== */
     .registro-card {
         background: var(--cero-color);
         border-radius: 10px;
@@ -213,8 +203,26 @@
         }
     }
 
+    /* ===== DISEÑO RESPONSIVO ===== */
+    @media screen and (min-width: 768px) {
+        .registros-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .mp-header {
+            justify-content: space-between;
+
+            .search-bar {
+                max-width: 300px;
+            }
+        }
+    }
 }
 
+/* ===== COMPONENTES DE CÁLCULO ===== */
 .calculo-header {
     display: flex;
     align-items: center;
@@ -228,10 +236,10 @@
     cursor: pointer;
     padding: 0;
     font-size: 16px;
-}
 
-.btn-info:hover {
-    color: #007bff;
+    &:hover {
+        color: #007bff;
+    }
 }
 
 .calculo-detalle {

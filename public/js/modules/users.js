@@ -1,3 +1,4 @@
+/* =============== FUNCIONES DE INICIO USUARIOS=============== */
 export function inicializarUsuarios() {
     const container = document.querySelector('.usuarios-view');
     container.style.display = 'flex';
@@ -131,7 +132,9 @@ export async function cargarUsuarios() {
         ocultarCarga();
     }
 }
-async function mostrarFormularioAgregarUsuario() {
+
+/* =============== FUNCIONES DE AGREGAR NUEVO USUARIO =============== */
+export async function mostrarFormularioAgregarUsuario() {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = document.querySelector('.anuncio-contenido');
 
@@ -209,7 +212,9 @@ async function mostrarFormularioAgregarUsuario() {
         ocultarCarga();
     }
 }
-async function mostrarFormularioDesactivarUsuario() {
+
+/* =============== FUNCIONES DE DESCATIVAR USUARIOS=============== */
+export async function mostrarFormularioDesactivarUsuario() {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = document.querySelector('.anuncio-contenido');
 
@@ -279,7 +284,9 @@ async function mostrarFormularioDesactivarUsuario() {
         ocultarCarga();
     }
 }
-async function mostrarDetallesUsuario(pin) {
+
+/* =============== FUNCIONES DE DETALLES DE USUARIOS =============== */
+export async function mostrarDetallesUsuario(pin) {
     try {
         mostrarCarga();
         const response = await fetch('/obtener-usuario', {
@@ -441,9 +448,3 @@ async function mostrarDetallesUsuario(pin) {
         ocultarCarga();
     }
 }
-
-export {
-    mostrarFormularioAgregarUsuario,
-    mostrarFormularioDesactivarUsuario,
-    mostrarDetallesUsuario
-};

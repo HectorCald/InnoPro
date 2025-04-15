@@ -1,4 +1,4 @@
-
+/* ==================== FUNCIONES DE INICIO DE ALMACEN ==================== */
 export function inicializarAlmacenGral() {
     const container = document.querySelector('.almacen-view');
     if (!container) return; 
@@ -56,6 +56,218 @@ export function inicializarAlmacenGral() {
 
     mostrarProductos();
 };
+export async function cargarAlmacen() {
+    try {
+        mostrarCarga();
+        const response = await fetch('/obtener-almacen-general');
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || 'Error al cargar los productos');
+        }
+
+        const productsContainer = document.getElementById('productsContainer-general');
+        window.productosAlmacen = data.pedidos;
+        productsContainer.innerHTML = '';
+
+        data.pedidos.slice(1).forEach(producto => {
+            const [id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios, tag] = producto;
+
+            let stockClass = '';
+            if (stock < 100) {
+                stockClass = 'low-stock';
+            } else if (stock >= 100 && stock < 300) {
+                stockClass = 'medium-stock';
+            } else {
+                stockClass = 'high-stock';
+            }
+
+            const productCard = document.createElement('div');
+            productCard.className = `product-card ${stockClass}`;
+            productCard.onclick = () => mostrarDetalleProductoGral(producto);
+            productCard.innerHTML = `
+                <div class="product-info">
+                    <div class="product-name">
+                        <i class="fas fa-box"></i>
+                        <span>${nombre} ${gramaje} gr.</span>
+                    </div>   
+                    <div class="product-quantity">
+                        ${stock} und.
+                    </div>
+                </div>
+            `;
+
+            productsContainer.appendChild(productCard);
+        });
+
+    } catch (error) {
+        console.error('Error al cargar el almacén:', error);
+        mostrarNotificacion('Error al cargar los productos', 'error');
+    } finally {
+        ocultarCarga();
+        scrollToTop('.almacen-view')
+    }
+};
+export function mostrarProductos() {
+    const container = document.querySelector('.almacen-general-productos');
+    if (!container) return;
+    container.innerHTML = '';
+    container.style.display = 'flex';
+
+    container.innerHTML = `
+        <div class="almacen-container-general">
+            <div class="almacen-header-general">
+                <div class="search-bar">
+                    <input type="text" id="searchProduct" placeholder="Buscar producto...">
+                    <i class="fas fa-search search-icon2"></i>
+                </div>
+                <div class="filter-options">
+                    <button class="filter-btn" data-filter="all">
+                        <p><i class="fas fa-sort-amount-down"></i> Mayor a menor</p>
+                    </button>
+                    <button class="filter-btn giro" data-filter="low">
+                        <p><i class="fas fa-sort-amount-up"></i> Menor a mayor</p>
+                   </button>
+                </div>
+            </div>
+            <div class="products-grid" id="productsContainer-general">
+            </div>
+        </div>
+    `;
+
+    // Call cargarAlmacen after creating the container
+    cargarAlmacen();
+
+    function normalizarTexto(texto) {
+        return texto.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Elimina tildes
+            .replace(/\s+/g, ' ')            // Reduce espacios múltiples a uno
+            .trim();                         // Elimina espacios al inicio y final
+    }
+
+    const searchInput = document.getElementById('searchProduct');
+    const searchIcon = document.querySelector('.search-icon2');
+    
+
+    // Add focus event handler
+    searchInput.addEventListener('focus', () => {
+        const almacenView = document.querySelector('.almacen-view');
+        if (almacenView) {
+            const searchBarPosition = searchInput.getBoundingClientRect().top + window.scrollY;
+            almacenView.scrollTo({
+                top: searchBarPosition - 80, // 20px offset from top
+                behavior: 'smooth'
+            });
+        }
+    });
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = normalizarTexto(e.target.value);
+        const products = document.querySelectorAll('.product-card');
+        const productsContainer = document.getElementById('productsContainer-general');
+        let productsFound = false;
+
+        // Change icon based on input value
+        if (e.target.value.length > 0) {
+            searchIcon.classList.remove('fa-search');
+            searchIcon.classList.add('fa-times');
+        } else {
+            searchIcon.classList.remove('fa-times');
+            searchIcon.classList.add('fa-search');
+        }
+
+        products.forEach(product => {
+            const productName = normalizarTexto(product.querySelector('.product-name span').textContent);
+            if (productName.includes(searchTerm)) {
+                product.style.display = 'grid';
+                productsFound = true;
+            } else {
+                product.style.display = 'none';
+            }
+        });
+
+        // Mostrar mensaje si no se encuentran productos
+        const noResultsMessage = document.querySelector('.no-results-message');
+        if (!productsFound && searchTerm) {
+            if (!noResultsMessage) {
+                productsContainer.innerHTML += `
+                    <div class="no-results-message" style="width: 100%; text-align: center; padding: 20px; color: var(--primary-text);">
+                        <i class="fas fa-search" style="font-size: 40px; margin-bottom: 10px;"></i>
+                        <p>No se encontraron productos que contengan "${e.target.value}..."</p>
+                    </div>
+                `;
+            }
+        } else {
+            if (noResultsMessage) {
+                noResultsMessage.remove();
+            }
+        }
+    });
+    searchIcon.addEventListener('click', () => {
+        if (searchInput.value.length > 0) {
+            searchInput.value = '';
+            searchIcon.classList.remove('fa-times');
+            searchIcon.classList.add('fa-search');
+            // Show all products
+            document.querySelectorAll('.product-card').forEach(product => {
+                product.style.display = 'grid';
+            });
+        }
+    });
+
+
+        const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            const filter = button.dataset.filter;
+            // Modificar el selector para que solo seleccione productos del contenedor general
+            const products = Array.from(document.querySelector('#productsContainer-general').querySelectorAll('.product-card'));
+
+            products.sort((a, b) => {
+                const stockA = parseInt(a.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
+                const stockB = parseInt(b.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
+
+                const numA = isNaN(stockA) ? 0 : stockA;
+                const numB = isNaN(stockB) ? 0 : stockB;
+
+                if (filter === 'all') {
+                    return numB - numA; // Mayor a menor
+                } else {
+                    return numA - numB; // Menor a mayor
+                }
+            });
+
+            const container = document.getElementById('productsContainer-general');
+            container.innerHTML = '';
+            products.forEach(product => container.appendChild(product));
+        });
+    });
+};
+async function obtenerUsuarioActual() {
+    try {
+        const response = await fetch('/obtener-mi-rol');
+        const data = await response.json();
+
+        if (data.nombre) {
+            return data.nombre;
+        }
+
+        if (data.error) {
+            console.error('Error al obtener usuario:', data.error);
+            return 'Sistema';
+        }
+
+        return 'Sistema';
+    } catch (error) {
+        console.error('Error al obtener usuario:', error);
+        return 'Sistema';
+    }
+};
+
+/* ==================== FUNCIONES DE INGRESO, SALIDA, FORMATO, AGREGAR PRODUCTO Y PEDIDOS DEL ALMACEN  ==================== */
 export async function mostrarFormularioIngreso(producto) {
     try {
         mostrarCarga();
@@ -463,61 +675,415 @@ export async function mostrarFormularioSalidas(producto) {
         ocultarCarga();
     }
 };
+function mostrarFormularioFormato() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    const preciosBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][7] : '';
+    const tagBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][8] : '';
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-cog"></i> Formatos</h2>
+        <div class="relleno">
+            <p>Formato Precios:</p>
+            <div class="detalles-grup">
+                ${formatearPrecios(preciosBase, '1')}
+            </div>
+            <div class="form-grup">
+                <div class="detalle-item">
+                    <input type="text" id="nuevoFormato" class="edit-input" placeholder="Nuevo formato precio">
+                    <i class="fas fa-plus-circle add add-format"></i>
+                </div>
+            </div>
+            <p>Formato Etiquetas:</p>
+            <div class="detalles-grup">
+                ${formatearTags(tagBase, '1')}
+            </div>
+            <div class="form-grup">
+                <div class="detalle-item">
+                    <input type="text" id="nuevoFormatoTag" class="edit-input" placeholder="Nuevo formato etiqueta">
+                    <i class="fas fa-plus-circle add add-tag"></i>
+                </div>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    function formatearPrecios(preciosStr, num) {
+        if (!preciosStr) return '<div class="detalle-item"><span>No registrado</span></div>';
+        return preciosStr.split(';').map(precio => {
+            const [tipo] = precio.split(',');
+            return `<div class="detalle-item">
+                <p>${tipo}</p>
+                <i class="fas fa-trash delete delete-price" data-nombre="${tipo}"></i>
+            </div>`;
+        }).join('');
+    }
+
+    function formatearTags(tagsStr, num) {
+        if (!tagsStr) return '<div class="detalle-item"><span>No registrado</span></div>';
+        return tagsStr.split(';').filter(Boolean).map(tag => {
+            return `<div class="detalle-item">
+                <p>${tag}</p>
+                <i class="fas fa-trash delete delete-tag" data-nombre="${tag}"></i>
+            </div>`;
+        }).join('');
+    }
+    // Event listener para agregar formato
+    contenido.querySelector('.add-format').addEventListener('click', async () => {
+        const nombreFormato = document.getElementById('nuevoFormato').value.trim();
+        if (!nombreFormato) {
+            mostrarNotificacion('Ingrese un nombre para el formato', 'error');
+            return;
+        }
+
+        try {
+            mostrarCarga();
+            const response = await fetch('/agregar-formato-precio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombreFormato })
+            });
+
+            const data = await response.json();
+
+            // Actualizar datos locales
+            if (window.productosAlmacen && window.productosAlmacen.length > 0) {
+                window.productosAlmacen = window.productosAlmacen.map(producto => {
+                    const nuevosPrecios = producto[7] ? `${producto[7]};${nombreFormato},0` : `${nombreFormato},0`;
+                    return [...producto.slice(0, 7), nuevosPrecios, producto[8]];
+                });
+            }
+
+            mostrarNotificacion('Formato agregado correctamente', 'success');
+            document.getElementById('nuevoFormato').value = '';
+
+            // Recargar datos del servidor y actualizar vista
+            const refreshResponse = await fetch('/obtener-almacen-general');
+            const refreshData = await refreshResponse.json();
+            if (refreshData.pedidos) {
+                window.productosAlmacen = refreshData.pedidos;
+                mostrarFormularioFormato(); // Volver a renderizar todo el formulario
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al agregar el formato', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    });
+
+    // Event listener para agregar etiqueta (similar al anterior)
+    contenido.querySelector('.add-tag').addEventListener('click', async () => {
+        const nombreTag = document.getElementById('nuevoFormatoTag').value.trim();
+        if (!nombreTag) {
+            mostrarNotificacion('Ingrese un nombre para la etiqueta', 'error');
+            return;
+        }
+
+        try {
+            mostrarCarga();
+            const response = await fetch('/agregar-tag', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombreTag })
+            });
+
+            const data = await response.json();
+
+            // Actualizar datos locales
+            if (window.productosAlmacen && window.productosAlmacen.length > 0) {
+                window.productosAlmacen = window.productosAlmacen.map(producto => {
+                    const nuevosTags = producto[8] ? `${producto[8]};${nombreTag}` : nombreTag;
+                    return [...producto.slice(0, 8), nuevosTags];
+                });
+            }
+
+            mostrarNotificacion('Etiqueta agregada correctamente', 'success');
+            document.getElementById('nuevoFormatoTag').value = '';
+
+            // Recargar datos del servidor y actualizar vista
+            const refreshResponse = await fetch('/obtener-almacen-general');
+            const refreshData = await refreshResponse.json();
+            if (refreshData.pedidos) {
+                window.productosAlmacen = refreshData.pedidos;
+                mostrarFormularioFormato(); // Volver a renderizar todo el formulario
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al agregar la etiqueta', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    });
+
+    // Event listeners para eliminar
+    document.querySelectorAll('.delete-price').forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            const nombreTipo = e.target.getAttribute('data-nombre');
+            mostrarConfirmacionEliminarPrecio(nombreTipo);
+        });
+    });
+
+    document.querySelectorAll('.delete-tag').forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            const tag = e.target.getAttribute('data-nombre');
+            mostrarConfirmacionEliminarTag(tag);
+        });
+    });
+
+    anuncio.style.display = 'flex';
+    anuncio.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+}
+function mostrarFormularioAgregarProducto() {
+
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+    const preciosBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][7] : 'Normal,0;Mayorista,0';
+    function formatearPrecios(preciosStr, num) {
+        if (!preciosStr) return '<div class="detalle-item"><span>No registrado</span></div>';
+
+        return preciosStr.split(';').map(precio => {
+            const [tipo, valor] = precio.split(',');
+            let nombreTipo = tipo;
+            if (num == 1) {
+                return `<div class="detalle-item">
+                <p>${nombreTipo}:</p>
+                <span>Bs. ${valor}</span>
+            </div>`;
+            }
+            else {
+                return `<div class="campo-form">
+                            <label>${nombreTipo}:</label>
+                            <div class="campo-form" style="padding:0; margin-top:0">
+                                    <input type="number" id="editPrice_${tipo}" value="0" class="edit-input" data-tipo="${tipo}">
+                                    <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
+                            </div>
+                        </div>`;
+            }
+        }).join('');
+    }
+    async function cargarProductosAcopio() {
+        try {
+            const response = await fetch('/obtener-almacen-acopio');
+            const data = await response.json();
+
+            if (data.success) {
+                const selectIndex = document.getElementById('nuevoIndex');
+                if (!selectIndex) {
+                    console.error('Select element not found');
+                    return;
+                }
+
+                selectIndex.innerHTML = '<option value="">Seleccionar</option>';
+
+                data.pedidos.forEach(producto => {
+                    const [id, nombre] = producto;
+                    selectIndex.innerHTML += `
+                    <option value="${id}|${nombre}">
+                        ${nombre}
+                    </option>
+                `;
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al cargar productos de acopio', 'error');
+        }
+    }
+    contenido.innerHTML = `
+        <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
+        <div class="relleno">
+                <p>Informacion General:</p>
+                    <div class="campo-form">
+                        <label>Nombre:</label>
+                        <input type="text" id="nuevoNombre" class="edit-input" placeholder="Producto" required>
+                    </div>
+                    <div class="campo-form">
+                        <label>Gramaje:</label>
+                        <input type="number" id="nuevoGramaje" class="edit-input" value="0" placeholder="Opcional" required>
+                    </div>
+                    <div class="campo-form">
+                        <label>Stock Total:</label>
+                        <input type="number" id="nuevoStock" class="edit-input" placeholder="Stock" required>
+                    </div>
+                    <div class="campo-form">
+                        <label>Cantidad por grupo:</label>
+                        <input type="number" id="nuevoCantidadTira" value="0" placeholder="Opcional" class="edit-input">
+                    </div>
+                    <div class="campo-form">
+                        <label>Lista:</label>
+                        <input type="text" id="nuevoLista" class="edit-input" placeholder="Numero" required>
+                    </div>
+                    <div class="campo-form">
+                        <label>Codigo de barras:</label>
+                        <input type="number" id="nuevoCodigoBarras" class="edit-input" placeholder="Numero" required>
+                    </div>
+                <p>Precios:</p>
+                ${formatearPrecios(preciosBase, '2')}
+                <p>Etiquetas:</p>
+                <div id="tags-container" class="detalles-grup">
+                        <!-- Aquí se renderizarán los tags seleccionados -->
+                </div>
+                <div class="campo-form">
+                    <label>Etiqueta:</label>
+                    <select id="nuevoTags" class="edit-input">
+                        <option value="">Seleccionar</option>
+                        ${window.productosAlmacen && window.productosAlmacen[0] && window.productosAlmacen[0][8] ?
+                            window.productosAlmacen[0][8].split(';')
+                                .filter(tag => tag.trim())
+                                .map(tag => `<option value="${tag}">${tag}</option>`)
+                                .join('')
+                            : '<option disabled>No hay etiquetas disponibles</option>'
+        }
+                    </select>
+                    <div class="detalle-item">
+                        <i class="fas fa-plus-circle add btn-add-tag"></i>
+                    </div>
+                </div>
+                <p>Almacen Index:</p>
+                <div id="tags-container" class="detalles-grup">
+                        <!-- Aquí se renderizarán los tags seleccionados -->
+                </div>
+                <div class="campo-form">
+                    <label>Almacen Index:</label>
+                    <select id="nuevoIndex" class="edit-input">
+                        <option value="">Seleccionar</option>
+                    </select>
+                    <div class="detalle-item">
+                        <i class="fas fa-plus-circle add btn-add-tag"></i>
+                    </div>
+                </div>
+        </div>
+        <div class="anuncio-botones">
+                <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    cargarProductosAcopio();
+
+
+    anuncio.style.display = 'flex';
+    const tagsContainer = contenido.querySelector('#tags-container');
+    const selectedTags = new Set();
+
+    // Función para renderizar los tags
+    function renderizarTags() {
+        tagsContainer.innerHTML = Array.from(selectedTags).map(tag => `
+            <div class="detalle-item">
+                <p>${tag}</p>
+                <i class="fas fa-trash delete delete-tag" data-nombre="${tag}"></i>
+            </div>
+        `).join('');
+
+        // Agregar event listeners a los nuevos botones de eliminar
+        tagsContainer.querySelectorAll('.delete-tag').forEach(deleteBtn => {
+            deleteBtn.addEventListener('click', function () {
+                const tagToRemove = this.getAttribute('data-nombre');
+                selectedTags.delete(tagToRemove);
+                renderizarTags();
+            });
+        });
+    }
+
+    // Event listener para el botón de agregar
+    contenido.querySelector('.btn-add-tag').addEventListener('click', () => {
+        const selectTag = document.getElementById('nuevoTags');
+        const selectedTag = selectTag.value;
+
+        if (!selectedTag) {
+            mostrarNotificacion('Seleccione una etiqueta', 'error');
+            return;
+        }
+
+        if (!selectedTags.has(selectedTag)) {
+            selectedTags.add(selectedTag);
+            renderizarTags();
+            selectTag.value = ''; // Resetear el select
+        } else {
+            mostrarNotificacion('Esta etiqueta ya está agregada', 'warning');
+        }
+    });
+    document.querySelectorAll('.porcentaje').forEach(input => {
+        input.addEventListener('input', function () {
+            const tipo = this.id.split('_')[1];
+            const precioInput = document.getElementById(`editPrice_${tipo}`);
+            const porcentaje = parseFloat(this.value) || 0;
+            const precioBase = parseFloat(precioInput.value) || 0;
+
+            if (porcentaje > 0) {
+                const aumento = precioBase * (porcentaje / 100);
+                const precioFinal = precioBase + aumento;
+                precioInput.value = precioFinal.toFixed(2);
+            }
+        });
+    });
+    anuncio.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+
+    anuncio.querySelector('.guardar').onclick = async () => {
+        try {
+            mostrarCarga();
+            const preciosInputs = Array.from(contenido.querySelectorAll('.campo-form input[id^="editPrice_"]'));
+            const preciosActualizados = preciosInputs.map(input => {
+                const tipo = input.dataset.tipo;
+                const valor = input.value;
+                return `${tipo},${valor}`;
+            }).join(';');
+            const indexSeleccionado = document.getElementById('nuevoIndex').value;
+            const [indexId, indexNombre] = indexSeleccionado ? indexSeleccionado.split('|') : ['', ''];
+
+            const cantidadTira = document.getElementById('nuevoCantidadTira').value;
+
+            const nuevoProducto = {
+                nombre: document.getElementById('nuevoNombre').value,
+                gramaje: document.getElementById('nuevoGramaje').value,
+                stock: document.getElementById('nuevoStock').value,
+                cantidadTira: cantidadTira === "0" ? "No se maneja por tira" : cantidadTira,
+                lista: document.getElementById('nuevoLista').value,
+                codigob: document.getElementById('nuevoCodigoBarras')?.value || '',
+                precios: preciosActualizados,
+                tags: Array.from(selectedTags).join(';'), // Agregar los tags al objeto
+                indexId: indexId,
+                indexNombre: indexNombre,
+            };
+
+
+
+            const response = await fetch('/agregar-producto-almacen', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(nuevoProducto)
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Producto agregado correctamente', 'success');
+                anuncio.style.display = 'none';
+                cargarAlmacen();
+            } else {
+                throw new Error(data.error || 'Error al agregar el producto');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al agregar el producto', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+};
 function mostrarFormularioPedidos() {
     mostrarNotificacion('Esta opción aun esta en desarrollo', 'warning');
 };
-export async function cargarAlmacen() {
-    try {
-        mostrarCarga();
-        const response = await fetch('/obtener-almacen-general');
-        const data = await response.json();
 
-        if (!data.success) {
-            throw new Error(data.error || 'Error al cargar los productos');
-        }
-
-        const productsContainer = document.getElementById('productsContainer-general');
-        window.productosAlmacen = data.pedidos;
-        productsContainer.innerHTML = '';
-
-        data.pedidos.slice(1).forEach(producto => {
-            const [id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios, tag] = producto;
-
-            let stockClass = '';
-            if (stock < 100) {
-                stockClass = 'low-stock';
-            } else if (stock >= 100 && stock < 300) {
-                stockClass = 'medium-stock';
-            } else {
-                stockClass = 'high-stock';
-            }
-
-            const productCard = document.createElement('div');
-            productCard.className = `product-card ${stockClass}`;
-            productCard.onclick = () => mostrarDetalleProductoGral(producto);
-            productCard.innerHTML = `
-                <div class="product-info">
-                    <div class="product-name">
-                        <i class="fas fa-box"></i>
-                        <span>${nombre} ${gramaje} gr.</span>
-                    </div>   
-                    <div class="product-quantity">
-                        ${stock} und.
-                    </div>
-                </div>
-            `;
-
-            productsContainer.appendChild(productCard);
-        });
-
-    } catch (error) {
-        console.error('Error al cargar el almacén:', error);
-        mostrarNotificacion('Error al cargar los productos', 'error');
-    } finally {
-        ocultarCarga();
-        scrollToTop('.almacen-view')
-    }
-};
+/* ==================== FUNCIONES DE LOS DETALLES Y ELIMINACION DE TAGS Y PRECIOS ==================== */
 window.mostrarDetalleProductoGral = function (producto) {
     const [id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios, tag, indexId, indexNombre] = producto;
     const anuncio = document.querySelector('.anuncio');
@@ -905,247 +1471,6 @@ window.mostrarDetalleProductoGral = function (producto) {
         }
     };
 };
-function mostrarFormularioAgregarProducto() {
-
-    const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
-    const preciosBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][7] : 'Normal,0;Mayorista,0';
-    function formatearPrecios(preciosStr, num) {
-        if (!preciosStr) return '<div class="detalle-item"><span>No registrado</span></div>';
-
-        return preciosStr.split(';').map(precio => {
-            const [tipo, valor] = precio.split(',');
-            let nombreTipo = tipo;
-            if (num == 1) {
-                return `<div class="detalle-item">
-                <p>${nombreTipo}:</p>
-                <span>Bs. ${valor}</span>
-            </div>`;
-            }
-            else {
-                return `<div class="campo-form">
-                            <label>${nombreTipo}:</label>
-                            <div class="campo-form" style="padding:0; margin-top:0">
-                                    <input type="number" id="editPrice_${tipo}" value="0" class="edit-input" data-tipo="${tipo}">
-                                    <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
-                            </div>
-                        </div>`;
-            }
-        }).join('');
-    }
-    async function cargarProductosAcopio() {
-        try {
-            const response = await fetch('/obtener-almacen-acopio');
-            const data = await response.json();
-
-            if (data.success) {
-                const selectIndex = document.getElementById('nuevoIndex');
-                if (!selectIndex) {
-                    console.error('Select element not found');
-                    return;
-                }
-
-                selectIndex.innerHTML = '<option value="">Seleccionar</option>';
-
-                data.pedidos.forEach(producto => {
-                    const [id, nombre] = producto;
-                    selectIndex.innerHTML += `
-                    <option value="${id}|${nombre}">
-                        ${nombre}
-                    </option>
-                `;
-                });
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al cargar productos de acopio', 'error');
-        }
-    }
-    contenido.innerHTML = `
-        <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
-        <div class="relleno">
-                <p>Informacion General:</p>
-                    <div class="campo-form">
-                        <label>Nombre:</label>
-                        <input type="text" id="nuevoNombre" class="edit-input" placeholder="Producto" required>
-                    </div>
-                    <div class="campo-form">
-                        <label>Gramaje:</label>
-                        <input type="number" id="nuevoGramaje" class="edit-input" value="0" placeholder="Opcional" required>
-                    </div>
-                    <div class="campo-form">
-                        <label>Stock Total:</label>
-                        <input type="number" id="nuevoStock" class="edit-input" placeholder="Stock" required>
-                    </div>
-                    <div class="campo-form">
-                        <label>Cantidad por grupo:</label>
-                        <input type="number" id="nuevoCantidadTira" value="0" placeholder="Opcional" class="edit-input">
-                    </div>
-                    <div class="campo-form">
-                        <label>Lista:</label>
-                        <input type="text" id="nuevoLista" class="edit-input" placeholder="Numero" required>
-                    </div>
-                    <div class="campo-form">
-                        <label>Codigo de barras:</label>
-                        <input type="number" id="nuevoCodigoBarras" class="edit-input" placeholder="Numero" required>
-                    </div>
-                <p>Precios:</p>
-                ${formatearPrecios(preciosBase, '2')}
-                <p>Etiquetas:</p>
-                <div id="tags-container" class="detalles-grup">
-                        <!-- Aquí se renderizarán los tags seleccionados -->
-                </div>
-                <div class="campo-form">
-                    <label>Etiqueta:</label>
-                    <select id="nuevoTags" class="edit-input">
-                        <option value="">Seleccionar</option>
-                        ${window.productosAlmacen && window.productosAlmacen[0] && window.productosAlmacen[0][8] ?
-                            window.productosAlmacen[0][8].split(';')
-                                .filter(tag => tag.trim())
-                                .map(tag => `<option value="${tag}">${tag}</option>`)
-                                .join('')
-                            : '<option disabled>No hay etiquetas disponibles</option>'
-        }
-                    </select>
-                    <div class="detalle-item">
-                        <i class="fas fa-plus-circle add btn-add-tag"></i>
-                    </div>
-                </div>
-                <p>Almacen Index:</p>
-                <div id="tags-container" class="detalles-grup">
-                        <!-- Aquí se renderizarán los tags seleccionados -->
-                </div>
-                <div class="campo-form">
-                    <label>Almacen Index:</label>
-                    <select id="nuevoIndex" class="edit-input">
-                        <option value="">Seleccionar</option>
-                    </select>
-                    <div class="detalle-item">
-                        <i class="fas fa-plus-circle add btn-add-tag"></i>
-                    </div>
-                </div>
-        </div>
-        <div class="anuncio-botones">
-                <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-        </div>
-    `;
-
-    cargarProductosAcopio();
-
-
-    anuncio.style.display = 'flex';
-    const tagsContainer = contenido.querySelector('#tags-container');
-    const selectedTags = new Set();
-
-    // Función para renderizar los tags
-    function renderizarTags() {
-        tagsContainer.innerHTML = Array.from(selectedTags).map(tag => `
-            <div class="detalle-item">
-                <p>${tag}</p>
-                <i class="fas fa-trash delete delete-tag" data-nombre="${tag}"></i>
-            </div>
-        `).join('');
-
-        // Agregar event listeners a los nuevos botones de eliminar
-        tagsContainer.querySelectorAll('.delete-tag').forEach(deleteBtn => {
-            deleteBtn.addEventListener('click', function () {
-                const tagToRemove = this.getAttribute('data-nombre');
-                selectedTags.delete(tagToRemove);
-                renderizarTags();
-            });
-        });
-    }
-
-    // Event listener para el botón de agregar
-    contenido.querySelector('.btn-add-tag').addEventListener('click', () => {
-        const selectTag = document.getElementById('nuevoTags');
-        const selectedTag = selectTag.value;
-
-        if (!selectedTag) {
-            mostrarNotificacion('Seleccione una etiqueta', 'error');
-            return;
-        }
-
-        if (!selectedTags.has(selectedTag)) {
-            selectedTags.add(selectedTag);
-            renderizarTags();
-            selectTag.value = ''; // Resetear el select
-        } else {
-            mostrarNotificacion('Esta etiqueta ya está agregada', 'warning');
-        }
-    });
-    document.querySelectorAll('.porcentaje').forEach(input => {
-        input.addEventListener('input', function () {
-            const tipo = this.id.split('_')[1];
-            const precioInput = document.getElementById(`editPrice_${tipo}`);
-            const porcentaje = parseFloat(this.value) || 0;
-            const precioBase = parseFloat(precioInput.value) || 0;
-
-            if (porcentaje > 0) {
-                const aumento = precioBase * (porcentaje / 100);
-                const precioFinal = precioBase + aumento;
-                precioInput.value = precioFinal.toFixed(2);
-            }
-        });
-    });
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
-
-    anuncio.querySelector('.guardar').onclick = async () => {
-        try {
-            mostrarCarga();
-            const preciosInputs = Array.from(contenido.querySelectorAll('.campo-form input[id^="editPrice_"]'));
-            const preciosActualizados = preciosInputs.map(input => {
-                const tipo = input.dataset.tipo;
-                const valor = input.value;
-                return `${tipo},${valor}`;
-            }).join(';');
-            const indexSeleccionado = document.getElementById('nuevoIndex').value;
-            const [indexId, indexNombre] = indexSeleccionado ? indexSeleccionado.split('|') : ['', ''];
-
-            const cantidadTira = document.getElementById('nuevoCantidadTira').value;
-
-            const nuevoProducto = {
-                nombre: document.getElementById('nuevoNombre').value,
-                gramaje: document.getElementById('nuevoGramaje').value,
-                stock: document.getElementById('nuevoStock').value,
-                cantidadTira: cantidadTira === "0" ? "No se maneja por tira" : cantidadTira,
-                lista: document.getElementById('nuevoLista').value,
-                codigob: document.getElementById('nuevoCodigoBarras')?.value || '',
-                precios: preciosActualizados,
-                tags: Array.from(selectedTags).join(';'), // Agregar los tags al objeto
-                indexId: indexId,
-                indexNombre: indexNombre,
-            };
-
-
-
-            const response = await fetch('/agregar-producto-almacen', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(nuevoProducto)
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                mostrarNotificacion('Producto agregado correctamente', 'success');
-                anuncio.style.display = 'none';
-                cargarAlmacen();
-            } else {
-                throw new Error(data.error || 'Error al agregar el producto');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al agregar el producto', 'error');
-        } finally {
-            ocultarCarga();
-        }
-    };
-};
 function mostrarConfirmacionEliminar(id, nombre) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -1194,307 +1519,6 @@ function mostrarConfirmacionEliminar(id, nombre) {
         }
     };
 };
-export function mostrarProductos() {
-    const container = document.querySelector('.almacen-general-productos');
-    if (!container) return;
-    container.innerHTML = '';
-    container.style.display = 'flex';
-
-    container.innerHTML = `
-        <div class="almacen-container-general">
-            <div class="almacen-header-general">
-                <div class="search-bar">
-                    <input type="text" id="searchProduct" placeholder="Buscar producto...">
-                    <i class="fas fa-search search-icon2"></i>
-                </div>
-                <div class="filter-options">
-                    <button class="filter-btn" data-filter="all">
-                        <p><i class="fas fa-sort-amount-down"></i> Mayor a menor</p>
-                    </button>
-                    <button class="filter-btn giro" data-filter="low">
-                        <p><i class="fas fa-sort-amount-up"></i> Menor a mayor</p>
-                   </button>
-                </div>
-            </div>
-            <div class="products-grid" id="productsContainer-general">
-            </div>
-        </div>
-    `;
-
-    // Call cargarAlmacen after creating the container
-    cargarAlmacen();
-
-    function normalizarTexto(texto) {
-        return texto.toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') // Elimina tildes
-            .replace(/\s+/g, ' ')            // Reduce espacios múltiples a uno
-            .trim();                         // Elimina espacios al inicio y final
-    }
-
-    const searchInput = document.getElementById('searchProduct');
-    const searchIcon = document.querySelector('.search-icon2');
-    
-
-    // Add focus event handler
-    searchInput.addEventListener('focus', () => {
-        const almacenView = document.querySelector('.almacen-view');
-        if (almacenView) {
-            const searchBarPosition = searchInput.getBoundingClientRect().top + window.scrollY;
-            almacenView.scrollTo({
-                top: searchBarPosition - 80, // 20px offset from top
-                behavior: 'smooth'
-            });
-        }
-    });
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = normalizarTexto(e.target.value);
-        const products = document.querySelectorAll('.product-card');
-        const productsContainer = document.getElementById('productsContainer-general');
-        let productsFound = false;
-
-        // Change icon based on input value
-        if (e.target.value.length > 0) {
-            searchIcon.classList.remove('fa-search');
-            searchIcon.classList.add('fa-times');
-        } else {
-            searchIcon.classList.remove('fa-times');
-            searchIcon.classList.add('fa-search');
-        }
-
-        products.forEach(product => {
-            const productName = normalizarTexto(product.querySelector('.product-name span').textContent);
-            if (productName.includes(searchTerm)) {
-                product.style.display = 'grid';
-                productsFound = true;
-            } else {
-                product.style.display = 'none';
-            }
-        });
-
-        // Mostrar mensaje si no se encuentran productos
-        const noResultsMessage = document.querySelector('.no-results-message');
-        if (!productsFound && searchTerm) {
-            if (!noResultsMessage) {
-                productsContainer.innerHTML += `
-                    <div class="no-results-message" style="width: 100%; text-align: center; padding: 20px; color: var(--primary-text);">
-                        <i class="fas fa-search" style="font-size: 40px; margin-bottom: 10px;"></i>
-                        <p>No se encontraron productos que contengan "${e.target.value}..."</p>
-                    </div>
-                `;
-            }
-        } else {
-            if (noResultsMessage) {
-                noResultsMessage.remove();
-            }
-        }
-    });
-    searchIcon.addEventListener('click', () => {
-        if (searchInput.value.length > 0) {
-            searchInput.value = '';
-            searchIcon.classList.remove('fa-times');
-            searchIcon.classList.add('fa-search');
-            // Show all products
-            document.querySelectorAll('.product-card').forEach(product => {
-                product.style.display = 'grid';
-            });
-        }
-    });
-
-
-        const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            const filter = button.dataset.filter;
-            // Modificar el selector para que solo seleccione productos del contenedor general
-            const products = Array.from(document.querySelector('#productsContainer-general').querySelectorAll('.product-card'));
-
-            products.sort((a, b) => {
-                const stockA = parseInt(a.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
-                const stockB = parseInt(b.querySelector('.product-quantity').textContent.trim().match(/\d+/) || [0]);
-
-                const numA = isNaN(stockA) ? 0 : stockA;
-                const numB = isNaN(stockB) ? 0 : stockB;
-
-                if (filter === 'all') {
-                    return numB - numA; // Mayor a menor
-                } else {
-                    return numA - numB; // Menor a mayor
-                }
-            });
-
-            const container = document.getElementById('productsContainer-general');
-            container.innerHTML = '';
-            products.forEach(product => container.appendChild(product));
-        });
-    });
-};
-function mostrarFormularioFormato() {
-    const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
-    const preciosBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][7] : '';
-    const tagBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][8] : '';
-
-    contenido.innerHTML = `
-        <h2><i class="fas fa-cog"></i> Formatos</h2>
-        <div class="relleno">
-            <p>Formato Precios:</p>
-            <div class="detalles-grup">
-                ${formatearPrecios(preciosBase, '1')}
-            </div>
-            <div class="form-grup">
-                <div class="detalle-item">
-                    <input type="text" id="nuevoFormato" class="edit-input" placeholder="Nuevo formato precio">
-                    <i class="fas fa-plus-circle add add-format"></i>
-                </div>
-            </div>
-            <p>Formato Etiquetas:</p>
-            <div class="detalles-grup">
-                ${formatearTags(tagBase, '1')}
-            </div>
-            <div class="form-grup">
-                <div class="detalle-item">
-                    <input type="text" id="nuevoFormatoTag" class="edit-input" placeholder="Nuevo formato etiqueta">
-                    <i class="fas fa-plus-circle add add-tag"></i>
-                </div>
-            </div>
-        </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-        </div>
-    `;
-
-    function formatearPrecios(preciosStr, num) {
-        if (!preciosStr) return '<div class="detalle-item"><span>No registrado</span></div>';
-        return preciosStr.split(';').map(precio => {
-            const [tipo] = precio.split(',');
-            return `<div class="detalle-item">
-                <p>${tipo}</p>
-                <i class="fas fa-trash delete delete-price" data-nombre="${tipo}"></i>
-            </div>`;
-        }).join('');
-    }
-
-    function formatearTags(tagsStr, num) {
-        if (!tagsStr) return '<div class="detalle-item"><span>No registrado</span></div>';
-        return tagsStr.split(';').filter(Boolean).map(tag => {
-            return `<div class="detalle-item">
-                <p>${tag}</p>
-                <i class="fas fa-trash delete delete-tag" data-nombre="${tag}"></i>
-            </div>`;
-        }).join('');
-    }
-    // Event listener para agregar formato
-    contenido.querySelector('.add-format').addEventListener('click', async () => {
-        const nombreFormato = document.getElementById('nuevoFormato').value.trim();
-        if (!nombreFormato) {
-            mostrarNotificacion('Ingrese un nombre para el formato', 'error');
-            return;
-        }
-
-        try {
-            mostrarCarga();
-            const response = await fetch('/agregar-formato-precio', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombreFormato })
-            });
-
-            const data = await response.json();
-
-            // Actualizar datos locales
-            if (window.productosAlmacen && window.productosAlmacen.length > 0) {
-                window.productosAlmacen = window.productosAlmacen.map(producto => {
-                    const nuevosPrecios = producto[7] ? `${producto[7]};${nombreFormato},0` : `${nombreFormato},0`;
-                    return [...producto.slice(0, 7), nuevosPrecios, producto[8]];
-                });
-            }
-
-            mostrarNotificacion('Formato agregado correctamente', 'success');
-            document.getElementById('nuevoFormato').value = '';
-
-            // Recargar datos del servidor y actualizar vista
-            const refreshResponse = await fetch('/obtener-almacen-general');
-            const refreshData = await refreshResponse.json();
-            if (refreshData.pedidos) {
-                window.productosAlmacen = refreshData.pedidos;
-                mostrarFormularioFormato(); // Volver a renderizar todo el formulario
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al agregar el formato', 'error');
-        } finally {
-            ocultarCarga();
-        }
-    });
-
-    // Event listener para agregar etiqueta (similar al anterior)
-    contenido.querySelector('.add-tag').addEventListener('click', async () => {
-        const nombreTag = document.getElementById('nuevoFormatoTag').value.trim();
-        if (!nombreTag) {
-            mostrarNotificacion('Ingrese un nombre para la etiqueta', 'error');
-            return;
-        }
-
-        try {
-            mostrarCarga();
-            const response = await fetch('/agregar-tag', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombreTag })
-            });
-
-            const data = await response.json();
-
-            // Actualizar datos locales
-            if (window.productosAlmacen && window.productosAlmacen.length > 0) {
-                window.productosAlmacen = window.productosAlmacen.map(producto => {
-                    const nuevosTags = producto[8] ? `${producto[8]};${nombreTag}` : nombreTag;
-                    return [...producto.slice(0, 8), nuevosTags];
-                });
-            }
-
-            mostrarNotificacion('Etiqueta agregada correctamente', 'success');
-            document.getElementById('nuevoFormatoTag').value = '';
-
-            // Recargar datos del servidor y actualizar vista
-            const refreshResponse = await fetch('/obtener-almacen-general');
-            const refreshData = await refreshResponse.json();
-            if (refreshData.pedidos) {
-                window.productosAlmacen = refreshData.pedidos;
-                mostrarFormularioFormato(); // Volver a renderizar todo el formulario
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al agregar la etiqueta', 'error');
-        } finally {
-            ocultarCarga();
-        }
-    });
-
-    // Event listeners para eliminar
-    document.querySelectorAll('.delete-price').forEach(icon => {
-        icon.addEventListener('click', (e) => {
-            const nombreTipo = e.target.getAttribute('data-nombre');
-            mostrarConfirmacionEliminarPrecio(nombreTipo);
-        });
-    });
-
-    document.querySelectorAll('.delete-tag').forEach(icon => {
-        icon.addEventListener('click', (e) => {
-            const tag = e.target.getAttribute('data-nombre');
-            mostrarConfirmacionEliminarTag(tag);
-        });
-    });
-
-    anuncio.style.display = 'flex';
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
-}
 function mostrarConfirmacionEliminarTag(nombre) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -1608,26 +1632,9 @@ function mostrarConfirmacionEliminarPrecio(nombre) {
         }
     };
 };
-async function obtenerUsuarioActual() {
-    try {
-        const response = await fetch('/obtener-mi-rol');
-        const data = await response.json();
 
-        if (data.nombre) {
-            return data.nombre;
-        }
 
-        if (data.error) {
-            console.error('Error al obtener usuario:', data.error);
-            return 'Sistema';
-        }
-
-        return 'Sistema';
-    } catch (error) {
-        console.error('Error al obtener usuario:', error);
-        return 'Sistema';
-    }
-};
+/* ==================== FUNCIONES DE REGISTRO DEL MOVIMIENTO SALIDA O INGRESO DE ALMACEN ==================== */
 async function registrarMovimiento(tipo, producto, cantidad) {
     try {
         const operario = await obtenerUsuarioActual(); // Esperar a obtener el usuario

@@ -1,4 +1,5 @@
 import { registrarNotificacion } from './advertencia.js';
+/* =============== FUNCIONES DE INCIO DE FORMULARIO PRODUCCION =============== */
 export function inicializarFormularioProduccion() {
     const container = document.querySelector('.formProduccion-view');
     const anuncio = document.querySelector('.anuncio');
@@ -407,6 +408,8 @@ function inicializarEventosFormulario(form, productoInput, productosDisponibles)
         }
     });
 }
+
+/* =============== FUNCIONES DE CARGA DE FORMULARIO =============== */
 export function resetearFormulario() {
     const inputs = document.querySelectorAll('.form1 form input:not([type="radio"])');
     inputs.forEach(input => {
@@ -448,6 +451,8 @@ export async function cargarProductos() {
         ocultarCarga();
     }
 }
+
+/* =============== FUNCIONES DE HORARIO DE REGISTRO =============== */
 function verificarHorario() {
     const ahora = new Date();
     const hora = ahora.getHours();

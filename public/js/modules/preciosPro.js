@@ -1,3 +1,4 @@
+/* =============== FUNCIONES DE INICIO PRECIOS PRODUCCION =============== */
 export async function initializePreciosPro() {
     const view = document.querySelector('.preciosPro-view');
 
@@ -221,6 +222,8 @@ function mostrarDetallesRegla(regla) {
         document.querySelector('.overlay').style.display = 'none';
     });
 }
+
+/* =============== FUNCIONES DE ELIMINAR REGLAS =============== */
 async function eliminarRegla(producto, index) {
     try {
         mostrarCarga();
@@ -270,6 +273,37 @@ async function eliminarRegla(producto, index) {
         ocultarCarga();
     }
 }
+function mostrarAnuncioEliminar(producto, index) {
+    const anuncio = document.querySelector('.anuncio');
+    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+    
+    anuncioContenido.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>¿Eliminar regla?</h2>
+        <div class="detalles-grup center">
+            <p>¿Está seguro de eliminar la regla de: "${producto}"?</p>
+            <p>Esta acción no se puede deshacer</p>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+            <button class="anuncio-btn red confirmar">Eliminar</button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+
+    // Add event listeners for buttons
+    anuncio.querySelector('.cancelar').addEventListener('click', () => {
+        anuncio.style.display = 'none';
+    });
+
+    anuncio.querySelector('.confirmar').addEventListener('click', async () => {
+        await eliminarRegla(producto, index);
+        anuncio.style.display = 'none';
+    });
+}
+
+/* =============== FUNCIONES DE ACTUALIZAR PRECIOS BASE =============== */
 async function guardarPreciosBase() {
     try {
         mostrarCarga();
@@ -302,6 +336,8 @@ async function guardarPreciosBase() {
 
     }
 }
+
+/* =============== FUNCIONES DE AGREGAR NUEVA REGLA=============== */
 async function mostrarFormularioRegla() {
     try {
         mostrarCarga();
@@ -524,34 +560,5 @@ function configurarEventosFormulario(anuncio) {
         } finally {
             ocultarCarga();
         }
-    });
-}
-function mostrarAnuncioEliminar(producto, index) {
-    const anuncio = document.querySelector('.anuncio');
-    const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-    
-    anuncioContenido.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <h2>¿Eliminar regla?</h2>
-        <div class="detalles-grup center">
-            <p>¿Está seguro de eliminar la regla de: "${producto}"?</p>
-            <p>Esta acción no se puede deshacer</p>
-        </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-            <button class="anuncio-btn red confirmar">Eliminar</button>
-        </div>
-    `;
-
-    anuncio.style.display = 'flex';
-
-    // Add event listeners for buttons
-    anuncio.querySelector('.cancelar').addEventListener('click', () => {
-        anuncio.style.display = 'none';
-    });
-
-    anuncio.querySelector('.confirmar').addEventListener('click', async () => {
-        await eliminarRegla(producto, index);
-        anuncio.style.display = 'none';
     });
 }

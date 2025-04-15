@@ -1,5 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
 
+/* ===== CONTENEDOR PRINCIPAL ===== */
 .container {
     display: flex;
     flex-direction: column;
@@ -7,13 +9,16 @@
     padding-top: 56px;
     position: relative;
 }
-@media (min-width: 1024px){
+
+/* ===== MEDIA QUERY PARA ESCRITORIO ===== */
+@media (min-width: 1024px) {
     .container {
         margin-left: 250px;
         width: auto;
     }
 }
 
+/* ===== BARRA DE NAVEGACIÓN ===== */
 .dashboard {
     position: fixed;
     top: 0;
@@ -27,48 +32,56 @@
     background: var(--second-color);
     z-index: 9;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    
-    .dashboard-buttons {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 
-.notifications-btn {
-    background: none;
-    border: none;
-    border-radius: 6px;
-    color: var(--primary-light);
-    padding: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 20px;
-    position: relative;
-}
-.notification-badge {
-    position: absolute;
-    top: -1px;
-    right: -1px;
-    background: var(--tercer-color);
-    color: white;
-    border-radius: 50%;
-    padding: 2px;
-    font-size: 12px;
-    min-width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--primary-color);
-}
-.notifications-btn:hover {
-    color: gray;
-}
+    /* ===== BOTONES DEL DASHBOARD ===== */
+    .dashboard-buttons {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* ===== BOTÓN DE NOTIFICACIONES ===== */
+    .notifications-btn {
+        background: none;
+        border: none;
+        border-radius: 6px;
+        color: var(--primary-light);
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 20px;
+        position: relative;
+
+        &:hover {
+            color: gray;
+        }
+    }
+
+    /* ===== BADGE DE NOTIFICACIONES ===== */
+    .notification-badge {
+        position: absolute;
+        top: -1px;
+        right: -1px;
+        background: var(--tercer-color);
+        color: white;
+        border-radius: 50%;
+        padding: 2px;
+        font-size: 12px;
+        min-width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--primary-color);
+    }
+
+    /* ===== SECCIÓN DE BIENVENIDA ===== */
     .bienvenida {
         display: flex;
         align-items: center;
         gap: 10px;
 
+        /* ===== SECCIÓN DE PERFIL ===== */
         .profile-section {
             display: flex;
             align-items: center;
@@ -118,12 +131,12 @@
     }
 }
 
+/* ===== ANIMACIONES DEL MODAL ===== */
 @keyframes modalShow {
     0% {
         opacity: 0;
         backdrop-filter: blur(0px);
     }
-
     100% {
         opacity: 1;
         backdrop-filter: blur(5px);
@@ -135,7 +148,6 @@
         opacity: 1;
         backdrop-filter: blur(5px);
     }
-
     100% {
         opacity: 0;
         backdrop-filter: blur(0px);
@@ -147,15 +159,12 @@
         opacity: 0;
         transform: translate(-50%, -30%) scale(0.7);
     }
-
     50% {
         transform: translate(-50%, -55%) scale(1.05);
     }
-
     70% {
         transform: translate(-50%, -45%) scale(0.95);
     }
-
     100% {
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
@@ -167,13 +176,13 @@
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
     }
-
     100% {
         opacity: 0;
         transform: translate(-50%, -30%) scale(0.7);
     }
 }
 
+/* ===== MODAL DE PERFIL ===== */
 .profile-modal {
     display: none;
     position: fixed;
@@ -194,6 +203,7 @@
         animation: modalHide 0.3s ease forwards;
     }
 
+    /* ===== CONTENIDO DEL MODAL ===== */
     .modal-content {
         background: var(--primary-color);
         border-radius: 15px;
@@ -218,6 +228,7 @@
             animation: contentHide 0.3s ease forwards;
         }
 
+        /* ===== ELEMENTOS DEL MODAL ===== */
         .modal-profile-picture {
             width: 100px;
             height: 100px;
@@ -266,6 +277,8 @@
             }
         }
     }
+
+    /* ===== BOTÓN DE CERRAR SESIÓN ===== */
     .logout-btn {
         margin-top: 10px;
         padding: 15px;
@@ -276,7 +289,7 @@
         font-size: 15px;
         display: flex;
         align-items: center;
-        gap:10px;
+        gap: 10px;
         cursor: pointer;
         transition: all 0.3s ease;
         width: 100%;

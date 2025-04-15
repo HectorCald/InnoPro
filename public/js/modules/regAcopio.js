@@ -1,9 +1,11 @@
+/* =============== FUNCIONES DE INICIO REGISTROS ACOPIO =============== */
 let filtrosActivos = {
     nombre: '',
     fechaDesde: '',
     fechaHasta: '',
     estado: 'todos' // 'todos', 'pendiente', 'recibido', 'en_proceso'
 };
+/* =============== FUNCIONES DE REGSITROS PEDIDOS=============== */
 export async function cargarRegistrosAcopio() {
     try {
         mostrarCarga();
@@ -306,6 +308,8 @@ function ordenarRegistrosPorFecha(registros) {
         return fechaB - fechaA;
     });
 }
+
+/* =============== FUNCIONES DE FILTROS =============== */
 function configurarFiltros2() {
     const btnFiltro = document.querySelector('.btn-filtro-acopio');
     const anuncio = document.querySelector('.anuncio');
@@ -449,17 +453,7 @@ function configurarFiltrosBotones() {
     });
 }
 
-
-
-function actualizarContador() {
-    const registrosVisibles = document.querySelectorAll('.registro-card-acopio:not([style*="display: none"])').length;
-    const contadores = document.querySelectorAll('.contador');
-
-    // Actualizar todos los contadores en la página
-    contadores.forEach(contador => {
-        contador.textContent = `${registrosVisibles} pedidos`;
-    });
-}
+/* =============== FUNCIONES DE EDICION, ELIMINACION, RECHAZO PEDIDOS=============== */
 function mostrarFormularioEdicion(pedido) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
@@ -721,9 +715,7 @@ function mostrarFormularioRechazo(id, nombre) {
     anuncio.style.display = 'flex';
 }
 
-
-
-
+/* =============== FUNCIONES DE REGISTROS MOVIMIENTOS=============== */
 function crearMovimientoCard(movimiento, isAdmin) {
     const [id, fecha, tipo, producto, cantidad, operario, almacen, razon] = movimiento;
     const movimientoCard = document.createElement('div');
@@ -806,6 +798,8 @@ function configurarEventosMovimiento(movimientoCard, isAdmin, movimiento) {
         }
     }
 }
+
+/* =============== FUNCIONES DE REGISTRO DE MOVIMIENTOS ELIMINACION Y EDICION=============== */
 function mostrarFormularioEdicionMovimiento(movimiento) {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
@@ -969,9 +963,16 @@ function mostrarConfirmacionEliminarMovimiento(movimiento, movimientoCard) {
     anuncio.style.display = 'flex';
 }
 
+/* =============== FUNCIONES DE UTILIDAD =============== */
+function actualizarContador() {
+    const registrosVisibles = document.querySelectorAll('.registro-card-acopio:not([style*="display: none"])').length;
+    const contadores = document.querySelectorAll('.contador');
 
-
-
+    // Actualizar todos los contadores en la página
+    contadores.forEach(contador => {
+        contador.textContent = `${registrosVisibles} pedidos`;
+    });
+}
 
 
 

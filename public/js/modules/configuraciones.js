@@ -1,5 +1,5 @@
 let usuarioActual = null;
-
+/* =============== FUNCIONES DE INCIO DE CONFIGURACIONES O AJUSTES =============== */
 export async function inicializarConfiguraciones() {
     const configuracionesView = document.querySelector('.configuraciones-view');
     
@@ -78,6 +78,7 @@ export async function inicializarConfiguraciones() {
     }
 }
 
+/* =============== FUNCIONES DE CAMBIAR PIN DEL USARIO ACTUAL =============== */
 async function mostrarFormularioCambioPin() {
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');

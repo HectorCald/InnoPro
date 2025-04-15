@@ -1,4 +1,5 @@
 import { registrarNotificacion } from './advertencia.js';
+/* =============== FUNCIONES DE INCIO DE COMPRAS =============== */
 export function inicializarCompras() {
     mostrarCarga();
     const container = document.querySelector('.compras-view');
@@ -156,6 +157,8 @@ function mostrarPedidos(pedidos, tipo) {
     });
     ocultarCarga();
 }
+
+/* =============== FUNCIONES DE ELIMINAR, ENTREGAR Y LOS RESUMENES DE ENTREGA=============== */
 export async function eliminarPedido(button) {
     try {
         const card = button.closest('.pedido-card');

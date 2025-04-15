@@ -1,5 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
 
+/* ===== VISTA PRINCIPAL ===== */
 .home-view {
     width: 100%;
     background: var(--primary-color) !important;
@@ -12,6 +14,7 @@
     gap: 10px;
     display: none;
 
+    /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
         display: none;
     }
@@ -19,7 +22,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 
-
+    /* ===== TÍTULO DE LA SECCIÓN ===== */
     .title {
         padding-block: 15px;
         border-bottom: 1px solid rgb(83, 83, 83);
@@ -29,6 +32,7 @@
         }
     }
 
+    /* ===== GRID DE SECCIONES ===== */
     .sections-grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -40,17 +44,19 @@
         border-radius: 15px;
     }
 
-
+    /* ===== CONTENEDOR DE ATAJOS ===== */
     .shortcuts-container {
         margin-bottom: 10px;
-    }
-    .shortcuts-container h2 {
-        color: var(--primary-text);
-        font-size: 15px;
-        text-transform: capitalize;
-        margin-bottom: 10px;
+
+        h2 {
+            color: var(--primary-text);
+            font-size: 15px;
+            text-transform: capitalize;
+            margin-bottom: 10px;
+        }
     }
 
+    /* ===== GRID DE ATAJOS ===== */
     .shortcuts-grid {
         display: flex;
         flex-direction: column;
@@ -60,9 +66,10 @@
         padding: 0;
     }
 
+    /* ===== TARJETA DE ATAJO ===== */
     .shortcut-card {
         display: flex;
-        align-items:center;
+        align-items: center;
         justify-content: flex-start;
         padding: 15px;
         background: var(--second-color);
@@ -74,44 +81,44 @@
         gap: 10px;
         width: 100%;
         max-height: 100px;
+
+        &:hover {
+            transform: translateY(-5px);
+            background: rgb(48, 48, 48);
+        }
+
+        /* Ícono del atajo */
+        i {
+            font-size: 20px;
+            color: var(--tercer-color);
+            margin-right: 10px;
+            padding: 5px;   
+            width: 60px !important;
+            height: 50px !important;
+            border-radius: 50%;
+            background-color: rgba(255, 166, 0, 0.096);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Información del atajo */
+        .info-atajo {
+            width: 100%;
+
+            span {
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            p {
+                font-size: 12px;
+                color: rgb(190, 189, 189);
+            }
+        }
     }
 
-    .shortcut-card:hover {
-        transform: translateY(-5px);
-        background: rgb(48, 48, 48);
-    }
-
-    .shortcut-card i {
-        font-size: 20px;
-        color: var(--tercer-color);
-        margin-right: 10px;
-        padding: 5px;   
-        width: 60px !important;
-        height: 50px !important;
-        border-radius: 50%;
-        background-color: rgba(255, 166, 0, 0.096);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .shortcut-card .info-atajo{
-        width: 100%;
-    }
-    .shortcut-card .info-atajo span {
-        font-size: 14px;
-        font-weight: 500;
-    }
-    .shortcut-card .info-atajo p {
-        font-size: 12px;
-        color: rgb(190, 189, 189);
-    }
-
-    .shortcuts-container h2 {
-        color: var(--primary-text);
-        font-size: 15px;
-        text-transform: capitalize;
-    }
-
+    /* ===== ENCABEZADO DE BIENVENIDA ===== */
     .welcome-header {
         background: linear-gradient(135deg, var(--second-color) 0%, var(--primary-color) 100%);
         padding: 15px;
@@ -119,18 +126,18 @@
         margin-bottom: 20px;
         margin-top: 10px;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-    }
 
-    .welcome-header h1 {
-        font-size: 15px;
-        color: white;
-        margin-bottom: 10px;
-        font-weight: 600;
-    }
+        h1 {
+            font-size: 15px;
+            color: white;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
 
-    .welcome-header p {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 13px;
-        margin: 0;
+        p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            margin: 0;
+        }
     }
 }

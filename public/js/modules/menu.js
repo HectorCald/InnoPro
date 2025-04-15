@@ -1,3 +1,4 @@
+/* =============== FUNCIONES DE INCIO DE MENU=============== */
 export function initializeMenu(roles, opcionesDiv, vistas, funcionesExtras = []) {
     try {
         const { menuPrincipal, menuSecundario, overlay } = initializeMenuStructure(opcionesDiv);

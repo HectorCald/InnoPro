@@ -1,5 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
 
+/* ===== VISTA DE REGISTRO DE ALMACÉN ===== */
 .regAlmacen-view {
     width: 100%;
     background: var(--primary-color) !important;
@@ -13,24 +15,26 @@
     gap: 10px;
     display: none;
 
+    /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
         display: none;
     }
-
     -ms-overflow-style: none;
     scrollbar-width: none;
 
+    /* ===== TÍTULO DE LA SECCIÓN ===== */
     .section-title {
         color: var(--primary-text);
         font-size: 17px;
         font-weight: 500;
         padding-block: 15px;
+
+        i {
+            color: var(--primary-text);
+        }
     }
 
-    .section-title i {
-        color: var(--primary-text);
-    }
-
+    /* ===== ENCABEZADO DE FILTROS ===== */
     .filtros-header {
         display: flex;
         align-items: center;
@@ -39,6 +43,7 @@
         width: 100%;
     }
 
+    /* ===== BOTÓN DE FILTRO ===== */
     .btn-filtro-acopio {
         background: none;
         border: none;
@@ -50,6 +55,7 @@
         align-items: center;
         gap: 10px;
         transition: all 0.3s ease;
+        font-size: 15px;
 
         &:hover {
             background: #252525;
@@ -58,10 +64,9 @@
         i {
             color: #3498db;
         }
-
-        font-size: 15px;
     }
 
+    /* ===== ENCABEZADO DE FECHA ===== */
     .fecha-header {
         background: var(--cero-color);
         padding: 15px;
@@ -90,6 +95,7 @@
         }
     }
 
+    /* ===== INFORMACIÓN DE FECHA Y CONTADOR ===== */
     .fecha-info {
         display: flex;
         align-items: center;
@@ -106,6 +112,7 @@
         white-space: nowrap;
     }
 
+    /* ===== GRUPO DE REGISTROS ===== */
     .registros-grupo {
         max-height: 0;
         opacity: 0;
@@ -122,6 +129,7 @@
         }
     }
 
+    /* ===== TARJETAS Y CONTENEDORES ===== */
     .fecha-card {
         background: var(--cero-color);
         border-radius: 15px;
@@ -150,6 +158,7 @@
         }
     }
 
+    /* ===== DETALLES DE REGISTRO ===== */
     .registro-header {
         padding: 15px;
         background: var(--second-color);
@@ -174,6 +183,7 @@
         text-overflow: ellipsis;
     }
 
+    /* ===== DETALLES EXPANDIBLES ===== */
     .registro-detalles {
         height: 0;
         opacity: 0;
@@ -205,13 +215,14 @@
         }
     }
 
+    /* ===== BOTONES DE ACCIÓN ===== */
     .acciones {
         display: flex;
         gap: 10px;
         margin-top: 10px;
     }
 
-    .btn-editar {
+    .btn-editar, .btn-editar-registro {
         padding: 15px;
         border: none;
         border-radius: 15px;
@@ -230,28 +241,6 @@
             transform: translateY(-2px);
         }
     }
-
-    .btn-editar-registro {
-        padding: 15px;
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        background: #2196F3;
-        color: white;
-        width: 100%;
-
-        &:hover {
-            background: #1976D2;
-            transform: translateY(-2px);
-        }
-    }
-
-
 
     .btn-eliminar-registro {
         padding: 15px;
@@ -273,6 +262,7 @@
         }
     }
 
+    /* ===== ICONOS Y ESTADOS ===== */
     .fa-chevron-down {
         transition: transform 0.3s ease;
 
@@ -288,6 +278,7 @@
         font-size: 15px;
     }
 
+    /* ===== TIPOS DE MOVIMIENTO ===== */
     .registro-tipo-movimiento {
         padding: 5px 10px;
         border-radius: 10px;

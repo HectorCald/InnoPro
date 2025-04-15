@@ -1,4 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
+
+/* ===== VISTA DE CUENTAS DE PRODUCCIÓN ===== */
 .cuentasProduccion-view {
     width: 100%;
     background: var(--background) !important;
@@ -10,26 +13,31 @@
     flex-direction: column;
     gap: 10px;
     display: none;
+
+    /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
         display: none;
     }
     -ms-overflow-style: none;
     scrollbar-width: none;
 
+    /* ===== TÍTULO DE LA SECCIÓN ===== */
     .section-title {
         color: var(--primary-text);
         font-size: 17px;
         font-weight: 500;
         padding-block: 15px;
-        
     }
     
+    /* ===== ENCABEZADO DE FILTROS ===== */
     .filtros-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         border-bottom: 1px solid rgb(83, 83, 83);
     }
+
+    /* ===== BOTÓN DE FILTRO ===== */
     .btn-filtro {
         background: none;
         border: none;
@@ -41,6 +49,7 @@
         align-items: center;
         gap: 10px;
         transition: all 0.3s ease;
+        font-size: 15px;
 
         &:hover {
             background: #252525;
@@ -49,19 +58,22 @@
         i {
             color: #3498db;
         }
-        font-size: 15px;
     }
 
-    .subtitulo{
+    /* ===== SUBTÍTULO ===== */
+    .subtitulo {
         color: gray;
         font-size: 13px;
     }
+
+    /* ===== CONTENEDOR DE REGISTROS ===== */
     .registros-container {
         display: flex;
         flex-wrap: wrap;
         width: 100%;
     }
 
+    /* ===== DETALLES DEL REGISTRO ===== */
     .registro-detalles {
         height: 0;
         opacity: 0;
@@ -100,6 +112,7 @@
         }
     }
 
+    /* ===== TARJETA DE REGISTRO ===== */
     .registro-card {
         background: var(--cero-color) !important;
         border-radius: 15px;
@@ -109,12 +122,14 @@
         width: 100%;
         max-width: 100%;
         margin-bottom: 10px;
+
         &:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
     }
 
+    /* ===== ENCABEZADO DEL REGISTRO ===== */
     .registro-header {
         padding: 15px;
         background: var(--cero-color);
@@ -128,11 +143,13 @@
         gap: 5px;
     }
 
+    /* ===== FECHA DEL REGISTRO ===== */
     .registro-fecha {
         color: gray;
         font-size: 15px;
     }
 
+    /* ===== PRODUCTO DEL REGISTRO ===== */
     .registro-producto {
         color: var(--primary-text);
         font-weight: 500;
@@ -142,11 +159,13 @@
         min-width: 0;
     }
 
+    /* ===== ÍCONO DE VERIFICACIÓN ===== */
     .verificado-icon {
         color: #4CAF50;
         font-size: 1.2rem;
     }
 
+    /* ===== BOTÓN CARGAR MÁS ===== */
     .load-more {
         padding: 10px;
         background: none;
@@ -163,6 +182,7 @@
         }
     }
 
+    /* ===== MENSAJE SIN REGISTROS ===== */
     .no-registros {
         color: #aaa;
         text-align: center;

@@ -1,3 +1,4 @@
+/* =============== FUNCIONES DE INICIO DE CALCULAR MATERIA PRIMA =============== */
 export function inicializarCalcularMP() {
     const container = document.querySelector('.calcularMP-view');
     container.style.display = 'flex';
@@ -168,7 +169,7 @@ function crearRegistroCard(registro) {
     return div;
 }
 
-
+/* =============== FUNCIONES DEL CALCULO Y ANALISIS =============== */
 function calcularDatosProducto(cantidadReal, gramaje) {
     const pesoUsadoIdeal = (cantidadReal * gramaje / 1000).toFixed(2);
     return {
@@ -202,6 +203,8 @@ function generarFormatoCalculo(producto, pesoInicial, pesoFinal, cantidadIdeal) 
         }
     };
 }
+
+/* =============== FUNCIONES DE DETALLES DE LSO REGISTROS, ELIMINACION Y EDICION =============== */
 function mostrarDetalleRegistroMP(registro) {
     // Separar datos de múltiples productos
     const productos = {
@@ -397,297 +400,6 @@ function mostrarDetalleRegistroMP(registro) {
     btnEliminar.onclick = () => {
         mostrarConfirmacionEliminarMP(registro.id, registro.nombre);
     };
-}
-
-
-
-function mostrarFormularioRegistroMP() {
-    const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
-
-    contenido.innerHTML = `
-        <h2><i class="fas fa-calculator"></i> Registrar</h2>
-        <div class="relleno">
-            <div class="form-grup">
-                <div class="campo-form">
-                    <p>Fecha:</p>
-                    <input type="date" id="fechaMP" class="edit-input" value="${new Date().toISOString().split('T')[0]}">
-                </div>
-                <div class="campo-form">
-                    <p>Nombre:</p>
-                    <select id="nombreMP" class="edit-input">
-                        <option value="">Seleccione un usuario...</option>
-                    </select>
-                </div>
-                <div class="campo-form">
-                    <p>Responsable:</p>
-                    <select id="responsableMP" class="edit-input">
-                        <option value="">Seleccione un responsable...</option>
-                    </select>
-                </div>
-                <div class="campo-form">
-                    <p>Peso Inicial:</p>
-                    <input type="number" id="pesoInicialMP" class="edit-input" step="0.01" min="0" placeholder="(Kg)">
-                </div>
-            </div>
-            <p>Materias Primas:</p>
-            <div class="form-grup">
-                
-                <div class="lista-productos-seleccionados"></div>
-            </div>
-            <p>Agregar Materia Prima:</p>
-            <div class="form-grup">
-                <div class="autocomplete-wrapper">
-                    <input type="text" id="buscarProducto" class="edit-input" placeholder="Escriba para buscar...">
-                    <div class="sugerencias-container" style="display: none;"></div>
-                </div>
-            </div>
-            <div class="producto-seleccionado form-grup" style="display: none;">
-                <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
-                <input type="hidden" id="idProductoSeleccionado">
-                <div class="campo-form">
-                    <p>Gramaje:</p>
-                    <input type="number" id="gramajeMP" class="edit-input" min="1">
-                </div>
-                <div class="campo-form">
-                    <p>Cantidad:</p>
-                    <input type="number" id="cantidadMP" class="edit-input" min="1">
-                </div>
-                <button class="anuncio-btn blue agregar-a-lista">
-                    <i class="fas fa-plus"></i> Agregar a la lista
-                </button>
-            </div>
-        </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn green guardar" disabled>
-                <i class="fas fa-save"></i> Guardar
-            </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-
-    anuncio.style.display = 'flex';
-    let materiasSeleccionadas = [];
-
-    // Cargar usuarios
-    cargarUsuarios();
-
-    // Cargar productos
-    cargarProductosAlmacen();
-
-    // Configurar eventos
-    configurarBuscadorProductos();
-    configurarBotonAgregar();
-    configurarBotonesGuardarCancelar();
-
-    async function cargarUsuarios() {
-        try {
-            const response = await fetch('/obtener-usuarios');
-            const data = await response.json();
-            const selectNombre = document.getElementById('nombreMP');
-            const selectResponsable = document.getElementById('responsableMP');
-
-            data.usuarios.forEach(usuario => {
-                const option = new Option(usuario.nombre, usuario.nombre);
-                selectNombre.add(option.cloneNode(true));
-                selectResponsable.add(option);
-            });
-        } catch (error) {
-            console.error('Error al cargar usuarios:', error);
-        }
-    }
-
-    async function cargarProductosAlmacen() {
-        try {
-            const response = await fetch('/obtener-almacen-general');
-            const data = await response.json();
-            window.productosAlmacen = data.pedidos;
-        } catch (error) {
-            console.error('Error al cargar productos:', error);
-        }
-    }
-
-    function configurarBuscadorProductos() {
-        const inputBuscar = document.getElementById('buscarProducto');
-        const sugerencias = document.querySelector('.sugerencias-container');
-        const productoSeleccionado = document.querySelector('.producto-seleccionado');
-
-        // Cargar productos al inicio
-        let productos = [];
-
-        async function cargarProductos() {
-            try {
-                const response = await fetch('/obtener-productos');
-                const data = await response.json();
-                productos = data.productos;
-            } catch (error) {
-                console.error('Error al cargar productos:', error);
-            }
-        }
-
-        cargarProductos();
-
-        inputBuscar.addEventListener('input', () => {
-            const busqueda = inputBuscar.value.toLowerCase().trim();
-
-            if (busqueda.length < 2) {
-                sugerencias.style.display = 'none';
-                return;
-            }
-
-            const productosFiltrados = productos.filter(producto =>
-                producto.toLowerCase().includes(busqueda)
-            );
-
-            if (productosFiltrados.length > 0) {
-                sugerencias.innerHTML = `
-                <ul class="sugerencias-list">
-                    ${productosFiltrados.map(producto => `
-                        <li class="sugerencia-item">${producto}</li>
-                    `).join('')}
-                </ul>
-            `;
-                sugerencias.style.display = 'block';
-
-                // Manejar clics en sugerencias
-                sugerencias.querySelectorAll('.sugerencia-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const nombreProducto = item.textContent;
-                        document.getElementById('nombreProductoSeleccionado').textContent = nombreProducto;
-                        inputBuscar.value = '';
-                        sugerencias.style.display = 'none';
-                        productoSeleccionado.style.display = 'block';
-                    });
-                });
-            } else {
-                sugerencias.innerHTML = '<div class="no-sugerencias">No se encontraron productos</div>';
-                sugerencias.style.display = 'block';
-            }
-        });
-
-        // Cerrar sugerencias al hacer clic fuera
-        document.addEventListener('click', (e) => {
-            if (!inputBuscar.contains(e.target) && !sugerencias.contains(e.target)) {
-                sugerencias.style.display = 'none';
-            }
-        });
-    }
-
-    function configurarBotonAgregar() {
-        const btnAgregar = document.querySelector('.agregar-a-lista');
-        const listaProductos = document.querySelector('.lista-productos-seleccionados');
-
-        btnAgregar.onclick = () => {
-            const nombre = document.getElementById('nombreProductoSeleccionado').textContent;
-            const gramaje = document.getElementById('gramajeMP').value;
-            const cantidad = document.getElementById('cantidadMP').value;
-
-            if (!nombre || !gramaje || !cantidad) {
-                mostrarNotificacion('Por favor complete todos los campos', 'error');
-
-                return;
-            }
-
-            const materiaprima = {
-                nombre,
-                gramaje: Number(gramaje),
-                cantidad: Number(cantidad)
-            };
-
-            materiasSeleccionadas.push(materiaprima);
-            actualizarListaProductos();
-
-            // Limpiar campos
-            document.querySelector('.producto-seleccionado').style.display = 'none';
-            document.getElementById('gramajeMP').value = '';
-            document.getElementById('cantidadMP').value = '';
-
-            // Habilitar botón guardar si hay al menos un producto
-            document.querySelector('.guardar').disabled = false;
-        };
-
-        function actualizarListaProductos() {
-            listaProductos.innerHTML = `
-        <div class="pedidos-agregados detalles-grup" style="background:none;">
-            ${materiasSeleccionadas.map((mp, index) => `
-                <div class="campo-form">
-                    <div class="detalle-item">
-                        <p>${mp.nombre}</p>
-                    </div>
-                    <div class="detalle-item">
-                        <span>${mp.gramaje}g. - ${mp.cantidad}u.</span>
-                        <div class="detalle-item">
-                            <i class="fas fa-times btn-eliminar delete" data-index="${index}"></i>
-                        </div>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-
-            listaProductos.querySelectorAll('.btn-eliminar').forEach(btn => {
-                btn.onclick = (e) => {
-                    const index = e.currentTarget.dataset.index;
-                    materiasSeleccionadas.splice(index, 1);
-                    actualizarListaProductos();
-                    document.querySelector('.guardar').disabled = materiasSeleccionadas.length === 0;
-                };
-            });
-        }
-    }
-
-    function configurarBotonesGuardarCancelar() {
-        const btnGuardar = document.querySelector('.guardar');
-        const btnCancelar = document.querySelector('.cancelar');
-
-        btnGuardar.onclick = async () => {
-            const fecha = document.getElementById('fechaMP').value;
-            const nombre = document.getElementById('nombreMP').value;
-            const responsable = document.getElementById('responsableMP').value;
-            const pesoInicial = document.getElementById('pesoInicialMP').value;
-
-            if (!fecha || !nombre || !responsable || !pesoInicial || materiasSeleccionadas.length === 0) {
-                mostrarNotificacion('Por favor complete todos los campos', 'error');
-                return;
-            }
-
-            const registro = {
-                fecha,
-                nombre,
-                responsable,
-                pesoInicial,
-                materiaPrima: materiasSeleccionadas.map(mp => mp.nombre).join('-'),
-                gramaje: materiasSeleccionadas.map(mp => mp.gramaje).join('-'),
-                cantidadProducida: materiasSeleccionadas.map(mp => mp.cantidad).join('-')
-            };
-
-            try {
-                mostrarCarga();
-                const response = await fetch('/registrar-calculo-mp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(registro)
-                });
-
-                if (!response.ok) throw new Error('Error al guardar');
-
-                mostrarNotificacion('¡Registro guardado exitosamente!', 'success');
-                anuncio.style.display = 'none';
-                cargarRegistrosMP(); // Recargar lista de registros
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarNotificacion('Error al guardar el registro', 'error');
-            } finally {
-                ocultarCarga();
-            }
-        };
-
-        btnCancelar.onclick = () => {
-            anuncio.style.display = 'none';
-        };
-    }
 }
 function mostrarConfirmacionEliminarMP(id, nombre) {
     const anuncio = document.querySelector('.anuncio');
@@ -1062,4 +774,294 @@ function editarRegistroMP(registro) {
     btnCancelar.onclick = () => {
         anuncio.style.display = 'none';
     };
+}
+
+/* =============== FUNCIONES DE REGISTRO =============== */
+function mostrarFormularioRegistroMP() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-calculator"></i> Registrar</h2>
+        <div class="relleno">
+            <div class="form-grup">
+                <div class="campo-form">
+                    <p>Fecha:</p>
+                    <input type="date" id="fechaMP" class="edit-input" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div class="campo-form">
+                    <p>Nombre:</p>
+                    <select id="nombreMP" class="edit-input">
+                        <option value="">Seleccione un usuario...</option>
+                    </select>
+                </div>
+                <div class="campo-form">
+                    <p>Responsable:</p>
+                    <select id="responsableMP" class="edit-input">
+                        <option value="">Seleccione un responsable...</option>
+                    </select>
+                </div>
+                <div class="campo-form">
+                    <p>Peso Inicial:</p>
+                    <input type="number" id="pesoInicialMP" class="edit-input" step="0.01" min="0" placeholder="(Kg)">
+                </div>
+            </div>
+            <p>Materias Primas:</p>
+            <div class="form-grup">
+                
+                <div class="lista-productos-seleccionados"></div>
+            </div>
+            <p>Agregar Materia Prima:</p>
+            <div class="form-grup">
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="buscarProducto" class="edit-input" placeholder="Escriba para buscar...">
+                    <div class="sugerencias-container" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="producto-seleccionado form-grup" style="display: none;">
+                <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
+                <input type="hidden" id="idProductoSeleccionado">
+                <div class="campo-form">
+                    <p>Gramaje:</p>
+                    <input type="number" id="gramajeMP" class="edit-input" min="1">
+                </div>
+                <div class="campo-form">
+                    <p>Cantidad:</p>
+                    <input type="number" id="cantidadMP" class="edit-input" min="1">
+                </div>
+                <button class="anuncio-btn blue agregar-a-lista">
+                    <i class="fas fa-plus"></i> Agregar a la lista
+                </button>
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn green guardar" disabled>
+                <i class="fas fa-save"></i> Guardar
+            </button>
+            <button class="anuncio-btn close cancelar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+    let materiasSeleccionadas = [];
+
+    // Cargar usuarios
+    cargarUsuarios();
+
+    // Cargar productos
+    cargarProductosAlmacen();
+
+    // Configurar eventos
+    configurarBuscadorProductos();
+    configurarBotonAgregar();
+    configurarBotonesGuardarCancelar();
+
+    async function cargarUsuarios() {
+        try {
+            const response = await fetch('/obtener-usuarios');
+            const data = await response.json();
+            const selectNombre = document.getElementById('nombreMP');
+            const selectResponsable = document.getElementById('responsableMP');
+
+            data.usuarios.forEach(usuario => {
+                const option = new Option(usuario.nombre, usuario.nombre);
+                selectNombre.add(option.cloneNode(true));
+                selectResponsable.add(option);
+            });
+        } catch (error) {
+            console.error('Error al cargar usuarios:', error);
+        }
+    }
+
+    async function cargarProductosAlmacen() {
+        try {
+            const response = await fetch('/obtener-almacen-general');
+            const data = await response.json();
+            window.productosAlmacen = data.pedidos;
+        } catch (error) {
+            console.error('Error al cargar productos:', error);
+        }
+    }
+
+    function configurarBuscadorProductos() {
+        const inputBuscar = document.getElementById('buscarProducto');
+        const sugerencias = document.querySelector('.sugerencias-container');
+        const productoSeleccionado = document.querySelector('.producto-seleccionado');
+
+        // Cargar productos al inicio
+        let productos = [];
+
+        async function cargarProductos() {
+            try {
+                const response = await fetch('/obtener-productos');
+                const data = await response.json();
+                productos = data.productos;
+            } catch (error) {
+                console.error('Error al cargar productos:', error);
+            }
+        }
+
+        cargarProductos();
+
+        inputBuscar.addEventListener('input', () => {
+            const busqueda = inputBuscar.value.toLowerCase().trim();
+
+            if (busqueda.length < 2) {
+                sugerencias.style.display = 'none';
+                return;
+            }
+
+            const productosFiltrados = productos.filter(producto =>
+                producto.toLowerCase().includes(busqueda)
+            );
+
+            if (productosFiltrados.length > 0) {
+                sugerencias.innerHTML = `
+                <ul class="sugerencias-list">
+                    ${productosFiltrados.map(producto => `
+                        <li class="sugerencia-item">${producto}</li>
+                    `).join('')}
+                </ul>
+            `;
+                sugerencias.style.display = 'block';
+
+                // Manejar clics en sugerencias
+                sugerencias.querySelectorAll('.sugerencia-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const nombreProducto = item.textContent;
+                        document.getElementById('nombreProductoSeleccionado').textContent = nombreProducto;
+                        inputBuscar.value = '';
+                        sugerencias.style.display = 'none';
+                        productoSeleccionado.style.display = 'block';
+                    });
+                });
+            } else {
+                sugerencias.innerHTML = '<div class="no-sugerencias">No se encontraron productos</div>';
+                sugerencias.style.display = 'block';
+            }
+        });
+
+        // Cerrar sugerencias al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!inputBuscar.contains(e.target) && !sugerencias.contains(e.target)) {
+                sugerencias.style.display = 'none';
+            }
+        });
+    }
+
+    function configurarBotonAgregar() {
+        const btnAgregar = document.querySelector('.agregar-a-lista');
+        const listaProductos = document.querySelector('.lista-productos-seleccionados');
+
+        btnAgregar.onclick = () => {
+            const nombre = document.getElementById('nombreProductoSeleccionado').textContent;
+            const gramaje = document.getElementById('gramajeMP').value;
+            const cantidad = document.getElementById('cantidadMP').value;
+
+            if (!nombre || !gramaje || !cantidad) {
+                mostrarNotificacion('Por favor complete todos los campos', 'error');
+
+                return;
+            }
+
+            const materiaprima = {
+                nombre,
+                gramaje: Number(gramaje),
+                cantidad: Number(cantidad)
+            };
+
+            materiasSeleccionadas.push(materiaprima);
+            actualizarListaProductos();
+
+            // Limpiar campos
+            document.querySelector('.producto-seleccionado').style.display = 'none';
+            document.getElementById('gramajeMP').value = '';
+            document.getElementById('cantidadMP').value = '';
+
+            // Habilitar botón guardar si hay al menos un producto
+            document.querySelector('.guardar').disabled = false;
+        };
+
+        function actualizarListaProductos() {
+            listaProductos.innerHTML = `
+        <div class="pedidos-agregados detalles-grup" style="background:none;">
+            ${materiasSeleccionadas.map((mp, index) => `
+                <div class="campo-form">
+                    <div class="detalle-item">
+                        <p>${mp.nombre}</p>
+                    </div>
+                    <div class="detalle-item">
+                        <span>${mp.gramaje}g. - ${mp.cantidad}u.</span>
+                        <div class="detalle-item">
+                            <i class="fas fa-times btn-eliminar delete" data-index="${index}"></i>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+            listaProductos.querySelectorAll('.btn-eliminar').forEach(btn => {
+                btn.onclick = (e) => {
+                    const index = e.currentTarget.dataset.index;
+                    materiasSeleccionadas.splice(index, 1);
+                    actualizarListaProductos();
+                    document.querySelector('.guardar').disabled = materiasSeleccionadas.length === 0;
+                };
+            });
+        }
+    }
+
+    function configurarBotonesGuardarCancelar() {
+        const btnGuardar = document.querySelector('.guardar');
+        const btnCancelar = document.querySelector('.cancelar');
+
+        btnGuardar.onclick = async () => {
+            const fecha = document.getElementById('fechaMP').value;
+            const nombre = document.getElementById('nombreMP').value;
+            const responsable = document.getElementById('responsableMP').value;
+            const pesoInicial = document.getElementById('pesoInicialMP').value;
+
+            if (!fecha || !nombre || !responsable || !pesoInicial || materiasSeleccionadas.length === 0) {
+                mostrarNotificacion('Por favor complete todos los campos', 'error');
+                return;
+            }
+
+            const registro = {
+                fecha,
+                nombre,
+                responsable,
+                pesoInicial,
+                materiaPrima: materiasSeleccionadas.map(mp => mp.nombre).join('-'),
+                gramaje: materiasSeleccionadas.map(mp => mp.gramaje).join('-'),
+                cantidadProducida: materiasSeleccionadas.map(mp => mp.cantidad).join('-')
+            };
+
+            try {
+                mostrarCarga();
+                const response = await fetch('/registrar-calculo-mp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(registro)
+                });
+
+                if (!response.ok) throw new Error('Error al guardar');
+
+                mostrarNotificacion('¡Registro guardado exitosamente!', 'success');
+                anuncio.style.display = 'none';
+                cargarRegistrosMP(); // Recargar lista de registros
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('Error al guardar el registro', 'error');
+            } finally {
+                ocultarCarga();
+            }
+        };
+
+        btnCancelar.onclick = () => {
+            anuncio.style.display = 'none';
+        };
+    }
 }

@@ -1,6 +1,7 @@
-/* ==================== FONTS ==================== */
+/* ===== IMPORTACIÓN DE FUENTES ===== */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
+/* ===== RESET GENERAL ===== */
 * {
     -webkit-tap-highlight-color: transparent;
     /* Quita el efecto azul */
@@ -8,6 +9,7 @@
     /* Evita el borde al hacer clic */
 }
 
+/* ===== CONFIGURACIÓN DE INTERACTIVIDAD ===== */
 button,
 a {
     user-select: none;
@@ -22,6 +24,7 @@ a {
     /* Elimina el efecto gris/azul al tocar */
 }
 
+/* ===== CONFIGURACIÓN BASE DEL DOCUMENTO ===== */
 html,
 body {
     overflow: hidden;

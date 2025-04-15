@@ -1,5 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
 
+/* ===== VISTA DE REGISTRO DE ACOPIO ===== */
 .regAcopio-view {
     width: 100%;
     background: var(--primary-color) !important;
@@ -13,24 +15,26 @@
     gap: 10px;
     display: none;
 
+    /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
         display: none;
     }
-
     -ms-overflow-style: none;
     scrollbar-width: none;
 
+    /* ===== TÍTULO DE LA SECCIÓN ===== */
     .section-title {
         color: var(--primary-text);
         font-size: 17px;
         font-weight: 500;
         padding-block: 15px;
+
+        i {
+            color: var(--primary-text);
+        }
     }
 
-    .section-title i {
-        color: var(--primary-text);
-    }
-
+    /* ===== ENCABEZADO DE FILTROS ===== */
     .filtros-header {
         display: flex;
         align-items: center;
@@ -39,6 +43,7 @@
         width: 100%;
     }
 
+    /* ===== OPCIONES DE FILTRO ===== */
     .filter-options-acopio {
         display: flex;
         gap: 10px;
@@ -50,7 +55,6 @@
         justify-content: flex-start !important;
         align-items: center;
 
-        /* Ocultar scrollbar pero mantener funcionalidad */
         &::-webkit-scrollbar {
             display: none;
         }
@@ -58,7 +62,7 @@
         scrollbar-width: none;
     }
 
-
+    /* ===== BOTÓN DE FILTRO ===== */
     .filter-btn-acopio {
         padding: 10px 15px;
         border-radius: 10px;
@@ -73,22 +77,23 @@
         cursor: pointer;
         min-width: fit-content;
         height: fit-content;
+
+        &.active {
+            background: var(--second-button);
+            border-color: var(--second-button);
+            color: white;
+        }
+
+        i {
+            font-size: 14px;
+        }
+
+        p {
+            margin: 0;
+        }
     }
 
-    .filter-btn-acopio.active {
-        background: var(--second-button);
-        border-color: var(--second-button);
-        color: white;
-    }
-
-    .filter-btn-acopio i {
-        font-size: 14px;
-    }
-
-    .filter-btn-acopio p {
-        margin: 0;
-    }
-
+    /* ===== MEDIA QUERY MÓVIL ===== */
     @media screen and (max-width: 768px) {
         .filter-options-acopio {
             justify-content: center;
@@ -100,6 +105,7 @@
         }
     }
 
+    /* ===== BOTÓN DE FILTRO ACOPIO ===== */
     .btn-filtro-acopio {
         background: none;
         border: none;
@@ -111,6 +117,7 @@
         align-items: center;
         gap: 10px;
         transition: all 0.3s ease;
+        font-size: 15px;
 
         &:hover {
             background: #252525;
@@ -119,16 +126,17 @@
         i {
             color: #3498db;
         }
-
-        font-size: 15px;
     }
 
+    /* ===== CONTENEDOR DE PEDIDOS ===== */
     .pedidos-container {
         display: flex;
         flex-direction: column;
         gap: 10px;
+        width: 100%;
     }
 
+    /* ===== ENCABEZADO DE FECHA ===== */
     .fecha-header {
         background: var(--cero-color);
         padding: 15px;
@@ -157,6 +165,7 @@
         }
     }
 
+    /* ===== INFORMACIÓN DE FECHA Y CONTADOR ===== */
     .fecha-info {
         display: flex;
         align-items: center;
@@ -173,6 +182,7 @@
         white-space: nowrap;
     }
 
+    /* ===== GRUPO DE REGISTROS ===== */
     .registros-grupo {
         max-height: 0;
         opacity: 0;
@@ -189,18 +199,14 @@
         }
     }
 
+    /* ===== TARJETA DE FECHA ===== */
     .fecha-card {
         background: var(--cero-color);
         border-radius: 15px;
         width: 100%;
     }
 
-    .pedidos-container {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-    }
-
+    /* ===== TARJETA DE REGISTRO ===== */
     .registro-card-acopio {
         background: var(--second-color);
         border-radius: 15px;
@@ -217,6 +223,7 @@
         }
     }
 
+    /* ===== ENCABEZADO DE REGISTRO ===== */
     .registro-header {
         padding: 15px;
         background: var(--second-color);
@@ -241,6 +248,7 @@
         text-overflow: ellipsis;
     }
 
+    /* ===== DETALLES DEL REGISTRO ===== */
     .registro-detalles {
         height: 0;
         opacity: 0;
@@ -272,13 +280,14 @@
         }
     }
 
+    /* ===== BOTONES DE ACCIÓN ===== */
     .acciones {
         display: flex;
         gap: 10px;
         margin-top: 10px;
     }
 
-    .btn-editar {
+    .btn-editar, .btn-editar-registro {
         padding: 15px;
         border: none;
         border-radius: 15px;
@@ -297,28 +306,6 @@
             transform: translateY(-2px);
         }
     }
-
-    .btn-editar-registro {
-        padding: 15px;
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        background: #2196F3;
-        color: white;
-        width: 100%;
-
-        &:hover {
-            background: #1976D2;
-            transform: translateY(-2px);
-        }
-    }
-
-
 
     .btn-eliminar-registro {
         padding: 15px;
@@ -340,6 +327,7 @@
         }
     }
 
+    /* ===== ICONOS Y ESTADOS ===== */
     .fa-chevron-down {
         transition: transform 0.3s ease;
 
@@ -355,6 +343,7 @@
         font-size: 15px;
     }
 
+    /* ===== ESTADOS DE REGISTRO ===== */
     .registro-estado-acopio {
         padding: 4px 8px;
         border-radius: 15px;
@@ -365,42 +354,26 @@
 
     .estado-pendiente {
         background-color: #6c757d;
-        /* gris */
     }
 
     .estado-recibido {
         background-color: #17a2b8;
-        /* celeste */
     }
 
     .estado-rechazado {
         background-color: #dc3545;
-        /* rojo */
-    }
-
-    .tipo-ingreso {
-        background-color: #27ae60;
-        color: white;
     }
 
     .estado-en-proceso {
         background-color: #ffc107;
-        /* amarillo */
         color: #000;
-        /* texto negro para mejor contraste */
     }
-
 
     .estado-ingresado {
         background-color: #28a745;
-        /* verde */
     }
 
-    .estado-recibido {
-        background-color: #17a2b8;
-        /* celeste */
-    }
-
+    /* ===== TIPOS DE MOVIMIENTO ===== */
     .tipo-ingreso {
         background-color: #27ae60;
         color: white;
@@ -410,5 +383,4 @@
         background-color: #e74c3c;
         color: white;
     }
-
 }

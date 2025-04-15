@@ -7,35 +7,14 @@ import { dirname, join } from 'path';
 import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
-import admin from 'firebase-admin';
 
-
+/* ==================== CONFIGURACIÓN INICIAL ==================== */
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';6
-
-/* ==================== CONFIGURACIÓN DE FIREBASE ==================== */
-const serviceAccount = {
-    type: process.env.FIREBASE_TYPE,
-    project_id: process.env.FIREBASE_PROJECT_ID,
-    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    client_email: process.env.FIREBASE_CLIENT_EMAIL,
-    client_id: process.env.FIREBASE_CLIENT_ID,
-    auth_uri: process.env.FIREBASE_AUTH_URI,
-    token_uri: process.env.FIREBASE_TOKEN_URI,
-    auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
-    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
-    universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN
-};
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
-
 
 /* ==================== CONFIGURACIÓN DE GOOGLE SHEETS ==================== */
 const auth = new google.auth.GoogleAuth({

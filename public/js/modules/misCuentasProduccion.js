@@ -1,4 +1,4 @@
-// Variables globales para mantener el estado
+/* =============== FUNCIONES DE INCIO CUENTAS REGISTROS PRODUCCION=============== */
 let registrosFiltrados = [];
 let registrosOriginales = [];
 let registrosMostrados = 0;
@@ -62,6 +62,97 @@ export async function cargarRegistrosCuentas() {
         scrollToTop('.cuentasProduccion-view');
     }
 }
+export function crearTarjetaRegistro(registro) {
+    const div = document.createElement('div');
+    div.className = 'registro-card';
+
+    if (!Array.isArray(registro)) {
+        console.error('Registro inválido:', registro);
+        return div;
+    }
+
+    const [dia, mes] = registro[0].split('/');
+    const fechaFormateada = `${dia}/${mes}`;
+
+    div.innerHTML = `
+        <div class="registro-header">
+                ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
+                <div class="registro-fecha">${fechaFormateada}</div>
+                <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
+        </div>
+        </div>
+        <div class="registro-detalles">
+            <p><span>Lote:</span> ${registro[2] || '—'}</p>
+            <p><span>Gramaje:</span> ${registro[3] ? registro[3] + 'gr' : '—'}</p>
+            <p><span>Selección/Cernido:</span> ${registro[4] || '—'}</p>
+            <p><span>Microondas:</span> ${registro[5] ? registro[5] + 's' : '—'}</p>
+            <p><span>Envases Terminados:</span> ${registro[6] || '—'}</p>
+            <p><span>Fecha Vencimiento:</span> ${registro[7] || '—'}</p>
+            <p><span>Cantidad verificada:</span> ${registro[9] || '—'}</p>
+            <p><span>Fecha Verificación:</span> ${registro[10] || '—'}</p>
+            <p><span>Observaciones:</span> ${registro[11] || '—'}</p>
+        </div>
+    `;
+
+    const header = div.querySelector('.registro-header');
+    header.addEventListener('click', () => mostrarDetalles(div));
+    return div;
+
+}
+function mostrarRegistros(reset = false) {
+    if (reset) {
+        registrosMostrados = 0;
+        document.querySelector('.registros-container').innerHTML = '';
+    }
+    
+    const container = document.querySelector('.registros-container');
+    const loadMoreBtn = document.querySelector('.load-more');
+    
+    if (registrosFiltrados.length === 0) {
+        container.innerHTML = '<p class="no-registros">No hay registros para mostrar</p>';
+        loadMoreBtn.style.display = 'none';
+        return;
+    }
+
+    const registrosAMostrar = registrosFiltrados.slice(
+        registrosMostrados,
+        registrosMostrados + registrosPorPagina
+    );
+
+    registrosAMostrar.forEach(registro => {
+        const card = crearTarjetaRegistro(registro);
+        container.appendChild(card);
+    });
+
+    registrosMostrados += registrosAMostrar.length;
+    
+    // Actualizar visibilidad del botón
+    loadMoreBtn.style.display = 
+        registrosMostrados < registrosFiltrados.length ? 'block' : 'none';
+}
+export function mostrarDetalles(card) {
+    // Cerrar otros registros abiertos primero
+    document.querySelectorAll('.registro-detalles').forEach(detalles => {
+        if (detalles !== card.querySelector('.registro-detalles') && detalles.classList.contains('active')) {
+            detalles.classList.remove('active');
+        }
+    });
+
+    const detalles = card.querySelector('.registro-detalles');
+    detalles.classList.toggle('active');
+
+    // Si el registro está abierto, desplazar la pantalla para mostrarlo completo
+    if (detalles.classList.contains('active')) {
+        setTimeout(() => {
+            card.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center'
+            });
+        }, 100);
+    }
+}
+
+/* =============== FUNCIONES DE FILTROS =============== */
 function setupFilters() {
     const container = document.querySelector('.cuentasProduccion-view');
     const btnFiltro = container.querySelector('.btn-filtro');
@@ -121,6 +212,26 @@ function setupFilters() {
         btnCancelar.addEventListener('click', cerrarModal);
     });
 }
+function aplicarFiltros() {
+    const hoy = new Date();
+    const fechaLimite = new Date();
+    fechaLimite.setDate(hoy.getDate() - parseInt(filtroActual.periodo));
+
+    registrosFiltrados = registrosOriginales.filter(registro => {
+        const fechaRegistro = parsearFecha(registro[0]);
+        const cumpleFecha = fechaRegistro >= fechaLimite && fechaRegistro <= hoy;
+
+        if (filtroActual.verificacion === 'all') return cumpleFecha;
+        if (filtroActual.verificacion === 'verified') return cumpleFecha && registro[10];
+        if (filtroActual.verificacion === 'unverified') return cumpleFecha && !registro[10];
+        return false;
+    });
+    
+    actualizarSubtitulo(); // Actualizar el subtítulo al aplicar filtros
+    mostrarRegistros(true);
+}
+
+/* =============== FUNCIONES DE UTILIDAD FECHA CERRAR MODAL Y SUBTITULO=============== */
 function parsearFecha(fechaStr) {
     try {
         const [dia, mes, año] = fechaStr.split('/');
@@ -143,95 +254,6 @@ function cerrarModal() {
     document.querySelector('.overlay').style.display = 'none';
     document.querySelector('.container').classList.remove('no-touch');
 }
-function mostrarRegistros(reset = false) {
-    if (reset) {
-        registrosMostrados = 0;
-        document.querySelector('.registros-container').innerHTML = '';
-    }
-    
-    const container = document.querySelector('.registros-container');
-    const loadMoreBtn = document.querySelector('.load-more');
-    
-    if (registrosFiltrados.length === 0) {
-        container.innerHTML = '<p class="no-registros">No hay registros para mostrar</p>';
-        loadMoreBtn.style.display = 'none';
-        return;
-    }
-
-    const registrosAMostrar = registrosFiltrados.slice(
-        registrosMostrados,
-        registrosMostrados + registrosPorPagina
-    );
-
-    registrosAMostrar.forEach(registro => {
-        const card = crearTarjetaRegistro(registro);
-        container.appendChild(card);
-    });
-
-    registrosMostrados += registrosAMostrar.length;
-    
-    // Actualizar visibilidad del botón
-    loadMoreBtn.style.display = 
-        registrosMostrados < registrosFiltrados.length ? 'block' : 'none';
-}
-export function mostrarDetalles(card) {
-    // Cerrar otros registros abiertos primero
-    document.querySelectorAll('.registro-detalles').forEach(detalles => {
-        if (detalles !== card.querySelector('.registro-detalles') && detalles.classList.contains('active')) {
-            detalles.classList.remove('active');
-        }
-    });
-
-    const detalles = card.querySelector('.registro-detalles');
-    detalles.classList.toggle('active');
-
-    // Si el registro está abierto, desplazar la pantalla para mostrarlo completo
-    if (detalles.classList.contains('active')) {
-        setTimeout(() => {
-            card.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center'
-            });
-        }, 100);
-    }
-}
-export function crearTarjetaRegistro(registro) {
-    const div = document.createElement('div');
-    div.className = 'registro-card';
-
-    if (!Array.isArray(registro)) {
-        console.error('Registro inválido:', registro);
-        return div;
-    }
-
-    const [dia, mes] = registro[0].split('/');
-    const fechaFormateada = `${dia}/${mes}`;
-
-    div.innerHTML = `
-        <div class="registro-header">
-                ${registro[10] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
-                <div class="registro-fecha">${fechaFormateada}</div>
-                <div class="registro-producto">${registro[1] || 'Sin producto'}</div>
-        </div>
-        </div>
-        <div class="registro-detalles">
-            <p><span>Lote:</span> ${registro[2] || '—'}</p>
-            <p><span>Gramaje:</span> ${registro[3] ? registro[3] + 'gr' : '—'}</p>
-            <p><span>Selección/Cernido:</span> ${registro[4] || '—'}</p>
-            <p><span>Microondas:</span> ${registro[5] ? registro[5] + 's' : '—'}</p>
-            <p><span>Envases Terminados:</span> ${registro[6] || '—'}</p>
-            <p><span>Fecha Vencimiento:</span> ${registro[7] || '—'}</p>
-            <p><span>Cantidad verificada:</span> ${registro[9] || '—'}</p>
-            <p><span>Fecha Verificación:</span> ${registro[10] || '—'}</p>
-            <p><span>Observaciones:</span> ${registro[11] || '—'}</p>
-        </div>
-    `;
-
-    const header = div.querySelector('.registro-header');
-    header.addEventListener('click', () => mostrarDetalles(div));
-    return div;
-
-}
 function actualizarSubtitulo() {
     const subtitulo = document.querySelector('.subtitulo');
     const periodoTexto = {
@@ -245,21 +267,4 @@ function actualizarSubtitulo() {
     
     subtitulo.textContent = `Últimos 10 registros (${periodoTexto})`;
 }
-function aplicarFiltros() {
-    const hoy = new Date();
-    const fechaLimite = new Date();
-    fechaLimite.setDate(hoy.getDate() - parseInt(filtroActual.periodo));
 
-    registrosFiltrados = registrosOriginales.filter(registro => {
-        const fechaRegistro = parsearFecha(registro[0]);
-        const cumpleFecha = fechaRegistro >= fechaLimite && fechaRegistro <= hoy;
-
-        if (filtroActual.verificacion === 'all') return cumpleFecha;
-        if (filtroActual.verificacion === 'verified') return cumpleFecha && registro[10];
-        if (filtroActual.verificacion === 'unverified') return cumpleFecha && !registro[10];
-        return false;
-    });
-    
-    actualizarSubtitulo(); // Actualizar el subtítulo al aplicar filtros
-    mostrarRegistros(true);
-}

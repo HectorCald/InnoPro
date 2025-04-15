@@ -1,5 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
 
+/* ===== VISTA DE GESTIÓN DE PRODUCTOS ===== */
 .gestionPro-view {
     width: 100%;
     background: var(--primary-color) !important;
@@ -11,6 +13,7 @@
     flex-direction: column;
     gap: 10px;
 
+    /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
         display: none;
     }
@@ -18,6 +21,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 
+    /* ===== TÍTULO DE LA SECCIÓN ===== */
     .title {
         padding-block: 15px;
         border-bottom: 1px solid rgb(83, 83, 83);
@@ -27,6 +31,7 @@
         }
     }
 
+    /* ===== CONTENEDOR DE ESTADÍSTICAS ===== */
     .stats-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -34,6 +39,7 @@
         margin-top: 1em;
     }
 
+    /* ===== TARJETA DE ESTADÍSTICA ===== */
     .stat-card {
         background: var(--second-color);
         border-radius: 10px;
@@ -47,22 +53,23 @@
         cursor: pointer;
         justify-content: space-between;
         align-items: flex-start;
+
+        i {
+            font-size: 15px;
+            color: var(--accent-color);
+        }
     }
 
-    .stat-card i {
-        font-size: 15px;
-        color: var(--accent-color);
-    }
-
+    /* ===== INFORMACIÓN DE ESTADÍSTICA ===== */
     .stat-info {
         display: flex;
         flex-direction: column;
-    }
 
-    .stat-info p {
-        margin: 0;
-        font-size: 13px;
-        color: var(--primary-text);
+        p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--primary-text);
+        }
     }
 
     .stat-number {
@@ -71,13 +78,14 @@
         color: var(--accent-color);
     }
 
-
-    .titulo-grafico{
+    /* ===== CONTENEDOR DE GRÁFICOS ===== */
+    .titulo-grafico {
         font-size: 13px;
         color: gray;
         margin-bottom: 10px;
         text-align: center;
     }
+
     .chart-container {
         background: var(--second-color);
         border-radius: 10px;
@@ -87,27 +95,31 @@
         position: relative;
     }
 
-    .stat-card.total i {
-        color: #4CAF50;
+    /* ===== VARIANTES DE TARJETAS DE ESTADÍSTICA ===== */
+    .stat-card.total {
+        i {
+            color: #4CAF50;
+        }
+        .stat-number {
+            color: #4CAF50;
+        }
     }
 
-    .stat-card.verified i {
-        color: #2196F3;
+    .stat-card.verified {
+        i {
+            color: #2196F3;
+        }
+        .stat-number {
+            color: #2196F3;
+        }
     }
 
-    .stat-card.unverified i {
-        color: #FFC107;
-    }
-
-    .stat-card.total .stat-number {
-        color: #4CAF50;
-    }
-
-    .stat-card.verified .stat-number {
-        color: #2196F3;
-    }
-
-    .stat-card.unverified .stat-number {
-        color: #FFC107;
+    .stat-card.unverified {
+        i {
+            color: #FFC107;
+        }
+        .stat-number {
+            color: #FFC107;
+        }
     }
 }

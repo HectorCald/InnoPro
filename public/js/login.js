@@ -120,7 +120,7 @@ class LoginPin {
         this.resetPin();
     }
 }
-
+/* =============== CLASE MODAL NO TIENE PIN =============== */
 class Modal {
     constructor() {
         this.modal = document.getElementById('pinModal');
@@ -172,6 +172,7 @@ class Modal {
     }
 }
 
+/* =============== FUNCIONES DE LLAMADO =============== */
 document.addEventListener('DOMContentLoaded', async () => {
     const loginPin = new LoginPin();
     const modal = new Modal();
@@ -182,12 +183,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-
+/* =============== FUNCIONES DE CARGA LOANDERS =============== */
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'flex';
 }
-
 function ocultarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'none';

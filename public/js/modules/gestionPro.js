@@ -1,3 +1,4 @@
+/* =============== FUNCIONES DE GESTION DE PRODUCCION ESTADISTICAS =============== */
 export async function inicializarGestionPro() {
     try {
         mostrarCarga();
@@ -115,6 +116,7 @@ export async function inicializarGestionPro() {
     }
 }
 
+/* =============== FUNCIONES DE GRAFICO =============== */
 function prepararDatosGrafico(registros) {
     const ultimos30Dias = {};
     const hoy = new Date();
@@ -141,7 +143,6 @@ function prepararDatosGrafico(registros) {
         datos: Object.values(ultimos30Dias)
     };
 }
-
 function parsearFecha(fechaStr) {
     const [dia, mes, año] = fechaStr.split('/');
     const añoNum = parseInt(año);
@@ -149,6 +150,7 @@ function parsearFecha(fechaStr) {
     return new Date(añoFinal, parseInt(mes) - 1, parseInt(dia));
 }
 
+/* =============== FUNCIONES DE REGISTROS NO VERIFICADOS =============== */
 function mostrarDetallesNoVerificados(registros) {
     const anuncio = document.querySelector('.anuncio');
     const container = document.querySelector('.anuncio-contenido');
@@ -202,3 +204,4 @@ function mostrarDetallesNoVerificados(registros) {
         }
     });
 }
+

@@ -1,5 +1,5 @@
+/* =============== FUNCIONES DE INCIO NEUVO PEDIDO=============== */
 import { registrarNotificacion } from './advertencia.js';
-
 let pedidosTemporales = [];
 function cerrarFormularioPedido() {
     const anuncio = document.querySelector('.anuncio');
@@ -9,7 +9,6 @@ function cerrarFormularioPedido() {
         console.error('No se encontró el elemento .anuncio');
     }
 }
-
 export async function mostrarFormularioPedido(producto) {
     if (producto === undefined || producto === 'undefined' || producto === null) {
         producto = '';
@@ -218,6 +217,8 @@ export async function mostrarFormularioPedido(producto) {
         ocultarCarga();
     }
 }
+
+/* =============== FUNCIONES DE VERIFICAR EXISTENCIAS Y ACTULIZAR LISTA DE PEDIDOS =============== */
 export async function verificarPedidoExistente(nombre) {
     try {
         const response = await fetch(`/buscar-producto-pendiente/${encodeURIComponent(nombre)}`);
@@ -310,6 +311,99 @@ export async function verificarPedidoExistente(nombre) {
         ocultarCarga();
     }
 }
+function actualizarListaPedidos(contenedor) {
+    contenedor.innerHTML = pedidosTemporales.map(pedido => `
+        <div class="detalles-grup">
+            <div class="detalle-item">
+                <p class="pedido-nombre">${pedido.nombre}</p>
+                <span class="pedido-cantidad">${pedido.cantidad}</span>
+            </div>
+            <div class="detalle-item">
+                 ${pedido.observaciones ? `<p class="pedido-obs">Observaciones: ${pedido.observaciones} </p>` : '<p>Observaciones: Ninguna</p>'}
+                <i class="fas fa-trash delete" onclick="eliminarPedidoTemporal('${pedido.nombre}')"></i>
+            </div>
+        </div>
+    `).join('');
+
+
+    window.eliminarPedidoTemporal = (nombre) => {
+        pedidosTemporales = pedidosTemporales.filter(p => p.nombre !== nombre);
+        actualizarListaPedidos(contenedor);
+        if (pedidosTemporales.length === 0) {
+            document.querySelector('.lista-pedidos-temporal').style.display = 'none';
+            document.querySelector('.finalizar-pedidos').style.display = 'none';
+        }
+    };
+}
+export function mostrarSugerenciaPedido(hoja, pedido) {
+    const sugerenciaDiv = document.createElement('div');
+    sugerenciaDiv.className = 'sugerencia-pedido-existente';
+
+    sugerenciaDiv.innerHTML = `
+        <div class="sugerencia-contenido">
+            <p>Ya existe un pedido pendiente para "${pedido[1]}"</p>
+            <p>Cantidad: ${pedido[2]}</p>
+            <p>Fecha: ${pedido[0]}</p>
+            ${pedido[3] ? `<p>Observaciones: ${pedido[3]}</p>` : ''}
+            <div class="sugerencia-botones">
+                <button class="btn-usar-existente anuncio-btn enviar">Usar pedido existente</button>
+                <button class="btn-crear-nuevo anuncio-btn cancelar">Crear nuevo pedido</button>
+            </div>
+        </div>
+    `;
+    const formPedido = document.querySelector('.form-pedido');
+    formPedido.appendChild(sugerenciaDiv);
+
+    // Manejar la decisión del usuario
+    sugerenciaDiv.querySelector('.btn-usar-existente').onclick = async () => {
+        try {
+            mostrarCarga();
+            // Eliminar el pedido existente de la hoja Pedidos
+            const response = await fetch('/eliminar-pedido', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fecha: pedido[0],
+                    nombre: pedido[1]
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // Establecer valores en el formulario
+                document.getElementById('cantidad-pedido').value = pedido[2].split(' ')[0];
+                document.getElementById('obs-pedido').value = pedido[3] || '';
+
+                const selectUnidad = document.getElementById('unidad-medida');
+                const unidad = pedido[2].split(' ')[1];
+                const opcionUnidad = Array.from(selectUnidad.options)
+                    .find(option => option.value === unidad || option.text === unidad);
+                if (opcionUnidad) {
+                    selectUnidad.value = opcionUnidad.value;
+                }
+
+                mostrarNotificacion('Pedido existente actualizado correctamente', 'success');
+            } else {
+                mostrarNotificacion('Error al actualizar pedido existente', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al procesar el pedido existente', 'error');
+        }
+        finally {
+            ocultarCarga();
+        }
+        sugerenciaDiv.remove();
+    };
+
+    sugerenciaDiv.querySelector('.btn-crear-nuevo').onclick = () => {
+        sugerenciaDiv.remove();
+    };
+}
+
+/* =============== FUNCIONES DE FINALIZACION DE PEDIDOS=============== */
 export async function finalizarPedidos() {
     try {
         if (pedidosTemporales.length === 0) {
@@ -405,99 +499,10 @@ export async function confirmarFinalizacionPedidos() {
         ocultarCarga();
     }
 }
-function actualizarListaPedidos(contenedor) {
-    contenedor.innerHTML = pedidosTemporales.map(pedido => `
-        <div class="detalles-grup">
-            <div class="detalle-item">
-                <p class="pedido-nombre">${pedido.nombre}</p>
-                <span class="pedido-cantidad">${pedido.cantidad}</span>
-            </div>
-            <div class="detalle-item">
-                 ${pedido.observaciones ? `<p class="pedido-obs">Observaciones: ${pedido.observaciones} </p>` : '<p>Observaciones: Ninguna</p>'}
-                <i class="fas fa-trash delete" onclick="eliminarPedidoTemporal('${pedido.nombre}')"></i>
-            </div>
-        </div>
-    `).join('');
 
 
-    window.eliminarPedidoTemporal = (nombre) => {
-        pedidosTemporales = pedidosTemporales.filter(p => p.nombre !== nombre);
-        actualizarListaPedidos(contenedor);
-        if (pedidosTemporales.length === 0) {
-            document.querySelector('.lista-pedidos-temporal').style.display = 'none';
-            document.querySelector('.finalizar-pedidos').style.display = 'none';
-        }
-    };
-}
 
 
-export function mostrarSugerenciaPedido(hoja, pedido) {
-    const sugerenciaDiv = document.createElement('div');
-    sugerenciaDiv.className = 'sugerencia-pedido-existente';
-
-    sugerenciaDiv.innerHTML = `
-        <div class="sugerencia-contenido">
-            <p>Ya existe un pedido pendiente para "${pedido[1]}"</p>
-            <p>Cantidad: ${pedido[2]}</p>
-            <p>Fecha: ${pedido[0]}</p>
-            ${pedido[3] ? `<p>Observaciones: ${pedido[3]}</p>` : ''}
-            <div class="sugerencia-botones">
-                <button class="btn-usar-existente anuncio-btn enviar">Usar pedido existente</button>
-                <button class="btn-crear-nuevo anuncio-btn cancelar">Crear nuevo pedido</button>
-            </div>
-        </div>
-    `;
-    const formPedido = document.querySelector('.form-pedido');
-    formPedido.appendChild(sugerenciaDiv);
-
-    // Manejar la decisión del usuario
-    sugerenciaDiv.querySelector('.btn-usar-existente').onclick = async () => {
-        try {
-            mostrarCarga();
-            // Eliminar el pedido existente de la hoja Pedidos
-            const response = await fetch('/eliminar-pedido', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    fecha: pedido[0],
-                    nombre: pedido[1]
-                })
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                // Establecer valores en el formulario
-                document.getElementById('cantidad-pedido').value = pedido[2].split(' ')[0];
-                document.getElementById('obs-pedido').value = pedido[3] || '';
-
-                const selectUnidad = document.getElementById('unidad-medida');
-                const unidad = pedido[2].split(' ')[1];
-                const opcionUnidad = Array.from(selectUnidad.options)
-                    .find(option => option.value === unidad || option.text === unidad);
-                if (opcionUnidad) {
-                    selectUnidad.value = opcionUnidad.value;
-                }
-
-                mostrarNotificacion('Pedido existente actualizado correctamente', 'success');
-            } else {
-                mostrarNotificacion('Error al actualizar pedido existente', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al procesar el pedido existente', 'error');
-        }
-        finally {
-            ocultarCarga();
-        }
-        sugerenciaDiv.remove();
-    };
-
-    sugerenciaDiv.querySelector('.btn-crear-nuevo').onclick = () => {
-        sugerenciaDiv.remove();
-    };
-}
 
 
 

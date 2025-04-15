@@ -3,13 +3,12 @@
     <link rel="stylesheet" href="./css/dashboard_db.css">
     <div class="dashboard">
         <div class="bienvenida">
-            <!-- El contenido se llenará dinámicamente desde JavaScript -->
         </div>
     </div>
     <div class="container">
+        <!-- ==================== ANUNCIO GLOBAL ==================== -->
         <div class="anuncio">
             <div class="anuncio-contenido">
-                
                 <h2><i class="fas fa-exclamation-triangle"></i>¿Eliminar registro?</h2>
                 <p>Esta acción no se puede deshacer</p>
                 <div class="anuncio-botones">
@@ -18,26 +17,21 @@
                 </div>
             </div>
         </div>
+        <!-- ==================== TODAS LAS PESTAÑAS ==================== -->
         <div class="usuarios-view"></div>
         <div class="verificarRegistros-view"></div>
-        <div class="consultarRegistros-view"></div>
-        <div class="formProduccion-view"></div>
         <div class="cuentasProduccion-view"></div>
         <div class="compras-view"></div>
-        <div class="newPedido-view"></div>
-        <div class="newTarea-view"></div>
         <div class="almAcopio-view"></div>
         <div class="home-view"></div>
         <div class="preciosPro-view"></div>
-        <div class="comprobante-view"></div>
         <div class="regAcopio-view"></div>
         <div class="almacen-view"></div>
         <div class="regAlmacen-view"></div>
-        <div class="balAlmacen-view"></div>
         <div class="configuraciones-view"></div>
         <div class="gestionPro-view"></div>
         <div class="calcularMP-view"></div>
-
+        <!-- ==================== CARGA LOANDER ==================== -->
         <div class="carga">
             <div class="loader">
                 <div class="square"></div>
@@ -46,13 +40,11 @@
                 <div class="square"></div>
             </div>
         </div>
-        
+
     </div>
-    
-        <div class="advertencia"></div>
-        <div class="opciones"></div>
-        <div class="notificador"></div>
-        <div class="overlay"></div>
-    <!-- ==================== FOOTER ==================== -->
-    <script type="module" src="./js/dashboard_db.js"></script>
+    <!-- ==================== HTML POR ENCIMA DE TODO ==================== -->
+    <div class="advertencia"></div>
+    <div class="opciones"></div>
+    <div class="notificador"></div>
+    <div class="overlay"></div>
     <%- include('partials/footer') %>

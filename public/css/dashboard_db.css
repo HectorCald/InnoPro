@@ -1,42 +1,62 @@
-
+/* ===== IMPORTACIONES DE ESTILOS ===== */
+/* Estilos Base */
 @import 'styles/layout.css';
 @import 'styles/base.css';
 @import 'styles/components.css';
+
+/* Módulos de Usuario y Registros */
 @import 'styles/user.css';
 @import 'styles/verificarRegistros.css';
 @import 'styles/consultarRegistros.css';
-@import'styles/compras.css';
+@import 'styles/compras.css';
+
+/* Módulos de Producción */
 @import 'styles/formProduccion.css';
 @import 'styles/misCuentasProduccion.css';
-@import'styles/registrarProduccion.css';
-@import'styles/newPedido.css';
+@import 'styles/registrarProduccion.css';
+@import 'styles/newPedido.css';
 @import 'styles/newTarea.css';
-@import'styles/almAcopio.css';
-@import'styles/almPrima.css';
-@import'styles/preciosPro.css';
-@import'styles/colores.css';
-@import'styles/home.css';
-@import'styles/menu.css';
-@import'styles/advertencia.css';
-@import'styles/comprobante.css';
-@import'styles/dev.css';
-@import'styles/regAcopio.css';
-@import'styles/almacen.css';
-@import'styles/regAlmacen.css';
-@import'styles/balAlmacen.css';
-@import'styles/configuraciones.css';
-@import'styles/gestionPro.css';
-@import'styles/calcularMP.css';
 
+/* Módulos de Almacén */
+@import 'styles/almAcopio.css';
+@import 'styles/almPrima.css';
+@import 'styles/preciosPro.css';
+@import 'styles/regAcopio.css';
+@import 'styles/almacen.css';
+@import 'styles/regAlmacen.css';
+@import 'styles/balAlmacen.css';
 
-body, .container{
+/* Estilos de UI y Utilidades */
+@import 'styles/colores.css';
+@import 'styles/home.css';
+@import 'styles/menu.css';
+@import 'styles/advertencia.css';
+@import 'styles/comprobante.css';
+@import 'styles/dev.css';
+
+/* Módulos de Configuración y Gestión */
+@import 'styles/configuraciones.css';
+@import 'styles/gestionPro.css';
+@import 'styles/calcularMP.css';
+
+/* ===== ESTILOS GLOBALES ===== */
+body, .container {
     background-color: var(--primary-color) !important;
 }
 
+/* ===== ANIMACIONES ===== */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
+
+/* ===== VISTAS DE LA APLICACIÓN ===== */
 .newTarea-view,
 .usuarios-view,
 .verificarRegistros-view,
@@ -44,7 +64,7 @@ body, .container{
 .formProduccion-view,
 .cuentasProduccion-view,
 .newPedido-view,
-.home-vew{
+.home-vew {
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
@@ -52,8 +72,9 @@ body, .container{
     padding-bottom: 80px;
     background-color: var(--primary-color) !important;
 }
+
+/* ===== ESTADO ACTIVO DE LAS VISTAS ===== */
 .view-active {
     display: flex;
     opacity: 1;
 }
-

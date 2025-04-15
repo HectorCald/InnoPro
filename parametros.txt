@@ -1,3 +1,4 @@
+TAMAÑOS DE LETRA Y ESPACIIOS:
 padding: 15px;
 font-size: 17px;  //Principal
 font-size: 15px;  //Secundario
@@ -5,7 +6,7 @@ font-size: 13px;  //Terceario
 gap: 10px
 
 
-Iconos
+ICONOS:
 Cerrar: <i class="fas fa-times"></i>
 Guardar: <i class="fas fa-save"></i>
 Ver: <i class="fas fa-eye"></i>

@@ -1,3 +1,4 @@
+/* =============== IMPORTACIONES DE TODOS LOS MODULOS DE JS =============== */
 import { inicializarUsuarios, cargarUsuarios, mostrarDetallesUsuario, mostrarFormularioAgregarUsuario, mostrarFormularioDesactivarUsuario } from './modules/users.js';
 import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos, mostrarFormularioProduccion } from './modules/formProduccion.js';
@@ -9,7 +10,6 @@ import { inicializarHome } from './modules/home.js';
 import { initializeMenu} from './modules/menu.js';
 import { initializePreciosPro } from './modules/preciosPro.js';
 import { cargarNotificaciones} from './modules/advertencia.js';
-import { inicializarComprobante } from './modules/comprobante.js';
 import { cargarRegistrosAcopio } from './modules/regAcopio.js';
 import { inicializarAlmacenGral,cargarAlmacen,mostrarProductos } from './modules/almacen.js';
 import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
@@ -28,11 +28,11 @@ function scrollToTop(ventana) {
 }
 
 window.scrollToTop = scrollToTop;
+
 // Funciones del menú y navegación,
 window.initializeMenu = initializeMenu;
 window.initializePreciosPro = initializePreciosPro;
 window.inicializarHome = inicializarHome;
-
 
 // Funciones de gestión de usuarios y permisos
 window.inicializarUsuarios = inicializarUsuarios;
@@ -40,8 +40,6 @@ window.cargarUsuarios = cargarUsuarios;
 window.mostrarDetallesUsuario = mostrarDetallesUsuario;
 window.mostrarFormularioAgregarUsuario = mostrarFormularioAgregarUsuario;
 window.mostrarFormularioDesactivarUsuario = mostrarFormularioDesactivarUsuario;
-
-
 
 // Funciones de gestión de registros y pagos
 window.cargarRegistros = cargarRegistros;
@@ -69,7 +67,6 @@ window.confirmarFinalizacionPedidos = confirmarFinalizacionPedidos;
 window.finalizarPedidos = finalizarPedidos;
 window.mosstrarSugerenciaPedido = mostrarSugerenciaPedido;
 
-
 // Funciones de gestión de almacén Acopio
 window.inicializarAlmacen = inicializarAlmacen;
 window.mostrarFormularioIngresoAcopio = mostrarFormularioIngresoAcopio;
@@ -83,14 +80,12 @@ window.mostrarNotificacion = mostrarNotificacion;
 window.manejarCierreSesion = manejarCierreSesion;
 window.cargarNotificaciones = cargarNotificaciones;
 
-
-// Funciones de comprobante
-window.inicializarComprobante = inicializarComprobante;
-
 // Funciones de registros acopio
 window.cargarRegistrosAcopio = cargarRegistrosAcopio;
+
 // Funciones de registros almacen
 window.cargarRegistrosAlmacenGral = cargarRegistrosAlmacenGral;
+
 // Funciones de Almcen General
 window.inicializarAlmacenGral = inicializarAlmacenGral;
 window.cargarAlmacen = cargarAlmacen;
@@ -105,6 +100,7 @@ window.inicializarGestionPro = inicializarGestionPro;
 // Funciones de calcular materia prima
 window.inicializarCalcularMP = inicializarCalcularMP;
 
+/* =============== FUNCIONES DE INICIO APLICACION=============== */
 async function bienvenida() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -190,6 +186,62 @@ async function bienvenida() {
         console.error('Error al obtener los datos:', error);
     }
 }
+async function obtenerRolUsuario() {
+    try {
+        const response = await fetch('/obtener-mi-rol');
+        const data = await response.json();
+        console.log('Datos obtenidos:', data);
+        
+        return {
+            rol: data.rol,
+            funcionesExtra: data.Extras ? [data.Extras] : [] // Convertir Extras a array
+        };
+    } catch (error) {
+        console.error('Error al obtener rol:', error);
+        return null;
+    }
+}
+async function iniciarApp() {
+    try {
+        const userData = await obtenerRolUsuario();
+        if (!userData || !userData.rol) {
+            throw new Error('No se pudo obtener la información del usuario');
+        }
+
+        const opcionesDiv = document.querySelector('.opciones');
+        if (!opcionesDiv) {
+            throw new Error('No se encontró el contenedor de opciones');
+        }
+
+        const vistas = document.querySelectorAll('.calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
+
+        // Ocultar todas las vistas inicialmente
+        vistas.forEach(vista => {
+            if (vista) {
+                vista.style.display = 'none';
+                vista.style.opacity = '0';
+                vista.style.backgroundColor = '#1a1a1a';
+                vista.style.color = '#ffffff';
+            }
+        });
+
+        const roles = userData.rol.split(',').map(r => r.trim());
+        console.log('Roles:', roles);
+        console.log('Funciones Extra:', userData.funcionesExtra);
+
+        // Asegurarse de que funcionesExtra sea un array
+        const funcionesExtra = Array.isArray(userData.funcionesExtra) ? userData.funcionesExtra : [];
+        
+        // Inicializar el menú
+        await initializeMenu(roles, opcionesDiv, vistas, funcionesExtra);
+        await cargarNotificaciones();
+    } catch (error) {
+        console.error('Error al iniciar la aplicación:', error);
+        mostrarNotificacion('Error al cargar el menú: ' + error.message, 'error');
+    }
+}
+
+/* =============== FUNCIONES DE CIERRE DE SESION =============== */
 async function manejarCierreSesion() {
     try {
         mostrarCarga();
@@ -201,6 +253,8 @@ async function manejarCierreSesion() {
         console.error('Error al cerrar sesión:', error);
     }
 }
+
+/* =============== FUNCIONES DE NOTIFICAIONES FLOTANTES =============== */
 export function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) {
     const notificador = document.querySelector('.notificador');
     const notificacion = document.createElement('div');
@@ -242,6 +296,8 @@ export function mostrarNotificacion(mensaje, tipo = 'success', duracion = 5000) 
         }
     }, duracion);
 }
+
+/* =============== FUNCIONES DE VISTAS DE ALMACENES =============== */
 function limpiarVista(vista) {
     const container = document.querySelector(vista);
     if (container) {
@@ -251,62 +307,8 @@ function limpiarVista(vista) {
 }
 limpiarVista('.almacen-view');
 limpiarVista('.almAcopio-view');
-async function obtenerRolUsuario() {
-    try {
-        const response = await fetch('/obtener-mi-rol');
-        const data = await response.json();
-        console.log('Datos obtenidos:', data);
-        
-        return {
-            rol: data.rol,
-            funcionesExtra: data.Extras ? [data.Extras] : [] // Convertir Extras a array
-        };
-    } catch (error) {
-        console.error('Error al obtener rol:', error);
-        return null;
-    }
-}
 
-async function iniciarApp() {
-    try {
-        const userData = await obtenerRolUsuario();
-        if (!userData || !userData.rol) {
-            throw new Error('No se pudo obtener la información del usuario');
-        }
-
-        const opcionesDiv = document.querySelector('.opciones');
-        if (!opcionesDiv) {
-            throw new Error('No se encontró el contenedor de opciones');
-        }
-
-        const vistas = document.querySelectorAll('.calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
-
-        // Ocultar todas las vistas inicialmente
-        vistas.forEach(vista => {
-            if (vista) {
-                vista.style.display = 'none';
-                vista.style.opacity = '0';
-                vista.style.backgroundColor = '#1a1a1a';
-                vista.style.color = '#ffffff';
-            }
-        });
-
-        const roles = userData.rol.split(',').map(r => r.trim());
-        console.log('Roles:', roles);
-        console.log('Funciones Extra:', userData.funcionesExtra);
-
-        // Asegurarse de que funcionesExtra sea un array
-        const funcionesExtra = Array.isArray(userData.funcionesExtra) ? userData.funcionesExtra : [];
-        
-        // Inicializar el menú
-        await initializeMenu(roles, opcionesDiv, vistas, funcionesExtra);
-        await cargarNotificaciones();
-    } catch (error) {
-        console.error('Error al iniciar la aplicación:', error);
-        mostrarNotificacion('Error al cargar el menú: ' + error.message, 'error');
-    }
-}
-
+/* =============== FUNCIONES DE CARGA LOANDERS =============== */
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'flex';
@@ -315,6 +317,8 @@ function ocultarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'none';
 }
+
+/* =============== FUNCIONES DE REGSITRO DE NOTIFIACION INICIAL =============== */
 export async function registrarNotificacion(origen, destino, mensaje) {
     try {
         const response = await fetch('/registrar-notificacion', {
@@ -340,9 +344,8 @@ export async function registrarNotificacion(origen, destino, mensaje) {
         throw error;
     }
 }
-export function inicializarGestionProduccion(){
-    mostrarNotificacion('No se puede acceder a esta pestaña por el momento','warning')
-}
+
+/* =============== FUNCIONES DE CENTRAR LAS INPUT EN TODOS LOS ANUNCIOS =============== */
 function centrarInputEnFoco() {
     document.addEventListener('focusin', (e) => {
         if (e.target.tagName.toLowerCase() === 'input' || 
@@ -375,6 +378,8 @@ function centrarInputEnFoco() {
     });
 }
 
+
+/* =============== FUNCIONES LLAMDO =============== */
 document.addEventListener('DOMContentLoaded', () => {
     let anuncio = document.querySelector('.anuncio');
     let dashboard = document.querySelector('.dashboard');
@@ -401,6 +406,8 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarHome(); 
     centrarInputEnFoco();
 });
+
+/* =============== FUNCIONES DE MOSTRAR NOTIFIACION INICIAL=============== */
 window.mostrarNotificacionesPanel = async function() {
     try {
         mostrarCarga();
@@ -425,6 +432,7 @@ window.mostrarNotificacionesPanel = async function() {
         ocultarCarga();
     }
 };
+/* =============== FUNCIONES DE CONTADOR DE NOTIFIACIONES =============== */
 window.actualizarContadorNotificaciones = function(cantidad) {
     const badge = document.getElementById('notificationBadge');
     if (badge) {

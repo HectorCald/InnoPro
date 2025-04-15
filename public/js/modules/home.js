@@ -1,3 +1,4 @@
+/* =============== FUNCIONES DE INCIO HOME =============== */
 const frasesDiarias = [
     "¡Un día productivo y a romperla en la calle, loco! 💪🔥",
     "¡Hoy es un gran día para dar lo mejor! ⭐️✨",
@@ -75,6 +76,8 @@ function inicializarEventos() {
         });
     });
 }
+
+/* =============== FUNCIONES DE INCIO DE ATAJOS =============== */
 async function obtenerAtajos() {
     try {
         mostrarCarga();

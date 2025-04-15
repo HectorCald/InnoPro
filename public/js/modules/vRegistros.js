@@ -86,6 +86,7 @@ export function calcularTotal(nombre, cantidad, gramaje, seleccion) {
         cernido: resultadoSernido
     };
 }
+
 /* ==================== FUNCIONES DE MANIPULACIÓN DE UI ==================== */
 function crearOperarioCard(nombre, registros) {
     const operarioCard = document.createElement('div');
@@ -125,7 +126,6 @@ function crearOperarioCard(nombre, registros) {
 
     return { operarioCard, registrosContainer };
 }
-
 function crearRegistroCard(registro, esAdmin) {
     const [dia, mes, año] = registro[1].split('/');
     // Keep the full date format for display
@@ -227,7 +227,6 @@ function crearRegistroCard(registro, esAdmin) {
 
     return registroCard;
 }
-
 function configurarPanelInfo(card) {
     const infoIcon = card.querySelector('.info-icon');
     const panelInfo = card.querySelector('.panel-info');
@@ -268,7 +267,6 @@ function configurarPanelInfo(card) {
         }
     });
 }
-
 function configurarEventosRegistro(registroCard) {
     registroCard.querySelector('.registro-header').addEventListener('click', (e) => {
         if (!e.target.classList.contains('info-icon')) {
@@ -309,7 +307,6 @@ function configurarEventosRegistro(registroCard) {
         }
     });
 }
-
 function ordenarRegistrosPorFecha(registros) {
     return registros.sort((a, b) => {
         try {
@@ -858,6 +855,7 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
         document.querySelector('.container').classList.remove('no-touch');
     });
 }
+
 /* ==================== FUNCIONES DE FILTRADO ==================== */
 function configurarFiltros() {
     const btnFiltro = document.querySelector('.btn-filtro');
@@ -1247,6 +1245,7 @@ function aplicarFiltros() {
         }
     });
 }
+
 /* ==================== FUNCIONES DE UTILIDAD ==================== */
 function formatearFecha(fecha) {
     if (!fecha) {

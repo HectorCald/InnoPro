@@ -1,5 +1,7 @@
+/* ===== IMPORTACIONES ===== */
 @import'styles/colores.css';
 
+/* ===== VISTA DE VERIFICACIÓN DE REGISTROS ===== */
 .verificarRegistros-view {
     width: 100%;
     background: var(--background) !important;
@@ -7,30 +9,31 @@
     color: var(--primary-text) !important;
     overflow-y: auto;
     padding: 15px;
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    display: none;
 
+    /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
         display: none;
     }
-
     -ms-overflow-style: none;
     scrollbar-width: none;
 
+    /* ===== TÍTULO DE LA SECCIÓN ===== */
     .section-title {
         color: var(--primary-text);
         font-size: 17px;
         font-weight: 500;
         padding-block: 15px;
+
+        i {
+            color: var(--primary-text);
+        }
     }
 
-    .section-title i {
-        color: var(--primary-text);
-    }
-
+    /* ===== ENCABEZADO DE FILTROS ===== */
     .filtros-header {
         display: flex;
         align-items: center;
@@ -39,6 +42,7 @@
         width: 100%;
     }
 
+    /* ===== BOTÓN DE FILTRO ===== */
     .btn-filtro {
         background: none;
         border: none;
@@ -50,6 +54,7 @@
         align-items: center;
         gap: 10px;
         transition: all 0.3s ease;
+        font-size: 15px;
 
         &:hover {
             background: #252525;
@@ -58,10 +63,9 @@
         i {
             color: #3498db;
         }
-
-        font-size: 15px;
     }
 
+    /* ===== ENCABEZADO DE FECHA ===== */
     .fecha-header {
         background: var(--cero-color);
         padding: 15px;
@@ -90,6 +94,7 @@
         }
     }
 
+    /* ===== INFORMACIÓN DE FECHA Y CONTADOR ===== */
     .fecha-info {
         display: flex;
         align-items: center;
@@ -106,6 +111,7 @@
         white-space: nowrap;
     }
 
+    /* ===== GRUPO DE REGISTROS ===== */
     .registros-grupo {
         max-height: 0;
         opacity: 0;
@@ -128,7 +134,7 @@
         width: 100%;
     }
 
-    /* Estilos de registros heredados de misCuentasProduccion */
+    /* ===== CONTENEDOR DE REGISTROS ===== */
     .registros-container {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -136,6 +142,7 @@
         width: 100%;
     }
 
+    /* ===== TARJETA DE REGISTRO ===== */
     .registro-card {
         background: var(--second-color);
         border-radius: 15px;
@@ -152,6 +159,7 @@
         }
     }
 
+    /* ===== ENCABEZADO Y DETALLES DE REGISTRO ===== */
     .registro-header {
         padding: 15px;
         background: var(--second-color);
@@ -176,6 +184,7 @@
         text-overflow: ellipsis;
     }
 
+    /* ===== TOTAL Y ESTADO DEL REGISTRO ===== */
     .registro-total {
         color: #4CAF50;
         margin: 0;
@@ -184,8 +193,13 @@
         &.no-verificado {
             color: #f44336;
         }
+
+        &.pagado {
+            color: #888 !important;
+        }
     }
 
+    /* ===== DETALLES EXPANDIBLES ===== */
     .registro-detalles {
         height: 0;
         opacity: 0;
@@ -217,38 +231,29 @@
         }
     }
 
+    /* ===== ICONOS Y ESTADOS ===== */
     .verificado-icon {
         color: #4CAF50;
         font-size: 15px;
         margin: 0;
     }
 
+    .fa-chevron-down {
+        transition: transform 0.3s ease;
+
+        &.rotated {
+            transform: rotate(180deg);
+        }
+    }
+
+    /* ===== BOTONES DE ACCIÓN ===== */
     .acciones {
         display: flex;
         gap: 10px;
         margin-top: 10px;
     }
 
-    .btn-editar {
-        padding: 15px;
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        background: #2196F3;
-        color: white;
-        width: 100%;
-
-        &:hover {
-            background: #1976D2;
-            transform: translateY(-2px);
-        }
-    }
-
+    .btn-editar,
     .btn-editar-registro {
         padding: 15px;
         border: none;
@@ -289,10 +294,6 @@
         }
     }
 
-    .registro-total.pagado {
-        color: #888 !important;
-    }
-
     .btn-eliminar-registro {
         padding: 15px;
         border: none;
@@ -313,35 +314,20 @@
         }
     }
 
-
-    .fa-chevron-down {
-        transition: transform 0.3s ease;
-
-        &.rotated {
-            transform: rotate(180deg);
-        }
-    }
-
+    /* ===== ICONOS DE INFORMACIÓN ===== */
     .info-icon {
         color: #3498db;
         cursor: pointer;
         transition: color 0.3s ease;
         margin-left: auto;
+        display: none;
 
         &:hover {
             color: #5c6bc0;
         }
-
-        display: none;
     }
 
-    .no-registros {
-        color: #aaa;
-        text-align: center;
-        padding: 15px;
-        font-size: 15px;
-    }
-
+    /* ===== PANEL DE INFORMACIÓN ===== */
     .panel-info {
         background: #656565;
         padding: 10px;
@@ -378,13 +364,22 @@
         }
     }
 
+    /* ===== BOTÓN CALCULAR TOTAL ===== */
     .btn-calcular-total {
         z-index: 0 !important;
+
+        &:hover {
+            background-color: #45a049 !important;
+            transition: all 0.3s ease;
+            z-index: 0;
+        }
     }
 
-    .btn-calcular-total:hover {
-        background-color: #45a049 !important;
-        transition: all 0.3s ease;
-        z-index: 0;
+    /* ===== MENSAJE SIN REGISTROS ===== */
+    .no-registros {
+        color: #aaa;
+        text-align: center;
+        padding: 15px;
+        font-size: 15px;
     }
 }
