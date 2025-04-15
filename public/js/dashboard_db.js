@@ -414,13 +414,13 @@ window.mostrarNotificacionesPanel = async function() {
             advertenciaDiv.style.display = 'none';
             document.querySelector('.container').classList.remove('no-touch');
         } else {
+            // La clase no-touch se manejará dentro de cargarNotificaciones
             await cargarNotificaciones();
-            advertenciaDiv.style.display = 'flex';
-            document.querySelector('.container').classList.add('no-touch');
         }
     } catch (error) {
         console.error('Error al mostrar notificaciones:', error);
         mostrarNotificacion('Error al mostrar notificaciones', 'error');
+        document.querySelector('.container').classList.remove('no-touch');
     } finally {
         ocultarCarga();
     }

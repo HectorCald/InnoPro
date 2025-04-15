@@ -6,18 +6,15 @@ export async function cargarNotificaciones() {
         const nombreUsuarioActual = userData.nombre;
         const rolUsuarioActual = userData.rol;
 
-        // Luego obtener las notificaciones
         const response = await fetch('/obtener-notificaciones');
         const data = await response.json();
 
         if (data.success) {
-            // Filtrar notificaciones para el usuario actual o su rol
             const notificacionesFiltradas = data.notificaciones.filter(notif =>
                 notif.destino === nombreUsuarioActual ||
                 notif.destino === rolUsuarioActual
             );
 
-            // Actualizar el contador de notificaciones
             const badge = document.getElementById('notificationBadge');
             if (badge) {
                 if (notificacionesFiltradas && notificacionesFiltradas.length > 0) {
@@ -28,13 +25,8 @@ export async function cargarNotificaciones() {
                 }
             }
 
-            // Mostrar el div de advertencias antes de llamar a mostrarAdvertencias
+            // Modificación aquí: Solo mostrar el div de advertencias si hay notificaciones
             const advertenciaDiv = document.querySelector('.advertencia');
-            if (advertenciaDiv) {
-                advertenciaDiv.style.display = 'flex';
-                document.querySelector('.container').classList.add('no-touch');
-            }
-
             if (!notificacionesFiltradas || notificacionesFiltradas.length === 0) {
                 mostrarNotificacion('No tienes notificaciones nuevas', 'info');
                 if (advertenciaDiv) {
@@ -44,12 +36,19 @@ export async function cargarNotificaciones() {
                 return;
             }
 
-            mostrarAdvertencias(notificacionesFiltradas);
+            // Solo si hay notificaciones, mostrar el div y el overlay
+            if (advertenciaDiv) {
+                advertenciaDiv.style.display = 'flex';
+                document.querySelector('.container').classList.add('no-touch');
+                mostrarAdvertencias(notificacionesFiltradas);
+            }
         }
     } catch (error) {
         console.error('Error al cargar notificaciones:', error);
         mostrarNotificacion('Error al cargar notificaciones', 'error');
-    }finally{
+        // Asegurarse de que el overlay se quite en caso de error
+        document.querySelector('.container').classList.remove('no-touch');
+    } finally {
         ocultarCarga();
     }
 }
