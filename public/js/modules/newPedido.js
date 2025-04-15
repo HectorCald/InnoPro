@@ -131,13 +131,10 @@ export async function mostrarFormularioPedido(producto) {
         const sugerenciasList = document.getElementById('sugerencias-pedido');
         const pedidos = data.pedidos;
 
-        // Agregar evento para verificar pedidos existentes
-        inputPedido.addEventListener('blur', async () => {
-            const nombre = inputPedido.value.trim();
-            if (nombre) {
-                await verificarPedidoExistente(nombre);
-            }
-        });
+        // Verificar pedido existente al inicio si hay un producto predefinido
+        if (producto.trim()) {
+            await verificarPedidoExistente(producto.trim());
+        }
 
         const normalizeText = (text) => {
             return text.toLowerCase()
@@ -150,7 +147,6 @@ export async function mostrarFormularioPedido(producto) {
             const inputValue = normalizeText(inputPedido.value);
             const div = document.querySelector('.sugerencias-container');
 
-            // Añadir o actualizar el contenedor del ícono
             let statusIcon = document.querySelector('.producto-status-icon');
             if (!statusIcon) {
                 statusIcon = document.createElement('div');
@@ -158,23 +154,13 @@ export async function mostrarFormularioPedido(producto) {
                 inputPedido.parentElement.appendChild(statusIcon);
             }
 
-            if (inputValue) {
-                try {
-                    const response = await fetch(`/buscar-producto-pendiente/${encodeURIComponent(inputValue)}`);
-                    const data = await response.json();
-
-                    if (data.success) {
-                        const productoExiste = data.productos.length > 0;
-                        statusIcon.innerHTML = productoExiste
-                            ? '<i class="fas fa-times" style="color: #ff4444;"></i>'
-                            : '<i class="fas fa-check" style="color: #00C851;"></i>';
-                        statusIcon.style.display = 'block';
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
+            if (inputValue.trim()) {
+                await verificarPedidoExistente(inputPedido.value.trim());
             } else {
-                statusIcon.style.display = 'none';
+                const existingSuggestion = document.querySelector('.sugerencia-pedido-existente');
+                if (existingSuggestion) {
+                    existingSuggestion.remove();
+                }
             }
 
             // Código existente de sugerencias
@@ -194,9 +180,6 @@ export async function mostrarFormularioPedido(producto) {
             }
         });
 
-
-
-        // Manejar clic en sugerencia
         sugerenciasList.addEventListener('click', (e) => {
             if (e.target.classList.contains('sugerencia-item')) {
                 inputPedido.value = e.target.textContent;
@@ -206,7 +189,6 @@ export async function mostrarFormularioPedido(producto) {
             }
         });
 
-        // Modificar el evento de clic fuera
         document.addEventListener('click', (e) => {
             const div = document.querySelector('.sugerencias-container');
             if (!e.target.closest('#nombre-pedido') && !e.target.closest('#sugerencias-pedido')) {
@@ -219,7 +201,6 @@ export async function mostrarFormularioPedido(producto) {
 
     } catch (error) {
         console.error('Error:', error);
-        // Removemos esta notificación ya que no es necesaria si el formulario se muestra
         if (!document.querySelector('.anuncio-contenido')) {
             mostrarNotificacion('Error al cargar lista de productos', 'error');
         }
