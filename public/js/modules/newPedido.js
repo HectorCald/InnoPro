@@ -345,7 +345,7 @@ export async function finalizarPedidos() {
                     `).join('')}
                 </div>
                 <div class="anuncio-botones">
-                    <button class="anuncio-btn close" onclick="cerrarFormularioPedido()">
+                    <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'">
                         <i class="fas fa-times"></i>
                     </button>
                     <button class="anuncio-btn green" onclick="confirmarFinalizacionPedidos()">
@@ -386,7 +386,13 @@ export async function confirmarFinalizacionPedidos() {
                 `• ${pedido.nombre}: ${pedido.cantidad}${pedido.observaciones ? ` (${pedido.observaciones})` : ''}`
             ).join('\n')}\n\n_El pedido ya se encuentra en la aplicación de Damabrava_`;
 
-            await navigator.clipboard.writeText(pedidosText);
+            try {
+                await navigator.clipboard.writeText(pedidosText);
+            } catch (clipboardError) {
+                console.log('No se pudo copiar al portapapeles:', clipboardError);
+                // Continuamos con el flujo normal aunque falle la copia
+            }
+
             await registrarNotificacion(
                 usuarioActual,
                 'Administración',
