@@ -320,6 +320,24 @@ app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
 });
 
 /* ==================== API DE REGISTRO ==================== */
+app.get('/obtener-productos', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
+            range: 'Almacen general!A2:H' // Obtener solo la primera columna, excluyendo el título
+        });
+
+        const productos = response.data.values ? response.data.values.map(row => row[1]) : [];
+        res.json({ success: true, productos });
+    } catch (error) {
+        console.error('Error al obtener productos:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al obtener lista de productos' 
+        });
+    }
+});
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
         const { id, razon } = req.body;
@@ -844,26 +862,6 @@ app.post('/actualizar-usuario', requireAuth, async (req, res) => {
     }
 });
 
-/* ==================== API DE PRODUCTOS ==================== */
-app.get('/obtener-productos', requireAuth, async (req, res) => {
-    try {
-        const sheets = google.sheets({ version: 'v4', auth });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Almacen general!A2:H' // Obtener solo la primera columna, excluyendo el título
-        });
-
-        const productos = response.data.values ? response.data.values.map(row => row[1]) : [];
-        res.json({ success: true, productos });
-    } catch (error) {
-        console.error('Error al obtener productos:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener lista de productos' 
-        });
-    }
-});
-
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
@@ -994,7 +992,7 @@ app.post('/obtener-extras-registros', async (req, res) => {
     }
 });
 
-/* ==================== API DE PERMISOS ==================== */
+/* ==================== API DE OBTNER NOMBRE Y ROL ==================== */
 app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
