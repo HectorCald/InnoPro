@@ -823,119 +823,53 @@ app.post('/cambiar-estado-usuario', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al cambiar estado del usuario' });
     }
 });
-app.post('/actualizar-pin', requireAuth, async (req, res) => {
+
+app.post('/actualizar-usuario', requireAuth, async (req, res) => {
     try {
-        const { pin, nuevoPIN } = req.body;
+        const { pinActual, nuevoPin, nuevoRol, nuevosExtras } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Verificar si el nuevo PIN ya existe
+
+        // Obtener datos actuales
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:A'
-        });
-
-        const pines = response.data.values || [];
-        if (pines.flat().includes(nuevoPIN)) {
-            return res.status(400).json({ success: false, error: 'El nuevo PIN ya está en uso' });
-        }
-
-        // Encontrar y actualizar el PIN
-        const usuariosResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:D'
-        });
-
-        const rows = usuariosResponse.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === pin);
-
-        if (rowIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
-        }
-
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Usuarios!A${rowIndex + 2}`,
-            valueInputOption: 'USER_ENTERED',
-            resource: {
-                values: [[nuevoPIN]]
-            }
-        });
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ success: false, error: 'Error al actualizar PIN' });
-    }
-});
-app.post('/actualizar-rol', requireAuth, async (req, res) => {
-    try {
-        const { pin, nuevoRol } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Encontrar la fila del usuario
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:D'
+            range: 'Usuarios!A:E'
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === pin);
+        const userIndex = rows.findIndex(row => row[0] === pinActual);
 
-        if (rowIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+        if (userIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Usuario no encontrado' 
+            });
         }
 
-        // Actualizar rol
+        // Actualizar datos
         await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Usuarios!C${rowIndex + 2}`,
-            valueInputOption: 'USER_ENTERED',
+            range: `Usuarios!A${userIndex + 1}:E${userIndex + 1}`,
+            valueInputOption: 'RAW',
             resource: {
-                values: [[nuevoRol]]
+                values: [[
+                    nuevoPin,
+                    rows[userIndex][1], // Mantener nombre
+                    nuevoRol,
+                    rows[userIndex][3], // Mantener estado
+                    nuevosExtras
+                ]]
             }
         });
 
         res.json({ success: true });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ success: false, error: 'Error al actualizar rol' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error al actualizar usuario' 
+        });
     }
 });
-app.post('/actualizar-extras', requireAuth, async (req, res) => {
-    try {
-        const { pin, nuevosExtras } = req.body;
-        const sheets = google.sheets({ version: 'v4', auth });
-        
-        // Find user's row
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Usuarios!A2:E'
-        });
-
-        const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === pin);
-
-        if (rowIndex === -1) {
-            return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
-        }
-
-        // Update extras (column E)
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: `Usuarios!E${rowIndex + 2}`,
-            valueInputOption: 'USER_ENTERED',
-            resource: {
-                values: [[nuevosExtras]]
-            }
-        });
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ success: false, error: 'Error al actualizar extras' });
-    }
-});
-
 
 
 /* ==================== API DE PRODUCTOS ==================== */
@@ -3252,7 +3186,7 @@ app.delete('/eliminar-movimiento-almacen', requireAuth, async (req, res) => {
 });
 
 
-
+/* ==================== RUTAS DE CALCULAR MATERIA PRIMA ==================== */
 app.get('/obtener-registros-mp', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -3501,6 +3435,8 @@ app.put('/actualizar-registro-mp', requireAuth, async (req, res) => {
         });
     }
 });
+
+
 
 
 

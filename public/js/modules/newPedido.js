@@ -1,4 +1,5 @@
 import { registrarNotificacion } from './advertencia.js';
+
 let pedidosTemporales = [];
 function cerrarFormularioPedido() {
     const anuncio = document.querySelector('.anuncio');
@@ -9,7 +10,10 @@ function cerrarFormularioPedido() {
     }
 }
 
-export async function mostrarFormularioPedido() {
+export async function mostrarFormularioPedido(producto) {
+    if (producto === undefined || producto === 'undefined' || producto === null) {
+        producto = '';
+    }
     try {
         mostrarCarga();
         const response = await fetch('/obtener-lista-pedidos');
@@ -27,7 +31,7 @@ export async function mostrarFormularioPedido() {
             <div class="relleno">
                 <div class="form-grup">
                     <p>Seleccionar producto:</p>
-                    <input type="text" id="nombre-pedido" placeholder="Nombre del producto" autocomplete="off" required>
+                    <input type="text" id="nombre-pedido" value="${producto}" placeholder="Nombre del producto" autocomplete="off" required>
                     <div id="sugerencias-pedido" class="sugerencias-container" style="display:none;"></div>
                 </div>
                 

@@ -356,10 +356,11 @@ window.mostrarDetalleProductoAcopio = function (producto) {
             </div>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn blue editar">Editar</button>
-            <button class="anuncio-btn green guardar" style="display: none;">Guardar</button>
-            <button class="anuncio-btn red eliminar">Eliminar</button>
+            <button class="anuncio-btn blue editar"><i class="fas fa-edit"></i> Editar</button>
+            <button class="anuncio-btn green guardar" style="display: none;"><i class="fas fa-save"></i> Guardar</button>
+            <button class="anuncio-btn red eliminar"><i class="fas fa-trash"></i> Eliminar</button>
             <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+            <button class="anuncio-btn green cerrar" onclick="mostrarFormularioPedido('${nombre}')"><i class="fas fa-shopping-cart"></i> Pedido</button>
         </div>
     `;
 

@@ -295,110 +295,100 @@ async function mostrarDetallesUsuario(pin) {
         }
 
         const usuario = data.usuario;
-        
         const anuncio = document.querySelector('.anuncio');
         const anuncioContenido = document.querySelector('.anuncio-contenido');
 
         anuncioContenido.innerHTML = `
-    <h2><i class="fas fa-user-circle"></i> Detalles del Usuario</h2>
-    <div class="relleno">
-        <div class="detalles-grup">
-            <div class="detalle-item">
-                <i class="fas fa-user"></i>
-                <p>Nombre:</p> 
-                <span>${usuario.nombre}</span>
+            <h2><i class="fas fa-user-circle"></i> Detalles del Usuario</h2>
+            <div class="relleno">
+                <div class="detalles-grup">
+                    <div class="detalle-item">
+                        <i class="fas fa-user"></i>
+                        <p>Nombre:</p> 
+                        <span>${usuario.nombre}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <i class="fas fa-circle${usuario.estado ? ' text-success' : ' text-danger'}"></i>
+                        <p>Estado:</p> 
+                        <span>${usuario.estado ? 'Activo' : 'Inactivo'}</span>
+                    </div>
+                </div>
+                <div class="campo-form">
+                    <label for="editar-pin">PIN:</label>
+                    <input type="text" id="editar-pin" class="form-input" value="${usuario.pin}" maxlength="4">
+                </div>
+                <div class="campo-form">
+                    <label for="editar-rol">Rol:</label>
+                    <select id="editar-rol" class="form-input">
+                        <option value="Administración" ${usuario.rol === 'Administración' ? 'selected' : ''}>Administrador</option>
+                        <option value="Acopio" ${usuario.rol === 'Acopio' ? 'selected' : ''}>Acopio</option>
+                        <option value="Producción" ${usuario.rol === 'Producción' ? 'selected' : ''}>Producción</option>
+                        <option value="Almacen" ${usuario.rol === 'Almacen' ? 'selected' : ''}>Almacen</option>
+                        <option value="Ventas" ${usuario.rol === 'Ventas' ? 'selected' : ''}>Ventas</option>
+                        <option value="Compras" ${usuario.rol === 'Compras' ? 'selected' : ''}>Compras</option>
+                    </select>
+                </div>
+                <div class="campo-form">
+                    <label for="editar-extras">Extras:</label>
+                    <select id="editar-extras" class="form-input">
+                        <option value="">Sin extras</option>
+                        <option value="CalcularMP" ${usuario.extras === 'CalcularMP' ? 'selected' : ''}>Calcular MP</option>
+                    </select>
+                </div>
+                <div class="campo-form">
+                    <label for="editar-estado">Estado:</label>
+                    <select id="editar-estado" class="form-input">
+                        <option value="true" ${usuario.estado ? 'selected' : ''}>Activo</option>
+                        <option value="false" ${!usuario.estado ? 'selected' : ''}>Inactivo</option>
+                    </select>
+                </div>
             </div>
-            <div class="detalle-item">
-                <i class="fas fa-user-tag"></i>
-                <p>Rol:</p>
-                <span> ${usuario.rol}</span>
-            </div>
-            <div class="detalle-item">
-                <i class="fas fa-key"></i>
-                <p>PIN:</p>
-                <span> ${usuario.pin}</span>
-            </div>
-            <div class="detalle-item">
-                <i class="fas fa-circle${usuario.estado ? ' text-success' : ' text-danger'}"></i>
-                <p>Estado:</p> 
-                <span>${usuario.estado ? 'Activo' : 'Inactivo'}</span>
-            </div>
-            <div class="detalle-item">
-                <i class="fas fa-puzzle-piece"></i>
-                <p>Plugins:</p> 
-                <span>${usuario.extras && usuario.extras !== '' ? usuario.extras : 'Sin extras asignados'}</span>
-            </div>
-        </div>
-        <div class="campo-form">
-            <label for="nuevo-pin">Nuevo PIN:</label>
-            <input type="text" id="nuevo-pin" class="form-input" placeholder="PIN de 4 dígitos" maxlength="4">
-        </div>
-        <div class="campo-form">
-            <label for="nuevo-rol">Nuevo Rol:</label>
-            <select id="nuevo-rol" class="form-input">
-                <option value="Administración">Administrador</option>
-                <option value="Acopio">Acopio</option>
-                <option value="Producción">Producción</option>
-                <option value="Almacen">Almacen</option>
-                <option value="Ventas">Ventas</option>
-                <option value="Compras">Compras</option>
-            </select>
-        </div>
-        <div class="campo-form">
-            <label for="nuevo-extras">Extras:</label>
-            <select id="nuevo-extras" class="form-input">
-                <option value="">Sin extras</option>
-                <option value="CalcularMP" ${usuario.extras === 'CacularMP' ? 'selected' : ''}>Calcular MP</option>
-            </select>
-        </div>
-    </div>
- <div class="anuncio-botones" style="flex-direction:column;">
-        <button class="anuncio-btn blue actualizar-pin"><i class="fas fa-key"></i> Actualizar PIN</button>
-        <button class="anuncio-btn green actualizar-rol"><i class="fas fa-user-tag"></i> Actualizar Rol</button>
-        <button class="anuncio-btn purple actualizar-extras"><i class="fas fa-puzzle-piece"></i> Actualizar Extras</button>
-        <button class="anuncio-btn red eliminar-usuario"><i class="fas fa-trash"></i> Eliminar Usuario</button>
-        <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-    </div>`;
-
+            <div class="anuncio-botones">
+                <button class="anuncio-btn blue guardar-cambios"><i class="fas fa-save"></i> Guardar Cambios</button>
+                <button class="anuncio-btn red eliminar-usuario"><i class="fas fa-trash"></i> Eliminar</button>
+                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+            </div>`;
 
         anuncio.style.display = 'flex';
 
-        const btnActualizarPin = anuncioContenido.querySelector('.actualizar-pin');
-        const btnActualizarRol = anuncioContenido.querySelector('.actualizar-rol');
-        const btnCancelar = anuncioContenido.querySelector('.cancelar');
+        const btnGuardar = anuncioContenido.querySelector('.guardar-cambios');
         const btnEliminar = anuncioContenido.querySelector('.eliminar-usuario');
-        const btnActualizarExtras = anuncioContenido.querySelector('.actualizar-extras');
+        const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
-        btnActualizarExtras.onclick = async () => {
-            const nuevosExtras = document.getElementById('nuevo-extras').value;
+        btnGuardar.onclick = async () => {
+            const datosActualizados = {
+                pinActual: usuario.pin,
+                nuevoPin: document.getElementById('editar-pin').value,
+                nuevoRol: document.getElementById('editar-rol').value,
+                nuevosExtras: document.getElementById('editar-extras').value,
+                nuevoEstado: document.getElementById('editar-estado').value === 'true'
+            };
+
             try {
                 mostrarCarga();
-                const response = await fetch('/actualizar-extras', {
+                const response = await fetch('/actualizar-usuario', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
-                    body: JSON.stringify({
-                        pin: usuario.pin,
-                        nuevosExtras: nuevosExtras
-                    })
+                    body: JSON.stringify(datosActualizados)
                 });
 
                 const data = await response.json();
                 if (data.success) {
-                    mostrarNotificacion('Extras actualizados correctamente', 'success');
+                    mostrarNotificacion('Usuario actualizado correctamente', 'success');
                     anuncio.style.display = 'none';
                     await cargarUsuarios();
                 } else {
-                    throw new Error(data.error || 'Error al actualizar extras');
+                    throw new Error(data.error || 'Error al actualizar usuario');
                 }
             } catch (error) {
                 mostrarNotificacion(error.message, 'error');
-            }finally {
+            } finally {
                 ocultarCarga();
             }
         };
+
         btnEliminar.onclick = () => {
-            // Mostrar confirmación en el mismo anuncio
             anuncioContenido.innerHTML = `
                 <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
                 <div class="detalles-grup center">
@@ -411,9 +401,8 @@ async function mostrarDetallesUsuario(pin) {
                 </div>
             `;
 
-            // Manejadores para la confirmación
             const btnConfirmarEliminacion = anuncioContenido.querySelector('.confirmar-eliminacion');
-            const btnCancelar = anuncioContenido.querySelector('.cancelar');
+            const btnCancelarEliminacion = anuncioContenido.querySelector('.cancelar');
 
             btnConfirmarEliminacion.onclick = async () => {
                 try {
@@ -440,71 +429,8 @@ async function mostrarDetallesUsuario(pin) {
                 }
             };
 
-            btnCancelar.onclick = () => mostrarDetallesUsuario(usuario.pin);
+            btnCancelarEliminacion.onclick = () => mostrarDetallesUsuario(usuario.pin);
         };
-        btnActualizarPin.onclick = async () => {
-            const nuevoPIN = document.getElementById('nuevo-pin').value;
-            if (nuevoPIN && nuevoPIN.length === 4) {
-                try {
-                    mostrarCarga();
-                    const response = await fetch('/actualizar-pin', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({
-                            pin: usuario.pin,
-                            nuevoPIN: nuevoPIN
-                        })
-                    });
-
-                    const data = await response.json();
-                    if (data.success) {
-                        mostrarNotificacion('PIN actualizado correctamente', 'success');
-                        anuncio.style.display = 'none';
-                        await cargarUsuarios();
-                    } else {
-                        throw new Error(data.error || 'Error al actualizar PIN');
-                    }
-                } catch (error) {
-                    mostrarNotificacion(error.message, 'error');
-                }
-                finally {
-                    ocultarCarga();
-                }
-            } else {
-                mostrarNotificacion('El PIN debe tener 4 dígitos', 'error');
-            }
-        };
-        btnActualizarRol.onclick = async () => {
-            const nuevoRol = document.getElementById('nuevo-rol').value;
-            try {
-                mostrarCarga();
-                const response = await fetch('/actualizar-rol', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        pin: usuario.pin,
-                        nuevoRol: nuevoRol
-                    })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    mostrarNotificacion('Rol actualizado correctamente', 'success');
-                    anuncio.style.display = 'none';
-                    await cargarUsuarios();
-                } else {
-                    throw new Error(data.error || 'Error al actualizar rol');
-                }
-            } catch (error) {
-                mostrarNotificacion(error.message, 'error');
-            }finally {
-                ocultarCarga();
-            }
-        };
-
-
 
         btnCancelar.onclick = () => anuncio.style.display = 'none';
 

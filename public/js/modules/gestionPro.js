@@ -154,8 +154,9 @@ function mostrarDetallesNoVerificados(registros) {
     const container = document.querySelector('.anuncio-contenido');
     
     container.innerHTML = `
+    <h2><i class="fas fa-clock"></i> Registros no verificados</h2>
         <div class="relleno">
-            <h3><i class="fas fa-clock"></i> Registros Pendientes de Verificación</h3>
+            
                 ${registros.map(registro => `
                 <div class="detalles-grup">
                     <div class="detalle-item">

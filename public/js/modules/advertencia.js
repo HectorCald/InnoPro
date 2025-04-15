@@ -1,6 +1,6 @@
 export async function cargarNotificaciones() {
     try {
-        // Primero obtener el usuario actual y su rol
+        mostrarCarga();
         const userResponse = await fetch('/obtener-mi-rol');
         const userData = await userResponse.json();
         const nombreUsuarioActual = userData.nombre;
@@ -49,6 +49,8 @@ export async function cargarNotificaciones() {
     } catch (error) {
         console.error('Error al cargar notificaciones:', error);
         mostrarNotificacion('Error al cargar notificaciones', 'error');
+    }finally{
+        ocultarCarga();
     }
 }
 function mostrarAdvertencias(notificaciones) {
@@ -83,15 +85,11 @@ function mostrarAdvertencias(notificaciones) {
     // Configurar manejadores de eventos
     configurarManejadoresEventos(advertenciaDiv);
 }
-
-// Función para parsear la fecha del formato dd/mm/yy
 function parsearFecha(fechaStr) {
     if (!fechaStr) return new Date();
     const [dia, mes, año] = fechaStr.split('/');
     return new Date(2000 + parseInt(año), parseInt(mes) - 1, parseInt(dia));
 }
-
-// Función para calcular la clase según el tiempo
 export function calcularClaseNotificacion(fecha) {
     const fechaNotif = parsearFecha(fecha);
     const diasTranscurridos = Math.floor((new Date() - fechaNotif) / (1000 * 60 * 60 * 24));
@@ -102,7 +100,6 @@ export function calcularClaseNotificacion(fecha) {
     if (diasTranscurridos <= 14) return 'dias-7';
     return 'dias-14';
 }
-
 function mostrarInterfazNotificaciones(advertenciaDiv, notificaciones) {
     advertenciaDiv.innerHTML = `
         <div class="advertencia-contenido">
@@ -146,7 +143,6 @@ function mostrarInterfazNotificaciones(advertenciaDiv, notificaciones) {
         </div>
     `;
 }
-
 function configurarManejadoresEventos(advertenciaDiv) {
     // Configurar el botón eliminar todas
     const btnEliminarTodas = advertenciaDiv.querySelector('.btn-eliminar-todas');
@@ -176,8 +172,6 @@ function configurarManejadoresEventos(advertenciaDiv) {
         btn.addEventListener('click', eliminarNotificacionIndividual);
     });
 }
-
-
 async function eliminarNotificacionesUsuarioActual() {
     const advertenciaDiv = document.querySelector('.advertencia');
     const confirmacionDiv = advertenciaDiv.querySelector('.confirmacion-lectura');
@@ -254,6 +248,7 @@ async function eliminarNotificacionesUsuarioActual() {
 }
 export async function registrarNotificacion(origen, destino, mensaje) {
     try {
+        mostrarCarga();
         const response = await fetch('/registrar-notificacion', {
             method: 'POST',
             headers: {
@@ -275,5 +270,7 @@ export async function registrarNotificacion(origen, destino, mensaje) {
     } catch (error) {
         console.error('Error al registrar notificación:', error);
         throw error;
+    }finally{
+        ocultarCarga();
     }
 }

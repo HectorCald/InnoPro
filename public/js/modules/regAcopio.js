@@ -449,6 +449,8 @@ function configurarFiltrosBotones() {
     });
 }
 
+
+
 function actualizarContador() {
     const registrosVisibles = document.querySelectorAll('.registro-card-acopio:not([style*="display: none"])').length;
     const contadores = document.querySelectorAll('.contador');
