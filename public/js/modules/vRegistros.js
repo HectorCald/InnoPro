@@ -692,7 +692,6 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
         <h2><i class="fas fa-edit"></i> Editar Registro</h2>
         <div class="relleno" >
         <p>Información General:</p>
-            <form id="form-edicion">
                 <input type="hidden" id="edit-id" value="${id}">
                 <div class="campo-form">
                     <label for="edit-fecha">Fecha:</label>
@@ -736,7 +735,6 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
                     <p for="razon-edicion">Razón de la edición:</p>
                     <textarea id="razon-edicion" rows="3" required placeholder="Explique el motivo de la edición"></textarea>
                 </div>
-            </form>
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn green confirmar"><i class="fas fa-sync"></i>  Actualizar</button>
@@ -790,7 +788,7 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
     confirmarBtn.addEventListener('click', async () => {
         const razonEdicion = document.getElementById('razon-edicion').value;
         if (!razonEdicion) {
-            alert('Por favor, ingrese la razón de la edición');
+            mostrarNotificacion('Por favor, ingrese la razón de la edición', 'warning');
             return;
         }
 

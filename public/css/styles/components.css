@@ -1,7 +1,6 @@
-/* ===== IMPORTACIONES ===== */
+/* ==================== DISEÑO GENERAL DE ANUNCIO ==================== */
 @import'styles/colores.css';
 
-/* ===== COMPONENTE ANUNCIO ===== */
 .anuncio {
     position: absolute;
     top: 70px !important;
@@ -19,7 +18,6 @@
     transition: display 0.3s ease;
 }
 
-/* ===== CONTENIDO DEL ANUNCIO ===== */
 .anuncio-contenido {
     background: var(--second-color);
     border-radius: 10px;
@@ -40,9 +38,7 @@
     z-index: 8;
     border: 1px solid var(--cero-color);
 }
-
-/* ===== ÁREA DE RELLENO CON SCROLL ===== */
-.anuncio-contenido .relleno {
+.anuncio-contenido .relleno{
     background: none;
     border-radius: 10px;
     text-align: center;
@@ -83,7 +79,6 @@
     padding-right: 5px;
 }
 
-/* ===== ELEMENTOS DE TEXTO DEL ANUNCIO ===== */
 .anuncio-contenido i {
     font-size: 15px;
     color: var(--primary-text);
@@ -108,7 +103,6 @@
     font-weight: 500;
 }
 
-/* ===== BOTONES DEL ANUNCIO ===== */
 .anuncio-botones {
     display: flex;
     gap: 10px;
@@ -129,7 +123,6 @@
     background: none;
     color: white;
 }
-
 .anuncio-btn i {
     color: white;
 }
@@ -143,7 +136,17 @@
     }
 }
 
-/* ===== VARIANTES DE BOTONES ===== */
+@media screen and (min-width: 768px) {
+    .anuncio-botones {
+        .anuncio-btn {
+            .btn-text {
+                display: inline;
+                /* Mostrar texto en pantallas grandes */
+            }
+        }
+    }
+}
+
 .anuncio-btn.red {
     background: #dc3545;
 }
@@ -159,8 +162,7 @@
 .anuncio-btn.blue {
     background: #0086e7;
 }
-
-.anuncio-btn.close {
+.anuncio-btn.close{
     display: flex;
     justify-content: center;
     align-items: center;
@@ -174,7 +176,6 @@
     padding: 0 !important;
     border-radius: 50%;
 }
-
 .anuncio-btn.close i {
     display: flex;
     justify-content: center;
@@ -195,7 +196,6 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* ===== BOTONES DE ACCIÓN ===== */
 .anuncio-btn.delete,
 .anuncio-btn.add,
 .anuncio-btn.run {
@@ -223,7 +223,6 @@
     font-size: 25px;
 }
 
-/* ===== FORMULARIOS Y CAMPOS ===== */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -247,7 +246,6 @@
     color: var(--primary-text);
     font-size: 16px;
 }
-
 .anuncio-contenido input:focus,
 .anuncio-contenido textarea:focus,
 .anuncio-contenido select:focus {
@@ -256,7 +254,6 @@
     outline: none;
 }
 
-/* ===== CAMPO DE FECHA ===== */
 .anuncio-contenido input[type="date"] {
     background: var(--primary-color);
     padding: 15px;
@@ -271,6 +268,7 @@
     min-height: 60px;
 }
 
+/* Specific styles for mobile */
 @supports (-webkit-touch-callout: none) {
     .anuncio-contenido input[type="date"] {
         min-height: 60px !important;
@@ -287,7 +285,6 @@
     width: 20px;
 }
 
-/* ===== CAMPOS DE FORMULARIO ===== */
 .campo-form {
     display: flex;
     justify-content: center;
@@ -305,7 +302,6 @@
     color: rgb(161, 161, 161);
 }
 
-/* ===== SELECTS Y OPCIONES ===== */
 .anuncio-contenido select {
     width: 100%;
     min-height: 40px !important;
@@ -316,20 +312,16 @@
     padding: 10px;
     border-radius: 15px;
 }
-
 .anuncio-contenido select option {
     background: var(--primary-color);
     color: var(--primary-text);
 }
-
-/* ===== GRUPOS DE FORMULARIO ===== */
-.form-grup {
+.form-grup{
     background-color: var(--primary-color);
     padding: 10px;
     border-radius: 10px;
     position: relative;
 }
-
 .producto-status-icon {
     position: absolute;
     right: 20px;
@@ -337,18 +329,14 @@
     transform: translateY(-50%);
     display: none;
 }
-
 .producto-status-icon i {
     font-size: 13px;
 }
-
 .form-group label {
     display: block;
     color: var(--primary-text);
     font-size: 14px;
 }
-
-/* ===== GRUPOS DE DETALLES ===== */
 .detalles-grup {
     display: flex;
     flex-direction: column;
@@ -357,7 +345,6 @@
     background-color: var(--primary-color);
     border-radius: 10px;
 }
-
 .detalles-grup.center p {
     display: flex;
     text-align: center !important;
@@ -369,15 +356,13 @@
     width: 100%;
 }
 
-/* ===== ITEMS DE DETALLE ===== */
 .detalle-item {
     display: flex;
     justify-content: space-between;
     gap: 5px;
     align-items: center;
 }
-
-.detalle-item i {
+.detalle-item i{
     display: flex;
     justify-content: center;
     align-items: center;
@@ -389,21 +374,17 @@
     font-size: 13px;
     cursor: pointer;
 }
-
-.detalle-item i.delete {
-    background-color: red;
+.detalle-item i.delete{
+    background-color:red ;
 }
-
-.detalle-item i.add {
-    background-color: green;
+.detalle-item i.add{
+    background-color:green;
 }
-
-.detalle-item i.run {
-    background-color: yellow;
+.detalle-item i.run{
+    background-color:yellow;
     color: black;
 }
-
-.detalle-item i:hover {
+.detalle-item i:hover{
     background-color: var(--primary-color);
 }
 
@@ -415,7 +396,6 @@
     text-align: right;
 }
 
-/* ===== SUGERENCIAS ===== */
 .sugerencia-pedido-existente {
     background: var(--background);
     padding: 1em;
@@ -423,32 +403,17 @@
     margin-top: 1em;
     border: 1px solid #828282;
 }
-
-.sugerencias-container {
+.sugerencias-container{
     border: 1px solid gray;
     border-radius: 10px;
 }
-
-.sugerencias-container .sugerencias-list li {
+.sugerencias-container .sugerencias-list li{
     border-bottom: 1px solid gray;
     padding-block: 10px;
     list-style: none;
 }
-
-.sugerencias-container .sugerencias-list li:hover {
+.sugerencias-container .sugerencias-list li:hover{
     background-color: var(--tercer-color);
-}
-
-/* ===== NOTAS Y ANIMACIONES ===== */
-.nota {
-    color: yellow !important;
-    font-size: 12px;
-    font-weight: normal;
-}
-
-.nota i {
-    color: yellow !important;
-    font-size: 12px;
 }
 
 @keyframes aparecer {
@@ -456,13 +421,23 @@
         transform: scale(0.8);
         opacity: 0;
     }
+
     to {
         transform: scale(1);
         opacity: 1;
     }
 }
+.nota{
+    color: yellow !important;
+    font-size: 12px;
+    font-weight: normal;
+}
+.nota i{
+    color: yellow !important;
+    font-size: 12px;
+}
 
-/* ===== COMPONENTE NOTIFICADOR ===== */
+/* ==================== DISEÑO GENERAL DE NOTIFICADOR ==================== */
 .notificador {
     position: fixed;
     top: 75px;
@@ -488,7 +463,6 @@
     transition: all 0.3s ease;
 }
 
-/* Estados de notificación */
 .notificacion.success {
     border-left: 4px solid #28a745;
 }
@@ -535,12 +509,12 @@
     color: white;
 }
 
-/* Animaciones de notificación */
 @keyframes slideIn {
     from {
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -552,13 +526,16 @@
         transform: translateX(0);
         opacity: 1;
     }
+
     to {
         transform: translateX(100%);
         opacity: 0;
     }
 }
 
-/* ===== COMPONENTE LOADER ===== */
+
+
+/* ==================== DISEÑO GENERAL DEL LOANDER ==================== */
 .carga {
     position: fixed;
     top: 0;
@@ -613,17 +590,5 @@
     50% {
         transform: translateY(-20px);
         background-color: gray;
-    }
-}
-
-/* ===== MEDIA QUERIES ===== */
-@media screen and (min-width: 768px) {
-    .anuncio-botones {
-        .anuncio-btn {
-            .btn-text {
-                display: inline;
-                /* Mostrar texto en pantallas grandes */
-            }
-        }
     }
 }
