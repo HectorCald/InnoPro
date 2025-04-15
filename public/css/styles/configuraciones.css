@@ -62,13 +62,14 @@
         color: white;
         border: none;
         padding: 10px 15px;
-        border-radius: 5px;
+        border-radius: 10px;
         cursor: pointer;
         display: flex;
         align-items: center;
         gap: 8px;
         margin-top: 10px;
         width: fit-content;
+        font-size: 13px;
     }
 
     .btn-cambiar-pin:hover {

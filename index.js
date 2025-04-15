@@ -111,8 +111,6 @@ async function verificarPin(pin) {
     }
 }
 
-
-
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
     res.render('login');
@@ -129,7 +127,6 @@ app.get('/dashboard_db', requireAuth, (req, res) => {
 app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
 });
-
 
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
 app.post('/verificar-pin', async (req, res) => {
@@ -168,7 +165,6 @@ app.post('/cerrar-sesion', (req, res) => {
     res.json({ mensaje: 'Sesión cerrada correctamente' });
 });
 
-
 /* ==================== RUTAS DE API - DATOS DE USUARIO ==================== */
 app.get('/obtener-nombre', requireAuth, (req, res) => {
     res.json({ nombre: req.user.nombre });
@@ -203,7 +199,6 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
         });
     }
 });
-
 
 /* ==================== API DE INICIO ==================== */
 app.get('/obtener-estadisticas-usuario', requireAuth, async (req, res) => {
@@ -642,7 +637,6 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
     }
 });
 
-
 /* ==================== RUTAS DE API - GESTIÓN DE USUARIOS ==================== */
 app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
     try {
@@ -871,7 +865,6 @@ app.post('/actualizar-usuario', requireAuth, async (req, res) => {
     }
 });
 
-
 /* ==================== API DE PRODUCTOS ==================== */
 app.get('/obtener-productos', requireAuth, async (req, res) => {
     try {
@@ -891,7 +884,6 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
         });
     }
 });
-
 
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
@@ -1022,7 +1014,6 @@ app.post('/obtener-extras-registros', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
 
 /* ==================== API DE PERMISOS ==================== */
 app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
@@ -1283,9 +1274,6 @@ app.put('/rechazar-pedido', requireAuth, async (req, res) => {
     }
 });
 
-
-
-
 /* ==================== API DE COMPRAS ==================== */
 app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
     try {
@@ -1430,8 +1418,6 @@ app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
         });
     }
 });
-
-
 
 /* ==================== API DE PRECIOS DE PRODUCCIÓN ==================== */
 app.get('/obtener-precios-base', requireAuth, async (req, res) => {
@@ -1596,8 +1582,6 @@ app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al eliminar la regla: ' + error.message });
     }
 });
-
-
 
 /* ==================== RUTAS DE API DE ADVERTENCIA ==================== */
 app.get('/obtener-notificaciones', requireAuth, async (req, res) => {
@@ -1811,7 +1795,6 @@ app.post('/registrar-notificacion', requireAuth, async (req, res) => {
         });
     }
 });
-
 
 /* ==================== RUTAS DE API REGISTROS ACOPIO -  ==================== */
 app.get('/obtener-registros-pedidos', requireAuth, async (req, res) => {
@@ -2106,7 +2089,6 @@ app.post('/agregar-producto-almacen', requireAuth, async (req, res) => {
     }
 });
 
-
 /* ==================== RUTAS DE API ALMACEN ACOPIO ==================== */
 app.get('/obtener-almacen-acopio', requireAuth, async (req, res) => {
     try {
@@ -2272,7 +2254,6 @@ app.delete('/eliminar-producto-acopio', requireAuth, async (req, res) => {
         });
     }
 });
-
 
 /* ==================== API DE ALMACEN ACOPIO(INGRESOS, SALIDAS, MOVIMIENTOS) ==================== */
 app.post('/procesar-ingreso-acopio', requireAuth, async (req, res) => {
@@ -2605,8 +2586,6 @@ app.put('/actualizar-movimiento-acopio', requireAuth, async (req, res) => {
     }
 });
 
-
-
 /* ==================== RUTAS DE API ALMACEN INGRESOS, SALIDAS, FORMATO, PRECIOS, REGISTRAR MOVIMIENTOS ==================== */
 app.put('/ingresar-stock-almacen', requireAuth, async (req, res) => {
     try {
@@ -2892,7 +2871,6 @@ app.delete('/eliminar-tag',requireAuth, async (req, res) => {
     }
 });
 
-
 /* ==================== RUTAS DE API TAREAS (ACOPIO) ==================== */
 app.post('/verificar-tarea', requireAuth, async (req, res) => {
     try {
@@ -3029,7 +3007,6 @@ app.delete('/eliminar-tarea', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al eliminar la tarea' });
     }
 });
-
 
 /* ==================== RUTAS DE API MOVIMIENTOS Y/O REGISTROS ALMACEN GENERAL ==================== */
 app.get('/obtener-movimientos-almacen', requireAuth, async (req, res) => {
@@ -3184,7 +3161,6 @@ app.delete('/eliminar-movimiento-almacen', requireAuth, async (req, res) => {
         });
     }
 });
-
 
 /* ==================== RUTAS DE CALCULAR MATERIA PRIMA ==================== */
 app.get('/obtener-registros-mp', requireAuth, async (req, res) => {
@@ -3435,10 +3411,6 @@ app.put('/actualizar-registro-mp', requireAuth, async (req, res) => {
         });
     }
 });
-
-
-
-
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {

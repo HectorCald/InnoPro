@@ -140,7 +140,7 @@ async function mostrarFormularioAgregarUsuario() {
         <div class="relleno">
             <div class="campo-form">
                 <label for="nombre">Nombre:</label>
-                <input type="text" id="nombre" class="form-input" placeholder="Nombre del usuario">
+                <input type="text" id="nombre" class="form-input" placeholder="Nombre del usuario" style="text-transform: uppercase;">
             </div>
             <div class="campo-form">
                 <label for="pin">PIN:</label>

@@ -129,8 +129,8 @@ function crearPedidoCard(pedido, isAdmin) {
         </div>
     ` : (estado.toLowerCase() === 'recibido' ? `
         <div class="acciones">
-            <button class="btn-cambiar-estado anuncio-btn green">
-                <i class="fas fa-exchange-alt"></i> Cambiar a Ingresado
+            <button class="btn-cambiar-estado anuncio-btn blue">
+                <i class="fas fa-exchange-alt"></i> Ingresado
             </button>
             <button class="btn-ingresar-acopio anuncio-btn green">
                 <i class="fas fa-plus-circle"></i> Ingresar
@@ -142,7 +142,7 @@ function crearPedidoCard(pedido, isAdmin) {
     ` : estado.toLowerCase() === 'ingresado' ? `
         <div class="acciones">
             <button class="btn-cambiar-estado anuncio-btn blue">
-                <i class="fas fa-exchange-alt"></i> Cambiar a Recibido
+                <i class="fas fa-exchange-alt"></i> No ingresado
             </button>
         </div>
     ` : '');

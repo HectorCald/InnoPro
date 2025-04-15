@@ -11,7 +11,7 @@ export async function inicializarConfiguraciones() {
 
         configuracionesView.innerHTML = `
         <div class="title">
-                <h2><i class="fas fa-cog"></i> Configuraciones</h2>
+                <h2><i class="fas fa-cog"></i> Ajustes</h2>
             </div>
                 <div class="config-section perfil-section">
                     <h2><i class="fas fa-user-circle"></i> Perfil de Usuario</h2>
@@ -27,7 +27,7 @@ export async function inicializarConfiguraciones() {
                 <div class="config-section app-info">
                     <h2><i class="fas fa-info-circle"></i> Información de la Aplicación</h2>
                     <div class="app-details">
-                        <p><strong>Versión:</strong> Beta: 1.0.5</p>
+                        <p><strong>Versión:</strong> Beta: 1.0.7</p>
                         <p><strong>Última actualización:</strong> ${new Date().toLocaleDateString()}</p>
                         <p><strong>Desarrollado por:</strong> Damabrava</p>
                     </div>

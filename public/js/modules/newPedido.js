@@ -93,6 +93,16 @@ export async function mostrarFormularioPedido(producto) {
             const unidad = document.getElementById('unidad-medida').value;
             const observaciones = document.getElementById('obs-pedido').value.trim();
 
+            // Validar que el producto exista en la lista de sugerencias
+            const productoExiste = pedidos.some(pedido => 
+                normalizeText(pedido) === normalizeText(nombre)
+            );
+
+            if (!productoExiste) {
+                mostrarNotificacion('El producto no existe en la lista. Por favor, seleccione un producto válido', 'warning');
+                return;
+            }
+
             if (!nombre || !cantidad) {
                 mostrarNotificacion('Por favor complete los campos requeridos', 'warning');
                 return;
