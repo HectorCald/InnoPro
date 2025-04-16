@@ -3,7 +3,7 @@
   "short_name": "InnoPro",
   "description": "Sistema de gestión Damabrava",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
   "form_factor": "wide",
@@ -56,5 +56,45 @@
     "sync_interval": "1d",
     "retry_delay": "1h",
     "max_retries": 3
-  }
+  },
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://app-produccion-db.vercel.app/manifest.json"
+    }
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [],
+  "share_target": {
+    "action": "/share-target",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "media",
+          "accept": ["image/*"]
+        }
+      ]
+    }
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+innopro",
+      "url": "/%s"
+    }
+  ],
+  "display_override": ["fullscreen", "minimal-ui"],
+  "categories": ["productivity", "business"],
+  "dir": "ltr",
+  "iarc_rating_id": "",
+  "scope": "/",
+  "assetlinks": [{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.vercel.app_produccion_db.twa",
+      "sha256_cert_fingerprints": ["54:F7:2B:7F:C6:B0:F6:70:4D:7A:C4:68:10:88:06:AB:95:A3:A1:70:0F:11:2B:1C:70:ED:5A:52:13:01:4E:48"]
+    }
+  }]
 }
