@@ -8,9 +8,19 @@
   "theme_color": "#4CAF50",
   "form_factor": "wide",
   "id": "InnoProho",
+  "orientation": "any",
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
   },
+  "screenshots": [
+    {
+      "src": "/screenshots/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Pantalla principal de InnoPro"
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -36,5 +46,15 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "sync": {
+    "periodic": true,
+    "minPeriod": 60,
+    "maxPeriod": 300
+  },
+  "background_sync": {
+    "sync_interval": "1d",
+    "retry_delay": "1h",
+    "max_retries": 3
+  }
 }
