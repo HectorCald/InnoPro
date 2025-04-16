@@ -397,6 +397,7 @@ function centrarInputEnFoco() {
 document.addEventListener('DOMContentLoaded', async () => {
     let anuncio = document.querySelector('.anuncio');
     let dashboard = document.querySelector('.dashboard');
+    let lastPopState = 0;
     
     // Función para ocultar el anuncio
     function ocultarAnuncio() {
@@ -412,14 +413,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             history.pushState(null, '', window.location.pathname);
         }
     }
-    window.addEventListener('popstate', () => {
+
+    window.addEventListener('popstate', (e) => {
+        // Prevenir múltiples activaciones en dispositivos móviles
+        const now = Date.now();
+        if (now - lastPopState < 300) return;
+        lastPopState = now;
+
         const anuncioVisible = document.querySelector('.anuncio');
+        const advertenciaVisible = document.querySelector('.advertencia');
+        
         if (anuncioVisible && anuncioVisible.style.display === 'flex') {
             ocultarAnuncio();
+        } else if (advertenciaVisible && advertenciaVisible.style.display === 'flex') {
+            advertenciaVisible.style.display = 'none';
+            document.querySelector('.container').classList.remove('no-touch');
         } else {
             window.location.reload();
         }
     });
+    
     // Cuando se muestre el anuncio, agregar una entrada al historial
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
