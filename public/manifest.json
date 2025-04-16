@@ -4,12 +4,7 @@
   "description": "Sistema de gestión Damabrava",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay"],
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
-  "form_factor": "wide",
-  "categories": ["productivity"],
-  "prefer_related_applications": false,
-  "scope": "/",
-  "orientation": "any"
+  "form_factor": "wide"
 }
