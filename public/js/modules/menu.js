@@ -178,6 +178,13 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
             icono: 'fa-puzzle-piece',
             texto: 'Calcular MP',
             onclick: 'onclick="inicializarCalcularMP()"'
+        },
+        'imgUpload': {
+            clase: 'opcion-btn submenu-item',
+            vista: 'imgUpload-view',
+            icono: 'fa-puzzle-piece',
+            texto: 'Subir img',
+            onclick: 'onclick="initializeImgUpload()"'
         }
     };
 

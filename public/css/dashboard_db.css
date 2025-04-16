@@ -38,6 +38,7 @@
 @import 'styles/configuraciones.css';
 @import 'styles/gestionPro.css';
 @import 'styles/calcularMP.css';
+@import 'styles/imgUpload.css';
 
 /* ===== ESTILOS GLOBALES ===== */
 body, .container {

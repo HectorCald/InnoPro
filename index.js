@@ -8,6 +8,7 @@ import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 
+
 /* ==================== CONFIGURACIÓN INICIAL ==================== */
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -32,25 +33,20 @@ const auth = new google.auth.GoogleAuth({
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+// ... código existente ...
 app.use(express.static(join(__dirname, 'public'), {
     setHeaders: (res, path) => {
         if (path.endsWith('.css')) {
             res.setHeader('Content-Type', 'text/css');
-            res.setHeader('X-Content-Type-Options', 'nosniff');
+        } else if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        } else if (path.endsWith('.json')) {
+            res.setHeader('Content-Type', 'application/manifest+json');
+            res.setHeader('Access-Control-Allow-Origin', '*');
         }
     }
 }));
-app.get('*.css', (req, res, next) => {
-    res.type('text/css');
-    next();
-});
-app.use('/css', express.static(join(__dirname, 'public/css'), {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-        }
-    }
-}));
+// ... resto del código ...
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
@@ -125,6 +121,83 @@ app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
 });
 
+
+
+/* ==================== RUTAS PARA IMÁGENES ==================== */
+app.post('/subir-imagen', requireAuth, async (req, res) => {
+    try {
+        const { nombre, imagen } = req.body; // imagen debe ser una cadena base64
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        // Obtener el último ID
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Imagenes!A:C'
+        });
+
+        const rows = response.data.values || [];
+        const nextId = rows.length > 1 ? parseInt(rows[rows.length - 1][0]) + 1 : 1;
+
+        // Guardar la imagen
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Imagenes!A:C',
+            valueInputOption: 'RAW',
+            resource: {
+                values: [[nextId, nombre, imagen]]
+            }
+        });
+
+        res.json({
+            success: true,
+            mensaje: 'Imagen guardada correctamente',
+            id: nextId
+        });
+    } catch (error) {
+        console.error('Error al subir imagen:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al guardar la imagen'
+        });
+    }
+});
+
+app.get('/obtener-imagen/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sheets = google.sheets({ version: 'v4', auth });
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Imagenes!A:C'
+        });
+
+        const rows = response.data.values || [];
+        const imagen = rows.find(row => row[0] === id);
+
+        if (!imagen) {
+            return res.status(404).json({
+                success: false,
+                error: 'Imagen no encontrada'
+            });
+        }
+
+        res.json({
+            success: true,
+            imagen: {
+                id: imagen[0],
+                nombre: imagen[1],
+                data: imagen[2]
+            }
+        });
+    } catch (error) {
+        console.error('Error al obtener imagen:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener la imagen'
+        });
+    }
+});
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
 app.post('/verificar-pin', async (req, res) => {
     try {

@@ -1,11 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>InnoPro</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="InnoPro">
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="./css/login.css">
+    <link rel="stylesheet" href="/css/login.css">
+    
+    <!-- Debug Logging -->
+    <script>
+        // Log manifest loading
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        manifestLink.addEventListener('load', () => {
+            console.log('✅ Manifest loaded successfully');
+        });
+        manifestLink.addEventListener('error', (error) => {
+            console.error('❌ Error loading manifest:', error);
+        });
+
+        // Service Worker Registration with detailed logging
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    console.log('🔄 Starting Service Worker registration...');
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    console.log('✅ ServiceWorker registration successful. Scope:', registration.scope);
+                    
+                    // Log Service Worker state changes
+                    registration.addEventListener('statechange', () => {
+                        console.log('ℹ️ Service Worker state changed to:', registration.active?.state);
+                    });
+                } catch (error) {
+                    console.error('❌ ServiceWorker registration failed:', error);
+                }
+            });
+        } else {
+            console.warn('⚠️ Service Workers are not supported in this browser');
+        }
+    </script>
 </head>
 <body>

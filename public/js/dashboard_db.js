@@ -16,6 +16,7 @@ import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
 import { inicializarConfiguraciones } from './modules/configuraciones.js';
 import { inicializarGestionPro } from './modules/gestionPro.js';
 import { inicializarCalcularMP } from './modules/calcularMP.js';
+import { initializeImgUpload } from './modules/imgUpload.js';
 
 export function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
@@ -26,7 +27,7 @@ export function scrollToTop(ventana) {
         });
     }
 }
-
+window.initializeImgUpload = initializeImgUpload;
 window.scrollToTop = scrollToTop;
 
 // Funciones del menú y navegación,
@@ -219,7 +220,7 @@ async function iniciarApp() {
             return;
         }
 
-        const vistas = document.querySelectorAll('.calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
+        const vistas = document.querySelectorAll('imgUpload-view, .calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
 
         // Ocultar todas las vistas inicialmente
         vistas.forEach(vista => {
