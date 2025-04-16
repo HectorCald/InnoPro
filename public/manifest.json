@@ -8,6 +8,9 @@
   "theme_color": "#4CAF50",
   "form_factor": "wide",
   "id": "InnoProho",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
