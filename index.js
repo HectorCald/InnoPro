@@ -34,6 +34,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 // ... código existente ...
+// ... código existente ...
 app.use(express.static(join(__dirname, 'public'), {
     setHeaders: (res, path) => {
         if (path.endsWith('.css')) {
@@ -41,8 +42,12 @@ app.use(express.static(join(__dirname, 'public'), {
         } else if (path.endsWith('.js')) {
             res.setHeader('Content-Type', 'application/javascript');
         } else if (path.endsWith('.json')) {
-            res.setHeader('Content-Type', 'application/manifest+json');
-            res.setHeader('Access-Control-Allow-Origin', '*');
+            if (path.includes('assetlinks.json')) {
+                res.setHeader('Content-Type', 'application/json');
+                res.setHeader('Access-Control-Allow-Origin', '*');
+            } else {
+                res.setHeader('Content-Type', 'application/manifest+json');
+            }
         }
     }
 }));
