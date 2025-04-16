@@ -117,7 +117,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
     res.redirect('/dashboard_db')
 });
 app.get('/dashboard_alm', requireAuth, (req, res) => {
-    res.redirect('/dashboard_db')
+    res.redirect('/dashboard_db')   
 });
 app.get('/dashboard_db', requireAuth, (req, res) => {
     res.render('dashboard_db');

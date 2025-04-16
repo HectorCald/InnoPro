@@ -398,18 +398,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     let anuncio = document.querySelector('.anuncio');
     let dashboard = document.querySelector('.dashboard');
     
-    anuncio.addEventListener('click', (e) => {
-        if (e.target === anuncio) {
-            anuncio.style.display = 'none';
-            document.querySelector('.overlay').style.display = 'none';
-            document.querySelector('.container').classList.remove('no-touch');
+    // Función para ocultar el anuncio
+    function ocultarAnuncio() {
+        const anuncioVisible = document.querySelector('.anuncio');
+        const overlay = document.querySelector('.overlay');
+        const container = document.querySelector('.container');
+        
+        if (anuncioVisible && anuncioVisible.style.display === 'flex') {
+            anuncioVisible.style.display = 'none';
+            if (overlay) overlay.style.display = 'none';
+            if (container) container.classList.remove('no-touch');
+            // Prevenir que se agregue una nueva entrada al historial
+            history.pushState(null, '', window.location.pathname);
+        }
+    }
+    window.addEventListener('popstate', () => {
+        const anuncioVisible = document.querySelector('.anuncio');
+        if (anuncioVisible && anuncioVisible.style.display === 'flex') {
+            ocultarAnuncio();
+        } else {
+            window.location.reload();
         }
     });
+    // Cuando se muestre el anuncio, agregar una entrada al historial
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.target.style.display === 'flex') {
+                history.pushState(null, '', window.location.pathname);
+            }
+        });
+    });
+    
+    if (anuncio) {
+        observer.observe(anuncio, { attributes: true, attributeFilter: ['style'] });
+    }
+
+    // Event listeners existentes
+    anuncio.addEventListener('click', (e) => {
+        if (e.target === anuncio) {
+            ocultarAnuncio();
+        }
+    });
+
     dashboard.addEventListener('click', () => {
         if (anuncio.style.display === 'flex') {
-            anuncio.style.display = 'none';
-            overlay.style.display = 'none';
-            container.classList.remove('no-touch');
+            ocultarAnuncio();
         }
     });
 

@@ -5,7 +5,7 @@
   "start_url": "/",
   "display": "fullscreen",
   "background_color": "#ffffff",
-  "theme_color": "#4CAF50",
+  "theme_color": "#1a1a1a",
   "form_factor": "wide",
   "id": "InnoProho",
   "orientation": "any",
