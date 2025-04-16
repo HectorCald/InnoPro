@@ -467,15 +467,55 @@ export async function confirmarFinalizacionPedidos() {
         }
 
         if (data.success) {
+            // Generar texto para WhatsApp
             const pedidosText = `*PEDIDO DE MATERIA PRIMA*\n\n*Pedido:*\n${pedidosTemporales.map(pedido =>
                 `• ${pedido.nombre}: ${pedido.cantidad}${pedido.observaciones ? ` (${pedido.observaciones})` : ''}`
             ).join('\n')}\n\n_El pedido ya se encuentra en la aplicación de Damabrava_`;
 
+            // Generar PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Configurar fuente para caracteres especiales
+            doc.setFont("helvetica");
+            
+            // Título
+            doc.setFontSize(16);
+            doc.text("PEDIDO DE MATERIA PRIMA", 105, 20, { align: "center" });
+            
+            // Fecha y usuario
+            doc.setFontSize(12);
+            doc.text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`, 20, 35);
+            doc.text(`Usuario: ${usuarioActual}`, 20, 45);
+            
+            // Detalles del pedido
+            doc.setFontSize(14);
+            doc.text("Detalles del Pedido:", 20, 60);
+            
+            let yPos = 70;
+            pedidosTemporales.forEach(pedido => {
+                doc.setFontSize(12);
+                doc.text(`• ${pedido.nombre}: ${pedido.cantidad}`, 30, yPos);
+                if (pedido.observaciones) {
+                    yPos += 7;
+                    doc.setFontSize(10);
+                    doc.text(`  Observaciones: ${pedido.observaciones}`, 35, yPos);
+                }
+                yPos += 10;
+            });
+            
+            // Pie de página
+            doc.setFontSize(10);
+            doc.text("Documento generado automáticamente por InnoPro", 105, 280, { align: "center" });
+
+            // Descargar PDF
+            doc.save(`Pedido_${new Date().toISOString().split('T')[0]}.pdf`);
+
+            // Copiar al portapapeles
             try {
                 await navigator.clipboard.writeText(pedidosText);
             } catch (clipboardError) {
                 console.log('No se pudo copiar al portapapeles:', clipboardError);
-                // Continuamos con el flujo normal aunque falle la copia
             }
 
             await registrarNotificacion(
