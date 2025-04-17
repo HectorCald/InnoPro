@@ -409,11 +409,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             anuncioVisible.style.display = 'none';
             if (overlay) overlay.style.display = 'none';
             if (container) container.classList.remove('no-touch');
-            // Prevenir que se agregue una nueva entrada al historial
-            history.pushState(null, '', window.location.pathname);
+            return true; // Indica que se ocultó un anuncio
         }
+        return false; // Indica que no había anuncio que ocultar
     }
 
+    // Manejar el botón físico atrás en dispositivos móviles
+    if ('BeforeInstallPromptEvent' in window) {
+        document.addEventListener('backbutton', (e) => {
+            e.preventDefault();
+            const anuncioVisible = document.querySelector('.anuncio');
+            const advertenciaVisible = document.querySelector('.advertencia');
+            
+            if (anuncioVisible && anuncioVisible.style.display === 'flex') {
+                ocultarAnuncio();
+            } else if (advertenciaVisible && advertenciaVisible.style.display === 'flex') {
+                advertenciaVisible.style.display = 'none';
+                document.querySelector('.container').classList.remove('no-touch');
+            } else {
+                window.history.back();
+            }
+        }, false);
+    }
+
+    // Manejar el botón atrás del navegador
     window.addEventListener('popstate', (e) => {
         // Prevenir múltiples activaciones en dispositivos móviles
         const now = Date.now();
@@ -446,7 +465,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         observer.observe(anuncio, { attributes: true, attributeFilter: ['style'] });
     }
 
-    // Event listeners existentes
+    // Event listeners para cerrar al hacer clic
     anuncio.addEventListener('click', (e) => {
         if (e.target === anuncio) {
             ocultarAnuncio();
