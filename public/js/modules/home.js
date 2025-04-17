@@ -120,14 +120,6 @@ async function obtenerAtajos() {
             'Acopio': [
                 { 
                     clase: 'opcion-btn',
-                    vista: 'home-view',
-                    icono: 'fa-clipboard-list',
-                    texto: 'Nuevo Pedido',
-                    detalle: 'Aqui puedes realizar un nuevo pedido de materia prima.',
-                    onclick: 'onclick="mostrarFormularioPedido()"'
-                },
-                { 
-                    clase: 'opcion-btn',
                     vista: 'almAcopio-view',
                     icono: 'fa-dolly',
                     texto: 'Gestionar Almacen',

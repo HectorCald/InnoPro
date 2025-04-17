@@ -1,20 +1,20 @@
-/* ===== VARIABLES DE COLORES GLOBALES ===== */
+
 :root {
-    /* ===== COLORES DE TEXTO ===== */
+
     --primary-text: #ffffff;
 
-    /* ===== COLORES DE FONDO ===== */
+
     --background: rgb(238, 238, 238);
     --primary-color: #242424;
     --second-color: #1a1a1a;
     --cero-color: rgb(61, 61, 61);
 
-    /* ===== COLORES DE BOTONES ===== */
+
     --primary-button: #00a2d8;
     --second-button: #00796f;
     --tercer-color: #f37500;
 
-    /* ===== COLORES DE ESTADO ===== */
+
     --error: #ff4d4d;
     --success: #4CAF50;
 }

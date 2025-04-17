@@ -121,33 +121,39 @@ function crearPedidoCard(pedido, isAdmin) {
     const estadoClass = estado.toLowerCase().replace(' ', '-');
 
     const botonesAdmin = isAdmin ? `
-        <div class="acciones">
-            <button class="btn-eliminar-registro">
-                <i class="fas fa-trash"></i> Eliminar
-            </button>
-            <button class="btn-editar-registro">
-                <i class="fas fa-edit"></i> Editar
-            </button>
-        </div>
-    ` : (estado.toLowerCase() === 'recibido' ? `
-        <div class="acciones">
-            <button class="btn-cambiar-estado anuncio-btn blue">
-                <i class="fas fa-exchange-alt"></i> Ingresado
-            </button>
-            <button class="btn-ingresar-acopio anuncio-btn green">
-                <i class="fas fa-plus-circle"></i> Ingresar
-            </button>
-            <button class="btn-rechazar anuncio-btn red" data-id="${pedido[0]}" data-nombre="${pedido[2]}">
-                <i class="fas fa-times-circle"></i> Rechazar
-            </button>
-        </div>
-    ` : estado.toLowerCase() === 'ingresado' ? `
-        <div class="acciones">
-            <button class="btn-cambiar-estado anuncio-btn blue">
-                <i class="fas fa-exchange-alt"></i> No ingresado
-            </button>
-        </div>
-    ` : '');
+    <div class="acciones">
+        <button class="btn-eliminar-registro">
+            <i class="fas fa-trash"></i> Eliminar
+        </button>
+        <button class="btn-editar-registro">
+            <i class="fas fa-edit"></i> Editar
+        </button>
+    </div>
+` : (estado.toLowerCase() === 'recibido' ? `
+    <div class="acciones">
+        <button class="btn-cambiar-estado anuncio-btn blue">
+            <i class="fas fa-exchange-alt"></i> Ingresado
+        </button>
+        <button class="btn-ingresar-acopio anuncio-btn green">
+            <i class="fas fa-plus-circle"></i> Ingresar
+        </button>
+        <button class="btn-rechazar anuncio-btn red" data-id="${pedido[0]}" data-nombre="${pedido[2]}">
+            <i class="fas fa-times-circle"></i> Rechazar
+        </button>
+    </div>
+` : estado.toLowerCase() === 'pendiente' ? `
+    <div class="acciones">
+        <button class="btn-eliminar-registro">
+            <i class="fas fa-trash"></i> Eliminar
+        </button>
+    </div>
+` : estado.toLowerCase() === 'ingresado' ? `
+    <div class="acciones">
+        <button class="btn-cambiar-estado anuncio-btn blue">
+            <i class="fas fa-exchange-alt"></i> No ingresado
+        </button>
+    </div>
+` : '');
 
     registroCard.innerHTML = `
         <div class="registro-header">
@@ -195,6 +201,13 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
             }, 100);
         }
     });
+    const btnEliminar = registroCard.querySelector('.btn-eliminar-registro');
+    if (btnEliminar) {
+        btnEliminar.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            mostrarConfirmacionEliminar(pedido, registroCard);
+        });
+    }
 
     if (isAdmin) {
 

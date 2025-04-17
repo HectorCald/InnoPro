@@ -460,13 +460,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     try {
+        bienvenida();
         await iniciarApp();
         await inicializarHome();
     } catch (error) {
         console.error('Error durante la inicialización:', error);
     }
-
-    bienvenida();
     centrarInputEnFoco();
 });
 

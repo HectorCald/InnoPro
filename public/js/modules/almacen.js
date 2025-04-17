@@ -94,6 +94,11 @@ export async function cargarAlmacen() {
                     <div class="product-quantity">
                         ${stock} und.
                     </div>
+                    <div class="acciones-rapidas">
+                        <button class="btn-card ingreso"><i class="fas fa-arrow-circle-down"></i></button>
+                        <button class="btn-card salida"><i class="fas fa-arrow-circle-up"></i></button>
+                    </div>
+                    
                 </div>
             `;
 

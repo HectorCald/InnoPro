@@ -1,4 +1,5 @@
 /* =============== FUNCIONES DE INICIO DE ALMACEN ACOPIO =============== */
+let carritoProductos = new Map();
 export function inicializarAlmacen() {
     const container = document.querySelector('.almAcopio-view');
     // Asegurarnos que el contenedor esté visible
@@ -15,7 +16,7 @@ export function inicializarAlmacen() {
                     </button>
                     <p>Agregar</p>
                 </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                <div class="cuadro-btn" style="display:none"><button class="btn-agregar-pedido">
                        <i class="fas fa-tasks"></i>
                     </button>
                     <p>Tarea</p>
@@ -29,6 +30,11 @@ export function inicializarAlmacen() {
                        <i class="fas fa-arrow-circle-down"></i>
                     </button>
                     <p>Salidas</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                       <i class="fas fa-shopping-cart"></i>
+                    </button>
+                    <p>Pedidos</p>
                 </div>
             </div>    
             <div class="lista-productos acopio-productos"></div>
@@ -46,8 +52,23 @@ export function inicializarAlmacen() {
     const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-down').parentElement;
     btnSalidas.onclick = () => mostrarFormularioSalidaAcopio();
 
+    const btnPedidos = container.querySelector('.btn-agregar-pedido i.fa-shopping-cart').parentElement;
+    btnPedidos.onclick = mostrarCarrito;
 
     mostrarProductosBruto();
+    window.agregarAlCarrito = (nombre) => {
+        carritoProductos.set(nombre, 1);
+        
+        // Disable the button
+        const button = document.querySelector(`.btn-card.pedido[onclick*="${nombre}"]`);
+        if (button) {
+            button.classList.add('disabled');
+            button.disabled = true;
+        }
+    
+        // Update cart counter and animate
+        updateCartCounter();
+    };
 }
 export function mostrarProductosBruto() {
     const container = document.querySelector('.acopio-productos');
@@ -292,19 +313,31 @@ export async function cargarAlmacenBruto() {
 
             const productCard = document.createElement('div');
             productCard.className = `product-card ${stockClass}`;
-            productCard.onclick = () => mostrarDetalleProductoAcopio(producto);
+            productCard.onclick = (e) => {
+                if (!e.target.closest('.btn-card')) {
+                    mostrarDetalleProductoAcopio(producto);
+                }
+            };
             productCard.innerHTML = `
-                <div class="product-info">
-                    <div class="product-name">
-                        <i class="fas fa-box"></i>
-                        <span>${nombre || 'Sin nombre'}</span>
-                    </div>   
-                    <div class="product-quantity">
-                        <div class="registro-estado-acopio estado-bruto">${totalBruto.toFixed(1)}</div>
-                        <div class="registro-estado-acopio estado-prima">${totalPrima.toFixed(1)}</div>
+            <div class="product-info">
+                <div class="product-name">
+                    <div class="acciones-rapidas-acopio">
+                        <button class="btn-card pedido ${carritoProductos.has(nombre) ? 'disabled' : ''}" 
+                                onclick="agregarAlCarrito('${nombre}')"
+                                ${carritoProductos.has(nombre) ? 'disabled' : ''}>
+                            <i class="fas fa-cart-plus"></i>
+                        </button>
                     </div>
-                </div>
-            `;
+                    <span>${nombre || 'Sin nombre'}</span>
+                </div>   
+                <div class="product-quantity">
+                    <div class="registro-estado-acopio estado-bruto">${totalBruto.toFixed(1)}</div>
+                    <div class="registro-estado-acopio estado-prima">${totalPrima.toFixed(1)}</div>
+                    
+                </div>             
+            </div>
+        `;
+
             productsContainer.appendChild(productCard);
         });
 
@@ -316,6 +349,196 @@ export async function cargarAlmacenBruto() {
         scrollToTop('.almacen-view');
     }
 }
+function mostrarCarrito() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+    if (carritoProductos.size === 0) {
+        mostrarNotificacion('No hay productos en el carrito', 'warning');
+        return;
+    }
+
+    let productosHTML = '';
+    carritoProductos.forEach((cantidad, nombre) => {
+        productosHTML += `
+            <div class="producto-carrito relleno" data-nombre="${nombre}">
+                <div class="producto-info form-grup" style="margin-top:5px; position: relative;">
+                    <p class="nombre">${nombre}</p>
+                    <div class="cantidad-control campo-form">
+                        <button class="btn-cantidad anuncio-btn green" style="max-width:40px; min-height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', -1)">-</button>
+                        <input type="number" value="${cantidad}" min="1" 
+                               onchange="actualizarCantidad('${nombre}', this.value)" style="text-align:center">
+                        <button class="btn-cantidad anuncio-btn red" style="max-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', 1)">+</button>
+                        <select class="unidad-medida">
+                            <option value="unid.">und.</option>
+                            <option value="cajas">cj.</option>
+                            <option value="bolsas">bls.</option>
+                            <option value="qq">qq</option>
+                            <option value="kg">kg</option>
+                            <option value="arroba">@</option>
+                        </select>
+                    </div>
+                    <div class="campo-form">
+                        <textarea class="observaciones-pedido" placeholder="Observaciones..." rows="2"></textarea>
+                    </div>
+                    <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDelCarrito('${nombre}')">
+                        <i class="fas fa-trash" style="color: red"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-shopping-cart"></i> Carrito de Pedidos</h2>
+        <div class="relleno">
+            <div class="productos-carrito">
+                ${productosHTML}
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn green finalizar" onclick="finalizarPedidosCarrito()">
+                <i class="fas fa-check"></i> Finalizar Pedidos
+            </button>
+            <button class="anuncio-btn close cancelar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+
+    anuncio.style.display = 'flex';
+    anuncio.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+}
+function updateCartCounter() {
+    const cartButton = document.querySelector('.btn-agregar-pedido i.fa-shopping-cart').parentElement;
+    const cartSize = carritoProductos.size;
+    
+    // Remove existing counter if present
+    const existingCounter = cartButton.querySelector('.cart-counter');
+    if (existingCounter) {
+        existingCounter.remove();
+    }
+
+    if (cartSize > 0) {
+        // Add counter
+        cartButton.insertAdjacentHTML('beforeend', `
+            <span class="cart-counter">${cartSize}</span>
+        `);
+        
+        // Add success color
+        cartButton.classList.add('has-items');
+        
+        // Force reflow and trigger animation
+        cartButton.classList.remove('bell-animation');
+        void cartButton.offsetWidth; // Force reflow
+        cartButton.classList.add('bell-animation');
+    } else {
+        cartButton.classList.remove('has-items', 'bell-animation');
+    }
+}
+window.cambiarCantidad = (nombre, delta) => {
+    const cantidad = carritoProductos.get(nombre) + delta;
+    if (cantidad >= 1) {
+        carritoProductos.set(nombre, cantidad);
+        const input = document.querySelector(`.producto-carrito[data-nombre="${nombre}"] input`);
+        input.value = cantidad;
+    }
+};
+
+window.actualizarCantidad = (nombre, valor) => {
+    const cantidad = parseInt(valor);
+    if (cantidad >= 1) {
+        carritoProductos.set(nombre, cantidad);
+    }
+};
+
+window.eliminarDelCarrito = (nombre) => {
+    const productoElement = document.querySelector(`.producto-carrito[data-nombre="${nombre}"]`);
+    
+    // Añadir clase para la animación de deslizamiento
+    productoElement.style.transition = 'all 0.3s ease-in-out';
+    productoElement.style.transform = 'translateX(100%)';
+    productoElement.style.opacity = '0';
+
+    // Esperar a que termine la animación antes de eliminar
+    setTimeout(() => {
+        carritoProductos.delete(nombre);
+        
+        // Re-enable the button
+        const button = document.querySelector(`.btn-card.pedido[onclick*="${nombre}"]`);
+        if (button) {
+            button.classList.remove('disabled');
+            button.disabled = false;
+        }
+
+        productoElement.remove();
+        updateCartCounter();
+        
+        if (carritoProductos.size === 0) {
+            document.querySelector('.anuncio').style.display = 'none';
+        }
+    }, 300); // Este tiempo debe coincidir con la duración de la transición
+};
+
+window.finalizarPedidosCarrito = async () => {
+    try {
+        mostrarCarga();
+        const pedidos = [];
+        let mensajeWhatsApp = "PEDIDO DE MATERIA PRIMA\n\nPedido:\n";
+
+        carritoProductos.forEach((cantidad, nombre) => {
+            const unidad = document.querySelector(`.producto-carrito[data-nombre="${nombre}"] .unidad-medida`).value;
+            const observaciones = document.querySelector(`.producto-carrito[data-nombre="${nombre}"] .observaciones-pedido`).value;
+            
+            pedidos.push({
+                nombre,
+                cantidad: `${cantidad} ${unidad}`,
+                fecha: new Date().toLocaleDateString('es-ES'),
+                observaciones: observaciones || ''
+            });
+
+            // Agregar al mensaje de WhatsApp
+            mensajeWhatsApp += `• ${nombre} - ${cantidad} ${unidad}`;
+            if (observaciones) {
+                mensajeWhatsApp += ` (${observaciones})`;
+            }
+            mensajeWhatsApp += '\n';
+        });
+
+        // Agregar pie de mensaje
+        mensajeWhatsApp += '\nEl pedido ya se encuentra en la aplicación de InnoPro';
+
+        const response = await fetch('/finalizar-pedidos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ pedidos })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion('Pedidos finalizados correctamente', 'success');
+            carritoProductos.clear();
+            document.querySelector('.anuncio').style.display = 'none';
+
+            // Codificar el mensaje para URL y abrir WhatsApp
+            const mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
+            window.open(`https://wa.me/?text=${mensajeCodificado}`, '_blank');
+        } else {
+            throw new Error(data.error || 'Error al finalizar los pedidos');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al finalizar los pedidos', 'error');
+    } finally {
+        ocultarCarga();
+        inicializarAlmacen();
+    }
+};
 
 /* =============== FUNCIONES DE DETALLES Y EDICION DE PRODUCTOSA DEL ALMACEN =============== */
 window.mostrarDetalleProductoAcopio = function (producto) {
@@ -363,7 +586,6 @@ window.mostrarDetalleProductoAcopio = function (producto) {
             <button class="anuncio-btn green guardar" style="display: none;"><i class="fas fa-save"></i> Guardar</button>
             <button class="anuncio-btn red eliminar"><i class="fas fa-trash"></i> Eliminar</button>
             <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-            <button class="anuncio-btn green cerrar" onclick="mostrarFormularioPedido('${nombre}')"><i class="fas fa-shopping-cart"></i> Pedido</button>
         </div>
     `;
 

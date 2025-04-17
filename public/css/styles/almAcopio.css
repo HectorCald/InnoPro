@@ -17,6 +17,7 @@
     &::-webkit-scrollbar {
         display: none;
     }
+
     -ms-overflow-style: none;
     scrollbar-width: none;
 
@@ -88,6 +89,40 @@
         }
     }
 
+    .btn-agregar-pedido.has-items {
+        background: var(--tercer-color) !important;
+        position: relative;
+    }
+
+    .cart-counter {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: red;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    @keyframes bell-shake {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    
+    .bell-animation {
+        animation: bell-shake 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: center;
+        animation-fill-mode: forwards;
+    }
+
+    /* Estilo para botón deshabilitado */
+
+
     /* ===== CABECERA Y BÚSQUEDA ===== */
     .almacen-header {
         display: flex;
@@ -111,6 +146,7 @@
                 color: var(--primary-text);
                 font-size: 16px;
             }
+
             i {
                 position: absolute;
                 right: 12px;
@@ -143,12 +179,12 @@
 
                 p {
                     font-size: 12px;
-                    color: rgb(180, 180, 180);
+                    color: rgb(208, 208, 208);
                 }
 
                 &.active {
-                    background: var(--second-button);
-                    border-color: var(--second-button);
+                    background: var(--tercer-color);
+                    border-color: var(--tercer-color);
                     color: white;
                 }
 
@@ -203,6 +239,39 @@
                 color: var(--second-button);
             }
         }
+
+        .btn-card {
+            color: white;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .acciones-rapidas-acopio {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-card.pedido {
+            background: none;
+        }
+
+        .btn-card i {
+            font-size: 20px;
+            color: var(--success) !important;
+        }
+
+        .btn-card.pedido.disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+            background: var(--success-color) !important;
+        }
     }
 
     /* ===== INDICADORES DE ESTADO ===== */
@@ -220,12 +289,12 @@
 
     /* ===== ESTADOS DE ACOPIO ===== */
     .estado-bruto {
-        background-color: #007bff99;
+        background-color: #a5a5a599;
         color: white;
     }
 
     .estado-prima {
-        background-color: #28a746ad;
+        background-color: #70707099;
         color: white;
     }
 
@@ -270,7 +339,7 @@
         .almacen-header {
             justify-content: space-between;
             flex-wrap: nowrap;
-            
+
             .search-bar-acopio {
                 min-width: auto;
                 width: 300px;
@@ -288,11 +357,16 @@
                 }
             }
         }
-        
+
         .products-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
         }
     }
+}
+.producto-carrito {
+    transform: translateX(0);
+    opacity: 1;
+    transition: all 0.3s ease-in-out;
 }
