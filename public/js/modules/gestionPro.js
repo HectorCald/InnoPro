@@ -181,12 +181,12 @@ function mostrarDetallesNoVerificados(registros) {
                 `).join('')}
         </div>
         <div class="anuncio-botones">
-            <button class="cerrar-modal anuncio-btn close"><i class="fas fa-times"></i></button>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()"><i class="fas fa-times"></i></button>
         </div>
     `;
 
     // Mostrar el modal
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
     container.classList.add('no-touch');
 
     // Evento para cerrar el modal

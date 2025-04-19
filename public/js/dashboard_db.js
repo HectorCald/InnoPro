@@ -27,6 +27,8 @@ export function scrollToTop(ventana) {
         });
     }
 }
+
+
 window.initializeImgUpload = initializeImgUpload;
 window.scrollToTop = scrollToTop;
 
@@ -392,92 +394,8 @@ function centrarInputEnFoco() {
     });
 }
 
-
 /* =============== FUNCIONES LLAMDO =============== */
 document.addEventListener('DOMContentLoaded', async () => {
-    let anuncio = document.querySelector('.anuncio');
-    let dashboard = document.querySelector('.dashboard');
-    let lastPopState = 0;
-    
-    // Función para ocultar el anuncio
-    function ocultarAnuncio() {
-        const anuncioVisible = document.querySelector('.anuncio');
-        const overlay = document.querySelector('.overlay');
-        const container = document.querySelector('.container');
-        
-        if (anuncioVisible && anuncioVisible.style.display === 'flex') {
-            anuncioVisible.style.display = 'none';
-            if (overlay) overlay.style.display = 'none';
-            if (container) container.classList.remove('no-touch');
-            return true; // Indica que se ocultó un anuncio
-        }
-        return false; // Indica que no había anuncio que ocultar
-    }
-
-    // Manejar el botón físico atrás en dispositivos móviles
-    if ('BeforeInstallPromptEvent' in window) {
-        document.addEventListener('backbutton', (e) => {
-            e.preventDefault();
-            const anuncioVisible = document.querySelector('.anuncio');
-            const advertenciaVisible = document.querySelector('.advertencia');
-            
-            if (anuncioVisible && anuncioVisible.style.display === 'flex') {
-                ocultarAnuncio();
-            } else if (advertenciaVisible && advertenciaVisible.style.display === 'flex') {
-                advertenciaVisible.style.display = 'none';
-                document.querySelector('.container').classList.remove('no-touch');
-            } else {
-                window.history.back();
-            }
-        }, false);
-    }
-
-    // Manejar el botón atrás del navegador
-    window.addEventListener('popstate', (e) => {
-        // Prevenir múltiples activaciones en dispositivos móviles
-        const now = Date.now();
-        if (now - lastPopState < 300) return;
-        lastPopState = now;
-
-        const anuncioVisible = document.querySelector('.anuncio');
-        const advertenciaVisible = document.querySelector('.advertencia');
-        
-        if (anuncioVisible && anuncioVisible.style.display === 'flex') {
-            ocultarAnuncio();
-        } else if (advertenciaVisible && advertenciaVisible.style.display === 'flex') {
-            advertenciaVisible.style.display = 'none';
-            document.querySelector('.container').classList.remove('no-touch');
-        } else {
-            window.location.reload();
-        }
-    });
-    
-    // Cuando se muestre el anuncio, agregar una entrada al historial
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.target.style.display === 'flex') {
-                history.pushState(null, '', window.location.pathname);
-            }
-        });
-    });
-    
-    if (anuncio) {
-        observer.observe(anuncio, { attributes: true, attributeFilter: ['style'] });
-    }
-
-    // Event listeners para cerrar al hacer clic
-    anuncio.addEventListener('click', (e) => {
-        if (e.target === anuncio) {
-            ocultarAnuncio();
-        }
-    });
-
-    dashboard.addEventListener('click', () => {
-        if (anuncio.style.display === 'flex') {
-            ocultarAnuncio();
-        }
-    });
-
     try {
         bienvenida();
         await iniciarApp();
@@ -525,6 +443,8 @@ window.actualizarContadorNotificaciones = function(cantidad) {
         }
     }
 };
+
+
 
 
 

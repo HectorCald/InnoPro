@@ -1,4 +1,6 @@
+
 import { registrarNotificacion } from './advertencia.js';
+
 /* =============== FUNCIONES DE INCIO DE FORMULARIO PRODUCCION =============== */
 export function inicializarFormularioProduccion() {
     const container = document.querySelector('.formProduccion-view');
@@ -94,7 +96,7 @@ export function mostrarFormularioProduccion() {
         </div>
     </div>
     <div class="anuncio-botones">
-        <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'">
+          <button class="anuncio-btn close" onclick="ocultarAnuncio()">
             <i class="fas fa-times"></i>
         </button>
         <button class="anuncio-btn green confirmar">
@@ -104,7 +106,7 @@ export function mostrarFormularioProduccion() {
     `;
 
     // Mostrar el anuncio
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
 
     // Inicializar el formulario
     inicializarFormulario();
@@ -307,7 +309,6 @@ function inicializarEventosProducto(productoInput, sugerenciasContainer, sugeren
 
     async function cargarProductosValidados() {
     try {
-        mostrarCarga();
         const response = await fetch('/obtener-productos');
         const data = await response.json();
 
@@ -326,7 +327,7 @@ function inicializarEventosProducto(productoInput, sugerenciasContainer, sugeren
     } catch (error) {
         console.error('Error al cargar productos:', error);
     } finally {
-        ocultarCarga();
+
     }
 }
 
@@ -404,7 +405,6 @@ function inicializarEventosFormulario(form, productoInput, productosDisponibles)
         });
 
         try {
-            mostrarCarga();
             const userResponse = await fetch('/obtener-mi-rol');
             const userData = await userResponse.json();
             const usuarioActual = userData.nombre;
@@ -439,7 +439,6 @@ function inicializarEventosFormulario(form, productoInput, productosDisponibles)
             console.error('Error completo:', error);
             mostrarNotificacion('Error al guardar el registro: ' + error.message, 'error');
         } finally {
-            ocultarCarga();
         }
     });
 }
@@ -465,7 +464,6 @@ export function resetearFormulario() {
 }
 export async function cargarProductos() {
     try {
-        mostrarCarga();
         const response = await fetch('/obtener-productos');
         const data = await response.json();
 
@@ -483,7 +481,6 @@ export async function cargarProductos() {
         console.error('Error al cargar productos:', error);
     }
     finally {
-        ocultarCarga();
     }
 }
 

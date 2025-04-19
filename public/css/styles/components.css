@@ -2,9 +2,9 @@
 @import'styles/colores.css';
 
 .anuncio {
-    position: absolute;
+    position: fixed;
     top: 70px !important;
-    left: 0;
+    right: 0;
     width: 100%;
     height: calc(100vh - 70px) !important;
     background-color: rgba(24, 24, 24, 0.352);
@@ -15,21 +15,50 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    transition: display 0.3s ease;
 }
+@media screen and (min-width: 768px) {
+    .anuncio{
+        width: 400px;
+        right: 0 !important;
+        transition: all 0.3s ease-out;
+    }
+    
+}
+.anuncio.slide-out {
+    transform: translateX(100%);
+    opacity: 0;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.anuncio.slide-in {
+    transform: translateX(100%);
+    opacity: 0;
+    animation: slideInFromRight 0.3s ease-out forwards;
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
 
 .anuncio-contenido {
     background: var(--second-color);
     border-radius: 10px;
     text-align: center;
     color: var(--primary-text) !important;
-    animation: aparecer 0.3s ease-out;
     padding: 15px;
     padding-right: 10px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 400px;
-    max-height: 85vh;
+    border-radius: 0;
+    width: 100%;
+    max-width: 450px;
+    height: 90vh !important;
     height: fit-content;  /* Cambiado de auto a fit-content */
     display: flex;
     flex-direction: column;
@@ -37,12 +66,8 @@
     position: absolute;
     z-index: 8;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* Transición más suave */
-
 }
 
-/* Eliminamos la animación adjustHeight ya que no es necesaria */
-
-/* Add animation for height changes */
 @keyframes adjustHeight {
     from {
         height: var(--height-from);
@@ -246,7 +271,7 @@
     display: flex;
     flex-direction: column;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: top;4
+    transform-origin: top;
 }
 
 .campo-detalle {
@@ -462,18 +487,6 @@
 }
 .sugerencias-container .sugerencias-list li:hover{
     background-color: var(--tercer-color);
-}
-
-@keyframes aparecer {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
 }
 .nota{
     color: white!important;
