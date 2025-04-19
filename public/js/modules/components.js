@@ -4,14 +4,14 @@ export function ocultarAnuncio() {
     const container = document.querySelector('.container');
     
     if (anuncioVisible && anuncioVisible.style.display === 'flex') {
-        anuncioVisible.classList.add('slide-out'); // Add class for exit animation
-        container.style.transition = 'margin-right 0.3s ease-out'; // Add transition
-        container.style.marginRight = '0'; // Animate margin-right to 0
+        anuncioVisible.classList.add('slide-out');
+        container.style.transition = 'margin-right 0.3s ease-out';
+        container.style.marginRight = '0';
 
         setTimeout(() => {
             anuncioVisible.style.display = 'none';
-            anuncioVisible.classList.remove('slide-out'); // Remove class after animation
-        }, 300); // Duration of the animation
+            anuncioVisible.classList.remove('slide-out');
+        }, 300);
 
         if (overlay) overlay.style.display = 'none';
         if (container) container.classList.remove('no-touch');
@@ -24,20 +24,40 @@ export function mostrarAnuncio() {
     const container = document.querySelector('.container');
 
     if (anuncioVisible) {
-        anuncioVisible.classList.add('slide-in'); // Add class for entrance animation
-        anuncioVisible.style.display = 'flex'; // Show the announcement
+        // Agregar estado al historial
+        window.history.pushState({anuncioAbierto: true}, '');
+        
+        anuncioVisible.classList.add('slide-in');
+        anuncioVisible.style.display = 'flex';
 
-        // Check screen width and apply margin if greater than or equal to 768px
         if (window.innerWidth >= 768) {
-            container.style.transition = 'margin-right 0.3s ease-out'; // Add transition
-            container.style.marginRight = '400px'; // Adjust margin-right for entrance
+            container.style.transition = 'margin-right 0.3s ease-out';
+            container.style.marginRight = '400px';
         } else {
-            container.style.marginRight = '0'; // No margin adjustment for smaller screens
+            container.style.marginRight = '0';
         }
 
         setTimeout(() => {
-            anuncioVisible.classList.remove('slide-in'); // Remove class after animation
-        }, 300); // Duration of the animation
+            anuncioVisible.classList.remove('slide-in');
+        }, 300);
     }
 }
 window.mostrarAnuncio = mostrarAnuncio;
+
+// Manejador del botón físico de retroceso
+window.addEventListener('popstate', (event) => {
+    const anuncio = document.querySelector('.anuncio');
+    if (anuncio && anuncio.style.display === 'flex') {
+        ocultarAnuncio();
+        window.history.pushState(null, '', window.location.href);
+    }
+});
+
+// Soporte para Navigation API (experimental)
+if ('navigation' in window) {
+    window.navigation.addEventListener('navigate', (event) => {
+        if (event.destination.url === 'app://innopro/') {
+            ocultarAnuncio();
+        }
+    });
+}

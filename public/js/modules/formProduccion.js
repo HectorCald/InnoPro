@@ -37,10 +37,13 @@ export function mostrarFormularioProduccion() {
     const contenido = anuncio.querySelector('.anuncio-contenido');
     
     contenido.innerHTML = `
-    <h2><i class="fas fa-clipboard-list"></i> Nueva Producción</h2>
+    <div class="encabezado">
+        <h2>Registro Producción</h2>
+         <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+            Atras <i class="fas fa-arrow-right"></i></button>
+    </div>
     <div class="relleno">
-        <p class="subtitle">Formulario:</p>
-        <div class="form-grup" style="background:none">
+
             <p>Producto*</p>
                 <input type="text" name="producto" id="producto-input" placeholder="Selecciona el producto" autocomplete="off" required>
                 <div class="sugerencias-container" style="display: none;">
@@ -93,12 +96,9 @@ export function mostrarFormularioProduccion() {
                 <i class="fas fa-exclamation-circle"></i>
                 Verifica bien la información antes de registrar
             </p>
-        </div>
     </div>
     <div class="anuncio-botones">
-          <button class="anuncio-btn close" onclick="ocultarAnuncio()">
-            <i class="fas fa-times"></i>
-        </button>
+          
         <button class="anuncio-btn green confirmar">
             <i class="fas fa-clipboard-check"></i> Finalizar y registrar
         </button>
@@ -491,7 +491,7 @@ function verificarHorario() {
     const minutos = ahora.getMinutes();
     const tiempoActual = hora * 60 + minutos; // Convertir a minutos
 
-    const inicioJornada = 8 * 60;     const finJornada = 19 * 60; 
+    const inicioJornada = 8 * 60;     const finJornada = 22 * 60; 
 
     return tiempoActual >= inicioJornada && tiempoActual <= finJornada;
 }
