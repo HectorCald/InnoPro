@@ -1,5 +1,4 @@
 import { registrarNotificacion } from './advertencia.js';
-import { mostrarFormularioIngreso } from './almacen.js';
 /* ==================== VARIABLES GLOBALES Y CONFIGURACIÓN INICIAL ==================== */
 let reglasEspeciales = null;
 let preciosBase = null;
@@ -482,16 +481,11 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             </div>
         </div>
         <form id="form-verificacion">
-            <div class="campo-form">
-                <label for="cantidad-real">Cantidad:</label>
-                <input type="number" id="cantidad-real" required min="0" step="1" placeholder="Cantidad Real">
-            </div>
-            <div class="campo-form">
-                <label for="fecha-verificacion">Fecha:</label>
+                <p for="cantidad-real">Cantidad*</label>
+                <input type="number" id="cantidad-real" required min="0" step="1" placeholder="Ingresa la cantidad real. Ej: 300">
+                <p for="fecha-verificacion">Fecha*</label>
                 <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly>
-            </div>
-            <div class="form-group">
-                <label for="observaciones">Observaciones:</label>
+                <p for="observaciones">Observacione (Opcional)</label>
                 <textarea id="observaciones" rows="3" placeholder="Observaciones (se enviará como notificación al operario)"></textarea>
             </div>
         </form>
@@ -566,7 +560,6 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             mostrarNotificacion('Error al guardar la verificación: ' + error.message, 'error');
         } finally {
             ocultarCarga();
-            mostrarFormularioIngreso(producto)
         }
     });
 

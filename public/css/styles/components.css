@@ -30,13 +30,26 @@
     width: 90%;
     max-width: 400px;
     max-height: 85vh;
-    height: auto;
+    height: fit-content;  /* Cambiado de auto a fit-content */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     position: absolute;
     z-index: 8;
-    border: 1px solid var(--cero-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* Transición más suave */
+
+}
+
+/* Eliminamos la animación adjustHeight ya que no es necesaria */
+
+/* Add animation for height changes */
+@keyframes adjustHeight {
+    from {
+        height: var(--height-from);
+    }
+    to {
+        height: var(--height-to);
+    }
 }
 .anuncio-contenido .relleno{
     background: none;
@@ -53,7 +66,7 @@
     justify-content: flex-start;
 
     &::-webkit-scrollbar {
-        width: 8px;
+        width: 2px;
     }
 
     &::-webkit-scrollbar-track {
@@ -77,6 +90,8 @@
     gap: 5px !important;
     position: relative;
     padding-right: 5px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+    padding-inline:10px;
 }
 
 .anuncio-contenido i {
@@ -102,7 +117,9 @@
     text-align: left;
     font-weight: 500;
 }
-
+.anuncio-contenido .subtitle{
+    color:white;
+}
 .anuncio-botones {
     display: flex;
     gap: 10px;
@@ -113,20 +130,19 @@
 
 .anuncio-btn {
     border-radius: 10px;
-    border: 1px solid white;
+    border: 1px solid gray;
     cursor: pointer;
     font-weight: 500;
-    font-size: 13px !important;
+    font-size: 15px !important;
     transition: all 0.3s ease;
     width: 100%;
-    padding: 8px;
+    padding: 15px;
     background: none;
     color: white;
 }
 .anuncio-btn i {
     color: white;
 }
-
 .anuncio-botones {
     .anuncio-btn {
         .btn-text {
@@ -149,18 +165,22 @@
 
 .anuncio-btn.red {
     background: #dc3545;
+    border:none;
 }
 
 .anuncio-btn.gray {
     background: #6c757d;
+    border:none;
 }
 
 .anuncio-btn.green {
     background: #4CAF50;
+    border:none;
 }
 
 .anuncio-btn.blue {
     background: #0086e7;
+    border:none;
 }
 .anuncio-btn.close{
     display: flex;
@@ -192,8 +212,7 @@
 }
 
 .anuncio-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color:gray;
 }
 
 .anuncio-btn.delete,
@@ -226,6 +245,8 @@
 .form-group {
     display: flex;
     flex-direction: column;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;4
 }
 
 .campo-detalle {
@@ -239,12 +260,14 @@
 .anuncio-contenido input,
 .anuncio-contenido textarea {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #494949;
+    padding: 15px;
+    border: none;
     border-radius: 10px;
     background: var(--primary-color);
     color: var(--primary-text);
     font-size: 16px;
+    margin-bottom:5px;
+    outline: none;
 }
 .anuncio-contenido input:focus,
 .anuncio-contenido textarea:focus,
@@ -260,7 +283,7 @@
     border-radius: 15px;
     width: 100%;
     font-size: 15px;
-    border: 1px solid #828282;
+    border: none;
     height: 60px;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -300,6 +323,7 @@
     width: 150px;
     text-align: left;
     color: rgb(161, 161, 161);
+    padding: 2px;
 }
 
 .anuncio-contenido select {
@@ -307,15 +331,30 @@
     min-height: 40px !important;
     background: var(--primary-color);
     color: var(--primary-text);
-    border: 1px solid #4c4c4c;
+    border: none;
     font-size: 16px;
-    padding: 10px;
+    padding: 15px;
     border-radius: 10px;
+    outline: none !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+.anuncio-contenido select:focus-visible {
+    outline: none;
+    border: none;
 }
 .anuncio-contenido select option {
     background: var(--primary-color);
     color: var(--primary-text);
     font-size: 15px !important;
+    border:none;
+    outline: none !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: none;
+    border: none;
 }
 .form-grup{
     background-color: var(--primary-color);
@@ -405,13 +444,21 @@
     border: 1px solid #828282;
 }
 .sugerencias-container{
-    border: 1px solid gray;
+    border: none;
     border-radius: 10px;
 }
+.sugerencias-container .sugerencias-list{
+    display:flex;
+    flex-direction: column;
+    gap:5px;
+}
 .sugerencias-container .sugerencias-list li{
-    border-bottom: 1px solid gray;
+    background: var(--primary-color);
     padding-block: 10px;
     list-style: none;
+    text-align: left;
+    padding-left:15px;
+    border-radius: 10px;
 }
 .sugerencias-container .sugerencias-list li:hover{
     background-color: var(--tercer-color);
@@ -429,12 +476,13 @@
     }
 }
 .nota{
-    color: yellow !important;
+    color: white!important;
     font-size: 12px;
     font-weight: normal;
+    margin-top:10px !important;
 }
 .nota i{
-    color: yellow !important;
+    color: red !important;
     font-size: 12px;
 }
 

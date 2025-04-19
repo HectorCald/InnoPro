@@ -191,7 +191,7 @@
             .product-quantity {
                 font-size: 13px;
                 font-weight: bold;
-                color: var(--second-button);
+                color: var(--tercer-color);
             }
         }
         .btn-card{
@@ -285,4 +285,34 @@
             gap: 10px;
         }
     }
+}
+.contador {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.btn-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cantidad-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cantidad-control input {
+    width: 60px;
+    text-align: center;
 }

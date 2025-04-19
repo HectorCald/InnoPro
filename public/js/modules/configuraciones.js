@@ -85,19 +85,14 @@ async function mostrarFormularioCambioPin() {
 
     anuncioContenido.innerHTML = `
         <h2><i class="fas fa-key"></i> Cambiar PIN</h2>
-        <div class="form-grup">
-            <div class="campo-form">
-                <label for="pin-actual">PIN Actual:</label>
-                <input type="password" id="pin-actual" maxlength="4">
-            </div>
-            <div class="campo-form">
-                <label for="nuevo-pin">Nuevo PIN:</label>
-                <input type="password" id="nuevo-pin" maxlength="4">
-            </div>
-            <div class="campo-form">
-                <label for="confirmar-pin">Confirmar PIN:</label>
-                <input type="password" id="confirmar-pin" maxlength="4">
-            </div>
+        <p class="subtitle">Informacion:</p>
+        <div class="form-grup" style="background:none">
+            <p for="pin-actual">PIN Actual*</label>
+            <input type="password" id="pin-actual" maxlength="4" placeholder="Ingresa tu PIN actual">
+            <p for="nuevo-pin">Nuevo PIN*</label>
+            <input type="password" id="nuevo-pin" maxlength="4"placeholder="Ingresa tu nuevo PIN">
+            <p for="confirmar-pin">Confirmar PIN*</label>
+            <input type="password" id="confirmar-pin" maxlength="4"placeholder="Vuelve a ingresar tu nuevo PIN">
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn green guardar">

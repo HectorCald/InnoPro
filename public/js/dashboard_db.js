@@ -11,7 +11,7 @@ import { initializeMenu} from './modules/menu.js';
 import { initializePreciosPro } from './modules/preciosPro.js';
 import { cargarNotificaciones} from './modules/advertencia.js';
 import { cargarRegistrosAcopio } from './modules/regAcopio.js';
-import { inicializarAlmacenGral,cargarAlmacen,mostrarProductos } from './modules/almacen.js';
+import { inicializarAlmacenGral, cargarAlmacen, mostrarProductos } from './modules/almacen.js';
 import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
 import { inicializarConfiguraciones } from './modules/configuraciones.js';
 import { inicializarGestionPro } from './modules/gestionPro.js';

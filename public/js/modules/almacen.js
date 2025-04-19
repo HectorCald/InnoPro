@@ -1,4 +1,7 @@
 /* ==================== FUNCIONES DE INICIO DE ALMACEN ==================== */
+let productosParaIngresar = new Map();
+let productosParaSalida = new Map();
+
 export function inicializarAlmacenGral() {
     const container = document.querySelector('.almacen-view');
     if (!container) return; 
@@ -40,10 +43,11 @@ export function inicializarAlmacenGral() {
     `;
 
     const btnIngresar = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-down').parentElement;
-    btnIngresar.onclick = () => mostrarFormularioIngreso('');
+    btnIngresar.onclick = mostrarListaIngresos;
 
     const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
-    btnSalidas.onclick = () => mostrarFormularioSalidas('');
+    btnSalidas.onclick = mostrarListaSalidas;
+
 
     const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-box').parentElement;
     btnAgregar.onclick = mostrarFormularioAgregarProducto;
@@ -95,15 +99,38 @@ export async function cargarAlmacen() {
                         ${stock} und.
                     </div>
                     <div class="acciones-rapidas">
-                        <button class="btn-card ingreso"><i class="fas fa-arrow-circle-down"></i></button>
-                        <button class="btn-card salida"><i class="fas fa-arrow-circle-up"></i></button>
+                        <button class="btn-card ingreso" onclick="event.stopPropagation(); agregarAIngresos('${id}', '${nombre}', ${gramaje})">
+                            <i class="fas fa-arrow-circle-down"></i>
+                        </button>
+                        <button class="btn-card salida" onclick="event.stopPropagation(); agregarASalidas('${id}', '${nombre}', ${gramaje}, ${stock})">
+                            <i class="fas fa-arrow-circle-up"></i>
+                        </button>
                     </div>
-                    
                 </div>
             `;
 
             productsContainer.appendChild(productCard);
         });
+
+        window.agregarAIngresos = (id, nombre, gramaje) => {
+            productosParaIngresar.set(id, { nombre, gramaje, cantidad: 1 });
+            actualizarContadorIngresos();
+            const button = document.querySelector(`.btn-card.ingreso[onclick*="${id}"]`);
+            if (button) {
+                button.classList.add('disabled');
+                button.disabled = true;
+            }
+        };
+
+        window.agregarASalidas = (id, nombre, gramaje, stockActual) => {
+            productosParaSalida.set(id, { nombre, gramaje, cantidad: 1, stockActual });
+            actualizarContadorSalidas();
+            const button = document.querySelector(`.btn-card.salida[onclick*="${id}"]`);
+            if (button) {
+                button.classList.add('disabled');
+                button.disabled = true;
+            }
+        };
 
     } catch (error) {
         console.error('Error al cargar el almacén:', error);
@@ -113,6 +140,381 @@ export async function cargarAlmacen() {
         scrollToTop('.almacen-view')
     }
 };
+// Eliminar las definiciones dentro de cargarAlmacen() y dejar solo estas versiones globales
+window.agregarAIngresos = (id, nombre, gramaje) => {
+    productosParaIngresar.set(id, { nombre, gramaje, cantidad: 1 });
+    actualizarContadorIngresos();
+    const button = document.querySelector(`.btn-card.ingreso[onclick*="${id}"]`);
+    if (button) {
+        button.classList.add('active');
+        button.style.backgroundColor = '#f37500';
+        button.style.color = 'white';
+        button.disabled = true;
+    }
+};
+
+window.agregarASalidas = (id, nombre, gramaje, stockActual) => {
+    productosParaSalida.set(id, { nombre, gramaje, cantidad: 1, stockActual });
+    actualizarContadorSalidas();
+    const button = document.querySelector(`.btn-card.salida[onclick*="${id}"]`);
+    if (button) {
+        button.classList.add('active');
+        button.style.backgroundColor = 'orange';
+        button.style.color = 'white';
+        button.disabled = true;
+    }
+};
+
+function actualizarContadorIngresos() {
+    const btnIngresar = document.querySelector('.btn-agregar-pedido i.fa-arrow-circle-down').parentElement;
+    const contador = btnIngresar.querySelector('.contador') || document.createElement('span');
+    contador.className = 'contador';
+    contador.textContent = productosParaIngresar.size;
+    contador.style.cssText = `
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: #ff4444;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 12px;
+        display: ${productosParaIngresar.size > 0 ? 'block' : 'none'};
+    `;
+    btnIngresar.style.position = 'relative';
+    if (!btnIngresar.querySelector('.contador')) {
+        btnIngresar.appendChild(contador);
+    }
+    
+    // Cambiar el color a naranja cuando hay items
+    btnIngresar.style.backgroundColor = productosParaIngresar.size > 0 ? '#f37500' : '';
+}
+
+function actualizarContadorSalidas() {
+    const btnSalidas = document.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
+    const contador = btnSalidas.querySelector('.contador') || document.createElement('span');
+    contador.className = 'contador';
+    contador.textContent = productosParaSalida.size;
+    contador.style.cssText = `
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: #ff4444;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 12px;
+        display: ${productosParaSalida.size > 0 ? 'block' : 'none'};
+    `;
+    btnSalidas.style.position = 'relative';
+    if (!btnSalidas.querySelector('.contador')) {
+        btnSalidas.appendChild(contador);
+    }
+    
+    // Cambiar el color a naranja cuando hay items
+    btnSalidas.style.backgroundColor = productosParaSalida.size > 0 ? 'orange' : '';
+}
+
+
+async function mostrarListaIngresos() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-arrow-circle-down"></i> Lista de Ingresos</h2>
+
+            <div class="carrito-productos relleno">
+                ${Array.from(productosParaIngresar.entries()).map(([id, { nombre, gramaje, cantidad }]) => `
+                    <div class="carrito-item form-grup" data-id="${id}" style="margin-top:5px; position: relative;">
+                        <div class="item-info">
+                            <p>${nombre} ${gramaje}gr</p>
+                        </div>
+                        <div class="item-actions campo-form">
+                            <div class="cantidad-control">
+                                <button class="btn-cantidad anuncio-btn red"  style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;"onclick="actualizarCantidadIngreso('${id}', ${Math.max(1, cantidad - 1)})">
+                                    -
+                                </button>
+                                <input type="number" value="${cantidad}" min="1" 
+                               onchange="actualizarCantidad('${nombre}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
+                                <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', ${cantidad + 1})">
+                                    +
+                                </button>
+                            </div>
+                            <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDeIngresos('${id}')">
+                                <i class="fas fa-trash"style="color: red"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn green procesar" onclick="procesarIngresos()">
+                <i class="fas fa-check"></i> Procesar Ingresos
+            </button>
+            <button class="anuncio-btn close cancelar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    window.actualizarCantidadIngreso = (id, cantidad) => {
+        if (productosParaIngresar.has(id)) {
+            const producto = productosParaIngresar.get(id);
+            producto.cantidad = parseInt(cantidad) || 1;
+            productosParaIngresar.set(id, producto);
+            // Actualizar la vista
+            mostrarListaIngresos();
+        }
+    };
+
+    window.eliminarDeIngresos = (id) => {
+        const itemElement = document.querySelector(`.carrito-item[data-id="${id}"]`);
+        const itemInfo = itemElement?.querySelector('.item-info');
+        
+        if (itemElement && itemInfo) {
+            // Store original heights
+            const originalHeight = itemElement.offsetHeight;
+            const originalInfoHeight = itemInfo.offsetHeight;
+            
+            // Set initial heights explicitly
+            itemElement.style.height = originalHeight + 'px';
+            itemInfo.style.height = originalInfoHeight + 'px';
+            
+            // Set overflow hidden on both elements
+            itemElement.style.overflow = 'hidden';
+            itemInfo.style.overflow = 'hidden';
+            
+            // Trigger animation in next frame
+            requestAnimationFrame(() => {
+                // Animate both elements
+                itemElement.style.transition = 'all 0.3s ease-out';
+                itemInfo.style.transition = 'all 0.3s ease-out';
+                
+                // Collapse both elements
+                itemElement.style.height = '0';
+                itemInfo.style.height = '0';
+                
+                // Fade out and remove spacing
+                itemElement.style.opacity = '0';
+                itemInfo.style.opacity = '0';
+                itemElement.style.margin = '0';
+                itemElement.style.padding = '0';
+                itemInfo.style.margin = '0';
+                itemInfo.style.padding = '0';
+            });
+            
+            // Update data after animation
+            setTimeout(() => {
+                productosParaIngresar.delete(id);
+                const button = document.querySelector(`.btn-card.ingreso[onclick*="${id}"]`);
+                if (button) {
+                    button.classList.remove('active', 'disabled');
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                    button.disabled = false;
+                }
+                actualizarContadorIngresos();
+                itemElement.remove(); // Solo removemos el elemento, no recargamos la lista
+                
+                // Si no quedan productos, cerramos el modal
+                if (productosParaIngresar.size === 0) {
+                    document.querySelector('.anuncio').style.display = 'none';
+                }
+            }, 300);
+        }
+    };
+    
+    
+    
+
+    window.procesarIngresos = async () => {
+        try {
+            mostrarCarga();
+            for (const [id, { cantidad }] of productosParaIngresar) {
+                const response = await fetch('/ingresar-stock-almacen', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, cantidad })
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(`Error al procesar el ingreso`);
+                }
+            }
+
+            mostrarNotificacion('Ingresos procesados correctamente', 'success');
+            productosParaIngresar.clear();
+            actualizarContadorIngresos();
+            anuncio.style.display = 'none';
+            cargarAlmacen();
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion(error.message, 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+
+    anuncio.style.display = 'flex';
+    anuncio.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+}
+async function mostrarListaSalidas() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+    contenido.innerHTML = `
+        <h2><i class="fas fa-arrow-circle-up"></i> Lista de Salidas</h2>
+
+            <div class="carrito-productos relleno">
+                ${Array.from(productosParaSalida.entries()).map(([id, { nombre, gramaje, cantidad, stockActual }]) => `
+                <div class="carrito-item form-grup" data-id="${id}" style="margin-top:5px; position: relative;">
+                        <div class="item-info">
+                            <p>${nombre} ${gramaje}gr</p>
+                           
+                        </div>
+                        <div class="item-actions campo-form">
+                            <div class="cantidad-control">
+                                <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', ${Math.max(1, cantidad - 1)})">
+                                    -
+                                </button>
+                                <input type="number" value="${cantidad}" min="1" max="${stockActual}"
+                                onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
+                                <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', ${cantidad + 1})">
+                                    +
+                                </button>
+                            </div>
+                            <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDeSalidas('${id}')">
+                                <i class="fas fa-trash" style="color: red"></i>
+                            </button>
+                        </div>
+                         <small>Stock actual: ${stockActual}</small>
+                    </div>
+                `).join('')}
+            </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn green procesar" onclick="procesarSalidas()">
+                <i class="fas fa-check"></i> Procesar Salidas
+            </button>
+            <button class="anuncio-btn close cancelar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+
+    window.actualizarCantidadSalida = (id, cantidad) => {
+        if (productosParaSalida.has(id)) {
+            const producto = productosParaSalida.get(id);
+            cantidad = parseInt(cantidad) || 1;
+            // Validate against stock
+            if (cantidad > producto.stockActual) {
+                cantidad = producto.stockActual;
+                mostrarNotificacion('No hay suficiente stock', 'warning');
+            }
+            producto.cantidad = cantidad;
+            productosParaSalida.set(id, producto);
+            mostrarListaSalidas();
+        }
+    };
+
+    window.eliminarDeSalidas = (id) => {
+        const itemElement = document.querySelector(`.carrito-item[data-id="${id}"]`);
+        const itemInfo = itemElement?.querySelector('.item-info');
+        
+        if (itemElement && itemInfo) {
+            // Store original heights
+            const originalHeight = itemElement.offsetHeight;
+            const originalInfoHeight = itemInfo.offsetHeight;
+            
+            // Set initial heights explicitly
+            itemElement.style.height = originalHeight + 'px';
+            itemInfo.style.height = originalInfoHeight + 'px';
+            
+            // Set overflow hidden on both elements
+            itemElement.style.overflow = 'hidden';
+            itemInfo.style.overflow = 'hidden';
+            
+            // Trigger animation in next frame
+            requestAnimationFrame(() => {
+                // Animate both elements
+                itemElement.style.transition = 'all 0.3s ease-out';
+                itemInfo.style.transition = 'all 0.3s ease-out';
+                
+                // Collapse both elements
+                itemElement.style.height = '0';
+                itemInfo.style.height = '0';
+                
+                // Fade out and remove spacing
+                itemElement.style.opacity = '0';
+                itemInfo.style.opacity = '0';
+                itemElement.style.margin = '0';
+                itemElement.style.padding = '0';
+                itemInfo.style.margin = '0';
+                itemInfo.style.padding = '0';
+            });
+            
+            // Update data after animation
+            setTimeout(() => {
+                productosParaSalida.delete(id);
+                const button = document.querySelector(`.btn-card.salida[onclick*="${id}"]`);
+                if (button) {
+                    button.classList.remove('active', 'disabled');
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                    button.disabled = false;
+                }
+                actualizarContadorSalidas();
+                itemElement.remove(); // Solo removemos el elemento, no recargamos la lista
+                
+                // Si no quedan productos, cerramos el modal
+                if (productosParaSalida.size === 0) {
+                    document.querySelector('.anuncio').style.display = 'none';
+                }
+            }, 300);
+        }
+    };
+   window.procesarSalidas = async () => {
+    try {
+        mostrarCarga();
+        for (const [id, { cantidad, nombre }] of productosParaSalida) {
+            const response = await fetch('/retirar-stock-almacen', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id,
+                    cantidad
+                })
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error || `Error al procesar la salida de ${nombre}`);
+            }
+        }
+
+        mostrarNotificacion('Salidas procesadas correctamente', 'success');
+        productosParaSalida.clear();
+        actualizarContadorSalidas();
+        document.querySelector('.anuncio').style.display = 'none';
+        cargarAlmacen();
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+};
+
+    anuncio.style.display = 'flex';
+    anuncio.querySelector('.cancelar').onclick = () => {
+        anuncio.style.display = 'none';
+    };
+}
+
+
+
+
 export function mostrarProductos() {
     const container = document.querySelector('.almacen-general-productos');
     if (!container) return;
@@ -273,413 +675,6 @@ async function obtenerUsuarioActual() {
 };
 
 /* ==================== FUNCIONES DE INGRESO, SALIDA, FORMATO, AGREGAR PRODUCTO Y PEDIDOS DEL ALMACEN  ==================== */
-export async function mostrarFormularioIngreso(producto) {
-    try {
-        mostrarCarga();
-        const response = await fetch('/obtener-almacen-general');
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error('Error al cargar los productos');
-        }
-        window.productosAlmacen = data.pedidos;
-
-        const anuncio = document.querySelector('.anuncio');
-        const contenido = anuncio.querySelector('.anuncio-contenido');
-
-        contenido.innerHTML = `
-    <h2><i class="fas fa-plus"></i> Ingresar Stock</h2>
-    <div class="relleno">
-        <div class="productos-seleccionados">
-            <p>Productos a ingresar:</p>
-            <div class="lista-productos-seleccionados"></div>
-        </div>
-        <p>Buscar Producto:</p>
-        <div class="form-grup">
-            <div class="autocomplete-wrapper">
-                <input type="text" id="buscarProducto" class="edit-input" placeholder="Escriba para buscar...">
-                <div class="productos-sugeridos" style="display: none;"></div>
-            </div>
-        </div>
-        <div class="producto-seleccionado form-grup" style="display: none;">
-            <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
-            <input type="hidden" id="idProductoSeleccionado">
-            <div class="campo-form">
-                <p>Cantidad:</p>
-                <input type="number" id="cantidadIngreso" class="edit-input" min="1" placeholder="Cantidad">
-            </div>
-            <button class="anuncio-btn blue agregar-a-lista"><i class="fas fa-plus"></i> Agregar a la lista</button>
-        </div>
-    </div>
-    <div class="anuncio-botones">
-        <button class="anuncio-btn green ingresar" disabled><i class="fas fa-plus-circle"></i> Procesar Ingresos</button>
-        <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-    </div>
-`;
-
-
-        anuncio.style.display = 'flex';
-        let productosParaProcesar = [];
-
-        const inputBuscar = contenido.querySelector('#buscarProducto');
-        const sugerencias = contenido.querySelector('.productos-sugeridos');
-        const recomendacion = contenido.querySelector('.recomendacion');
-        const btnAgregarLista = contenido.querySelector('.agregar-a-lista');
-        const listaProductos = contenido.querySelector('.lista-productos-seleccionados');
-        const btnProcesar = contenido.querySelector('.ingresar');
-
-        // Configurar el evento input antes de establecer el valor
-        const handleInput = () => {
-            const busqueda = inputBuscar.value.toLowerCase().trim();
-            if (busqueda.length < 2) {
-                sugerencias.style.display = 'none';
-                return;
-            }
-
-            const productosFiltrados = window.productosAlmacen.filter(producto =>
-                producto[1].toLowerCase().includes(busqueda)
-            );
-
-            if (productosFiltrados.length > 0) {
-                sugerencias.innerHTML = productosFiltrados.map(producto => `
-                    <div class="sugerencia-item" data-id="${producto[0]}" data-nombre="${producto[1]}" data-gramaje="${producto[2]}">
-                        ${producto[1]} - ${producto[2]}gr
-                    </div>
-                `).join('');
-                sugerencias.style.display = 'block';
-
-                // Agregar eventos click a las sugerencias
-                sugerencias.querySelectorAll('.sugerencia-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const id = item.dataset.id;
-                        const nombre = item.dataset.nombre;
-                        const gramaje = item.dataset.gramaje;
-                        document.getElementById('idProductoSeleccionado').value = id;
-                        document.getElementById('nombreProductoSeleccionado').textContent = `${nombre} - ${gramaje}gr`;
-                        document.querySelector('.producto-seleccionado').style.display = 'block';
-                        inputBuscar.value = `${nombre} - ${gramaje}gr`;
-                        sugerencias.style.display = 'none';
-                        btnIngresar.disabled = false;
-                        recomendacion.style.display = 'none';
-                    });
-                });
-            } else {
-                sugerencias.innerHTML = '<div class="no-resultados">No se encontraron productos</div>';
-                sugerencias.style.display = 'block';
-            }
-        };
-
-        inputBuscar.addEventListener('input', handleInput);
-
-        // Si se proporciona un producto, prellenarlo y mostrar sugerencias
-        if (producto) {
-            inputBuscar.value = producto;
-            // Esperar a que el DOM se actualice
-            setTimeout(() => {
-                handleInput();
-                if (sugerencias.children.length > 0) {
-                    sugerencias.style.display = 'block';
-                }
-            }, 100);
-        }
-
-        // Cerrar sugerencias al hacer clic fuera
-        document.addEventListener('click', (e) => {
-            if (!sugerencias.contains(e.target) && e.target !== inputBuscar) {
-                sugerencias.style.display = 'none';
-            }
-        });
-
-        anuncio.querySelector('.cancelar').onclick = () => {
-            anuncio.style.display = 'none';
-        };
-        btnAgregarLista.onclick = () => {
-            const id = document.getElementById('idProductoSeleccionado').value;
-            const nombre = document.getElementById('nombreProductoSeleccionado').textContent;
-            const cantidad = parseInt(document.getElementById('cantidadIngreso').value);
-
-            if (!id || !cantidad || cantidad < 1) {
-                mostrarNotificacion('Complete los campos correctamente', 'error');
-                return;
-            }
-
-            productosParaProcesar.push({ id, nombre, cantidad });
-            actualizarListaProductos();
-
-            // Limpiar campos
-            document.getElementById('buscarProducto').value = '';
-            document.getElementById('cantidadIngreso').value = '';
-            document.querySelector('.producto-seleccionado').style.display = 'none';
-            btnProcesar.disabled = false;
-        };
-
-        function actualizarListaProductos() {
-            listaProductos.innerHTML = productosParaProcesar.map((prod, index) => `
-                <div class="detalle-item" style="border-bottom:1px solid gray; margin-top:10px;margin-bottom:10px; padding:5px">
-                    <p>${prod.nombre}</p>
-                    <span>${prod.cantidad} und.</span>
-                    <i class="fas fa-trash delete eliminar-de-lista" data-index="${index}"></i>
-                </div>
-            `).join('');
-
-            // Agregar eventos para eliminar items
-            listaProductos.querySelectorAll('.eliminar-de-lista').forEach(btn => {
-                btn.onclick = (e) => {
-                    const index = parseInt(e.target.dataset.index);
-                    productosParaProcesar.splice(index, 1);
-                    actualizarListaProductos();
-                    btnProcesar.disabled = productosParaProcesar.length === 0;
-                };
-            });
-        }
-
-        // Modificar el evento onclick del botón procesar:
-        btnProcesar.onclick = async () => {
-            try {
-                mostrarCarga();
-                for (const producto of productosParaProcesar) {
-                    const response = await fetch('/ingresar-stock-almacen', {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            id: producto.id,
-                            cantidad: producto.cantidad
-                        })
-                    });
-
-                    const data = await response.json();
-                    if (!data.success) {
-                        throw new Error(`Error al procesar ${producto.nombre}`);
-                    }
-
-                    // Registrar el movimiento después de procesar exitosamente
-                    await registrarMovimiento('Ingreso', producto.nombre, producto.cantidad);
-                }
-
-                mostrarNotificacion('Productos procesados correctamente', 'success');
-                anuncio.style.display = 'none';
-                cargarAlmacen();
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarNotificacion(error.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
-        };
-    } catch (error) {
-        console.error('Error al mostrar formulario:', error);
-        mostrarNotificacion('Error al cargar el formulario', 'error');
-    } finally {
-        ocultarCarga();
-    }
-};
-export async function mostrarFormularioSalidas(producto) {
-    try {
-        mostrarCarga();
-        const response = await fetch('/obtener-almacen-general');
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error('Error al cargar los productos');
-        }
-        window.productosAlmacen = data.pedidos;
-
-        const anuncio = document.querySelector('.anuncio');
-        const contenido = anuncio.querySelector('.anuncio-contenido');
-
-        contenido.innerHTML = `
-        <h2><i class="fas fa-minus"></i> Registrar Salida</h2>
-        <div class="relleno">
-            <div class="productos-seleccionados">
-                <p>Productos a retirar:</p>
-                <div class="lista-productos-seleccionados"></div>
-            </div>
-            <p>Buscar Producto:</p>
-            <div class="form-grup">
-                <div class="autocomplete-wrapper">
-                    <input type="text" id="buscarProductoSalida" class="edit-input" placeholder="Escriba para buscar...">
-                    <div class="productos-sugeridos" style="display: none;"></div>
-                </div>
-            </div>
-            <div class="producto-seleccionado form-grup" style="display: none;">
-                <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
-                <p><strong>Stock actual:</strong> <span id="stockActual">0</span> unidades</p>
-                <input type="hidden" id="idProductoSeleccionado">
-                <div class="campo-form">
-                    <p>Cantidad:</p>
-                    <input type="number" id="cantidadSalida" class="edit-input" min="1" placeholder="Cantidad">
-                </div>
-                <button class="anuncio-btn blue agregar-a-lista"><i class="fas fa-plus"></i> Agregar a la lista</button>
-            </div>
-        </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn red retirar" disabled><i class="fas fa-minus-circle"></i> Procesar Salidas</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-        </div>
-    `;
-
-
-
-        anuncio.style.display = 'flex';
-        let productosParaProcesar = [];
-        const inputBuscar = contenido.querySelector('#buscarProductoSalida');
-        const sugerencias = contenido.querySelector('.productos-sugeridos');
-        const btnRetirar = contenido.querySelector('.retirar');
-        const recomendacion = contenido.querySelector('.recomendacion');
-        const btnAgregarLista = contenido.querySelector('.agregar-a-lista');
-        const listaProductos = contenido.querySelector('.lista-productos-seleccionados');
-        const btnProcesar = contenido.querySelector('.retirar');
-
-        const handleInput = () => {
-            const busqueda = inputBuscar.value.toLowerCase().trim();
-            if (busqueda.length < 2) {
-                sugerencias.style.display = 'none';
-                return;
-            }
-
-            const productosFiltrados = window.productosAlmacen.filter(producto =>
-                producto[1].toLowerCase().includes(busqueda)
-            );
-
-            if (productosFiltrados.length > 0) {
-                sugerencias.innerHTML = productosFiltrados.map(producto => `
-                    <div class="sugerencia-item" data-id="${producto[0]}" data-nombre="${producto[1]}" data-gramaje="${producto[2]}" data-stock="${producto[3]}">
-                        ${producto[1]} - ${producto[2]}gr (Stock: ${producto[3]})
-                    </div>
-                `).join('');
-                sugerencias.style.display = 'block';
-
-                sugerencias.querySelectorAll('.sugerencia-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const id = item.dataset.id;
-                        const nombre = item.dataset.nombre;
-                        const gramaje = item.dataset.gramaje;
-                        const stock = item.dataset.stock;
-                        document.getElementById('idProductoSeleccionado').value = id;
-                        document.getElementById('nombreProductoSeleccionado').textContent = `${nombre} - ${gramaje}gr`;
-                        document.getElementById('stockActual').textContent = stock;
-                        document.querySelector('.producto-seleccionado').style.display = 'block';
-                        inputBuscar.value = `${nombre} - ${gramaje}gr`;
-                        sugerencias.style.display = 'none';
-                        btnRetirar.disabled = false;
-                        recomendacion.style.display = 'none';
-                    });
-                });
-            } else {
-                sugerencias.innerHTML = '<div class="no-resultados">No se encontraron productos</div>';
-                sugerencias.style.display = 'block';
-            }
-        };
-
-        inputBuscar.addEventListener('input', handleInput);
-
-        if (producto) {
-            inputBuscar.value = producto;
-            setTimeout(() => {
-                handleInput();
-                if (sugerencias.children.length > 0) {
-                    sugerencias.style.display = 'block';
-                }
-            }, 100);
-        }
-
-        document.addEventListener('click', (e) => {
-            if (!sugerencias.contains(e.target) && e.target !== inputBuscar) {
-                sugerencias.style.display = 'none';
-            }
-        });
-
-        anuncio.querySelector('.cancelar').onclick = () => {
-            anuncio.style.display = 'none';
-        };
-        btnAgregarLista.onclick = () => {
-            const id = document.getElementById('idProductoSeleccionado').value;
-            const nombre = document.getElementById('nombreProductoSeleccionado').textContent;
-            const cantidad = parseInt(document.getElementById('cantidadSalida').value);
-            const stockActual = parseInt(document.getElementById('stockActual').textContent);
-
-            if (!id || !cantidad || cantidad < 1) {
-                mostrarNotificacion('Complete los campos correctamente', 'error');
-                return;
-            }
-
-            if (cantidad > stockActual) {
-                mostrarNotificacion('La cantidad a retirar no puede ser mayor al stock actual', 'error');
-                return;
-            }
-
-            productosParaProcesar.push({ id, nombre, cantidad });
-            actualizarListaProductos();
-
-            // Limpiar campos
-            document.getElementById('buscarProductoSalida').value = '';
-            document.getElementById('cantidadSalida').value = '';
-            document.querySelector('.producto-seleccionado').style.display = 'none';
-            btnProcesar.disabled = false;
-        };
-
-        function actualizarListaProductos() {
-            listaProductos.innerHTML = productosParaProcesar.map((prod, index) => `
-                <div class="detalle-item" style="border-bottom:1px solid gray; margin-top:10px;margin-bottom:10px; padding:5px">
-                    <p>${prod.nombre}</p>
-                    <span>${prod.cantidad} und.</span>
-                    <i class="fas fa-trash delete eliminar-de-lista" data-index="${index}"></i>
-                </div>
-            `).join('');
-
-            // Agregar eventos para eliminar items
-            listaProductos.querySelectorAll('.eliminar-de-lista').forEach(btn => {
-                btn.onclick = (e) => {
-                    const index = parseInt(e.target.dataset.index);
-                    productosParaProcesar.splice(index, 1);
-                    actualizarListaProductos();
-                    btnProcesar.disabled = productosParaProcesar.length === 0;
-                };
-            });
-        }
-
-        btnProcesar.onclick = async () => {
-            try {
-                mostrarCarga();
-                for (const producto of productosParaProcesar) {
-                    const response = await fetch('/retirar-stock-almacen', {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            id: producto.id,
-                            cantidad: producto.cantidad
-                        })
-                    });
-
-                    const data = await response.json();
-                    if (!data.success) {
-                        throw new Error(`Error al procesar ${producto.nombre}`);
-                    }
-
-                    // Registrar el movimiento después de procesar exitosamente
-                    await registrarMovimiento('Salida', producto.nombre, producto.cantidad);
-                }
-
-                mostrarNotificacion('Productos procesados correctamente', 'success');
-                anuncio.style.display = 'none';
-                cargarAlmacen();
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarNotificacion(error.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
-        };
-
-    } catch (error) {
-        console.error('Error al mostrar formulario:', error);
-        mostrarNotificacion('Error al cargar el formulario', 'error');
-    } finally {
-        ocultarCarga();
-    }
-};
 function mostrarFormularioFormato() {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -689,26 +684,30 @@ function mostrarFormularioFormato() {
     contenido.innerHTML = `
         <h2><i class="fas fa-cog"></i> Formatos</h2>
         <div class="relleno">
-            <p>Formato Precios:</p>
-            <div class="detalles-grup">
-                ${formatearPrecios(preciosBase, '1')}
-            </div>
-            <div class="form-grup">
-                <div class="detalle-item">
-                    <input type="text" id="nuevoFormato" class="edit-input" placeholder="Nuevo formato precio">
-                    <i class="fas fa-plus-circle add add-format"></i>
+        <p class="subtitle">Informacion:</p>
+            <div class="form-grup" style="background:none">
+                 <p>Formato Precios:</p>
+                <div class="detalles-grup">
+                    ${formatearPrecios(preciosBase, '1')}
+                </div>
+                <div style="margin-top:5px">
+                    <div class="detalle-item">
+                        <input type="text" id="nuevoFormato" class="edit-input" placeholder="Nuevo formato precio">
+                        <i class="fas fa-plus-circle add add-format"></i>
+                    </div>
+                </div>
+                <p>Formato Etiquetas:</p>
+                <div class="detalles-grup">
+                    ${formatearTags(tagBase, '1')}
+                </div>
+                <div  style="margin-top:5px">
+                    <div class="detalle-item">
+                        <input type="text" id="nuevoFormatoTag" class="edit-input" placeholder="Nuevo formato etiqueta">
+                        <i class="fas fa-plus-circle add add-tag"></i>
+                    </div>
                 </div>
             </div>
-            <p>Formato Etiquetas:</p>
-            <div class="detalles-grup">
-                ${formatearTags(tagBase, '1')}
-            </div>
-            <div class="form-grup">
-                <div class="detalle-item">
-                    <input type="text" id="nuevoFormatoTag" class="edit-input" placeholder="Nuevo formato etiqueta">
-                    <i class="fas fa-plus-circle add add-tag"></i>
-                </div>
-            </div>
+           
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
@@ -855,15 +854,15 @@ function mostrarFormularioAgregarProducto() {
             const [tipo, valor] = precio.split(',');
             let nombreTipo = tipo;
             if (num == 1) {
-                return `<div class="detalle-item">
+                return `<div>
                 <p>${nombreTipo}:</p>
                 <span>Bs. ${valor}</span>
             </div>`;
             }
             else {
-                return `<div class="campo-form">
+                return `<div class="campo-form" style="background:none">
                             <label>${nombreTipo}:</label>
-                            <div class="campo-form" style="padding:0; margin-top:0">
+                            <div class="campo-form" style="padding:0; margin-top:0; background:none">
                                     <input type="number" id="editPrice_${tipo}" value="0" class="edit-input" data-tipo="${tipo}">
                                     <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
                             </div>
@@ -902,38 +901,33 @@ function mostrarFormularioAgregarProducto() {
     contenido.innerHTML = `
         <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
         <div class="relleno">
-                <p>Informacion General:</p>
-                    <div class="campo-form">
-                        <label>Nombre:</label>
-                        <input type="text" id="nuevoNombre" class="edit-input" placeholder="Producto" required>
-                    </div>
-                    <div class="campo-form">
-                        <label>Gramaje:</label>
-                        <input type="number" id="nuevoGramaje" class="edit-input" value="0" placeholder="Opcional" required>
-                    </div>
-                    <div class="campo-form">
-                        <label>Stock Total:</label>
-                        <input type="number" id="nuevoStock" class="edit-input" placeholder="Stock" required>
-                    </div>
-                    <div class="campo-form">
-                        <label>Cantidad por grupo:</label>
-                        <input type="number" id="nuevoCantidadTira" value="0" placeholder="Opcional" class="edit-input">
-                    </div>
-                    <div class="campo-form">
-                        <label>Lista:</label>
-                        <input type="text" id="nuevoLista" class="edit-input" placeholder="Numero" required>
-                    </div>
-                    <div class="campo-form">
-                        <label>Codigo de barras:</label>
-                        <input type="number" id="nuevoCodigoBarras" class="edit-input" placeholder="Numero" required>
-                    </div>
-                <p>Precios:</p>
+                <p style="color:white">Informacion General:</p>
+                <div class="form-grup" style="background:none">
+                    <p>Nombre*</label>
+                    <input type="text" id="nuevoNombre" class="edit-input" placeholder="Ingresa el nombre del producto" required>
+
+                    <p>Gramaje*</label>
+                    <input type="number" id="nuevoGramaje" class="edit-input" value="0" placeholder="Ingresa el gramaje del producto. Ej: 13" required>
+
+                    <p>Stock Total*</label>
+                    <input type="number" id="nuevoStock" class="edit-input" placeholder="Stock inicial del producto. Ej: 1" required>
+
+                    <p>Cantidad por grupo* (Opcional)</label>
+                    <input type="number" id="nuevoCantidadTira" value="0" placeholder="Cantidad que hay en cada grupo" class="edit-input">
+
+                    <p>Lista* (Opcional)</label>
+                    <input type="text" id="nuevoLista" class="edit-input" placeholder="Numero de lista del producto" required>
+
+                    <p>Codigo de barras*</label>
+                    <input type="number" id="nuevoCodigoBarras" class="edit-input" placeholder="Codigo de barras del producto" required>
+                </div>
+                <p style="color:white">Precios:</p>
                 ${formatearPrecios(preciosBase, '2')}
-                <p>Etiquetas:</p>
+                <p style="color:white">Etiquetas:</p>
                 <div id="tags-container" class="detalles-grup">
                         <!-- Aquí se renderizarán los tags seleccionados -->
                 </div>
-                <div class="campo-form">
+                <div class="campo-form" style="background:none">
                     <label>Etiqueta:</label>
                     <select id="nuevoTags" class="edit-input">
                         <option value="">Seleccionar</option>
@@ -949,11 +943,11 @@ function mostrarFormularioAgregarProducto() {
                         <i class="fas fa-plus-circle add btn-add-tag"></i>
                     </div>
                 </div>
-                <p>Almacen Index:</p>
+                <p style="color:white">Almacen Index:</p>
                 <div id="tags-container" class="detalles-grup">
                         <!-- Aquí se renderizarán los tags seleccionados -->
                 </div>
-                <div class="campo-form">
+                <div class="campo-form"style="background:none">
                     <label>Almacen Index:</label>
                     <select id="nuevoIndex" class="edit-input">
                         <option value="">Seleccionar</option>

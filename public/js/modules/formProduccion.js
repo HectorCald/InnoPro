@@ -37,64 +37,70 @@ export function mostrarFormularioProduccion() {
     contenido.innerHTML = `
     <h2><i class="fas fa-clipboard-list"></i> Nueva Producción</h2>
     <div class="relleno">
-        <div class="form-grup">
-            <p>Producto:</p>
-            <div class="producto-container">
+        <p class="subtitle">Formulario:</p>
+        <div class="form-grup" style="background:none">
+            <p>Producto*</p>
                 <input type="text" name="producto" id="producto-input" placeholder="Selecciona el producto" autocomplete="off" required>
                 <div class="sugerencias-container" style="display: none;">
                     <ul class="sugerencias-list"></ul>
                 </div>
-            </div>
-        </div>
-            <div class="campo-form">
-                <p>Lote:</p>
-                <input type="number" name="lote" placeholder="Numero" required>
-            </div>
-            <div class="campo-form">
-                <p>Gramaje:</p>
-                <input type="number" name="gramaje" placeholder="Numero" required>
-            </div>
-            <div class="campo-form">
-                <p>Proceso:</p>
-                <select name="seleccion" required id="seleccion">
-                    <option value="">Elige una opción</option>
-                    <option value="Cernido">Cernido</option>
-                    <option value="Seleccionado">Seleccionado</option>
-                </select>
-            </div>
-            <div class="campo-form">
-                <p class="etiqueta-microondas">Microondas:</p>
-                <div class="campo-form">
+            <p>Lote*</p>
+                <input type="number" name="lote" placeholder="Ingresa el lote. Ej: 03557" required>
+
+            <p>Gramaje*</p>
+                <input type="number" name="gramaje" placeholder="Ingresa el gramaje. Ej: 13" required>
+
+            <p>Proceso* (Elige una opción)</p>
+                <div style="margin-bottom: 10px">
                     <div class="anuncio-botones" style="margin-top: 10px;">
-                        <button class="filter-btn anuncio-btn" data-status="si" value="si" id="si" style="width:60px">SI</button>
-                        <button class="filter-btn anuncio-btn" data-status="no-llego value="no" id="no" style="width:60px">NO</button>
+                        <button class="proceso-btn anuncio-btn" data-status="Cernido" value="Cernido" id="cernido" style="width:100%">Cernido</button>
+                        <button class="proceso-btn anuncio-btn" data-status="Seleccionado" value="Seleccionado" id="seleccionado" style="width:100%">Seleccionado</button>
                     </div>
                 </div>
+
+            <p class="etiqueta-microondas">Microondas* (Elige una opción)</p>
+                <div style="margin-bottom: 10px">
+                    <div class="anuncio-botones" style="margin-top: 10px;">
+                        <button class="microondas-btn anuncio-btn" data-status="si" value="si" id="si" style="width:100%">SI</button>
+                        <button class="microondas-btn anuncio-btn" data-status="no-llego" value="no" id="no" style="width:100%">NO</button>
+                    </div>
+                </div>
+            <div class="microondas-tiempo" style="display: none;">
+                <input type="number" name="microondas" placeholder="Tiempo en segundos. Ej: 60">
             </div>
-            <div class="microondas-tiempo campo-form" style="display: none;">
-                <input type="number" name="microondas" placeholder="Tiempo en segundos">
-            </div>
-            <div class="campo-form">
-                <p>Envases Terminados:</p>
-                <input type="number" name="envasesTerminados" placeholder="Numero" required>
-            </div>
-            <div class="form-grup">
-                <p>Fecha de Vencimiento:</p>
-                <input type="month" name="fechaVencimiento" required>
-            </div>
+            <p>Envases Terminados*</p>
+                <input type="number" name="envasesTerminados" placeholder="Ingresa la cantidad. Ej: 400" required>
+        
+            <p>Fecha de Vencimiento*</p>
+                <div style="display: flex; gap: 10px;">
+                    <select name="mes" required style="width: 50%;">
+                        <option value="">Mes</option>
+                        ${Array.from({length: 12}, (_, i) => i + 1)
+                            .map(num => `<option value="${String(num).padStart(2, '0')}">${String(num).padStart(2, '0')}</option>`)
+                            .join('')}
+                    </select>
+                    <select name="año" required style="width: 50%;">
+                        <option value="">Año</option>
+                        ${Array.from({length: 26}, (_, i) => i + 2025)
+                            .map(year => `<option value="${year}">${year}</option>`)
+                            .join('')}
+                    </select>
+                </div>
+
             <p class="nota">
                 <i class="fas fa-exclamation-circle"></i>
                 Verifica bien la información antes de registrar
             </p>
         </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'">
-                <i class="fas fa-times"></i>
-            </button>
-            <button class="anuncio-btn green confirmar">
-                <i class="fas fa-clipboard-check"></i> Registrar
-            </button>
-        </div>
+    </div>
+    <div class="anuncio-botones">
+        <button class="anuncio-btn close" onclick="document.querySelector('.anuncio').style.display='none'">
+            <i class="fas fa-times"></i>
+        </button>
+        <button class="anuncio-btn green confirmar">
+            <i class="fas fa-clipboard-check"></i> Finalizar y registrar
+        </button>
+    </div>
     `;
 
     // Mostrar el anuncio
@@ -103,108 +109,29 @@ export function mostrarFormularioProduccion() {
     // Inicializar el formulario
     inicializarFormulario();
 
-    anuncio.querySelector('.confirmar').onclick = async (e) => {
-    e.preventDefault();
-    
-    // First validate if product exists in the list
-    const productoInput = document.getElementById('producto-input');
-    const productoValue = productoInput.value.trim();
-    
-    try {
-        mostrarCarga();
-        const response = await fetch('/obtener-productos');
-        const data = await response.json();
-        
-        if (!data.productos.includes(productoValue)) {
-            mostrarNotificacion('El producto ingresado no existe en la lista', 'warning');
-            productoInput.classList.add('invalid');
-            ocultarCarga();
-            return;
-        }
-
-        // Continue with other validations if product exists
-        const requiredInputs = anuncio.querySelectorAll('input[required], select[required]');
-        let isValid = true;
-        
-        requiredInputs.forEach(input => {
-            if (!input.value.trim()) {
-                isValid = false;
-                input.classList.add('invalid');
-            } else {
-                input.classList.remove('invalid');
-            }
-        });
-    
-        if (!isValid) {
-            mostrarNotificacion('Por favor complete todos los campos requeridos', 'warning');
-            ocultarCarga();
-            return;
-        }
-    
-        // Recopilar todos los datos del formulario
-        const formData = {
-            producto: productoValue,
-            lote: document.querySelector('input[name="lote"]').value,
-            gramaje: document.querySelector('input[name="gramaje"]').value,
-            seleccion: document.querySelector('select[name="seleccion"]').value,
-            envasesTerminados: document.querySelector('input[name="envasesTerminados"]').value,
-            fechaVencimiento: document.querySelector('input[name="fechaVencimiento"]').value
-        };
-
-        // Rest of your existing code for handling microondas and submission
-        const botonSiActivo = anuncio.querySelector('#si.active');
-        if (botonSiActivo) {
-            formData.microondas = document.querySelector('input[name="microondas"]').value;
-        } else {
-            formData.microondas = 'No';
-        }
-
-        const userResponse = await fetch('/obtener-mi-rol');
-        const userData = await userResponse.json();
-        const usuarioActual = userData.nombre;
-
-        const submitResponse = await fetch('/registrar-produccion', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const result = await submitResponse.json();
-
-        if (result.success) {
-            await registrarNotificacion(
-                usuarioActual,
-                'Almacen',
-                `Se registró una nueva producción de ${formData.producto}`
-            );
-            mostrarNotificacion('Registro guardado correctamente', 'success');
-            document.querySelector('.anuncio').style.display = 'none';
-        } else {
-            throw new Error(result.error || 'Error desconocido');
-        }
-    } catch (error) {
-        console.error('Error completo:', error);
-        mostrarNotificacion('Error al guardar el registro: ' + error.message, 'error');
-    } finally {
-        ocultarCarga();
-    }
-    };
-    // Manejar botones de microondas
-    const filterButtons = anuncio.querySelectorAll('.filter-btn');
+    // Manejar botones de proceso y microondas
+    const procesoBotones = anuncio.querySelectorAll('.proceso-btn');
+    const microondasBotones = anuncio.querySelectorAll('.microondas-btn');
     const tiempoMicroondas = anuncio.querySelector('.microondas-tiempo');
     
-    filterButtons.forEach(btn => {
+    procesoBotones.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            filterButtons.forEach(b => b.classList.remove('active'));
+            procesoBotones.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    microondasBotones.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            microondasBotones.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
             if (btn.id === 'si') {
                 tiempoMicroondas.style.display = 'block';
                 tiempoMicroondas.querySelector('input').required = true;
-                tiempoMicroondas.querySelector('input').focus(); // Set focus on the input
+                tiempoMicroondas.querySelector('input').focus();
             } else {
                 tiempoMicroondas.style.display = 'none';
                 tiempoMicroondas.querySelector('input').required = false;
@@ -213,6 +140,114 @@ export function mostrarFormularioProduccion() {
         });
     });
 
+    anuncio.querySelector('.confirmar').onclick = async (e) => {
+        e.preventDefault();
+        
+        const productoInput = document.getElementById('producto-input');
+        const productoValue = productoInput.value.trim();
+        
+        try {
+            mostrarCarga();
+            const response = await fetch('/obtener-productos');
+            const data = await response.json();
+            
+            if (!data.productos.includes(productoValue)) {
+                mostrarNotificacion('El producto ingresado no existe en la lista', 'warning');
+                productoInput.classList.add('invalid');
+                ocultarCarga();
+                return;
+            }
+
+            // Validar campos requeridos
+            const requiredInputs = anuncio.querySelectorAll('input[required], select[required]');
+            let isValid = true;
+            
+            requiredInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.classList.add('invalid');
+                } else {
+                    input.classList.remove('invalid');
+                }
+            });
+        
+            if (!isValid) {
+                mostrarNotificacion('Por favor complete todos los campos requeridos', 'warning');
+                ocultarCarga();
+                return;
+            }
+
+            // Validar que se haya seleccionado un proceso
+            const procesoSeleccionado = anuncio.querySelector('.proceso-btn.active');
+            if (!procesoSeleccionado) {
+                mostrarNotificacion('Por favor seleccione un proceso', 'warning');
+                ocultarCarga();
+                return;
+            }
+
+            // Validar que se haya seleccionado una opción de microondas
+            const microondasSeleccionado = anuncio.querySelector('.microondas-btn.active');
+            if (!microondasSeleccionado) {
+                mostrarNotificacion('Por favor seleccione una opción de microondas', 'warning');
+                ocultarCarga();
+                return;
+            }
+        
+            // Recopilar datos del formulario
+            const formData = {
+                producto: productoValue,
+                lote: document.querySelector('input[name="lote"]').value,
+                gramaje: document.querySelector('input[name="gramaje"]').value,
+                seleccion: procesoSeleccionado.value,
+                envasesTerminados: document.querySelector('input[name="envasesTerminados"]').value,
+                fechaVencimiento: `${document.querySelector('select[name="año"]').value}-${document.querySelector('select[name="mes"]').value}`,
+            };
+
+            // Manejar opción de microondas
+            if (microondasSeleccionado.id === 'si') {
+                const tiempoMicroondas = document.querySelector('input[name="microondas"]').value;
+                if (!tiempoMicroondas) {
+                    mostrarNotificacion('Por favor ingrese el tiempo de microondas', 'warning');
+                    ocultarCarga();
+                    return;
+                }
+                formData.microondas = tiempoMicroondas;
+            } else {
+                formData.microondas = 'No';
+            }
+
+            const userResponse = await fetch('/obtener-mi-rol');
+            const userData = await userResponse.json();
+            const usuarioActual = userData.nombre;
+
+            const submitResponse = await fetch('/registrar-produccion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await submitResponse.json();
+
+            if (result.success) {
+                await registrarNotificacion(
+                    usuarioActual,
+                    'Almacen',
+                    `Se registró una nueva producción de ${formData.producto}`
+                );
+                mostrarNotificacion('Registro guardado correctamente', 'success');
+                document.querySelector('.anuncio').style.display = 'none';
+            } else {
+                throw new Error(result.error || 'Error desconocido');
+            }
+        } catch (error) {
+            console.error('Error completo:', error);
+            mostrarNotificacion('Error al guardar el registro: ' + error.message, 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
 }
 window.mostrarFormularioProduccion = mostrarFormularioProduccion;
 export function inicializarFormulario() {

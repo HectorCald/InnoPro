@@ -22,9 +22,25 @@ export async function cargarRegistrosCuentas() {
             container.innerHTML = `
                 <div class="filtros-header">
                     <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Mis Registros</h2>
-                    <button class="btn-filtro">
-                        <i class="fas fa-filter"></i> Filtros
+                </div>
+                <div class="filter-options-estado">
+                    <button class="filter-btn-estado active" data-estado="all">
+                        <i class="fas fa-list"></i> Todos
                     </button>
+                    <button class="filter-btn-estado" data-estado="verified">
+                        <i class="fas fa-check-circle"></i> Verificados
+                    </button>
+                    <button class="filter-btn-estado" data-estado="unverified">
+                        <i class="fas fa-clock"></i> No Verificados
+                    </button>
+                </div>
+                <div class="filter-options-tiempo">
+                    <button class="filter-btn-tiempo" data-tiempo="7">7 días</button>
+                    <button class="filter-btn-tiempo" data-tiempo="15">15 días</button>
+                    <button class="filter-btn-tiempo" data-tiempo="30">1 mes</button>
+                    <button class="filter-btn-tiempo" data-tiempo="90">3 meses</button>
+                    <button class="filter-btn-tiempo" data-tiempo="210">7 meses</button>
+                    <button class="filter-btn-tiempo active" data-tiempo="365">12 meses</button>
                 </div>
                 <p class="subtitulo">Últimos 10 registros (12 meses)</p>
                 <div class="registros-container"></div>
@@ -45,7 +61,7 @@ export async function cargarRegistrosCuentas() {
                     });
 
                 registrosFiltrados = [...registrosOriginales];
-                setupFilters();
+                configurarFiltrosBotones();
                 
                 // Aplicar filtros iniciales
                 aplicarFiltros();
@@ -151,67 +167,29 @@ export function mostrarDetalles(card) {
         }, 100);
     }
 }
+function configurarFiltrosBotones() {
+    const botonesEstado = document.querySelectorAll('.filter-btn-estado');
+    const botonesTiempo = document.querySelectorAll('.filter-btn-tiempo');
 
-/* =============== FUNCIONES DE FILTROS =============== */
-function setupFilters() {
-    const container = document.querySelector('.cuentasProduccion-view');
-    const btnFiltro = container.querySelector('.btn-filtro');
-
-    btnFiltro.addEventListener('click', () => {
-        const anuncio = document.querySelector('.anuncio');
-        const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-        
-        anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-filter"></i> Filtros</h2>
-            <div class="filtros-contenido">
-                <div class="campo-form">
-                    <p>Tiempo: </p>
-                    <select class="filter-select" id="periodoSelect">
-                        <option value="7" ${filtroActual.periodo === '7' ? 'selected' : ''}>7 días</option>
-                        <option value="15" ${filtroActual.periodo === '15' ? 'selected' : ''}>15 días</option>
-                        <option value="30" ${filtroActual.periodo === '30' ? 'selected' : ''}>1 mes</option>
-                        <option value="90" ${filtroActual.periodo === '90' ? 'selected' : ''}>3 meses</option>
-                        <option value="210" ${filtroActual.periodo === '210' ? 'selected' : ''}>7 meses</option>
-                        <option value="365" ${filtroActual.periodo === '365' ? 'selected' : ''}>12 meses</option>
-                    </select>
-                </div>
-                <div class="campo-form">
-                    <p>Estado:</p>
-                    <select class="filter-select" id="verificacionSelect">
-                        <option value="all" ${filtroActual.verificacion === 'all' ? 'selected' : ''}>Todos</option>
-                        <option value="verified" ${filtroActual.verificacion === 'verified' ? 'selected' : ''}>Verificados</option>
-                        <option value="unverified" ${filtroActual.verificacion === 'unverified' ? 'selected' : ''}>No Verificados</option>
-                    </select>
-                </div>
-            </div>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn green aplicar"><i class="fas fa-check-circle"></i> Aplicar Filtros</button>
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-            </div>
-        `;
-
-        // Mostrar el anuncio y overlay
-        anuncio.style.display = 'flex';
-        document.querySelector('.container').classList.add('no-touch');
-
-        // Configurar botones del modal
-        const btnAplicar = anuncio.querySelector('.aplicar');
-        const btnCancelar = anuncio.querySelector('.cancelar');
-
-        // Manejar clic en Aplicar
-        btnAplicar.addEventListener('click', () => {
-            filtroActual = {
-                periodo: document.querySelector('#periodoSelect').value,
-                verificacion: document.querySelector('#verificacionSelect').value
-            };
+    botonesEstado.forEach(boton => {
+        boton.addEventListener('click', () => {
+            botonesEstado.forEach(b => b.classList.remove('active'));
+            boton.classList.add('active');
+            filtroActual.verificacion = boton.dataset.estado;
             aplicarFiltros();
-            cerrarModal();
         });
+    });
 
-        // Manejar clic en Cancelar
-        btnCancelar.addEventListener('click', cerrarModal);
+    botonesTiempo.forEach(boton => {
+        boton.addEventListener('click', () => {
+            botonesTiempo.forEach(b => b.classList.remove('active'));
+            boton.classList.add('active');
+            filtroActual.periodo = boton.dataset.tiempo;
+            aplicarFiltros();
+        });
     });
 }
+/* =============== FUNCIONES DE FILTROS =============== */
 function aplicarFiltros() {
     const hoy = new Date();
     const fechaLimite = new Date();

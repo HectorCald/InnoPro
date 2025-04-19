@@ -365,10 +365,10 @@ function mostrarCarrito() {
                 <div class="producto-info form-grup" style="margin-top:5px; position: relative;">
                     <p class="nombre">${nombre}</p>
                     <div class="cantidad-control campo-form">
-                        <button class="btn-cantidad anuncio-btn green" style="max-width:40px; min-height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', -1)">-</button>
+                        <button class="btn-cantidad anuncio-btn red" style="max-width:40px; min-height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', -1)">-</button>
                         <input type="number" value="${cantidad}" min="1" 
                                onchange="actualizarCantidad('${nombre}', this.value)" style="text-align:center">
-                        <button class="btn-cantidad anuncio-btn red" style="max-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', 1)">+</button>
+                        <button class="btn-cantidad anuncio-btn green" style="max-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', 1)">+</button>
                         <select class="unidad-medida">
                             <option value="unid.">und.</option>
                             <option value="cajas">cj.</option>
@@ -457,30 +457,55 @@ window.actualizarCantidad = (nombre, valor) => {
 
 window.eliminarDelCarrito = (nombre) => {
     const productoElement = document.querySelector(`.producto-carrito[data-nombre="${nombre}"]`);
+    const productoInfo = productoElement?.querySelector('.producto-info');
     
-    // Añadir clase para la animación de deslizamiento
-    productoElement.style.transition = 'all 0.3s ease-in-out';
-    productoElement.style.transform = 'translateX(100%)';
-    productoElement.style.opacity = '0';
-
-    // Esperar a que termine la animación antes de eliminar
-    setTimeout(() => {
-        carritoProductos.delete(nombre);
+    if (productoElement && productoInfo) {
+        // Store original heights
+        const originalHeight = productoElement.offsetHeight;
+        const originalInfoHeight = productoInfo.offsetHeight;
         
-        // Re-enable the button
-        const button = document.querySelector(`.btn-card.pedido[onclick*="${nombre}"]`);
-        if (button) {
-            button.classList.remove('disabled');
-            button.disabled = false;
-        }
-
-        productoElement.remove();
-        updateCartCounter();
+        // Set initial heights explicitly
+        productoElement.style.height = originalHeight + 'px';
+        productoInfo.style.height = originalInfoHeight + 'px';
         
-        if (carritoProductos.size === 0) {
-            document.querySelector('.anuncio').style.display = 'none';
-        }
-    }, 300); // Este tiempo debe coincidir con la duración de la transición
+        // Set overflow hidden on both elements
+        productoElement.style.overflow = 'hidden';
+        productoInfo.style.overflow = 'hidden';
+        
+        // Trigger animation in next frame
+        requestAnimationFrame(() => {
+            // Animate both elements
+            productoElement.style.transition = 'all 0.3s ease-out';
+            productoInfo.style.transition = 'all 0.3s ease-out';
+            
+            // Collapse both elements
+            productoElement.style.height = '0';
+            productoInfo.style.height = '0';
+            
+            // Fade out and remove spacing
+            productoElement.style.opacity = '0';
+            productoInfo.style.opacity = '0';
+            productoElement.style.margin = '0';
+            productoElement.style.padding = '0';
+            productoInfo.style.margin = '0';
+            productoInfo.style.padding = '0';
+        });
+        
+        // Update data after animation
+        setTimeout(() => {
+            carritoProductos.delete(nombre);
+            const button = document.querySelector(`.btn-card.pedido[onclick*="${nombre}"]`);
+            if (button) {
+                button.classList.remove('disabled');
+                button.disabled = false;
+            }
+            updateCartCounter();
+            
+            if (carritoProductos.size === 0) {
+                document.querySelector('.anuncio').style.display = 'none';
+            }
+        }, 300);
+    }
 };
 
 window.finalizarPedidosCarrito = async () => {
