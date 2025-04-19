@@ -12,9 +12,9 @@
   "theme_color": "#1a1a1a",
   "form_factor": "wide",
   "id": "InnoProho",
-  "orientation": "portrait",
+  "orientation": "any",
   "launch_handler": {
-    "client_mode": ["focus-existing"]
+    "client_mode": ["navigate-existing", "auto"]
   },
   "screenshots": [
     {
