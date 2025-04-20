@@ -84,7 +84,7 @@
       "url": "/%s"
     }
   ],
-  "display_override": ["fullscreen", "standalone"],
+  "display_override": ["fullscreen"],
   "categories": ["productivity", "business"],
   "dir": "ltr",
   "iarc_rating_id": "",
