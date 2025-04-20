@@ -9,9 +9,6 @@
   "form_factor": "wide",
   "id": "InnoPro",
   "orientation": "any",
-  "launch_handler": {
-    "client_mode": ["navigate-existing", "auto"]
-  },
   "screenshots": [
     {
       "src": "/screenshots/screenshot1.png",
@@ -47,43 +44,8 @@
       "purpose": "maskable"
     }
   ],
-  "sync": {
-    "periodic": true,
-    "minPeriod": 60,
-    "maxPeriod": 300
-  },
-  "background_sync": {
-    "sync_interval": "1d",
-    "retry_delay": "1h",
-    "max_retries": 3
-  },
-  "related_applications": [
-    {
-      "platform": "webapp",
-      "url": "https://app-produccion-db.vercel.app/manifest.json"
-    }
-  ],
   "prefer_related_applications": false,
   "shortcuts": [],
-  "share_target": {
-    "action": "/share-target",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "files": [
-        {
-          "name": "media",
-          "accept": ["image/*"]
-        }
-      ]
-    }
-  },
-  "protocol_handlers": [
-    {
-      "protocol": "web+innopro",
-      "url": "/%s"
-    }
-  ],
   "display_override": ["fullscreen"],
   "categories": ["productivity", "business"],
   "dir": "ltr",

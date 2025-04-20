@@ -3,10 +3,8 @@ const urlsToCache = [
   '/',
   '/css/login.css',
   '/css/dashboard_db.css',
-  '/css/styles/imgUpload.css',
   '/js/login.js',
   '/js/dashboard_db.js',
-  '/js/modules/imgUpload.js',
   '/manifest.json'
 ];
 
