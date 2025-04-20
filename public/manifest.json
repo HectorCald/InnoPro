@@ -8,7 +8,7 @@
   "theme_color": "#4CAF50",
   "form_factor": "wide",
   "id": "InnoProho",
-  "orientation": "any",
+  "orientation": "portrait",
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
   },
@@ -84,7 +84,7 @@
       "url": "/%s"
     }
   ],
-  "display_override": ["fullscreen", "minimal-ui"],
+  "display_override": ["fullscreen"],
   "categories": ["productivity", "business"],
   "dir": "ltr",
   "iarc_rating_id": "",
