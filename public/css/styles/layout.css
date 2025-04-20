@@ -33,6 +33,16 @@
     background: var(--second-color);
     z-index: 9;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media all and (display-mode: fullscreen) {
+    .dashboard {
+        display: none !important;
+    }
+    .container {
+        padding-top: 0 !important;
+        margin-left: 0 !important;
+    }
 
     /* ===== BOTONES DEL DASHBOARD ===== */
     .dashboard-buttons {
