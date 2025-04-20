@@ -3,12 +3,12 @@
   "short_name": "InnoPro",
   "description": "Sistema de gestión Damabrava",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4CAF50",
+  "theme_color": "#1a1a1a",
   "form_factor": "wide",
   "id": "InnoProho",
-  "orientation": "portrait",
+  "orientation": "any",
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
   },
@@ -84,7 +84,7 @@
       "url": "/%s"
     }
   ],
-  "display_override": ["fullscreen"],
+  "display_override": ["standalone", "fullscreen"],
   "categories": ["productivity", "business"],
   "dir": "ltr",
   "iarc_rating_id": "",
