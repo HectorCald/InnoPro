@@ -43,7 +43,26 @@ export function mostrarAnuncio() {
     }
 }
 window.mostrarAnuncio = mostrarAnuncio;
-
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+    }
+    
+    // Ocultar barra de navegación en Android
+    if (navigator.userAgent.match(/Android/i)) {
+        window.scrollTo(0, 1);
+    }
+});
+window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        }
+        window.scrollTo(0, 1);
+    }, 300);
+});
 // Manejador del botón físico de retroceso
 window.addEventListener('popstate', (event) => {
     const anuncio = document.querySelector('.anuncio');
