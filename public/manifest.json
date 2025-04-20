@@ -1,9 +1,5 @@
 {
   "name": "InnoPro",
-  "handle_links": "auto",
-  "navigation_handler": {
-    "allow_unhandled": false
-  },
   "short_name": "InnoPro",
   "description": "Sistema de gestión Damabrava",
   "start_url": "/",
