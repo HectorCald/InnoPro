@@ -44,3 +44,20 @@ export function mostrarAnuncio() {
 }
 window.mostrarAnuncio = mostrarAnuncio;
 
+// Manejador del botón físico de retroceso
+window.addEventListener('popstate', (event) => {
+    const anuncio = document.querySelector('.anuncio');
+    if (anuncio && anuncio.style.display === 'flex') {
+        ocultarAnuncio();
+        window.history.pushState(null, '', window.location.href);
+    }
+});
+
+// Soporte para Navigation API (experimental)
+if ('navigation' in window) {
+    window.navigation.addEventListener('navigate', (event) => {
+        if (event.destination.url === 'app://innopro/') {
+            ocultarAnuncio();
+        }
+    });
+}
