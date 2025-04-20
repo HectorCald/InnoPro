@@ -6,6 +6,7 @@
   "display": "fullscreen",
   "background_color": "#ffffff",
   "theme_color": "#1a1a1a",
+  "display_override": ["fullscreen", "standalone"],
   "form_factor": "wide",
   "id": "InnoProho",
   "orientation": "any",
@@ -84,7 +85,7 @@
       "url": "/%s"
     }
   ],
-  "display_override": ["fullscreen", "minimal-ui"],
+  "display_override": ["standalone", "minimal-ui"],
   "categories": ["productivity", "business"],
   "dir": "ltr",
   "iarc_rating_id": "",
