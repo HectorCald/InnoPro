@@ -11,10 +11,11 @@ const urlsToCache = [
 // Cola de sincronización
 const syncQueue = new Map();
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+// Modificar el evento fetch para forzar modo offline
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+      .catch(() => caches.match('/offline.html'))
   );
 });
-
