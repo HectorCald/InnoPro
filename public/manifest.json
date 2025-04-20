@@ -7,7 +7,7 @@
   "background_color": "#ffffff",
   "theme_color": "#1a1a1a",
   "form_factor": "wide",
-  "id": "InnoProho",
+  "id": "InnoProho2",
   "orientation": "any",
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
@@ -93,7 +93,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "app.vercel.app_produccion_db.twa",
+      "package_name": "app.vercel.app_produccion_db2.twa",
       "sha256_cert_fingerprints": ["54:F7:2B:7F:C6:B0:F6:70:4D:7A:C4:68:10:88:06:AB:95:A3:A1:70:0F:11:2B:1C:70:ED:5A:52:13:01:4E:48"]
     }
   }]
