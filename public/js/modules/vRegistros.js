@@ -869,8 +869,7 @@ function configurarFiltros() {
             fechaHasta: '',
             estado: 'todos'
         };
-        const usuarios = await obtenerUsuarios();
-        console.log(usuarios)
+
         anuncioContenido.innerHTML = `
             <div class="encabezado">
                 <h2>Filtros</h2>
@@ -1242,13 +1241,14 @@ function formatearFecha(fecha) {
     return fecha;
 }
 
-async function obtenerUsuarios() {
+async function cargarUsuarios() {
     try {
         const response = await fetch('/obtener-usuarios');
         const data = await response.json();
-        return data.usuarios.filter(user => user.rol === 'Producción');
+        window.usuarios = data.usuarios.filter(user => user.rol === 'Producción'); // Store globally
     } catch (error) {
-        console.error('Error al obtener usuarios:', error);
-        return [];
+        console.error('Error al cargar usuarios:', error);
     }
 }
+
+cargarUsuarios();
