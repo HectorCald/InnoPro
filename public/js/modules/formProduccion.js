@@ -57,7 +57,7 @@ export function mostrarFormularioProduccion() {
 
             <p>Proceso* (Elige una opción)</p>
                 <div style="margin-bottom: 10px">
-                    <div class="anuncio-botones" style="margin-top: 10px;">
+                    <div class="anuncio-botones" style="margin-top: 5px; padding:0">
                         <button class="proceso-btn anuncio-btn" data-status="Cernido" value="Cernido" id="cernido" style="width:100%">Cernido</button>
                         <button class="proceso-btn anuncio-btn" data-status="Seleccionado" value="Seleccionado" id="seleccionado" style="width:100%">Seleccionado</button>
                     </div>
@@ -65,7 +65,7 @@ export function mostrarFormularioProduccion() {
 
             <p class="etiqueta-microondas">Microondas* (Elige una opción)</p>
                 <div style="margin-bottom: 10px">
-                    <div class="anuncio-botones" style="margin-top: 10px;">
+                    <div class="anuncio-botones" style="margin-top:5px;padding:0">
                         <button class="microondas-btn anuncio-btn" data-status="si" value="si" id="si" style="width:100%">SI</button>
                         <button class="microondas-btn anuncio-btn" data-status="no-llego" value="no" id="no" style="width:100%">NO</button>
                     </div>
