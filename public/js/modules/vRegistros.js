@@ -1093,33 +1093,67 @@ function aplicarFiltros() {
                 const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
                 anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-calculator"></i> Resumen de Registros</h2>
-            <div class="detalles-verificacion">
-                <div class="resumen-info">
-                    <p><strong>Operario:</strong> ${filtrosActivos.nombre}</p>
-                    <p><strong>Desde:</strong> ${filtrosActivos.fechaDesde || 'No especificado'}</p>
-                    <p><strong>Hasta:</strong> ${filtrosActivos.fechaHasta || 'No especificado'}</p>
-                    <div class="desglose-totales">
-                        <p><strong>Total Sellado:</strong> ${totalSellado.toFixed(2)} Bs.</p>
-                        <p><strong>Total Envasado:</strong> ${totalEnvasado.toFixed(2)} Bs.</p>
-                        <p><strong>Total Etiquetado:</strong> ${totalEtiquetado.toFixed(2)} Bs.</p>
-                        <p><strong>Total Cernido:</strong> ${totalCernido.toFixed(2)} Bs.</p>
-                        <p><strong>Total Extras Existentes:</strong> ${extrasExistentes.toFixed(2)} Bs.</p>
-                        <div class="campo-form">
-                            <label>Agregar Extras:</label>    
-                            <input type="number" id="total-extras" value="0" min="0" step="0.01">
-                        </div>
-                        <p class="total-general"><strong>Total General:</strong> <span id="total-general-valor">${(totalGeneral + extrasExistentes).toFixed(2)}</span> Bs.</p>
+            <div class="encabezado">
+                <h2>Resumen de costos y registros</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                    <i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div class="detalles-verificacion relleno">
+                <p class="subtitle">Detalle</p>
+                <div class="resumen-info detalles-grup">
+                    
+                    <div class="detalle-item">
+                        <p>Operario:</p> <span>${filtrosActivos.nombre}</span>
+                    </div>
+                    <div class="detalle-item">
+                       <p>Desde:</p><span> ${filtrosActivos.fechaDesde || 'No especificado'}</span>
+                    </div>
+                    <div class="detalle-item">
+                       <p>Hasta:</p><span>${filtrosActivos.fechaHasta || 'No especificado'}</span>
+                    </div>
+                    <div class="detalle-item">
+                       <p>Hasta:</p><span>${filtrosActivos.fechaHasta || 'No especificado'}</span>
+                    </div>
+                    
+                </div>
+                <p class="subtitle">Desglose de totales</p>
+                <div class="desglose-totales detalles-grup">
+                    <div class="detalle-item">
+                       <p>Total Sellado:</p><span> ${totalSellado.toFixed(2)} Bs.</span>
+                    </div>
+                    <div class="detalle-item">
+                       <p>Total Envasado:</p><span>${totalEnvasado.toFixed(2)} Bs.</span>
+                    </div>
+                    <div class="detalle-item">
+                       <p>Total Etiquetado:</p><span> ${totalEtiquetado.toFixed(2)} Bs.</span>
+                    </div>
+                    <div class="detalle-item">
+                       <p>Total Cernido:</p><span>${totalCernido.toFixed(2)} Bs.</span>
+                    </div>
+                    <div class="detalle-item">
+                       <p>Total Extras Existentes:</p><span>${extrasExistentes.toFixed(2)} Bs.</span>
+                    </div> 
+                </div>
+                <p class="subtitle">Ingrese extras (Opcional)</p>
+                <div class="campo-form" style="background:none">
+                    <p>Extras:</p>    
+                    <input type="number" id="total-extras" value="0" min="0" step="0.01">
+                </div>
+                <p class="subtitle">TOTAL</p>
+                <div class="detalles-grup">
+                    <div class="detalle-item">
+                    <p>Total General:</p><span class="total-general"> <span id="total-general-valor">${(totalGeneral + extrasExistentes).toFixed(2)}</span> Bs.</span>
                     </div>
                 </div>
+                
+                
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
                 <button class="anuncio-btn blue registrar-cuentas"><i class="fas fa-save"></i> Registrar</button>
                 <button class="anuncio-btn green Pagar"><i class="fas fa-dollar-sign"></i> Pagar</button>
             </div>
         `;
-
+        mostrarAnuncio();
                 // Agregar el evento para actualizar el total cuando cambie el valor de extras
                 const inputExtras = anuncioContenido.querySelector('#total-extras');
                 const spanTotalGeneral = anuncioContenido.querySelector('#total-general-valor');
@@ -1131,14 +1165,7 @@ function aplicarFiltros() {
                     spanTotalGeneral.textContent = nuevoTotal.toFixed(2);
                 });
 
-                anuncio.style.display = 'flex';
-                document.querySelector('.container').classList.add('no-touch');
-
-                anuncioContenido.querySelector('.cancelar').addEventListener('click', () => {
-                    anuncio.style.display = 'none';
-                    document.querySelector('.overlay').style.display = 'none';
-                    document.querySelector('.container').classList.remove('no-touch');
-                });
+                
 
                 anuncioContenido.querySelector('.registrar-cuentas').addEventListener('click', async () => {
                     try {
@@ -1192,8 +1219,7 @@ function aplicarFiltros() {
                         const data = await response.json();
                         if (data.success) {
                             mostrarNotificacion('Registros actualizados correctamente', 'success');
-                            anuncio.style.display = 'none';
-                            document.querySelector('.container').classList.remove('no-touch');
+                            ocultarAnuncio();
                         } else {
                             throw new Error(data.error);
                         }
