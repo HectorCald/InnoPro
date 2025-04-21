@@ -1111,10 +1111,6 @@ function aplicarFiltros() {
                     <div class="detalle-item">
                        <p>Hasta:</p><span>${filtrosActivos.fechaHasta || 'No especificado'}</span>
                     </div>
-                    <div class="detalle-item">
-                       <p>Hasta:</p><span>${filtrosActivos.fechaHasta || 'No especificado'}</span>
-                    </div>
-                    
                 </div>
                 <p class="subtitle">Desglose de totales</p>
                 <div class="desglose-totales detalles-grup">
