@@ -51,7 +51,8 @@ app.use(express.static(join(__dirname, 'public'), {
         }
     }
 }));
-// ... resto del código ...
+app.use('/.well-known', express.static(join(__dirname, 'public/.well-known')));
+
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 

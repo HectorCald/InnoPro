@@ -3,12 +3,22 @@
   "short_name": "InnoPro",
   "description": "Sistema de gestión Damabrava",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#1a1a1a",
   "form_factor": "wide",
   "id": "InnoPro",
   "orientation": "any",
+  "display_override": ["fullscreen", "standalone"],
+  "categories": ["productivity", "business"],
+  "prefer_related_applications": true,
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "app.vercel.app_produccion_db.twa",
+      "url": "https://play.google.com/store/apps/details?id=app.vercel.app_produccion_db.twa"
+    }
+  ],
   "screenshots": [
     {
       "src": "/screenshots/screenshot1.png",
@@ -44,10 +54,17 @@
       "purpose": "maskable"
     }
   ],
-  "prefer_related_applications": false,
-  "display_override": ["standalone","fullscreen"],
-  "categories": ["productivity", "business"],
+  "shortcuts": [],
   "dir": "ltr",
   "iarc_rating_id": "",
-  "scope": "/"
-} 
+  "scope": "/",
+  "protocol_handlers": [
+    {
+      "protocol": "web+innopro",
+      "url": "/%s"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
+}
