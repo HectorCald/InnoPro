@@ -129,7 +129,7 @@
 }
 
 .anuncio-contenido h2 {
-    font-size: 16px;
+    font-size: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -143,7 +143,7 @@
     width: 100%;
     text-align: left;
     font-weight: 500;
-    font-size: 13px;
+    font-size: 14px;
 }
 .anuncio-contenido .subtitle{
     color:white;
@@ -265,12 +265,12 @@
 .anuncio-contenido input,
 .anuncio-contenido textarea {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border: none;
     border-radius: 10px;
     background: var(--primary-color);
     color: var(--primary-text);
-    font-size: 13px !important;
+    font-size: 14px !important;
     margin-bottom:5px;
     outline: none;
 }
@@ -287,7 +287,7 @@
     padding: 10px !important;
     border-radius: 15px;
     width: 100%;
-    font-size: 13px !important;
+    font-size: 14px !important;
     border: none;
     height: 60px;
     -webkit-appearance: none;
@@ -329,6 +329,7 @@
     text-align: left;
     color: rgb(161, 161, 161);
     padding: 2px;
+    font-size: 14px;
 }
 
 .anuncio-contenido select {
@@ -352,7 +353,7 @@
 .anuncio-contenido select option {
     background: var(--primary-color);
     color: var(--primary-text);
-    font-size: 13px !important;
+    font-size: 14px !important;
     border:none;
     outline: none !important;
     -webkit-appearance: none;
@@ -399,6 +400,7 @@
     background-color: rgb(56, 56, 56);
     border-radius: 10px;
     width: 100%;
+    font-size: 14px;
 }
 
 .detalle-item {
@@ -439,9 +441,10 @@
     padding-left: 10px;
     width: 100%;
     text-align: right;
+    font-size: 14px;
 }
 .anuncio-contenido span{
-    font-size: 13px !important;
+    font-size: 14px !important;
 }
 
 .sugerencias-container{
@@ -460,7 +463,7 @@
     text-align: left;
     padding-left:15px;
     border-radius: 10px;
-    font-size: 13px;
+    font-size: 14px;
 }
 .sugerencias-container .sugerencias-list li:hover{
     background-color: var(--tercer-color);
