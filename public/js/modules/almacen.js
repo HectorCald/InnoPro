@@ -92,7 +92,6 @@ export async function cargarAlmacen() {
             productCard.innerHTML = `
                 <div class="product-info">
                     <div class="product-name">
-                        <i class="fas fa-box"></i>
                         <span>${nombre} ${gramaje} gr.</span>
                     </div>   
                     <div class="product-quantity">
@@ -154,23 +153,22 @@ window.agregarAIngresos = (id, nombre, gramaje) => {
             nuevoItem.dataset.id = id;
             nuevoItem.style = 'margin-top:5px; position: relative;';
             nuevoItem.innerHTML = `
-                <div class="item-info">
-                    <p>${nombre} ${gramaje}gr</p>
-                </div>
+                    
                 <div class="item-actions campo-form">
+                <p>${nombre} ${gramaje}gr</p>
                     <div class="cantidad-control">
-                        <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'restar')">
+                        <button class="btn-cantidad anuncio-btn red" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'restar')">
                             -
                         </button>
                         <input type="number" value="1" min="1" 
-                            onchange="actualizarCantidadIngreso('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
-                        <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'sumar')">
+                            onchange="actualizarCantidadIngreso('${id}', this.value)" style="text-align:center; width: 70px; border:1px solid gray;padding: 10px">
+                        <button class="btn-cantidad anuncio-btn green" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'sumar')">
                             +
                         </button>
                     </div>
-                    <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDeIngresos('${id}')">
-                        <i class="fas fa-trash"style="color: red"></i>
-                    </button>
+                    <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: -10px; left: 10px;" onclick="eliminarDeIngresos('${id}')">
+                                <p style="color: red;font-size: 25px;">-</p>
+                            </button>
                 </div>
             `;
             listaProductos.appendChild(nuevoItem);
@@ -215,22 +213,21 @@ window.agregarASalidas = (id, nombre, gramaje, stockActual) => {
             nuevoItem.dataset.id = id;
             nuevoItem.style = 'margin-top:5px; position: relative;';
             nuevoItem.innerHTML = `
-                <div class="item-info">
-                    <p>${nombre} ${gramaje}gr</p>
-                </div>
+                   
                 <div class="item-actions campo-form">
+                 <p>${nombre} ${gramaje}gr</p>
                     <div class="cantidad-control">
-                        <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'restar')">
+                        <button class="btn-cantidad anuncio-btn red" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'restar')">
                             -
                         </button>
                         <input type="number" value="1" min="1" max="${stockActual}"
-                            onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
-                        <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'sumar')">
+                            onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; width: 70px; border:1px solid gray;padding:10px">
+                        <button class="btn-cantidad anuncio-btn green" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'sumar')">
                             +
                         </button>
                     </div>
-                    <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDeSalidas('${id}')">
-                        <i class="fas fa-trash" style="color: red"></i>
+                    <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: -10px; left: 10px;" onclick="eliminarDeSalidas('${id}')">
+                        <p style="color: red;font-size: 25px;">-</p>
                     </button>
                 </div>
                 <small>Stock actual: ${stockActual}</small>
@@ -304,26 +301,26 @@ async function mostrarListaIngresos() {
             <button class="anuncio-btn close" onclick="ocultarAnuncio()">
                 <i class="fas fa-arrow-right"></i></button>
         </div>
-
             <div class="carrito-productos relleno">
                 ${Array.from(productosParaIngresar.entries()).map(([id, { nombre, gramaje, cantidad }]) => `
                     <div class="carrito-item form-grup" data-id="${id}" style="margin-top:5px; position: relative;">
-                        <div class="item-info">
-                            <p>${nombre} ${gramaje}gr</p>
-                        </div>
+                        
                         <div class="item-actions campo-form">
+
+                            <p>${nombre} ${gramaje}gr</p>
+                        
                             <div class="cantidad-control">
-                                <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'restar')">
+                                <button class="btn-cantidad anuncio-btn red" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'restar')">
                                     -
                                 </button>
                                 <input type="number" value="${cantidad}" min="1" 
-                                    onchange="actualizarCantidadIngreso('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
-                                <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'sumar')">
+                                    onchange="actualizarCantidadIngreso('${id}', this.value)" style="text-align:center; width: 70px; border:1px solid gray; padding: 10px">
+                                <button class="btn-cantidad anuncio-btn green" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'sumar')">
                                     +
                                 </button>
                             </div>
-                            <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDeIngresos('${id}')">
-                                <i class="fas fa-trash"style="color: red"></i>
+                            <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: -10px; left: 10px;" onclick="eliminarDeIngresos('${id}')">
+                                <p style="color: red;font-size: 25px;">-</p>
                             </button>
                         </div>
                     </div>
@@ -360,44 +357,13 @@ async function mostrarListaIngresos() {
         }
     };
     window.eliminarDeIngresos = (id) => {
-        const itemElement = document.querySelector(`.carrito-item[data-id="${id}"]`);
-        const itemInfo = itemElement?.querySelector('.item-info');
-
-        if (itemElement && itemInfo) {
-            // Store original heights
-            const originalHeight = itemElement.offsetHeight;
-            const originalInfoHeight = itemInfo.offsetHeight;
-
-            // Set initial heights explicitly
-            itemElement.style.height = originalHeight + 'px';
-            itemInfo.style.height = originalInfoHeight + 'px';
-
-            // Set overflow hidden on both elements
-            itemElement.style.overflow = 'hidden';
-            itemInfo.style.overflow = 'hidden';
-
-            // Trigger animation in next frame
-            requestAnimationFrame(() => {
-                // Animate both elements
-                itemElement.style.transition = 'all 0.3s ease-out';
-                itemInfo.style.transition = 'all 0.3s ease-out';
-
-                // Collapse both elements
-                itemElement.style.height = '0';
-                itemInfo.style.height = '0';
-
-                // Fade out and remove spacing
-                itemElement.style.opacity = '0';
-                itemInfo.style.opacity = '0';
-                itemElement.style.margin = '0';
-                itemElement.style.padding = '0';
-                itemInfo.style.margin = '0';
-                itemInfo.style.padding = '0';
-            });
-
-            // Update data after animation
-            setTimeout(() => {
+        try {
+            const itemElement = document.querySelector(`.carrito-item[data-id="${id}"]`);
+            if (itemElement) {
+                // Remove from Map
                 productosParaIngresar.delete(id);
+                
+                // Reset the original button state
                 const button = document.querySelector(`.btn-card.ingreso[onclick*="${id}"]`);
                 if (button) {
                     button.classList.remove('active', 'disabled');
@@ -405,14 +371,27 @@ async function mostrarListaIngresos() {
                     button.style.color = '';
                     button.disabled = false;
                 }
-                actualizarContadorIngresos();
-                itemElement.remove(); // Solo removemos el elemento, no recargamos la lista
-
-                // Si no quedan productos, cerramos el modal
-                if (productosParaIngresar.size === 0) {
-                    ocultarAnuncio();
-                }
-            }, 300);
+    
+                // Animate and remove the item
+                itemElement.style.transition = 'all 0.3s ease';
+                itemElement.style.opacity = '0';
+                itemElement.style.height = '0';
+                itemElement.style.margin = '0';
+                itemElement.style.padding = '0';
+    
+                setTimeout(() => {
+                    itemElement.remove();
+                    actualizarContadorIngresos();
+                    
+                    // Close modal if no items left
+                    if (productosParaIngresar.size === 0) {
+                        document.querySelector('.anuncio').style.display = 'none';
+                    }
+                }, 300);
+            }
+        } catch (error) {
+            console.error('Error al eliminar item:', error);
+            mostrarNotificacion('Error al eliminar el item', 'error');
         }
     };
     window.procesarIngresos = async () => {
@@ -465,23 +444,21 @@ async function mostrarListaSalidas() {
             <div class="carrito-productos relleno">
                 ${Array.from(productosParaSalida.entries()).map(([id, { nombre, gramaje, cantidad, stockActual }]) => `
                 <div class="carrito-item form-grup" data-id="${id}" style="margin-top:5px; position: relative;">
-                        <div class="item-info">
-                            <p>${nombre} ${gramaje}gr</p>
-                           
-                        </div>
+                            
                         <div class="item-actions campo-form">
+                        <p>${nombre} ${gramaje}gr</p>
                             <div class="cantidad-control">
-                                <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'restar')">
+                                <button class="btn-cantidad anuncio-btn red" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'restar')">
                                     -
                                 </button>
                                 <input type="number" value="${cantidad}" min="1" max="${stockActual}"
-                                    onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
-                                <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'sumar')">
+                                    onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; width: 70px; border:1px solid gray;padding:10px">
+                                <button class="btn-cantidad anuncio-btn green" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'sumar')">
                                     +
                                 </button>
                             </div>
-                            <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDeSalidas('${id}')">
-                                <i class="fas fa-trash" style="color: red"></i>
+                            <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: -10px; left: 10px;" onclick="eliminarDeSalidas('${id}')">
+                                <p style="color: red;font-size: 25px;">-</p>
                             </button>
                         </div>
                          <small>Stock actual: ${stockActual}</small>
@@ -526,44 +503,13 @@ async function mostrarListaSalidas() {
         }
     };
     window.eliminarDeSalidas = (id) => {
-        const itemElement = document.querySelector(`.carrito-item[data-id="${id}"]`);
-        const itemInfo = itemElement?.querySelector('.item-info');
-
-        if (itemElement && itemInfo) {
-            // Store original heights
-            const originalHeight = itemElement.offsetHeight;
-            const originalInfoHeight = itemInfo.offsetHeight;
-
-            // Set initial heights explicitly
-            itemElement.style.height = originalHeight + 'px';
-            itemInfo.style.height = originalInfoHeight + 'px';
-
-            // Set overflow hidden on both elements
-            itemElement.style.overflow = 'hidden';
-            itemInfo.style.overflow = 'hidden';
-
-            // Trigger animation in next frame
-            requestAnimationFrame(() => {
-                // Animate both elements
-                itemElement.style.transition = 'all 0.3s ease-out';
-                itemInfo.style.transition = 'all 0.3s ease-out';
-
-                // Collapse both elements
-                itemElement.style.height = '0';
-                itemInfo.style.height = '0';
-
-                // Fade out and remove spacing
-                itemElement.style.opacity = '0';
-                itemInfo.style.opacity = '0';
-                itemElement.style.margin = '0';
-                itemElement.style.padding = '0';
-                itemInfo.style.margin = '0';
-                itemInfo.style.padding = '0';
-            });
-
-            // Update data after animation
-            setTimeout(() => {
+        try {
+            const itemElement = document.querySelector(`.carrito-item[data-id="${id}"]`);
+            if (itemElement) {
+                // Remove from Map
                 productosParaSalida.delete(id);
+                
+                // Reset the original button state
                 const button = document.querySelector(`.btn-card.salida[onclick*="${id}"]`);
                 if (button) {
                     button.classList.remove('active', 'disabled');
@@ -571,14 +517,27 @@ async function mostrarListaSalidas() {
                     button.style.color = '';
                     button.disabled = false;
                 }
-                actualizarContadorSalidas();
-                itemElement.remove(); // Solo removemos el elemento, no recargamos la lista
-
-                // Si no quedan productos, cerramos el modal
-                if (productosParaSalida.size === 0) {
-                    ocultarAnuncio();
-                }
-            }, 300);
+    
+                // Animate and remove the item
+                itemElement.style.transition = 'all 0.3s ease';
+                itemElement.style.opacity = '0';
+                itemElement.style.height = '0';
+                itemElement.style.margin = '0';
+                itemElement.style.padding = '0';
+    
+                setTimeout(() => {
+                    itemElement.remove();
+                    actualizarContadorSalidas();
+                    
+                    // Close modal if no items left
+                    if (productosParaSalida.size === 0) {
+                       ocultarAnuncio();
+                    }
+                }, 300);
+            }
+        } catch (error) {
+            console.error('Error al eliminar item:', error);
+            mostrarNotificacion('Error al eliminar el item', 'error');
         }
     };
     window.procesarSalidas = async () => {
@@ -1509,10 +1468,6 @@ window.mostrarDetalleProductoGral = function (producto) {
         selectIndex.value = '';
     });
 
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
-
     anuncio.querySelector('.eliminar').onclick = () => {
         mostrarConfirmacionEliminar(id, nombre);
     };
@@ -1584,7 +1539,7 @@ window.mostrarDetalleProductoGral = function (producto) {
     };
 };
 function mostrarConfirmacionEliminar(id, nombre) {
-    const anuncio = document.querySelector('.anuncio');
+    const anuncio = document.querySelector('.anuncio-down');
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
@@ -1602,7 +1557,8 @@ function mostrarConfirmacionEliminar(id, nombre) {
         </div>
     `;
 
-
+    mostrarAnuncioDown();
+    ocultarAnuncio();
     anuncio.querySelector('.confirmar').onclick = async () => {
         try {
             mostrarCarga();
@@ -1628,28 +1584,30 @@ function mostrarConfirmacionEliminar(id, nombre) {
             mostrarNotificacion('Error al eliminar el producto', 'error');
         } finally {
             ocultarCarga();
+            ocultarAnuncioDown();
         }
     };
 };
 function mostrarConfirmacionEliminarTag(nombre) {
-    const anuncio = document.querySelector('.anuncio');
+    const anuncio = document.querySelector('.anuncio-down');
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
+        <div class="encabezado">
+        <h2>Eliminar formato tag?</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="detalles-grup center">
                 <p>¿Está seguro que desea eliminar la etiqueta "${nombre}"?</p>
                 <p>Esta acción eliminará esta etiqueta de todos los productos.</p>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn red confirmar">Confirmar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+            <button class="anuncio-btn red confirmar">Confirmar</button>>
         </div>
     `;
-
-    anuncio.querySelector('.cancelar').onclick = () => {
-        mostrarFormularioFormato();
-    };
+    mostrarAnuncioDown();
+    ocultarAnuncio();
 
     anuncio.querySelector('.confirmar').onclick = async () => {
         try {
@@ -1685,29 +1643,32 @@ function mostrarConfirmacionEliminarTag(nombre) {
         } finally {
             ocultarCarga();
             cargarAlmacen();
+            ocultarAnuncioDown();
         }
     };
 }
 function mostrarConfirmacionEliminarPrecio(nombre) {
-    const anuncio = document.querySelector('.anuncio');
+    const anuncio = document.querySelector('.anuncio-down');
     const contenido = anuncio.querySelector('.anuncio-contenido');
     const preciosBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][7] : '';
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
+       <div class="encabezado">
+        <h2>Eliminar formato precio?</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="detalles-grup center">
                 <p>¿Está seguro que desea eliminar el formato de precio "${nombre}"?</p>
                 <p>Esta acción eliminará este formato de todos los productos.</p>
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn red confirmar">Confirmar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.querySelector('.cancelar').onclick = () => {
-        mostrarFormularioFormato();
-    };
+    mostrarAnuncioDown();
+    ocultarAnuncio();
 
     anuncio.querySelector('.confirmar').onclick = async () => {
         try {
@@ -1741,6 +1702,7 @@ function mostrarConfirmacionEliminarPrecio(nombre) {
             mostrarNotificacion('Error al eliminar el formato de precio', 'error');
         } finally {
             ocultarCarga();
+            ocultarAnuncioDown();
         }
     };
 };

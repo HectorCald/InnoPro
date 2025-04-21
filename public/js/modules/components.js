@@ -118,8 +118,5 @@ export function mostrarAnuncioDown() {
             anuncioVisible.classList.remove('slide-in');
         }, 300);
     }
-    anuncioVisible.addEventListener('click', () => {
-        ocultarAnuncioDown();
-    });
 }
 window.mostrarAnuncioDown = mostrarAnuncioDown;
