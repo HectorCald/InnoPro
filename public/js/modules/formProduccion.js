@@ -40,7 +40,7 @@ export function mostrarFormularioProduccion() {
     <div class="encabezado">
         <h2>Registro Producción</h2>
          <button class="anuncio-btn close" onclick="ocultarAnuncio()">
-            Atras <i class="fas fa-arrow-right"></i></button>
+            <i class="fas fa-arrow-right"></i></button>
     </div>
     <div class="relleno">
 

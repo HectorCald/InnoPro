@@ -1,3 +1,4 @@
+
 /* =============== FUNCIONES DE GESTION DE PRODUCCION ESTADISTICAS =============== */
 export async function inicializarGestionPro() {
     try {
@@ -156,7 +157,12 @@ function mostrarDetallesNoVerificados(registros) {
     const container = document.querySelector('.anuncio-contenido');
     
     container.innerHTML = `
-    <h2><i class="fas fa-clock"></i> Registros no verificados</h2>
+    
+    <div class="encabezado">
+        <h2>Registros no verificados</h2>
+         <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+            <i class="fas fa-arrow-right"></i></button>
+    </div>
         <div class="relleno">
             
                 ${registros.map(registro => `
@@ -180,14 +186,10 @@ function mostrarDetallesNoVerificados(registros) {
                 </div>
                 `).join('')}
         </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn close" onclick="ocultarAnuncio()"><i class="fas fa-times"></i></button>
-        </div>
+
     `;
 
-    // Mostrar el modal
     mostrarAnuncio();
-    container.classList.add('no-touch');
 
     // Evento para cerrar el modal
     const cerrarModal = anuncio.querySelector('.cerrar-modal');
