@@ -460,6 +460,7 @@
     text-align: left;
     padding-left:15px;
     border-radius: 10px;
+    font-size: 13px;
 }
 .sugerencias-container .sugerencias-list li:hover{
     background-color: var(--tercer-color);
