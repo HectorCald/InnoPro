@@ -84,9 +84,14 @@ async function mostrarFormularioCambioPin() {
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-key"></i> Cambiar PIN</h2>
-        <p class="subtitle">Informacion:</p>
-        <div class="form-grup" style="background:none">
+        
+         <div class="encabezado">
+       <h2>Cambiar PIN</h2>
+         <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+            <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+        <div class="relleno">
             <p for="pin-actual">PIN Actual*</label>
             <input type="password" id="pin-actual" maxlength="4" placeholder="Ingresa tu PIN actual">
             <p for="nuevo-pin">Nuevo PIN*</label>
@@ -98,12 +103,9 @@ async function mostrarFormularioCambioPin() {
             <button class="anuncio-btn green guardar">
                 <i class="fas fa-save"></i> Guardar
             </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
-
+    mostrarAnuncio();
     const btnGuardar = anuncioContenido.querySelector('.guardar');
     const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
@@ -151,5 +153,5 @@ async function mostrarFormularioCambioPin() {
         anuncio.style.display = 'none';
     });
 
-    anuncio.style.display = 'flex';
+    
 }

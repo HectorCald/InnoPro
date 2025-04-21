@@ -4,7 +4,7 @@ let productosParaSalida = new Map();
 
 export function inicializarAlmacenGral() {
     const container = document.querySelector('.almacen-view');
-    if (!container) return; 
+    if (!container) return;
     container.innerHTML = '';
     container.innerHTML = `
         <div class="title">
@@ -112,26 +112,6 @@ export async function cargarAlmacen() {
             productsContainer.appendChild(productCard);
         });
 
-        window.agregarAIngresos = (id, nombre, gramaje) => {
-            productosParaIngresar.set(id, { nombre, gramaje, cantidad: 1 });
-            actualizarContadorIngresos();
-            const button = document.querySelector(`.btn-card.ingreso[onclick*="${id}"]`);
-            if (button) {
-                button.classList.add('disabled');
-                button.disabled = true;
-            }
-        };
-
-        window.agregarASalidas = (id, nombre, gramaje, stockActual) => {
-            productosParaSalida.set(id, { nombre, gramaje, cantidad: 1, stockActual });
-            actualizarContadorSalidas();
-            const button = document.querySelector(`.btn-card.salida[onclick*="${id}"]`);
-            if (button) {
-                button.classList.add('disabled');
-                button.disabled = true;
-            }
-        };
-
     } catch (error) {
         console.error('Error al cargar el almacén:', error);
         mostrarNotificacion('Error al cargar los productos', 'error');
@@ -140,29 +120,127 @@ export async function cargarAlmacen() {
         scrollToTop('.almacen-view')
     }
 };
-// Eliminar las definiciones dentro de cargarAlmacen() y dejar solo estas versiones globales
 window.agregarAIngresos = (id, nombre, gramaje) => {
-    productosParaIngresar.set(id, { nombre, gramaje, cantidad: 1 });
-    actualizarContadorIngresos();
     const button = document.querySelector(`.btn-card.ingreso[onclick*="${id}"]`);
-    if (button) {
-        button.classList.add('active');
-        button.style.backgroundColor = '#f37500';
-        button.style.color = 'white';
-        button.disabled = true;
+    const anuncio = document.querySelector('.anuncio');
+    const listaProductos = document.querySelector('.carrito-productos');
+    
+    if (productosParaIngresar.has(id)) {
+        // Si el producto existe, lo removemos
+        productosParaIngresar.delete(id);
+        if (button) {
+            button.classList.remove('active', 'disabled');
+            button.style.backgroundColor = '';
+            button.style.color = '';
+            button.disabled = false;
+        }
+        // Si la lista está abierta, removemos el elemento
+        const itemExistente = document.querySelector(`.carrito-item[data-id="${id}"]`);
+        if (itemExistente) itemExistente.remove();
+    } else {
+        // Agregamos el nuevo producto
+        productosParaIngresar.set(id, { nombre, gramaje, cantidad: 1 });
+        if (button) {
+            button.classList.add('active', 'disabled');
+            button.style.backgroundColor = '#808080'; // Changed to gray
+            button.style.color = '#fff';
+            button.disabled = true;
+        }
+        
+        // Si la lista está abierta, agregamos el nuevo elemento
+        if (anuncio.style.display !== 'none' && listaProductos) {
+            const nuevoItem = document.createElement('div');
+            nuevoItem.className = 'carrito-item form-grup';
+            nuevoItem.dataset.id = id;
+            nuevoItem.style = 'margin-top:5px; position: relative;';
+            nuevoItem.innerHTML = `
+                <div class="item-info">
+                    <p>${nombre} ${gramaje}gr</p>
+                </div>
+                <div class="item-actions campo-form">
+                    <div class="cantidad-control">
+                        <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'restar')">
+                            -
+                        </button>
+                        <input type="number" value="1" min="1" 
+                            onchange="actualizarCantidadIngreso('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
+                        <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'sumar')">
+                            +
+                        </button>
+                    </div>
+                    <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDeIngresos('${id}')">
+                        <i class="fas fa-trash"style="color: red"></i>
+                    </button>
+                </div>
+            `;
+            listaProductos.appendChild(nuevoItem);
+        } else {
+
+        }
     }
+    actualizarContadorIngresos();
 };
 
 window.agregarASalidas = (id, nombre, gramaje, stockActual) => {
-    productosParaSalida.set(id, { nombre, gramaje, cantidad: 1, stockActual });
-    actualizarContadorSalidas();
     const button = document.querySelector(`.btn-card.salida[onclick*="${id}"]`);
-    if (button) {
-        button.classList.add('active');
-        button.style.backgroundColor = 'orange';
-        button.style.color = 'white';
-        button.disabled = true;
+    const anuncio = document.querySelector('.anuncio');
+    const listaProductos = document.querySelector('.carrito-productos');
+    
+    if (productosParaSalida.has(id)) {
+        // Si el producto existe, lo removemos
+        productosParaSalida.delete(id);
+        if (button) {
+            button.classList.remove('active', 'disabled');
+            button.style.backgroundColor = '';
+            button.style.color = '';
+            button.disabled = false;
+        }
+        // Si la lista está abierta, removemos el elemento
+        const itemExistente = document.querySelector(`.carrito-item[data-id="${id}"]`);
+        if (itemExistente) itemExistente.remove();
+    } else {
+        // Agregamos el nuevo producto
+        productosParaSalida.set(id, { nombre, gramaje, cantidad: 1, stockActual });
+        if (button) {
+            button.classList.add('active', 'disabled');
+            button.style.backgroundColor = '#808080'; // Changed to gray
+            button.style.color = '#fff';
+            button.disabled = true;
+        }
+        
+        // Si la lista está abierta, agregamos el nuevo elemento
+        if (anuncio.style.display !== 'none' && listaProductos) {
+            const nuevoItem = document.createElement('div');
+            nuevoItem.className = 'carrito-item form-grup';
+            nuevoItem.dataset.id = id;
+            nuevoItem.style = 'margin-top:5px; position: relative;';
+            nuevoItem.innerHTML = `
+                <div class="item-info">
+                    <p>${nombre} ${gramaje}gr</p>
+                </div>
+                <div class="item-actions campo-form">
+                    <div class="cantidad-control">
+                        <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'restar')">
+                            -
+                        </button>
+                        <input type="number" value="1" min="1" max="${stockActual}"
+                            onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
+                        <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'sumar')">
+                            +
+                        </button>
+                    </div>
+                    <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDeSalidas('${id}')">
+                        <i class="fas fa-trash" style="color: red"></i>
+                    </button>
+                </div>
+                <small>Stock actual: ${stockActual}</small>
+            `;
+            listaProductos.appendChild(nuevoItem);
+        } else {
+
+        }
     }
+    actualizarContadorSalidas();
 };
 
 function actualizarContadorIngresos() {
@@ -185,7 +263,7 @@ function actualizarContadorIngresos() {
     if (!btnIngresar.querySelector('.contador')) {
         btnIngresar.appendChild(contador);
     }
-    
+
     // Cambiar el color a naranja cuando hay items
     btnIngresar.style.backgroundColor = productosParaIngresar.size > 0 ? '#f37500' : '';
 }
@@ -210,7 +288,7 @@ function actualizarContadorSalidas() {
     if (!btnSalidas.querySelector('.contador')) {
         btnSalidas.appendChild(contador);
     }
-    
+
     // Cambiar el color a naranja cuando hay items
     btnSalidas.style.backgroundColor = productosParaSalida.size > 0 ? 'orange' : '';
 }
@@ -221,7 +299,11 @@ async function mostrarListaIngresos() {
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-arrow-circle-down"></i> Lista de Ingresos</h2>
+        <div class="encabezado">
+            <h2>Lista ingresos</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
 
             <div class="carrito-productos relleno">
                 ${Array.from(productosParaIngresar.entries()).map(([id, { nombre, gramaje, cantidad }]) => `
@@ -231,12 +313,12 @@ async function mostrarListaIngresos() {
                         </div>
                         <div class="item-actions campo-form">
                             <div class="cantidad-control">
-                                <button class="btn-cantidad anuncio-btn red"  style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;"onclick="actualizarCantidadIngreso('${id}', ${Math.max(1, cantidad - 1)})">
+                                <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'restar')">
                                     -
                                 </button>
                                 <input type="number" value="${cantidad}" min="1" 
-                               onchange="actualizarCantidad('${nombre}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
-                                <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', ${cantidad + 1})">
+                                    onchange="actualizarCantidadIngreso('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
+                                <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadIngreso('${id}', 'sumar')">
                                     +
                                 </button>
                             </div>
@@ -251,48 +333,59 @@ async function mostrarListaIngresos() {
             <button class="anuncio-btn green procesar" onclick="procesarIngresos()">
                 <i class="fas fa-check"></i> Procesar Ingresos
             </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
-    window.actualizarCantidadIngreso = (id, cantidad) => {
+    window.actualizarCantidadIngreso = (id, accion) => {
         if (productosParaIngresar.has(id)) {
             const producto = productosParaIngresar.get(id);
-            producto.cantidad = parseInt(cantidad) || 1;
+            let nuevaCantidad;
+    
+            if (accion === 'sumar') {
+                nuevaCantidad = producto.cantidad + 1;
+            } else if (accion === 'restar') {
+                nuevaCantidad = Math.max(1, producto.cantidad - 1);
+            } else {
+                // Si viene del input
+                nuevaCantidad = parseInt(accion) || 1;
+            }
+            
+            producto.cantidad = nuevaCantidad;
             productosParaIngresar.set(id, producto);
-            // Actualizar la vista
-            mostrarListaIngresos();
+            
+            // Actualizar solo el input
+            const inputCantidad = document.querySelector(`.carrito-item[data-id="${id}"] input[type="number"]`);
+            if (inputCantidad) {
+                inputCantidad.value = nuevaCantidad;
+            }
         }
     };
-
     window.eliminarDeIngresos = (id) => {
         const itemElement = document.querySelector(`.carrito-item[data-id="${id}"]`);
         const itemInfo = itemElement?.querySelector('.item-info');
-        
+
         if (itemElement && itemInfo) {
             // Store original heights
             const originalHeight = itemElement.offsetHeight;
             const originalInfoHeight = itemInfo.offsetHeight;
-            
+
             // Set initial heights explicitly
             itemElement.style.height = originalHeight + 'px';
             itemInfo.style.height = originalInfoHeight + 'px';
-            
+
             // Set overflow hidden on both elements
             itemElement.style.overflow = 'hidden';
             itemInfo.style.overflow = 'hidden';
-            
+
             // Trigger animation in next frame
             requestAnimationFrame(() => {
                 // Animate both elements
                 itemElement.style.transition = 'all 0.3s ease-out';
                 itemInfo.style.transition = 'all 0.3s ease-out';
-                
+
                 // Collapse both elements
                 itemElement.style.height = '0';
                 itemInfo.style.height = '0';
-                
+
                 // Fade out and remove spacing
                 itemElement.style.opacity = '0';
                 itemInfo.style.opacity = '0';
@@ -301,7 +394,7 @@ async function mostrarListaIngresos() {
                 itemInfo.style.margin = '0';
                 itemInfo.style.padding = '0';
             });
-            
+
             // Update data after animation
             setTimeout(() => {
                 productosParaIngresar.delete(id);
@@ -314,38 +407,39 @@ async function mostrarListaIngresos() {
                 }
                 actualizarContadorIngresos();
                 itemElement.remove(); // Solo removemos el elemento, no recargamos la lista
-                
+
                 // Si no quedan productos, cerramos el modal
                 if (productosParaIngresar.size === 0) {
-                    document.querySelector('.anuncio').style.display = 'none';
+                    ocultarAnuncio();
                 }
             }, 300);
         }
     };
-    
-    
-    
-
     window.procesarIngresos = async () => {
         try {
             mostrarCarga();
-            for (const [id, { cantidad }] of productosParaIngresar) {
+            const usuario = await obtenerUsuarioActual();
+            
+            for (const [id, { cantidad, nombre }] of productosParaIngresar) {
                 const response = await fetch('/ingresar-stock-almacen', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, cantidad })
                 });
-
+    
                 const data = await response.json();
                 if (!data.success) {
                     throw new Error(`Error al procesar el ingreso`);
                 }
+    
+                // Registrar el movimiento
+                await registrarMovimiento('Ingreso', nombre, cantidad);
             }
-
+    
             mostrarNotificacion('Ingresos procesados correctamente', 'success');
             productosParaIngresar.clear();
             actualizarContadorIngresos();
-            anuncio.style.display = 'none';
+            ocultarAnuncio();
             cargarAlmacen();
         } catch (error) {
             console.error('Error:', error);
@@ -354,18 +448,19 @@ async function mostrarListaIngresos() {
             ocultarCarga();
         }
     };
-
-    anuncio.style.display = 'flex';
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
+    mostrarAnuncio();
+    
 }
 async function mostrarListaSalidas() {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-arrow-circle-up"></i> Lista de Salidas</h2>
+        <div class="encabezado">
+            <h2>Lista salidas</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
 
             <div class="carrito-productos relleno">
                 ${Array.from(productosParaSalida.entries()).map(([id, { nombre, gramaje, cantidad, stockActual }]) => `
@@ -376,12 +471,12 @@ async function mostrarListaSalidas() {
                         </div>
                         <div class="item-actions campo-form">
                             <div class="cantidad-control">
-                                <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', ${Math.max(1, cantidad - 1)})">
+                                <button class="btn-cantidad anuncio-btn red" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'restar')">
                                     -
                                 </button>
                                 <input type="number" value="${cantidad}" min="1" max="${stockActual}"
-                                onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
-                                <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', ${cantidad + 1})">
+                                    onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; width: 100px; border:1px solid gray;">
+                                <button class="btn-cantidad anuncio-btn green" style="min-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'sumar')">
                                     +
                                 </button>
                             </div>
@@ -397,54 +492,66 @@ async function mostrarListaSalidas() {
             <button class="anuncio-btn green procesar" onclick="procesarSalidas()">
                 <i class="fas fa-check"></i> Procesar Salidas
             </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
 
-    window.actualizarCantidadSalida = (id, cantidad) => {
+    window.actualizarCantidadSalida = (id, accion) => {
         if (productosParaSalida.has(id)) {
             const producto = productosParaSalida.get(id);
-            cantidad = parseInt(cantidad) || 1;
-            // Validate against stock
-            if (cantidad > producto.stockActual) {
-                cantidad = producto.stockActual;
+            let nuevaCantidad;
+    
+            if (accion === 'sumar') {
+                nuevaCantidad = producto.cantidad + 1;
+            } else if (accion === 'restar') {
+                nuevaCantidad = Math.max(1, producto.cantidad - 1);
+            } else {
+                // Si viene del input
+                nuevaCantidad = parseInt(accion) || 1;
+            }
+            
+            // Validar contra stock
+            if (nuevaCantidad > producto.stockActual) {
+                nuevaCantidad = producto.stockActual;
                 mostrarNotificacion('No hay suficiente stock', 'warning');
             }
-            producto.cantidad = cantidad;
+            
+            producto.cantidad = nuevaCantidad;
             productosParaSalida.set(id, producto);
-            mostrarListaSalidas();
+            
+            // Actualizar solo el input
+            const inputCantidad = document.querySelector(`.carrito-item[data-id="${id}"] input[type="number"]`);
+            if (inputCantidad) {
+                inputCantidad.value = nuevaCantidad;
+            }
         }
     };
-
     window.eliminarDeSalidas = (id) => {
         const itemElement = document.querySelector(`.carrito-item[data-id="${id}"]`);
         const itemInfo = itemElement?.querySelector('.item-info');
-        
+
         if (itemElement && itemInfo) {
             // Store original heights
             const originalHeight = itemElement.offsetHeight;
             const originalInfoHeight = itemInfo.offsetHeight;
-            
+
             // Set initial heights explicitly
             itemElement.style.height = originalHeight + 'px';
             itemInfo.style.height = originalInfoHeight + 'px';
-            
+
             // Set overflow hidden on both elements
             itemElement.style.overflow = 'hidden';
             itemInfo.style.overflow = 'hidden';
-            
+
             // Trigger animation in next frame
             requestAnimationFrame(() => {
                 // Animate both elements
                 itemElement.style.transition = 'all 0.3s ease-out';
                 itemInfo.style.transition = 'all 0.3s ease-out';
-                
+
                 // Collapse both elements
                 itemElement.style.height = '0';
                 itemInfo.style.height = '0';
-                
+
                 // Fade out and remove spacing
                 itemElement.style.opacity = '0';
                 itemInfo.style.opacity = '0';
@@ -453,7 +560,7 @@ async function mostrarListaSalidas() {
                 itemInfo.style.margin = '0';
                 itemInfo.style.padding = '0';
             });
-            
+
             // Update data after animation
             setTimeout(() => {
                 productosParaSalida.delete(id);
@@ -466,50 +573,49 @@ async function mostrarListaSalidas() {
                 }
                 actualizarContadorSalidas();
                 itemElement.remove(); // Solo removemos el elemento, no recargamos la lista
-                
+
                 // Si no quedan productos, cerramos el modal
                 if (productosParaSalida.size === 0) {
-                    document.querySelector('.anuncio').style.display = 'none';
+                    ocultarAnuncio();
                 }
             }, 300);
         }
     };
-   window.procesarSalidas = async () => {
-    try {
-        mostrarCarga();
-        for (const [id, { cantidad, nombre }] of productosParaSalida) {
-            const response = await fetch('/retirar-stock-almacen', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id,
-                    cantidad
-                })
-            });
-
-            const data = await response.json();
-            if (!data.success) {
-                throw new Error(data.error || `Error al procesar la salida de ${nombre}`);
+    window.procesarSalidas = async () => {
+        try {
+            mostrarCarga();
+            const usuario = await obtenerUsuarioActual();
+    
+            for (const [id, { cantidad, nombre }] of productosParaSalida) {
+                const response = await fetch('/retirar-stock-almacen', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, cantidad })
+                });
+    
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || `Error al procesar la salida de ${nombre}`);
+                }
+    
+                // Registrar el movimiento usando la función existente
+                await registrarMovimiento('Salida', nombre, cantidad);
             }
+    
+            mostrarNotificacion('Salidas procesadas correctamente', 'success');
+            productosParaSalida.clear();
+            actualizarContadorSalidas();
+            ocultarAnuncio();
+            cargarAlmacen();
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion(error.message, 'error');
+        } finally {
+            ocultarCarga();
         }
-
-        mostrarNotificacion('Salidas procesadas correctamente', 'success');
-        productosParaSalida.clear();
-        actualizarContadorSalidas();
-        document.querySelector('.anuncio').style.display = 'none';
-        cargarAlmacen();
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion(error.message, 'error');
-    } finally {
-        ocultarCarga();
-    }
-};
-
-    anuncio.style.display = 'flex';
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
     };
+
+    mostrarAnuncio();
 }
 
 
@@ -555,7 +661,7 @@ export function mostrarProductos() {
 
     const searchInput = document.getElementById('searchProduct');
     const searchIcon = document.querySelector('.search-icon2');
-    
+
 
     // Add focus event handler
     searchInput.addEventListener('focus', () => {
@@ -623,7 +729,7 @@ export function mostrarProductos() {
     });
 
 
-        const filterButtons = document.querySelectorAll('.filter-btn');
+    const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
             filterButtons.forEach(btn => btn.classList.remove('active'));
@@ -682,9 +788,12 @@ function mostrarFormularioFormato() {
     const tagBase = window.productosAlmacen && window.productosAlmacen[0] ? window.productosAlmacen[0][8] : '';
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-cog"></i> Formatos</h2>
+        <div class="encabezado">
+        <h2>Formatos</h2>
+         <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+            <i class="fas fa-arrow-right"></i></button>
+    </div>
         <div class="relleno">
-        <p class="subtitle">Informacion:</p>
             <div class="form-grup" style="background:none">
                  <p>Formato Precios:</p>
                 <div class="detalles-grup">
@@ -708,9 +817,6 @@ function mostrarFormularioFormato() {
                 </div>
             </div>
            
-        </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
@@ -837,10 +943,7 @@ function mostrarFormularioFormato() {
         });
     });
 
-    anuncio.style.display = 'flex';
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
+    mostrarAnuncio();
 }
 function mostrarFormularioAgregarProducto() {
 
@@ -899,7 +1002,11 @@ function mostrarFormularioAgregarProducto() {
         }
     }
     contenido.innerHTML = `
-        <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
+        <div class="encabezado">
+        <h2>Nuevo Producto</h2>
+         <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+            <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
                 <p style="color:white">Informacion General:</p>
                 <div class="form-grup" style="background:none">
@@ -932,11 +1039,11 @@ function mostrarFormularioAgregarProducto() {
                     <select id="nuevoTags" class="edit-input">
                         <option value="">Seleccionar</option>
                         ${window.productosAlmacen && window.productosAlmacen[0] && window.productosAlmacen[0][8] ?
-                            window.productosAlmacen[0][8].split(';')
-                                .filter(tag => tag.trim())
-                                .map(tag => `<option value="${tag}">${tag}</option>`)
-                                .join('')
-                            : '<option disabled>No hay etiquetas disponibles</option>'
+            window.productosAlmacen[0][8].split(';')
+                .filter(tag => tag.trim())
+                .map(tag => `<option value="${tag}">${tag}</option>`)
+                .join('')
+            : '<option disabled>No hay etiquetas disponibles</option>'
         }
                     </select>
                     <div class="detalle-item">
@@ -959,14 +1066,13 @@ function mostrarFormularioAgregarProducto() {
         </div>
         <div class="anuncio-botones">
                 <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
     cargarProductosAcopio();
 
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
     const tagsContainer = contenido.querySelector('#tags-container');
     const selectedTags = new Set();
 
@@ -1103,9 +1209,9 @@ window.mostrarDetalleProductoGral = function (producto) {
             }
             else {
                 return `
-                    <div class="campo-form">
+                    <div class="campo-form" style="background: none">
                         <label>${nombreTipo}:</label>
-                        <div class="campo-form" style="padding:0; margin-top:0">
+                        <div class="campo-form" style="padding:0; margin-top:0; background: none">
                             <input type="number" id="editPrice_${tipo}" value="${valor}" class="edit-input" data-tipo="${tipo}">
                             <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
                         </div>
@@ -1113,7 +1219,6 @@ window.mostrarDetalleProductoGral = function (producto) {
             }
         }).join('');
     }
-
     function formatearTags(tagsStr, num) {
         if (!tagsStr) return '<div class="detalle-item"><p>Este producto no tiene etiquetas</p></div>';
 
@@ -1123,7 +1228,7 @@ window.mostrarDetalleProductoGral = function (producto) {
                     <p class="tag">- ${tag}</p>
                 </div>`;
             } else {
-                return `<div class="detalle-item">
+                return `<div class="detalle-item" style="background: none">
                     <p>${tag}</p>
                     <i class="fas fa-trash delete delete-tag-edit" data-nombre="${tag}"></i>
                 </div>`;
@@ -1176,11 +1281,15 @@ window.mostrarDetalleProductoGral = function (producto) {
 
 
     contenido.innerHTML = `
-        <h2 class="titulo-modal"><i class="fas fa-info-circle"></i> Información</h2>
+        <div class="encabezado">
+            <h2>Detalles del producto</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
             <div class="producto-detalles">
                 <div class="detalle-seccion">
-                    <p>Informacion General:</p>               
+                    <p class="subtitle">Informacion General:</p>               
                     <div class="detalles-grup">
                         <div class="detalle-item">
                             <p>Nombre:</p> <span>${nombre}</span>
@@ -1201,72 +1310,65 @@ window.mostrarDetalleProductoGral = function (producto) {
                             <p>Codigo de barras:</p> <span>${codigob || 'No registrado'}</span>
                         </div>
                     </div>
-                    <p>Precios:</p>  
+                    <p class="subtitle">Precios:</p>  
                     <div class="detalles-grup">
                         <div class="detalle-item"><span>${formatearPrecios(precios, '1') || 'Este producto no tiene precios registrados'}</span></div>
                     </div>
-                    <p>Etiquetas:</p> 
+                    <p class="subtitle">Etiquetas:</p> 
                     <div class="detalles-grup">
                         <div class="detalle-item"><span>${formatearTags(tag, '1') || 'Este producto no tiene etiquetas'}</span></div>
                     </div>
-                    <p>Almcen Index:</p> 
+                    <p class="subtitle">Almcen Index:</p> 
                     <div class="detalles-grup">
                         <div class="detalle-item"><span>${formatearIndex(indexNombre, '1') || 'Este producto no tiene etiquetas'}</span></div>
                     </div>
                 </div>
                 <div class="detalles-edicion" style="display: none; flex-direction:column; gap:5px">
-                    <p>Informacion General:</p> 
-                    <div class="campo-form">
-                        <label>Nombre:</label>
+                    <p class="subtitle">Informacion General:</p> 
+                        <p>Nombre:</p>
                         <input type="text" id="editNombre" value="${nombre}" class="edit-input">
-                    </div>
-                    <div class="campo-form">
-                        <label>Gramaje:</label>
+
+                        <p>Gramaje:</p>
                         <input type="number" id="editGramaje" value="${gramaje}" class="edit-input">
-                    </div>
-                    <div class="campo-form">
-                        <label>Stock:</label>
+
+                        <p>Stock:</p>
                         <input type="number" id="editStock" value="${stock}" class="edit-input">
-                    </div>
-                    <div class="campo-form">
-                        <label>Cantidad por Tira:</label>
+
+                        <p>Cantidad por Tira:</p>
                         <input type="number" id="editCantidadTira" value="${cantidadTira}" class="edit-input">
-                    </div>
-                    <div class="campo-form">
-                        <label>Lista:</label>
+
+                        <p>Lista:</p>
                         <input type="text" id="editLista" value="${lista}" class="edit-input">
-                    </div>
-                    <div class="campo-form">
-                        <label>Codigo de barras:</label>
+
+                        <p>Codigo de barras:</p>
                         <input type="text" id="editCodigoBarras" value="${codigob}" class="edit-input">
-                    </div>
-                    <p>Precios:</p>
+                    <p class="subtitle">Precios:</p>
                     ${formatearPrecios(precios, '2') || 'No registrado'}
-                    <p>Etiquetas:</p>
+                    <p class="subtitle">Etiquetas:</p>
                     <div id="tags-container" class="detalles-grup">
                         ${formatearTags(tag, '2') || 'Este producto no tiene etiquetas'}
                     </div>
-                    <div class="campo-form">
+                    <div class="campo-form" style="background: none">
                         <label>Etiqueta:</label>
                         <select id="editTags" class="edit-input">
                             <option value="">Seleccionar</option>
                             ${window.productosAlmacen && window.productosAlmacen[0] && window.productosAlmacen[0][8] ?
-                            window.productosAlmacen[0][8].split(';')
-                                .filter(tag => tag.trim())
-                                .map(tag => `<option value="${tag}">${tag}</option>`)
-                                .join('')
-                            : '<option disabled>No hay etiquetas disponibles</option>'
-        }
+                                window.productosAlmacen[0][8].split(';')
+                                    .filter(tag => tag.trim())
+                                    .map(tag => `<option value="${tag}">${tag}</option>`)
+                                    .join('')
+                                : '<option disabled>No hay etiquetas disponibles</option>'
+                            }
                         </select>
                         <div class="detalle-item">
                             <i class="fas fa-plus-circle add btn-add-tag-edit"></i>
                         </div>
                     </div>
-                    <p>Almacen Index:</p>
+                    <p class="subtitle">Almacen Index:</p>
                     <div id="index-container" class="detalles-grup">
                         <!-- Index will be rendered here -->
                     </div>
-                    <div class="campo-form">
+                    <div class="campo-form" style="background: none">
                         <label>Almacen Index:</label>
                         <select id="editIndex" class="edit-input">
                             <option value="">Seleccionar</option>
@@ -1282,10 +1384,9 @@ window.mostrarDetalleProductoGral = function (producto) {
             <button class="anuncio-btn blue editar">Editar</button>
             <button class="anuncio-btn green guardar" style="display: none;">Guardar</button>
             <button class="anuncio-btn red eliminar">Eliminar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
-    anuncio.style.display = 'flex';
+   mostrarAnuncio();
 
     function actualizarTagsUI() {
         const tagsContainer = contenido.querySelector('#tags-container');
@@ -1342,7 +1443,20 @@ window.mostrarDetalleProductoGral = function (producto) {
     const detallesEdicion = contenido.querySelector('.detalles-edicion');
     const btnEditar = contenido.querySelector('.editar');
     const btnGuardar = contenido.querySelector('.guardar');
-    const tituloModal = contenido.querySelector('.titulo-modal');
+    if (btnEditar) {
+        btnEditar.addEventListener('click', () => {
+            const detallesGrup = contenido.querySelector('.detalle-seccion');
+            if (detallesGrup && detallesEdicion) {
+                detallesGrup.style.display = 'none';
+                detallesEdicion.style.display = 'flex';
+                btnEditar.style.display = 'none';
+                btnGuardar.style.display = 'inline-block';
+                actualizarTagsUI();
+                actualizarIndexUI();
+                cargarProductosAcopio();
+            }
+        });
+    }
 
     contenido.querySelector('.btn-add-tag-edit')?.addEventListener('click', () => {
         const selectTag = document.getElementById('editTags');
@@ -1409,7 +1523,6 @@ window.mostrarDetalleProductoGral = function (producto) {
         detallesEdicion.style.display = 'flex';
         btnEditar.style.display = 'none';
         btnGuardar.style.display = 'inline-block';
-        tituloModal.innerHTML = '<i class="fas fa-edit"></i> Editar Información';
         actualizarTagsUI();
         actualizarIndexUI();
         cargarProductosAcopio();
@@ -1456,7 +1569,7 @@ window.mostrarDetalleProductoGral = function (producto) {
             const data = await response.json();
             if (data.success) {
                 mostrarNotificacion('Producto actualizado correctamente', 'success');
-                anuncio.style.display = 'none';
+                ocultarAnuncio();
                 cargarAlmacen();
             } else {
                 throw new Error(data.error || 'Error al actualizar el producto');
@@ -1475,20 +1588,20 @@ function mostrarConfirmacionEliminar(id, nombre) {
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
+        <div class="encabezado">
+            <h2>Registro Producción</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
             <div class="detalles-grup center">
                 <p>¿¿Está seguro que desea eliminar el producto "${nombre}"?</p>
                 <p>Esta acción no se puede deshacer.</p>
             </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn red confirmar">Confirmar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
 
     anuncio.querySelector('.confirmar').onclick = async () => {
         try {

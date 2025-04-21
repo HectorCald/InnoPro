@@ -1,5 +1,5 @@
 /* =============== FUNCIONES DE INICIO USUARIOS=============== */
-import { ocultarAnuncio, mostrarAnuncio } from './components.js';
+import { ocultarAnuncio, mostrarAnuncio, mostrarAnuncioDown, ocultarAnuncioDown } from './components.js';
 export function inicializarUsuarios() {
     const container = document.querySelector('.usuarios-view');
     container.style.display = 'flex';

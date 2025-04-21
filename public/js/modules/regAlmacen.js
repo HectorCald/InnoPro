@@ -226,9 +226,17 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
 function ordenarRegistrosPorFecha(registros) {
     return registros.sort((a, b) => {
         try {
-            const fechaA = new Date(a[1]); // "7/4/2025, 16:00:58" se convertirá automáticamente
-            const fechaB = new Date(b[1]);
-            return fechaB - fechaA;
+            // Convert date strings to Date objects (format: "DD/MM/YYYY, HH:mm:ss")
+            const [fechaA, horaA] = a[1].split(', ');
+            const [diaA, mesA, yearA] = fechaA.split('/');
+            const dateA = new Date(`${yearA}-${mesA}-${diaA} ${horaA}`);
+
+            const [fechaB, horaB] = b[1].split(', ');
+            const [diaB, mesB, yearB] = fechaB.split('/');
+            const dateB = new Date(`${yearB}-${mesB}-${diaB} ${horaB}`);
+
+            // Sort in descending order (most recent first)
+            return dateB - dateA;
         } catch (error) {
             console.error('Error al ordenar fechas:', error);
             return 0;
@@ -260,22 +268,22 @@ function configurarFiltros2() {
             limpiarEventosAnteriores();
 
             anuncioContenido.innerHTML = `
-                <h2><i class="fas fa-filter"></i> Filtros Almacén</h2>
+                <div class="encabezado">
+                    <h2>Filtros</h2>
+                    <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                        <i class="fas fa-arrow-right"></i></button>
+                </div>
                 <div class="filtros-form relleno">
-                    <div class="campo-form">
-                        <label for="filtro-nombre-acopio">Nombre del producto:</label>
+                        <p for="filtro-nombre-acopio">Nombre del producto</p>
                         <input type="text" id="filtro-nombre-acopio" placeholder="Filtrar por nombre" value="${filtrosActivos.nombre}">
-                    </div>
-                    <div class="campo-form">
-                        <label for="filtro-fecha-desde-acopio">Fecha desde:</label>
+
+                        <p for="filtro-fecha-desde-acopio">Fecha desde</p>
                         <input type="date" id="filtro-fecha-desde-acopio" value="${filtrosActivos.fechaDesde}">
-                    </div>
-                    <div class="campo-form">
-                        <label for="filtro-fecha-hasta-acopio">Fecha hasta:</label>
+
+                        <p for="filtro-fecha-hasta-acopio">Fecha hasta</p>
                         <input type="date" id="filtro-fecha-hasta-acopio" value="${filtrosActivos.fechaHasta}">
-                    </div>
-                    <div class="campo-form">
-                        <label for="filtro-tipo">Tipo de movimiento:</label>
+
+                        <p for="filtro-tipo">Tipo de movimiento</p>
                         <select id="filtro-tipo" value="${filtrosActivos.tipo}">
                             <option value="todos">Todos los tipos</option>
                             <option value="Ingreso">Ingreso</option>
@@ -283,16 +291,14 @@ function configurarFiltros2() {
                             <option value="Transferencia">Transferencia</option>
                             <option value="Ajuste">Ajuste</option>
                         </select>
-                    </div>
-                    <div class="campo-form">
-                        <label for="filtro-almacen">Almacén:</label>
+
+                        <p for="filtro-almacen">Almacén</p>
                         <select id="filtro-almacen" value="${filtrosActivos.almacen}">
                             <option value="todos">Todos los almacenes</option>
                             <option value="Principal">Principal</option>
                             <option value="Secundario">Secundario</option>
                             <option value="Temporal">Temporal</option>
                         </select>
-                    </div>
                 </div>
                 <div class="anuncio-botones" id="botones-filtro-acopio">
                     <button class="anuncio-btn green confirmar-acopio" id="btn-confirmar-acopio">
@@ -301,9 +307,6 @@ function configurarFiltros2() {
                     <button class="anuncio-btn blue limpiar-acopio" id="btn-limpiar-acopio">
                         <i class="fas fa-eraser"></i> Limpiar
                     </button>
-                    <button class="anuncio-btn close cancelar-acopio" id="btn-cancelar-acopio">
-                        <i class="fas fa-times"></i>
-                    </button>
                 </div>
             `;
 
@@ -311,11 +314,11 @@ function configurarFiltros2() {
             document.getElementById('filtro-tipo').value = filtrosActivos.tipo;
             document.getElementById('filtro-almacen').value = filtrosActivos.almacen;
 
-            anuncio.style.display = 'flex';
+            mostrarAnuncio();
 
             const btnConfirmar = document.getElementById('btn-confirmar-acopio');
             const btnLimpiar = document.getElementById('btn-limpiar-acopio');
-            const btnCancelar = document.getElementById('btn-cancelar-acopio');
+
 
             btnConfirmar.addEventListener('click', () => {
                 try {
@@ -329,7 +332,7 @@ function configurarFiltros2() {
 
                     aplicarFiltros2();
                     localStorage.setItem('filtrosMovimientosAlmacen', JSON.stringify(filtrosActivos));
-                    anuncio.style.display = 'none';
+                    ocultarAnuncio();
                 } catch (error) {
                     console.error('Error al aplicar filtros:', error);
                     mostrarNotificacion('Error al aplicar filtros', 'error');
@@ -354,15 +357,11 @@ function configurarFiltros2() {
 
                     aplicarFiltros2();
                     localStorage.removeItem('filtrosMovimientosAlmacen');
-                    anuncio.style.display = 'none';
+                    ocultarAnuncio();
                 } catch (error) {
                     console.error('Error al limpiar filtros:', error);
                     mostrarNotificacion('Error al limpiar filtros', 'error');
                 }
-            });
-
-            btnCancelar.addEventListener('click', () => {
-                anuncio.style.display = 'none';
             });
         });
 

@@ -151,13 +151,14 @@
         }
     }
 
-    /* ===== GRID DE PRODUCTOS ===== */
     .products-grid {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(1fr);
         gap: 10px;
         margin-top: 20px;
+        width: 100%;
     }
+
 
     /* ===== TARJETA DE PRODUCTO ===== */
     .product-card {
@@ -278,14 +279,12 @@
                 }
             }
         }
-        
         .products-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         }
     }
 }
+
 .contador {
     position: absolute;
     top: -8px;
@@ -304,6 +303,7 @@
 .btn-card.disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    
 }
 
 .cantidad-control {

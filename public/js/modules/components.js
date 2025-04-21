@@ -67,8 +67,11 @@ window.addEventListener('orientationchange', () => {
 // Manejador del botón físico de retroceso
 window.addEventListener('popstate', (event) => {
     const anuncio = document.querySelector('.anuncio');
-    if (anuncio && anuncio.style.display === 'flex') {
+    const anunciodown = document.querySelector('.anuncio-down');
+
+    if (anuncio && anuncio.style.display === 'flex' || anunciodown && anunciodown.style.display === 'flex') {
         ocultarAnuncio();
+        ocultarAnuncioDown();
         window.history.pushState(null, '', window.location.href);
     }
 });
@@ -81,3 +84,42 @@ if ('navigation' in window) {
         }
     });
 }
+
+export function ocultarAnuncioDown() {
+    const anuncioVisible = document.querySelector('.anuncio-down');
+    const overlay = document.querySelector('.overlay');
+    
+    if (anuncioVisible && anuncioVisible.style.display === 'flex') {
+        anuncioVisible.classList.add('slide-out');
+
+        setTimeout(() => {
+            anuncioVisible.style.display = 'none';
+            anuncioVisible.classList.remove('slide-out');
+        }, 300);
+
+        if (overlay) overlay.style.display = 'none';
+        if (container) container.classList.remove('no-touch');
+    }
+}
+window.ocultarAnuncioDown = ocultarAnuncioDown;
+
+export function mostrarAnuncioDown() {
+    const anuncioVisible = document.querySelector('.anuncio-down');
+
+    if (anuncioVisible) {
+        // Agregar estado al historial
+        window.history.pushState({anuncioAbierto: true}, '');
+        
+        anuncioVisible.classList.add('slide-in');
+        anuncioVisible.style.display = 'flex';
+
+
+        setTimeout(() => {
+            anuncioVisible.classList.remove('slide-in');
+        }, 300);
+    }
+    anuncioVisible.addEventListener('click', () => {
+        ocultarAnuncioDown();
+    });
+}
+window.mostrarAnuncioDown = mostrarAnuncioDown;

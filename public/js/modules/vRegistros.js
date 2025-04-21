@@ -1,4 +1,5 @@
 import { registrarNotificacion } from './advertencia.js';
+import { mostrarAnuncio, ocultarAnuncio } from './components.js';
 /* ==================== VARIABLES GLOBALES Y CONFIGURACIÓN INICIAL ==================== */
 let reglasEspeciales = null;
 let preciosBase = null;
@@ -466,7 +467,12 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-     <h2><i class="fas fa-check-circle"></i> Verificar Registro</h2>
+     
+     <div class="encabezado">
+        <h2>Verificar Registro</h2>
+         <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+            <i class="fas fa-arrow-right"></i></button>
+    </div>
     <div class="relleno">
         <div class="detalles-grup">
         <input type="hidden" id="registro-id" value="${id}">
@@ -492,13 +498,12 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
     </div>
      <div class="anuncio-botones">
             <button class="anuncio-btn green confirmar"><i class="fas fa-check-circle"></i>  Verificar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
     </div>
         
         
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
     document.querySelector('.container').classList.add('no-touch');
 
     const confirmarBtn = anuncio.querySelector('.confirmar');
@@ -635,11 +640,16 @@ export async function eliminarRegistro(id) {
 }
 function mostrarModalConfirmacion(titulo, mensaje) {
     return new Promise((resolve) => {
-        const anuncio = document.querySelector('.anuncio');
+        const anuncio = document.querySelector('.anuncio-down');
         const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-trash"></i> ${titulo}</h2>
+           
+            <div class="encabezado">
+                 <h2>${titulo}</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                    <i class="fas fa-arrow-down"></i></button>
+            </div>
             <div class="detalles-verificacion">
                 <div class="form-group">
                     <textarea id="razonEliminacion" placeholder="Explique el motivo de la eliminacion. Aqui!" required ></textarea>
@@ -647,15 +657,13 @@ function mostrarModalConfirmacion(titulo, mensaje) {
             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn red confirmar"><i class="fas fa-trash-alt"></i> Eliminar</button>
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             </div>
         `;
 
-        anuncio.style.display = 'flex';
+        mostrarAnuncioDown();
         document.querySelector('.container').classList.add('no-touch');
 
         const btnConfirmar = anuncio.querySelector('.confirmar');
-        const btnCancelar = anuncio.querySelector('.cancelar');
         const textarea = anuncio.querySelector('#razonEliminacion');
 
         btnConfirmar.addEventListener('click', () => {
@@ -668,12 +676,6 @@ function mostrarModalConfirmacion(titulo, mensaje) {
             document.querySelector('.overlay').style.display = 'none';
             document.querySelector('.container').classList.remove('no-touch');
             resolve(razon);
-        });
-
-        btnCancelar.addEventListener('click', () => {
-            anuncio.style.display = 'none';
-            document.querySelector('.container').classList.remove('no-touch');
-            resolve(null);
         });
     });
 }
@@ -874,56 +876,46 @@ function configurarFiltros() {
         };
 
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-filter"></i> Filtros</h2>
+            <div class="encabezado">
+                <h2>Filtros</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                    <i class="fas fa-arrow-right"></i></button>
+            </div>
                 <form id="filtros-form" class="relleno">
-                    <div class="campo-form">
-                        <label>Operario:</label>
+                        <p>Operario</p>
                         <input type="text" id="filtro-nombre" placeholder="Buscar por nombre" value="${valoresGuardados.nombre}">
-                    </div>
-                    <div class="campo-form">
-                        <label>Fecha desde:</label>
+                        <p>Fecha desde</p>
                         <input type="date" id="filtro-fecha-desde" value="${valoresGuardados.fechaDesde}">
-                    </div>
-                    <div class="campo-form">
-                        <label>Fecha hasta:</label>
+                        <p>Fecha hasta</p>
                         <input type="date" id="filtro-fecha-hasta" value="${valoresGuardados.fechaHasta}">
-                    </div>
-                    <div class="campo-form">
-                        <label>Estado:</label>
+                        <p>Estado</p>
                         <select id="filtro-estado">
                             <option value="todos" ${valoresGuardados.estado === 'todos' ? 'selected' : ''}>Todos</option>
                             <option value="verificados" ${valoresGuardados.estado === 'verificados' ? 'selected' : ''}>Verificados</option>
                             <option value="no_verificados" ${valoresGuardados.estado === 'no_verificados' ? 'selected' : ''}>No verificados</option>
                         </select>
-                    </div>
                 </form>
             <div class="anuncio-botones">
                 <button class="anuncio-btn green aplicar"><i class="fas fa-check-circle"></i> Aplicar</button>
                 <button class="anuncio-btn blue limpiar"><i class="fas fa-eraser"></i> Limpiar</button>
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             </div>
         `;
 
-        anuncio.style.display = 'flex';
+        mostrarAnuncio();
         document.querySelector('.container').classList.add('no-touch');
 
-        const cerrarModal = () => {
-            anuncio.style.display = 'none';
-            document.querySelector('.container').classList.remove('no-touch');
-        };
+
 
         // Remover listeners anteriores y crear nuevos botones
         const btnAplicar = anuncioContenido.querySelector('.aplicar');
         const btnLimpiar = anuncioContenido.querySelector('.limpiar');
-        const btnCancelar = anuncioContenido.querySelector('.cancelar');
+
 
         const nuevoBtnAplicar = btnAplicar.cloneNode(true);
         const nuevoBtnLimpiar = btnLimpiar.cloneNode(true);
-        const nuevoBtnCancelar = btnCancelar.cloneNode(true);
 
         btnAplicar.parentNode.replaceChild(nuevoBtnAplicar, btnAplicar);
         btnLimpiar.parentNode.replaceChild(nuevoBtnLimpiar, btnLimpiar);
-        btnCancelar.parentNode.replaceChild(nuevoBtnCancelar, btnCancelar);
 
         nuevoBtnAplicar.addEventListener('click', () => {
             filtrosActivos = {
@@ -935,7 +927,7 @@ function configurarFiltros() {
             // Guardar filtros en localStorage
             localStorage.setItem('filtrosRegistros', JSON.stringify(filtrosActivos));
             aplicarFiltros();
-            cerrarModal();
+            ocultarAnuncio();
         });
 
         nuevoBtnLimpiar.addEventListener('click', () => {
@@ -952,10 +944,9 @@ function configurarFiltros() {
             // Eliminar filtros del localStorage
             localStorage.removeItem('filtrosRegistros');
             aplicarFiltros();
-            cerrarModal();
+            ocultarAnuncio();
         });
 
-        nuevoBtnCancelar.addEventListener('click', cerrarModal);
     });
 }
 function aplicarFiltros() {

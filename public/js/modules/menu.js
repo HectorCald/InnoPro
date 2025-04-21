@@ -421,6 +421,10 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                             });
                         }, 300);
 
+                        if (typeof ocultarAnuncio === 'function') {
+                            ocultarAnuncio();
+                        }
+
                         // Actualizar estados activos
                         menuSecundario.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('active'));
                         item.classList.add('active');
@@ -484,6 +488,9 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                     });
                 }, 300);
             }
+            if (typeof ocultarAnuncio === 'function') {
+                ocultarAnuncio();
+            }
         });
     });
 
@@ -493,6 +500,9 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
             b.classList.remove('active');
             if (b.dataset.vista === vistaId) {
                 b.classList.add('active');
+            }
+            if (typeof ocultarAnuncio === 'function') {
+                ocultarAnuncio();
             }
         });
     };
@@ -519,4 +529,5 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
             });
         }, 300);
     };
+   
 }
