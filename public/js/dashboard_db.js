@@ -1,4 +1,4 @@
-/* =============== IMPORTACIONES DE TODOS LOS MODULOS DE JS =============== */
+/* =============== IMPORTACIONES DE TODOS LOS MODULOS DE JS .=============== */
 import { inicializarUsuarios, cargarUsuarios, mostrarDetallesUsuario, mostrarFormularioAgregarUsuario, mostrarFormularioDesactivarUsuario } from './modules/users.js';
 import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos, mostrarFormularioProduccion } from './modules/formProduccion.js';
