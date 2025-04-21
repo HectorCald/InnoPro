@@ -95,8 +95,8 @@
             }
 
             .profile-picture {
-                width: 45px;
-                height: 45px;
+                width: 40px;
+                height: 40px;
                 border-radius: 50%;
                 border: 2px solid var(--tercer-color);
                 object-fit: cover;
@@ -115,14 +115,14 @@
                 line-height: 1;
 
                 .profile-name {
-                    font-size: 16px;
+                    font-size: 15px;
                     font-weight: 500;
                     color: var(--primary-tex);
                     margin: 0;
                 }
 
                 .profile-role {
-                    font-size: 15px;
+                    font-size: 13px;
                     color: gray;
                     margin: 0;
                     padding: 0;
