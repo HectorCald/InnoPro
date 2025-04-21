@@ -1,5 +1,4 @@
 import { registrarNotificacion } from './advertencia.js';
-import { mostrarAnuncio, ocultarAnuncio } from './components.js';
 /* ==================== VARIABLES GLOBALES Y CONFIGURACIÓN INICIAL ==================== */
 let reglasEspeciales = null;
 let preciosBase = null;
@@ -310,7 +309,6 @@ function configurarEventosRegistro(registroCard) {
 function ordenarRegistrosPorFecha(registros) {
     return registros.sort((a, b) => {
         try {
-            // Ignorar el ID y usar el índice 1 para la fecha
             const fechaA = a[1] || '';
             const fechaB = b[1] || '';
 
@@ -554,8 +552,7 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
                 }
 
                 mostrarNotificacion(data.mensaje || 'Verificación guardada correctamente', 'success', 2000);
-                anuncio.style.display = 'none';
-                document.querySelector('.container').classList.remove('no-touch');
+                ocultarAnuncio();
                 await cargarRegistros();
             } else {
                 throw new Error(data.error);
@@ -582,7 +579,6 @@ export async function eliminarRegistro(id) {
         );
 
         if (!razon) return;
-
         mostrarCarga();
 
         // Get current user first
@@ -615,7 +611,7 @@ export async function eliminarRegistro(id) {
 
         if (data.success) {
             try {
-                // Register notification with proper error handling
+                mostrarCaraga();
                 await registrarNotificacion(
                     usuarioActual,
                     operario,
@@ -636,6 +632,7 @@ export async function eliminarRegistro(id) {
         mostrarNotificacion('Error al eliminar el registro: ' + error.message, 'error');
     } finally {
         ocultarCarga();
+        ocultarAnuncioDown();
     }
 }
 function mostrarModalConfirmacion(titulo, mensaje) {
@@ -648,7 +645,7 @@ function mostrarModalConfirmacion(titulo, mensaje) {
             <div class="encabezado">
                  <h2>${titulo}</h2>
                 <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
-                    <i class="fas fa-arrow-down"></i></button>
+                <i class="fas fa-arrow-down"></i></button>
             </div>
             <div class="detalles-verificacion">
                 <div class="form-group">
@@ -661,6 +658,7 @@ function mostrarModalConfirmacion(titulo, mensaje) {
         `;
 
         mostrarAnuncioDown();
+        ocultarAnuncio();
         document.querySelector('.container').classList.add('no-touch');
 
         const btnConfirmar = anuncio.querySelector('.confirmar');
@@ -672,9 +670,6 @@ function mostrarModalConfirmacion(titulo, mensaje) {
                 mostrarNotificacion('Por favor, ingresa una razón', 'warning');
                 return;
             }
-            anuncio.style.display = 'none';
-            document.querySelector('.overlay').style.display = 'none';
-            document.querySelector('.container').classList.remove('no-touch');
             resolve(razon);
         });
     });

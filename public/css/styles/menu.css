@@ -239,6 +239,7 @@
         justify-content: left;
         padding-left: 50px;
         background-color: var(--primary-color);
+        gap: 10px;
     }
 
     .opcion-btn span {

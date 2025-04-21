@@ -1,3 +1,5 @@
+
+
 /* ==================== FUNCIONES DE INICIO DE ALMACEN ==================== */
 let productosParaIngresar = new Map();
 let productosParaSalida = new Map();
@@ -94,10 +96,11 @@ export async function cargarAlmacen() {
                     <div class="product-name">
                         <span>${nombre} ${gramaje} gr.</span>
                     </div>   
-                    <div class="product-quantity">
-                        ${stock} und.
-                    </div>
+                    
                     <div class="acciones-rapidas">
+                        <div class="product-quantity">
+                            ${stock} und.
+                        </div>
                         <button class="btn-card ingreso" onclick="event.stopPropagation(); agregarAIngresos('${id}', '${nombre}', ${gramaje})">
                             <i class="fas fa-arrow-circle-down"></i>
                         </button>
@@ -425,6 +428,7 @@ async function mostrarListaIngresos() {
             mostrarNotificacion(error.message, 'error');
         } finally {
             ocultarCarga();
+            document.getElementById('searchProduct').value = '';
         }
     };
     mostrarAnuncio();
@@ -571,6 +575,7 @@ async function mostrarListaSalidas() {
             mostrarNotificacion(error.message, 'error');
         } finally {
             ocultarCarga();
+            document.getElementById('searchProduct').value = '';
         }
     };
 
@@ -923,7 +928,7 @@ function mostrarFormularioAgregarProducto() {
             }
             else {
                 return `<div class="campo-form" style="background:none">
-                            <label>${nombreTipo}:</label>
+                            <p>${nombreTipo}:</p>
                             <div class="campo-form" style="padding:0; margin-top:0; background:none">
                                     <input type="number" id="editPrice_${tipo}" value="0" class="edit-input" data-tipo="${tipo}">
                                     <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
@@ -994,7 +999,7 @@ function mostrarFormularioAgregarProducto() {
                         <!-- Aquí se renderizarán los tags seleccionados -->
                 </div>
                 <div class="campo-form" style="background:none">
-                    <label>Etiqueta:</label>
+                    <p>Etiqueta:</p>
                     <select id="nuevoTags" class="edit-input">
                         <option value="">Seleccionar</option>
                         ${window.productosAlmacen && window.productosAlmacen[0] && window.productosAlmacen[0][8] ?
@@ -1014,7 +1019,7 @@ function mostrarFormularioAgregarProducto() {
                         <!-- Aquí se renderizarán los tags seleccionados -->
                 </div>
                 <div class="campo-form"style="background:none">
-                    <label>Almacen Index:</label>
+                    <p>Almacen Index:</p>
                     <select id="nuevoIndex" class="edit-input">
                         <option value="">Seleccionar</option>
                     </select>
@@ -1086,9 +1091,7 @@ function mostrarFormularioAgregarProducto() {
             }
         });
     });
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
+
 
     anuncio.querySelector('.guardar').onclick = async () => {
         try {
@@ -1130,7 +1133,7 @@ function mostrarFormularioAgregarProducto() {
             const data = await response.json();
             if (data.success) {
                 mostrarNotificacion('Producto agregado correctamente', 'success');
-                anuncio.style.display = 'none';
+                ocultarAnuncio();
                 cargarAlmacen();
             } else {
                 throw new Error(data.error || 'Error al agregar el producto');
@@ -1169,7 +1172,7 @@ window.mostrarDetalleProductoGral = function (producto) {
             else {
                 return `
                     <div class="campo-form" style="background: none">
-                        <label>${nombreTipo}:</label>
+                        <p>${nombreTipo}:</p>
                         <div class="campo-form" style="padding:0; margin-top:0; background: none">
                             <input type="number" id="editPrice_${tipo}" value="${valor}" class="edit-input" data-tipo="${tipo}">
                             <input type="number" id="porcentaje_${tipo}" class="edit-input porcentaje" placeholder="%" min="0" max="100">
@@ -1308,7 +1311,7 @@ window.mostrarDetalleProductoGral = function (producto) {
                         ${formatearTags(tag, '2') || 'Este producto no tiene etiquetas'}
                     </div>
                     <div class="campo-form" style="background: none">
-                        <label>Etiqueta:</label>
+                        <p>Etiqueta:</p>
                         <select id="editTags" class="edit-input">
                             <option value="">Seleccionar</option>
                             ${window.productosAlmacen && window.productosAlmacen[0] && window.productosAlmacen[0][8] ?
@@ -1328,7 +1331,7 @@ window.mostrarDetalleProductoGral = function (producto) {
                         <!-- Index will be rendered here -->
                     </div>
                     <div class="campo-form" style="background: none">
-                        <label>Almacen Index:</label>
+                        <p>Almacen Index:</p>
                         <select id="editIndex" class="edit-input">
                             <option value="">Seleccionar</option>
                         </select>
@@ -1534,7 +1537,7 @@ window.mostrarDetalleProductoGral = function (producto) {
             mostrarNotificacion('Error al actualizar el producto', 'error');
         } finally {
             ocultarCarga();
-            document.getElementById('searchProductAcopio').value = '';
+            document.getElementById('searchProduct').value = '';
         }
     };
 };
@@ -1544,14 +1547,14 @@ function mostrarConfirmacionEliminar(id, nombre) {
 
     contenido.innerHTML = `
         <div class="encabezado">
-            <h2>Registro Producción</h2>
+            <h2>Eliminar Producto</h2>
             <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
                 <i class="fas fa-arrow-right"></i></button>
         </div>
-            <div class="detalles-grup center">
-                <p>¿¿Está seguro que desea eliminar el producto "${nombre}"?</p>
-                <p>Esta acción no se puede deshacer.</p>
-            </div>
+        <div class="detalles-grup center">
+            <p>¿Está seguro que desea eliminar el producto "${nombre}"?</p>
+            <p>Esta acción no se puede deshacer.</p>
+        </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn red confirmar">Confirmar</button>
         </div>
@@ -1559,6 +1562,7 @@ function mostrarConfirmacionEliminar(id, nombre) {
 
     mostrarAnuncioDown();
     ocultarAnuncio();
+    
     anuncio.querySelector('.confirmar').onclick = async () => {
         try {
             mostrarCarga();
@@ -1570,24 +1574,27 @@ function mostrarConfirmacionEliminar(id, nombre) {
                 body: JSON.stringify({ id })
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const data = await response.json();
             if (data.success) {
-                anuncio.style.display = 'none';
                 mostrarNotificacion('Producto eliminado correctamente', 'success');
-                document.getElementById('searchProductAcopio').value = '';
-                cargarAlmacen();
+                document.getElementById('searchProduct').value = '';
+                await cargarAlmacen();
             } else {
-                throw new Error(data.error || 'Error al eliminar el producto');
+                throw new Error(data.message || 'Error al eliminar el producto');
             }
         } catch (error) {
             console.error('Error:', error);
-            mostrarNotificacion('Error al eliminar el producto', 'error');
+            mostrarNotificacion(error.message || 'Error al eliminar el producto', 'error');
         } finally {
             ocultarCarga();
             ocultarAnuncioDown();
         }
     };
-};
+}
 function mostrarConfirmacionEliminarTag(nombre) {
     const anuncio = document.querySelector('.anuncio-down');
     const contenido = anuncio.querySelector('.anuncio-contenido');

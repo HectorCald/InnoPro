@@ -147,7 +147,7 @@
 }
 .anuncio-contenido .subtitle{
     color:white;
-    font-size: 15px;
+    font-size: 14px;
 }
 .anuncio-botones {
     display: flex;
@@ -199,7 +199,7 @@
     align-items: center;
     background-color: var(--primary-color);
     height: 30px;
-    width: 100px;
+    width: 50px;
     border: none;
     padding: 20px !important;
     font-size: 16px;
@@ -264,12 +264,12 @@
 .anuncio-contenido input,
 .anuncio-contenido textarea {
     width: 100%;
-    padding: 15px;
+    padding: 10px;
     border: none;
     border-radius: 10px;
     background: var(--primary-color);
     color: var(--primary-text);
-    font-size: 16px;
+    font-size: 13px;
     margin-bottom:5px;
     outline: none;
 }
@@ -283,10 +283,10 @@
 
 .anuncio-contenido input[type="date"] {
     background: var(--primary-color);
-    padding: 15px;
+    padding: 10px !important;
     border-radius: 15px;
     width: 100%;
-    font-size: 15px;
+    font-size: 13px !important;
     border: none;
     height: 60px;
     -webkit-appearance: none;
@@ -336,8 +336,8 @@
     background: var(--primary-color);
     color: var(--primary-text);
     border: none;
-    font-size: 16px;
-    padding: 15px;
+    font-size: 13px;
+    padding: 10px;
     border-radius: 10px;
     outline: none !important;
     -webkit-appearance: none;
@@ -351,7 +351,7 @@
 .anuncio-contenido select option {
     background: var(--primary-color);
     color: var(--primary-text);
-    font-size: 15px !important;
+    font-size: 13px !important;
     border:none;
     outline: none !important;
     -webkit-appearance: none;
@@ -379,7 +379,7 @@
 .form-group label {
     display: block;
     color: var(--primary-text);
-    font-size: 14px;
+    font-size: 13px;
 }
 .detalles-grup {
     display: flex;
@@ -434,19 +434,12 @@
 
 .detalle-item span {
     color: white;
-    font-size: 15px;
+    font-size: 13px;
     padding-left: 10px;
     width: 100%;
     text-align: right;
 }
 
-.sugerencia-pedido-existente {
-    background: var(--background);
-    padding: 1em;
-    border-radius: 8px;
-    margin-top: 1em;
-    border: 1px solid #828282;
-}
 .sugerencias-container{
     border: none;
     border-radius: 10px;

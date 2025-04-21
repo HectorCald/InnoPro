@@ -101,7 +101,7 @@ async function mostrarFormularioCambioPin() {
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn green guardar">
-                <i class="fas fa-save"></i> Guardar
+                <i class="fas fa-save"></i> Guardar cambios
             </button>
         </div>
     `;
