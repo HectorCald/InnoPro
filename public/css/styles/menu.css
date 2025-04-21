@@ -291,7 +291,7 @@
     .regAcopio-view,
     .almacen-view,
     .regAlmacen-view {
-        height: 90vh !important;
+        height: calc(100vh) !important;
     }
 
     .carga {

@@ -68,6 +68,10 @@ export function inicializarAlmacen() {
     
         // Update cart counter and animate
         updateCartCounter();
+        const carritoAbierto = document.querySelector('.anuncio').style.display === 'flex';
+        if (carritoAbierto) {
+            mostrarCarrito(); // Actualiza la lista sin cerrar el modal
+        }
     };
 }
 export function mostrarProductosBruto() {
@@ -361,26 +365,27 @@ function mostrarCarrito() {
     let productosHTML = '';
     carritoProductos.forEach((cantidad, nombre) => {
         productosHTML += `
-            <div class="producto-carrito relleno" data-nombre="${nombre}">
+            <div class="producto-carrito" data-nombre="${nombre}">
                 <div class="producto-info form-grup" style="margin-top:5px; position: relative;">
-                    <p class="nombre">${nombre}</p>
                     <div class="cantidad-control campo-form">
-                        <button class="btn-cantidad anuncio-btn red" style="max-width:40px; min-height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', -1)">-</button>
-                        <input type="number" value="${cantidad}" min="1" 
-                               onchange="actualizarCantidad('${nombre}', this.value)" style="text-align:center">
-                        <button class="btn-cantidad anuncio-btn green" style="max-width:40px; height:40px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', 1)">+</button>
-                        <select class="unidad-medida">
-                            <option value="unid.">und.</option>
-                            <option value="cajas">cj.</option>
-                            <option value="bolsas">bls.</option>
-                            <option value="qq">qq</option>
-                            <option value="kg">kg</option>
-                            <option value="arroba">@</option>
-                        </select>
+                        <p class="nombre">${nombre}</p>
+                        <div class="cantidad-control">
+                            <button class="btn-cantidad anuncio-btn red" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', -1)">-</button>
+                            <input type="number" value="${cantidad}" min="1" 
+                                onchange="actualizarCantidad('${nombre}', this.value)" style="text-align:center; width: 70px; border:1px solid gray;padding: 10px">
+                            <button class="btn-cantidad anuncio-btn green" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', 1)">+</button>
+                            <select class="unidad-medida" style="width: 50px">
+                                <option value="unid.">und.</option>
+                                <option value="cajas">cj.</option>
+                                <option value="bolsas">bls.</option>
+                                <option value="qq">qq</option>
+                                <option value="kg">kg</option>
+                                <option value="arroba">@</option>
+                            </select>
+                        </div>
+                        
                     </div>
-                    <div class="campo-form">
-                        <textarea class="observaciones-pedido" placeholder="Observaciones..." rows="2"></textarea>
-                    </div>
+                    <textarea class="observaciones-pedido" placeholder="Observaciones..." rows="2" style="border: 1px solid gray;"></textarea>
                     <button class="btn-eliminar" style="background: none; border:none; position: absolute; top: 10px; right: 10px;" onclick="eliminarDelCarrito('${nombre}')">
                         <i class="fas fa-trash" style="color: red"></i>
                     </button>
@@ -391,7 +396,12 @@ function mostrarCarrito() {
 
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-shopping-cart"></i> Carrito de Pedidos</h2>
+
+        <div class="encabezado">
+        <h2>Lista de pedidos</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
             <div class="productos-carrito">
                 ${productosHTML}
@@ -401,16 +411,10 @@ function mostrarCarrito() {
             <button class="anuncio-btn green finalizar" onclick="finalizarPedidosCarrito()">
                 <i class="fas fa-check"></i> Finalizar Pedidos
             </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
+    mostrarAnuncio();
 }
 function updateCartCounter() {
     const cartButton = document.querySelector('.btn-agregar-pedido i.fa-shopping-cart').parentElement;
@@ -440,69 +444,53 @@ function updateCartCounter() {
     }
 }
 window.cambiarCantidad = (nombre, delta) => {
-    const cantidad = carritoProductos.get(nombre) + delta;
+    const cantidad = (carritoProductos.get(nombre) || 0) + delta;
     if (cantidad >= 1) {
         carritoProductos.set(nombre, cantidad);
-        const input = document.querySelector(`.producto-carrito[data-nombre="${nombre}"] input`);
-        input.value = cantidad;
+        const input = document.querySelector(`.producto-carrito[data-nombre="${nombre}"] input[type="number"]`);
+        if (input) {
+            input.value = cantidad;
+        }
     }
 };
 
 window.actualizarCantidad = (nombre, valor) => {
-    const cantidad = parseInt(valor);
+    const cantidad = parseInt(valor) || 1;
     if (cantidad >= 1) {
         carritoProductos.set(nombre, cantidad);
+        const input = document.querySelector(`.producto-carrito[data-nombre="${nombre}"] input[type="number"]`);
+        if (input) {
+            input.value = cantidad;
+        }
     }
 };
 
 window.eliminarDelCarrito = (nombre) => {
     const productoElement = document.querySelector(`.producto-carrito[data-nombre="${nombre}"]`);
-    const productoInfo = productoElement?.querySelector('.producto-info');
-    
-    if (productoElement && productoInfo) {
-        // Store original heights
-        const originalHeight = productoElement.offsetHeight;
-        const originalInfoHeight = productoInfo.offsetHeight;
-        
-        // Set initial heights explicitly
-        productoElement.style.height = originalHeight + 'px';
-        productoInfo.style.height = originalInfoHeight + 'px';
-        
-        // Set overflow hidden on both elements
-        productoElement.style.overflow = 'hidden';
-        productoInfo.style.overflow = 'hidden';
-        
-        // Trigger animation in next frame
-        requestAnimationFrame(() => {
-            // Animate both elements
-            productoElement.style.transition = 'all 0.3s ease-out';
-            productoInfo.style.transition = 'all 0.3s ease-out';
-            
-            // Collapse both elements
-            productoElement.style.height = '0';
-            productoInfo.style.height = '0';
-            
-            // Fade out and remove spacing
-            productoElement.style.opacity = '0';
-            productoInfo.style.opacity = '0';
-            productoElement.style.margin = '0';
-            productoElement.style.padding = '0';
-            productoInfo.style.margin = '0';
-            productoInfo.style.padding = '0';
-        });
-        
-        // Update data after animation
+    if (productoElement) {
+        // Animate removal
+        productoElement.style.transition = 'all 0.3s ease';
+        productoElement.style.opacity = '0';
+        productoElement.style.height = '0';
+        productoElement.style.margin = '0';
+        productoElement.style.padding = '0';
+
         setTimeout(() => {
+            productoElement.remove();
             carritoProductos.delete(nombre);
+            
+            // Reset the original add-to-cart button
             const button = document.querySelector(`.btn-card.pedido[onclick*="${nombre}"]`);
             if (button) {
                 button.classList.remove('disabled');
                 button.disabled = false;
             }
+
             updateCartCounter();
-            
+
+            // Close modal if cart is empty
             if (carritoProductos.size === 0) {
-                document.querySelector('.anuncio').style.display = 'none';
+                ocultarAnuncio();
             }
         }, 300);
     }
@@ -548,7 +536,7 @@ window.finalizarPedidosCarrito = async () => {
         if (data.success) {
             mostrarNotificacion('Pedidos finalizados correctamente', 'success');
             carritoProductos.clear();
-            document.querySelector('.anuncio').style.display = 'none';
+            ocultarAnuncio();
 
             // Codificar el mensaje para URL y abrir WhatsApp
             const mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
@@ -584,21 +572,25 @@ window.mostrarDetalleProductoAcopio = function (producto) {
     }
 
     contenido.innerHTML = `
-        <h2 class="titulo-modal"><i class="fas fa-info-circle"></i> Información</h2>
+        <div class="encabezado">
+        <h2>Detalles del producto</h2>
+         <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+            <i class="fas fa-arrow-right"></i></button>
+    </div>
         <div class="relleno">
             <div class="producto-detalles">
                 <div class="detalle-seccion">
-                    <p>Información General:</p>               
+                    <p class="subtitle">Información General:</p>               
                     <div class="detalles-grup">
                         <div class="detalle-item">
                             <p>Nombre:</p> <span>${nombre}</span>
                         </div>
                     </div>
-                    <p>Materia Bruta:</p>  
+                    <p class="subtitle">Materia Bruta:</p>  
                     <div class="detalles-grup">
                         ${formatearPesoLote(pesoBrutoLote)}
                     </div>
-                    <p>Materia Prima:</p>  
+                    <p class="subtitle">Materia Prima:</p>  
                     <div class="detalles-grup">
                         ${formatearPesoLote(pesoPrimaLote)}
                     </div>
@@ -610,18 +602,14 @@ window.mostrarDetalleProductoAcopio = function (producto) {
             <button class="anuncio-btn blue editar"><i class="fas fa-edit"></i> Editar</button>
             <button class="anuncio-btn green guardar" style="display: none;"><i class="fas fa-save"></i> Guardar</button>
             <button class="anuncio-btn red eliminar"><i class="fas fa-trash"></i> Eliminar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
 
     const btnEditar = contenido.querySelector('.editar');
     const btnGuardar = contenido.querySelector('.guardar');
 
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
 
     anuncio.querySelector('.eliminar').onclick = () => {
         mostrarConfirmacionEliminar(id, nombre);
@@ -638,64 +626,61 @@ window.editarProductoAcopio = function (producto) {
     const detallesEdicion = contenido.querySelector('.detalles-edicion');
     const btnEditar = contenido.querySelector('.editar');
     const btnGuardar = contenido.querySelector('.guardar');
-    const tituloModal = contenido.querySelector('.titulo-modal');
     const detallesGrup = contenido.querySelector('.detalle-seccion');
 
     detallesEdicion.innerHTML = `
-        <p>Información General:</p> 
-        <div class="campo-form">
-            <label>Nombre:</label>
+        <p class="subtitle">Información:</p> 
+            <p>Nombre del producto</p>
             <input type="text" id="editNombre" value="${nombre}" class="edit-input">
-        </div>
-        <div class="form-grup">
-            <p>Materia Bruta:</p>
-            <div class="form-grup">
+
+
+        <p class="subtitle">Materia Bruta:</p>
+            <div class="form-grup" style="background:none">
                 <div class="detalle-item">
                     <input type="number" step="0.01" id="nuevoPesoBruto" class="edit-input" placeholder="Peso (kg)">
                     <input type="number" id="nuevoLoteBruto" class="edit-input" placeholder="Lote">
                     <i class="fas fa-plus-circle add add-peso-bruto"></i>
                 </div>
             </div>
-            <div id="materiaBrutaEntries">
+            <div id="materiaBrutaEntries" style="background:none">
                 ${pesoBrutoLote ? pesoBrutoLote.split(';').map((item, index) => {
-        const [peso, lote] = item.split('-').map(val => val.trim());
-        const pesoFormateado = peso.replace(',', '.');
-        return `
-                        <div class="campo-form entrada-peso" data-index="${index}">
-                            <div class="detalle-item">
+                    const [peso, lote] = item.split('-').map(val => val.trim());
+                    const pesoFormateado = peso.replace(',', '.');
+                    return `
+                        <div class="campo-form entrada-peso" data-index="${index}" style="background:none">
+                            <div class="detalle-item" style="background:none">
                                 <input type="number" step="0.01" id="editPesoBruto_${index}" value="${pesoFormateado}" class="edit-input" placeholder="Peso">
                                 <input type="number" id="editLoteBruto_${index}" value="${lote}" class="edit-input" placeholder="Lote">
                                 <i class="fas fa-trash delete delete-entry" data-type="bruto"></i>
                             </div>
                         </div>`;
-    }).join('') : ''}
+                 }).join('') : ''}
             </div>
-        </div>
-        <div class="form-grup">
-            <p>Materia Prima:</p>
-            <div class="form-grup">
+
+        <p class="subtitle">Materia Prima:</p>
+            
+            <div class="form-grup" style="background:none">
                 <div class="detalle-item">
                     <input type="number" step="0.01" id="nuevoPesoPrima" class="edit-input" placeholder="Peso (kg)">
                     <input type="number" id="nuevoLotePrima" class="edit-input" placeholder="Lote">
                     <i class="fas fa-plus-circle add add-peso-prima"></i>
                 </div>
             </div>
-            <div id="materiaPrimaEntries">
+            <div id="materiaPrimaEntries" style="background:none">
                 ${pesoPrimaLote ? pesoPrimaLote.split(';').map((item, index) => {
-        const [peso, lote] = item.split('-').map(val => val.trim());
-        const pesoFormateado = peso.replace(',', '.');
-        return `
-                        <div class="campo-form entrada-peso" data-index="${index}">
-                            <div class="detalle-item">
+                    const [peso, lote] = item.split('-').map(val => val.trim());
+                    const pesoFormateado = peso.replace(',', '.');
+                    return `
+                            <div class="campo-form entrada-peso" data-index="${index}" style="background:none">
+                            <div class="detalle-item" style="background:none">
                                 <input type="number" step="0.01" id="editPesoPrima_${index}" value="${pesoFormateado}" class="edit-input" placeholder="Peso">
                                 <input type="number" id="editLotePrima_${index}" value="${lote}" class="edit-input" placeholder="Lote">
                                 <i class="fas fa-trash delete delete-entry" data-type="prima"></i>
                             </div>
                         </div>`;
-    }).join('') : ''}
-            </div>
-        </div>
-    `;
+            }).join('') : ''}
+                    </div>
+            `;
     document.querySelectorAll('.delete-entry').forEach(deleteBtn => {
         deleteBtn.addEventListener('click', function () {
             this.closest('.entrada-peso').remove();
@@ -705,7 +690,6 @@ window.editarProductoAcopio = function (producto) {
     detallesEdicion.style.display = 'flex';
     btnEditar.style.display = 'none';
     btnGuardar.style.display = 'inline-block';
-    tituloModal.innerHTML = '<i class="fas fa-edit"></i> Editar Información';
 
     setupEntryHandlers();
     setupGuardarHandler(id);
@@ -713,24 +697,26 @@ window.editarProductoAcopio = function (producto) {
 
 /* =============== FUNCIONES DE AGREGAR UN NUEVO PRODUCTO Y ELIMINAR =============== */
 function mostrarConfirmacionEliminar(id, nombre) {
-    const anuncio = document.querySelector('.anuncio');
+    const anuncio = document.querySelector('.anuncio-down');
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
-        <div class="relleno">
+        <div class="encabezado">
+            <h2>Eliminar?</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                    <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="detalles-grup center">
             <p>¿Está seguro que desea eliminar el producto "${nombre}"?</p>
             <p>Esta acción no se puede deshacer.</p>
         </div>
-        </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn red confirmar-eliminar">Eliminar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncioDown();
+    ocultarAnuncio();
 
     contenido.querySelector('.confirmar-eliminar').onclick = async () => {
         try {
@@ -755,10 +741,6 @@ function mostrarConfirmacionEliminar(id, nombre) {
             ocultarCarga();
         }
     };
-
-    contenido.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
 }
 function setupEntryHandlers() {
     document.querySelector('.add-peso-bruto').addEventListener('click', () => {
@@ -774,8 +756,8 @@ function setupEntryHandlers() {
         const nuevoIndex = container.querySelectorAll('.entrada-peso').length;
 
         container.insertAdjacentHTML('beforeend', `
-            <div class="campo-form entrada-peso" data-index="${nuevoIndex}">
-                <div class="detalle-item">
+            <div class="campo-form entrada-peso" data-index="${nuevoIndex}" style="background:none">
+                <div class="detalle-item" style="background:none">
                     <input type="number" step="0.01" id="editPesoBruto_${nuevoIndex}" value="${peso}" class="edit-input" placeholder="Peso">
                     <input type="number" id="editLoteBruto_${nuevoIndex}" value="${lote}" class="edit-input" placeholder="Lote">
                     <i class="fas fa-trash delete delete-entry" onclick="this.closest('.entrada-peso').remove()"></i>
@@ -801,8 +783,8 @@ function setupEntryHandlers() {
         const nuevoIndex = container.querySelectorAll('.entrada-peso').length;
 
         container.insertAdjacentHTML('beforeend', `
-            <div class="campo-form entrada-peso" data-index="${nuevoIndex}">
-                <div class="detalle-item">
+            <div class="campo-form entrada-peso" data-index="${nuevoIndex}" style="background:none">
+                <div class="detalle-item" style="background:none">
                     <input type="number" step="0.01" id="editPesoPrima_${nuevoIndex}" value="${peso}" class="edit-input" placeholder="Peso">
                     <input type="number" id="editLotePrima_${nuevoIndex}" value="${lote}" class="edit-input" placeholder="Lote">
                     <i class="fas fa-trash delete delete-entry" onclick="this.closest('.entrada-peso').remove()"></i>
@@ -879,51 +861,44 @@ function mostrarFormularioAgregarAcopio() {
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
+        <div class="encabezado">
+            <h2>Nuevo Producto</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
-            <p>Información General:</p>
-            <div class="campo-form">
-                <label>Nombre del Producto:</label>
+                <p class="subtitle">Nombre del Producto</p>
                 <input type="text" id="nuevoNombre" class="edit-input" placeholder="Nombre del producto" required>
-            </div>
-            
-            <div class="form-grup">
-                <p>Materia Bruta:</p>
-                <div class="form-grup">
-                    <div class="detalle-item">
+                
+                <p class="subtitle">Materia Bruta</p>
+                <div class="form-grup" style="background:none">
+                    <div class="detalle-item" style="background:none">
                         <input type="number" step="0.01" id="nuevoPesoBruto" class="edit-input" placeholder="Peso (kg)">
                         <input type="number" id="nuevoLoteBruto" class="edit-input" placeholder="Lote">
                         <i class="fas fa-plus-circle add add-peso-bruto"></i>
                     </div>
                 </div>
                 <div id="materiaBrutaEntries"></div>
-            </div>
 
-            <div class="form-grup">
-                <p>Materia Prima:</p>
-                <div class="form-grup">
-                    <div class="detalle-item">
+                <p class="subtitle">Materia Prima</p>
+                <div class="form-grup" style="background:none">
+                    <div class="detalle-item" style="background:none">
                         <input type="number" step="0.01" id="nuevoPesoPrima" class="edit-input" placeholder="Peso (kg)">
                         <input type="number" id="nuevoLotePrima" class="edit-input" placeholder="Lote">
                         <i class="fas fa-plus-circle add add-peso-prima"></i>
                     </div>
                 </div>
                 <div id="materiaPrimaEntries"></div>
-            </div>
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
 
     setupEntryHandlers();
 
-    anuncio.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
 
     anuncio.querySelector('.guardar').onclick = async () => {
         try {
@@ -966,7 +941,7 @@ function mostrarFormularioAgregarAcopio() {
             const data = await response.json();
             if (data.success) {
                 mostrarNotificacion('Producto agregado correctamente', 'success');
-                anuncio.style.display = 'none';
+                ocultarAnuncio();
                 setTimeout(() => cargarAlmacenBruto(), 500);
             } else {
                 throw new Error(data.error || 'Error al agregar el producto');
@@ -1145,43 +1120,41 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-arrow-circle-up"></i> Nuevo Ingreso</h2>
+        <div class="encabezado">
+            <h2>Nuevo ingreso</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
-            <div class="campo-form">
-                <label>Producto:</label>
+                <p class="subtitle">Información general</p>
+                <p>Selcciona el producto</p>
                 <select id="productoIngreso" class="edit-input" required>
                     <option value="">Seleccione un producto</option>
-                    ${window.productosAlmacen?.map(producto =>
-        `<option value="${producto[1]}" ${productoSeleccionado === producto[1] ? 'selected' : ''}>${producto[1]}</option>`
-    ).join('') || ''}
+                                ${window.productosAlmacen?.map(producto =>
+                    `<option value="${producto[1]}" ${productoSeleccionado === producto[1] ? 'selected' : ''}>${producto[1]}</option>`
+                ).join('') || ''}
                 </select>
-            </div>
-            <div class="campo-form">
-                <label>Tipo:</label>
+
+
+                <p>Tipo de materia</p>
                 <select id="tipoIngreso" class="edit-input" required>
                     <option value="bruto">Materia Bruta</option>
                     <option value="prima">Materia Prima</option>
                 </select>
-            </div>
-            <div class="campo-form">
-                <label>Peso (kg):</label>
-                <input type="number" step="0.1" id="pesoIngreso" class="edit-input" required>
-            </div>
-            <div class="campo-form">
-                <label>Lote:</label>
+
+                <p>Peso (kg)</p>
+                <input type="number" step="0.1" id="pesoIngreso" class="edit-input" placeholder="Ingresa el peso. Ej: 12" required>
+
+                <p>Lote (Autogenerado)</p>
                 <input type="text" id="loteIngreso" class="edit-input" readonly>
-            </div>
-            <div class="campo-form">
-                <label>Razón:</label>
-                <textarea id="razonIngreso" class="edit-input" required></textarea>
-            </div>
+
+                <p>Razón:</p>
+                <textarea id="razonIngreso" class="edit-input" placeholder="Ingresa una razon del ingreso" required></textarea>
+
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn green procesar">
                 <i class="fas fa-check"></i> Procesar Ingreso
-            </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
             </button>
         </div>
     `;
@@ -1217,11 +1190,10 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
         actualizarLote();
     }
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
 
     // Rest of your existing code...
     const btnProcesar = anuncioContenido.querySelector('.procesar');
-    const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
     btnProcesar.onclick = async () => {
         try {
@@ -1277,7 +1249,7 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
             }
 
             mostrarNotificacion('Ingreso procesado correctamente', 'success');
-            anuncio.style.display = 'none';
+           ocultarAnuncio();
             cargarAlmacenBruto();
         } catch (error) {
             console.error('Error:', error);
@@ -1285,10 +1257,6 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
         } finally {
             ocultarCarga();
         }
-    };
-
-    btnCancelar.onclick = () => {
-        anuncio.style.display = 'none';
     };
 }
 export async function mostrarFormularioSalidaAcopio() {

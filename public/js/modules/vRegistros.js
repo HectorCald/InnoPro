@@ -860,7 +860,7 @@ function configurarFiltros() {
         filtrosActivos = JSON.parse(filtrosGuardados);
     }
 
-    nuevoBtn.addEventListener('click', () => {
+    nuevoBtn.addEventListener('click', async() => {
         // Cargar valores guardados en los inputs
         const filtrosGuardados = localStorage.getItem('filtrosRegistros');
         const valoresGuardados = filtrosGuardados ? JSON.parse(filtrosGuardados) : {
@@ -869,7 +869,8 @@ function configurarFiltros() {
             fechaHasta: '',
             estado: 'todos'
         };
-
+        const usuarios = await obtenerUsuarios();
+        console.log(usuarios)
         anuncioContenido.innerHTML = `
             <div class="encabezado">
                 <h2>Filtros</h2>
@@ -878,7 +879,14 @@ function configurarFiltros() {
             </div>
                 <form id="filtros-form" class="relleno">
                         <p>Operario</p>
-                        <input type="text" id="filtro-nombre" placeholder="Buscar por nombre" value="${valoresGuardados.nombre}">
+                         <select id="filtro-nombre" class="edit-input">
+                        <option value="">Todos los operarios</option>
+                        ${usuarios.map(user => 
+                            `<option value="${user.nombre}" ${valoresGuardados.nombre === user.nombre ? 'selected' : ''}>
+                                ${user.nombre}
+                            </option>`
+                        ).join('')}
+                    </select>
                         <p>Fecha desde</p>
                         <input type="date" id="filtro-fecha-desde" value="${valoresGuardados.fechaDesde}">
                         <p>Fecha hasta</p>
@@ -1232,4 +1240,15 @@ function formatearFecha(fecha) {
         return `${año}-${mes}-${dia}`;
     }
     return fecha;
+}
+
+async function obtenerUsuarios() {
+    try {
+        const response = await fetch('/obtener-usuarios');
+        const data = await response.json();
+        return data.usuarios.filter(user => user.rol === 'Producción');
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        return [];
+    }
 }

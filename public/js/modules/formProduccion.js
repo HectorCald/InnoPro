@@ -43,7 +43,6 @@ export function mostrarFormularioProduccion() {
             <i class="fas fa-arrow-right"></i></button>
     </div>
     <div class="relleno">
-
             <p>Producto*</p>
                 <input type="text" name="producto" id="producto-input" placeholder="Selecciona el producto" autocomplete="off" required>
                 <div class="sugerencias-container" style="display: none;">

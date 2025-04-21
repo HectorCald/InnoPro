@@ -59,22 +59,6 @@ body, .container {
     }
 }
 
-/* ===== VISTAS DE LA APLICACIÓN ===== */
-.newTarea-view,
-.usuarios-view,
-.verificarRegistros-view,
-.consultarRegistros-view,
-.formProduccion-view,
-.cuentasProduccion-view,
-.newPedido-view,
-.home-vew {
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    min-height: calc(100vh - 150px);
-    padding-bottom: 80px;
-    background-color: var(--primary-color) !important;
-}
 
 /* ===== ESTADO ACTIVO DE LAS VISTAS ===== */
 .view-active {

@@ -4,7 +4,7 @@
 /* ===== VISTA DE VERIFICACIÓN DE REGISTROS ===== */
 .verificarRegistros-view {
     width: 100%;
-    background: var(--background) !important;
+    background: var(--primary-color) !important;
     height: calc(100vh - 70px);
     color: var(--primary-text) !important;
     overflow-y: auto;
