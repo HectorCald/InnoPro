@@ -2,5 +2,21 @@
 <script type="module" src="./js/dashboard_db.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- ... código existente ... -->
+    <script>
+        // Prevenir comportamientos del navegador
+        if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+            document.addEventListener('touchmove', (e) => {
+                if (e.scale !== 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('gesturestart', (e) => {
+                e.preventDefault();
+            });
+        }
+    </script>
+</body>
 </body>
 </html>

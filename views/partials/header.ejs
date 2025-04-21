@@ -9,21 +9,33 @@
     <link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: light)">
     <meta name="apple-mobile-web-app-title" content="InnoPro">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- Prevenir comportamiento de navegador -->
+    <style>
+        html {
+            height: 100vh;
+            height: -webkit-fill-available;
+        }
+        body {
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            overscroll-behavior: none;
+        }
+        @media all and (display-mode: standalone) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+    </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="/css/login.css">
-
-    <script>
-        const manifestLink = document.querySelector('link[rel="manifest"]');
-        manifestLink.addEventListener('load', () => {
-            console.log('✅ Manifest loaded successfully');
-        });
-        manifestLink.addEventListener('error', (error) => {
-            console.error('❌ Error loading manifest:', error);
-        });
-    </script>
+    <!-- ... resto del código ... -->
 </head>
 <body>

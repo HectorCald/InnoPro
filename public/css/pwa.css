@@ -1,0 +1,32 @@
+/* Estilos específicos para PWA */
+@media all and (display-mode: standalone) {
+    /* Ocultar elementos del navegador */
+    :root {
+        --sat: env(safe-area-inset-top);
+        --sab: env(safe-area-inset-bottom);
+        --sal: env(safe-area-inset-left);
+        --sar: env(safe-area-inset-right);
+    }
+
+    body {
+        /* Prevenir comportamientos del navegador */
+        overscroll-behavior: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Ajustar el contenedor principal */
+    .container {
+        padding-top: var(--sat, 0);
+        padding-bottom: var(--sab, 0);
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+
+    /* Ocultar elementos del navegador */
+    .browser-chrome {
+        display: none !important;
+    }
+}

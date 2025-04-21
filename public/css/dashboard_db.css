@@ -40,6 +40,8 @@
 @import 'styles/calcularMP.css';
 @import 'styles/imgUpload.css';
 
+@import 'styles/pwa.css';
+
 /* ===== ESTILOS GLOBALES ===== */
 body, .container {
     background-color: var(--primary-color) !important;

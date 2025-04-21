@@ -45,7 +45,7 @@
     }
   ],
   "prefer_related_applications": false,
-  "display_override": ["fullscreen"],
+  "display_override": ["standalone","fullscreen"],
   "categories": ["productivity", "business"],
   "dir": "ltr",
   "iarc_rating_id": "",
