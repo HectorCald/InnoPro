@@ -388,7 +388,7 @@ async function mostrarListaIngresos() {
                     
                     // Close modal if no items left
                     if (productosParaIngresar.size === 0) {
-                        document.querySelector('.anuncio').style.display = 'none';
+                        ocultarAnuncio();
                     }
                 }, 300);
             }

@@ -269,7 +269,7 @@
     border-radius: 10px;
     background: var(--primary-color);
     color: var(--primary-text);
-    font-size: 13px;
+    font-size: 13px !important;
     margin-bottom:5px;
     outline: none;
 }
@@ -434,10 +434,13 @@
 
 .detalle-item span {
     color: white;
-    font-size: 13px;
+    font-size: 13px !important;
     padding-left: 10px;
     width: 100%;
     text-align: right;
+}
+.anuncio-contenido span{
+    font-size: 13px !important;
 }
 
 .sugerencias-container{
@@ -641,8 +644,7 @@
 }
 .anuncio-down .anuncio-contenido{
     height: fit-content;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    border-radius: 10px;
     width: 90%;
     max-width: 400px;
 }
