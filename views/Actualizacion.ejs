@@ -146,58 +146,96 @@
         </button>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btnUpdate = document.getElementById('btnUpdate');
-            const btnSkip = document.getElementById('btnSkip');
-            const UPDATE_KEY = 'innopro_update_status';
-            const CURRENT_VERSION = '2.0.2';
+    // ... rest of the file remains the same ...
 
-            // Verificar si ya está actualizado
-            const checkUpdateStatus = () => {
-                try {
-                    const status = localStorage.getItem(UPDATE_KEY);
-                    if (status === CURRENT_VERSION) {
-                        window.location.href = '/';
-                    }
-                } catch (error) {
-                    console.error('Error al verificar estado:', error);
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnUpdate = document.getElementById('btnUpdate');
+        const btnSkip = document.getElementById('btnSkip');
+        const UPDATE_KEY = 'innopro_update_status';
+        const CURRENT_VERSION = '2.0.2';
+
+        // Verificar disponibilidad de localStorage
+        const checkLocalStorageAvailability = () => {
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                return true;
+            } catch (e) {
+                return false;
+            }
+        };
+
+        // Configurar botones según disponibilidad de localStorage
+        const setupButtons = () => {
+            if (!checkLocalStorageAvailability()) {
+                btnSkip.style.display = 'none';
+                btnUpdate.innerHTML = '<i class="fas fa-download"></i> Actualización Obligatoria';
+                btnUpdate.style.animation = 'pulse 2s infinite';
+            }
+        };
+
+        // Verificar si ya está actualizado
+        const checkUpdateStatus = () => {
+            try {
+                const status = localStorage.getItem(UPDATE_KEY);
+                if (status === CURRENT_VERSION) {
+                    window.location.href = '/';
                 }
-            };
+            } catch (error) {
+                console.error('Error al verificar estado:', error);
+                btnSkip.style.display = 'none';
+                btnUpdate.innerHTML = '<i class="fas fa-download"></i> Actualización Obligatoria';
+                btnUpdate.style.animation = 'pulse 2s infinite';
+            }
+        };
 
-            // Intentar marcar como actualizado
-            const markAsUpdated = async () => {
-                try {
-                    const response = await fetch('/confirmar-actualizacion', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
+        // Intentar marcar como actualizado
+        const markAsUpdated = async () => {
+            if (!checkLocalStorageAvailability()) {
+                alert('No se puede guardar el estado. La actualización es obligatoria.');
+                btnSkip.style.display = 'none';
+                btnUpdate.innerHTML = '<i class="fas fa-download"></i> Actualización Obligatoria';
+                btnUpdate.style.animation = 'pulse 2s infinite';
+                return;
+            }
 
-                    if (response.ok) {
-                        window.location.href = '/dashboard_db';
-                    } else {
-                        throw new Error('Error al confirmar actualización');
+            try {
+                const response = await fetch('/confirmar-actualizacion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
                     }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error al guardar el estado. La actualización seguirá siendo obligatoria.');
+                });
+
+                if (response.ok) {
+                    localStorage.setItem(UPDATE_KEY, CURRENT_VERSION);
+                    window.location.href = '/dashboard_db';
+                } else {
+                    throw new Error('Error al confirmar actualización');
                 }
-            };;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar el estado. La actualización seguirá siendo obligatoria.');
+                btnSkip.style.display = 'none';
+                btnUpdate.innerHTML = '<i class="fas fa-download"></i> Actualización Obligatoria';
+                btnUpdate.style.animation = 'pulse 2s infinite';
+            }
+        };
 
-            // ... rest of the file remains the same ...
-            btnUpdate.addEventListener('click', () => {
-                window.location.href = '/descargar-apk';
-            });
-            // ... rest of the file remains the same ...
-
-            btnSkip.addEventListener('click', markAsUpdated);
-
-            // Verificar al cargar
-            checkUpdateStatus();
+        btnUpdate.addEventListener('click', () => {
+            window.location.href = '/descargar-apk';
         });
-    </script>
+
+        btnSkip.addEventListener('click', markAsUpdated);
+
+        // Inicializar verificaciones
+        setupButtons();
+        checkUpdateStatus();
+    });
+</script>
+
+// ... rest of the file remains the same ...
     <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
 </body>
 
