@@ -123,7 +123,7 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
 app.get('/dashboard_db', requireAuth, (req, res) => {
     // Add update check middleware
     const UPDATE_KEY = 'innopro_update_status';
-    const CURRENT_VERSION = '2.0.4';
+    const CURRENT_VERSION = '2.0.5';
 
     // Check if update status exists in the request cookies
     const updateStatus = req.cookies[UPDATE_KEY];
@@ -138,7 +138,7 @@ app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
 });
 app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
-    const CURRENT_VERSION = '2.0.4';
+    const CURRENT_VERSION = '2.0.5';
     res.cookie('innopro_update_status', CURRENT_VERSION, {
         maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
         httpOnly: true,

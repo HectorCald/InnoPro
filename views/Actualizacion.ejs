@@ -7,7 +7,7 @@
     <style>
         :root {
             --primary-color: #1a1a1a;
-            --accent-color: #007bff;
+            --accent-color: #369400;
             --text-color: #ffffff;
         }
 
@@ -164,6 +164,7 @@
         <button id="btnUpdate" class="btn btn-update">
             <i class="fas fa-download"></i> Actualizar ahora
         </button>
+        <p>Si estas teniendo problemas para actulizar es probable que tengas que comunicarte con el administador del sistema.</p>
 
         <div class="update-progress" id="updateProgress">
             <i class="fas fa-sync-alt update-icon rotating"></i>
@@ -182,7 +183,7 @@
         const updateProgress = document.getElementById('updateProgress');
         const progressFill = document.getElementById('progressFill');
         const UPDATE_KEY = 'innopro_update_status';
-        const CURRENT_VERSION = '2.0.4';
+        const CURRENT_VERSION = '2.0.5';
 
         const simulateUpdate = async () => {
             btnUpdate.style.display = 'none';
