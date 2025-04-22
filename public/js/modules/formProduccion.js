@@ -48,16 +48,17 @@ export function mostrarFormularioProduccion() {
                 <div class="sugerencias-container" style="display: none;">
                     <ul class="sugerencias-list"></ul>
                 </div>
-            <p>Lote*</p>
-                <input type="number" name="lote" placeholder="Ingresa el lote. Ej: 03557" required>
 
             <p>Gramaje* (Autogenerado)<i class="fas fa-info-circle" id="gramaje-info" style="color:gray"></i></p>
             <div class="campo-form" style="background:none;padding:0px">
                 <input type="number" name="gramaje" placeholder="Gramaje" readonly tabindex="-1" style="pointer-events: none;">
                 <input type="number" name="gramaje-special" placeholder="Ingresa gramaje especial" style="display: none;">
             </div>
+            
+            
+            <p>Lote*</p>
+                <input type="number" name="lote" placeholder="Ingresa el lote. Ej: 03557" required>
                 
-
             <p>Proceso* (Elige una opción)</p>
                 <div style="margin-bottom: 10px">
                     <div class="anuncio-botones" style="margin-top: 5px; padding:0">
