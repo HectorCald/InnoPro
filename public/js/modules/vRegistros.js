@@ -679,56 +679,49 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-edit"></i> Editar Registro</h2>
+        <div class="encabezado">
+            <h2>Editar registro</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno" >
-        <p>Información General:</p>
-                <input type="hidden" id="edit-id" value="${id}">
-                <div class="campo-form">
-                    <label for="edit-fecha">Fecha:</label>
-                    <input type="text" id="edit-fecha" value="${fecha}" required>
-                </div>
-                <div class="campo-form">
-                    <label for="edit-producto">Producto:</label>
-                    <input type="text" id="edit-producto" value="${producto}" 
-                        list="productos-list" placeholder="Buscar producto..." 
-                        autocomplete="off" required>
-                    <datalist id="productos-list"></datalist>
-                </div>
-                <div class="campo-form">
-                    <label for="edit-lote">Lote:</label>
-                    <input type="text" id="edit-lote" value="${lote}" required>
-                </div>
-                <div class="campo-form">
-                    <label for="edit-gramaje">Gramaje:</label>
-                    <input type="number" id="edit-gramaje" value="${gramaje}" required>
-                </div>
-                <div class="campo-form">
-                    <label for="edit-seleccion">Selección:</label>
-                    <select id="edit-seleccion" required>
-                        <option value="Normal" ${seleccion === 'Normal' ? 'selected' : ''}>Normal</option>
-                        <option value="Cernido" ${seleccion === 'Cernido' ? 'selected' : ''}>Cernido</option>
-                    </select>
-                </div>
-                <div class="campo-form">
-                    <label for="edit-microondas">Microondas:</label>
-                    <input type="text" id="edit-microondas" value="${microondas}">
-                </div>
-                <div class="campo-form">
-                    <label for="edit-envases">Envases:</label>
-                    <input type="number" id="edit-envases" value="${envases}" required>
-                </div>
-                <div class="campo-form">
-                    <label for="edit-vencimiento">Vencimiento:</label>
-                    <input type="text" id="edit-vencimiento" value="${vencimiento}" required>
-                </div>
-                <div class="form-group">
-                    <p for="razon-edicion">Razón de la edición:</p>
-                    <textarea id="razon-edicion" rows="3" required placeholder="Explique el motivo de la edición"></textarea>
-                </div>
+            <input type="hidden" id="edit-id" value="${id}">
+
+            <p for="edit-fecha">Fecha:</p>
+            <input type="text" id="edit-fecha" value="${fecha}" required>
+
+            <p for="edit-producto">Producto:</p>
+            <input type="text" id="edit-producto" value="${producto}" 
+                list="productos-list" placeholder="Buscar producto..." 
+                autocomplete="off" required>
+            <datalist id="productos-list"></datalist>
+
+            <p for="edit-lote">Lote:</p>
+            <input type="text" id="edit-lote" value="${lote}" required>
+
+            <p for="edit-gramaje">Gramaje:</p>
+            <input type="number" id="edit-gramaje" value="${gramaje}" required>
+
+            <p for="edit-seleccion">Selección:</p>
+            <select id="edit-seleccion" required>
+                <option value="Normal" ${seleccion === 'Normal' ? 'selected' : ''}>Normal</option>
+                <option value="Cernido" ${seleccion === 'Cernido' ? 'selected' : ''}>Cernido</option>
+            </select>
+
+            <p for="edit-microondas">Microondas:</p>
+            <input type="text" id="edit-microondas" value="${microondas}">
+
+            <p for="edit-envases">Envases:</p>
+            <input type="number" id="edit-envases" value="${envases}" required>
+
+            <p for="edit-vencimiento">Vencimiento:</p>
+            <input type="text" id="edit-vencimiento" value="${vencimiento}" required>
+
+            <p for="razon-edicion">Razón de la edición:</p>
+            <textarea id="razon-edicion" style="min-height: 100px"rows="3" required placeholder="Explique el motivo de la edición"></textarea>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn green confirmar"><i class="fas fa-sync"></i>  Actualizar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
+            <button class="anuncio-btn green confirmar"><i class="fas fa-sync"></i>  Finalizar y actualizar</button>
         </div>
     `;
 
@@ -770,11 +763,11 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
         }, 300);
     });
 
-    anuncio.style.display = 'flex';
-    document.querySelector('.container').classList.add('no-touch');
+    mostrarAnuncio();
+
 
     const confirmarBtn = anuncio.querySelector('.confirmar');
-    const cancelarBtn = anuncio.querySelector('.cancelar');
+
     confirmarBtn.addEventListener('click', async () => {
         const razonEdicion = document.getElementById('razon-edicion').value;
         if (!razonEdicion) {
@@ -824,7 +817,7 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
                 }
 
                 mostrarNotificacion('Registro actualizado correctamente');
-                anuncio.style.display = 'none';
+                ocultarAnuncio();
                 document.querySelector('.container').classList.remove('no-touch');
                 await cargarRegistros();
             } else {
@@ -836,11 +829,6 @@ export function editarRegistro(id, fecha, producto, lote, operario, gramaje, sel
         } finally {
             ocultarCarga();
         }
-    });
-
-    cancelarBtn.addEventListener('click', () => {
-        anuncio.style.display = 'none';
-        document.querySelector('.container').classList.remove('no-touch');
     });
 }
 

@@ -171,7 +171,11 @@ function mostrarDetallesRegla(regla) {
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
     
     anuncioContenido.innerHTML = `
-        <h2>Detalles de Regla Especial</h2>
+        <div class="encabezado">
+            <h2>Detalles de la regla</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="detalles-grup">
             <div class="detalle-item">
                 <p>Producto:</p>
@@ -208,19 +212,9 @@ function mostrarDetallesRegla(regla) {
                 </div>
             ` : ''}
         </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-        </div>
     `;
 
-    anuncio.style.display = 'flex';
-    document.querySelector('.overlay').style.display = 'block';
-
-    // Add close button event listener
-    anuncio.querySelector('.cancelar').addEventListener('click', () => {
-        anuncio.style.display = 'none';
-        document.querySelector('.overlay').style.display = 'none';
-    });
+    mostrarAnuncio();
 }
 
 /* =============== FUNCIONES DE ELIMINAR REGLAS =============== */
@@ -274,32 +268,30 @@ async function eliminarRegla(producto, index) {
     }
 }
 function mostrarAnuncioEliminar(producto, index) {
-    const anuncio = document.querySelector('.anuncio');
+    const anuncio = document.querySelector('.anuncio-down');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
     
     anuncioContenido.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <h2>¿Eliminar regla?</h2>
+        <div class="encabezado">
+            <h2>Eliminar regla?</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                <i class="fas fa-arrow-down"></i></button>
+        </div>
         <div class="detalles-grup center">
             <p>¿Está seguro de eliminar la regla de: "${producto}"?</p>
             <p>Esta acción no se puede deshacer</p>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             <button class="anuncio-btn red confirmar">Eliminar</button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncioDown();
 
-    // Add event listeners for buttons
-    anuncio.querySelector('.cancelar').addEventListener('click', () => {
-        anuncio.style.display = 'none';
-    });
 
     anuncio.querySelector('.confirmar').addEventListener('click', async () => {
         await eliminarRegla(producto, index);
-        anuncio.style.display = 'none';
+        ocultarAnuncioDown();
     });
 }
 
@@ -371,20 +363,23 @@ async function mostrarFormularioRegla() {
         const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
         
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-plus-circle"></i> Agregar Regla</h2>
+            <div class="encabezado">
+                <h2>Nueva regla</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                    <i class="fas fa-arrow-right"></i></button>
+            </div>
             <div class="relleno">
-                <div class="campo-form">
+                    <p>Busca el producto para seleccionar</p>
                      <input type="text" class="buscador" placeholder="Buscar producto..." id="buscador-producto">
-                </div>
-               <div class="campo-form">
+                    <p>Selecciona un producto</p>
                      <select id="producto-select">
                         <option value="">Seleccione un producto</option>
                         ${dataProductos.productos.map(producto => 
                             `<option value="${producto}">${producto}</option>`
                         ).join('')}
                     </select>
-                </div>
-                <div class="campo-form">
+                
+                        <p>Selecciona un precio base</p>
                      <select id="tipo-base">
                         <option value="">Seleccione tipo</option>
                         <option value="etiquetado">Etiquetado</option>
@@ -392,37 +387,36 @@ async function mostrarFormularioRegla() {
                         <option value="envasado">Envasado</option>
                         <option value="cernido">Cernido especial</option>
                     </select>
-                </div>
-                <div id="precio-cernido-container" class="campo-form" style="display: none;">
-                    <label>Precio base cernido:</label>
+                
+                <div id="precio-cernido-container" class="campo-form" style="display: none; background:none">
+                    <p>Precio base cernido:</p>
                     <input type="text" id="precio-cernido-especial" 
                         pattern="[0-9]*[.,]?[0-9]*" 
                         placeholder="Ejemplo: 0.3">
                 </div>
-                <div id="multiplicador-container" class="campo-form">
+                    <p>Seleccion un multiplicador</p>
+                    
                     <select id="multiplicador">
                         <option value="">Seleccione multiplicador</option>
                         ${[1,2,3,4,5].map(num => 
                             `<option value="${num}">x${num}</option>`
                         ).join('')}
                     </select>
-                </div>
-                <div id="rango-gramaje-container" class="form-grup">
+
+
                     <p>Rango de gramaje (opcional):</p>
-                    <div class="rango-inputs">
+                    <div class="rango-inputs campo-form" style="background:none">
                         <input type="number" id="gramaje-min" placeholder="Mínimo" min="0">
-                        <span>a</span>
                         <input type="number" id="gramaje-max" placeholder="Máximo" min="0">
                     </div>
-                </div>
+
             </div>
             <div class="anuncio-botones">
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
                 <button class="anuncio-btn green confirmar"><i class="fas fa-plus-circle"></i>  Agregar</button>
             </div>
         `;
 
-        anuncio.style.display = 'flex';
+        
 
         configurarEventosFormulario(anuncio);
         await initializePreciosPro();
@@ -431,6 +425,7 @@ async function mostrarFormularioRegla() {
         alert('Error al cargar productos: ' + error.message);
     } finally {
         ocultarCarga();
+        mostrarAnuncio();
     }
 }
 function configurarEventosFormulario(anuncio) {
@@ -497,11 +492,6 @@ function configurarEventosFormulario(anuncio) {
         });
     });
 
-    // Evento para cancelar
-    anuncio.querySelector('.cancelar').addEventListener('click', () => {
-        anuncio.style.display = 'none';
-        document.querySelector('.overlay').style.display = 'none';
-    });
 
     // Evento para agregar
     anuncio.querySelector('.confirmar').addEventListener('click', async () => {
@@ -571,8 +561,7 @@ function configurarEventosFormulario(anuncio) {
             const result = await response.json();
             if (result.success) {
                 mostrarNotificacion('Regla especial agregada correctamente', 'success', 3000);
-                anuncio.style.display = 'none';
-                document.querySelector('.overlay').style.display = 'none';
+                ocultarAnuncio();
                 await initializePreciosPro();
             } else {
                 throw new Error(result.error || 'Error al guardar la regla');

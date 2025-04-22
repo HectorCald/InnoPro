@@ -290,8 +290,9 @@
     .compras-view,
     .regAcopio-view,
     .almacen-view,
-    .regAlmacen-view {
-        height: calc(100vh) !important;
+    .regAlmacen-view,
+    .configuraciones-view {
+        height: calc(100vh - 60px) !important;
     }
 
     .carga {

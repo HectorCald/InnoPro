@@ -1,4 +1,5 @@
 /* =============== FUNCIONES DE INICIO REGISTROS ACOPIO =============== */
+
 let filtrosActivos = {
     nombre: '',
     fechaDesde: '',
@@ -342,29 +343,30 @@ function configurarFiltros2() {
         limpiarEventosAnteriores();
 
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-filter"></i> Filtros Acopio</h2>
+            <div class="encabezado">
+                <h2>Filtros</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                    <i class="fas fa-arrow-right"></i></button>
+            </div>
             <div class="filtros-form relleno">
-                <div class="campo-form">
-                    <label for="filtro-nombre-acopio">Nombre del producto:</label>
+
+                    <p for="filtro-nombre-acopio">Nombre del producto</p>
                     <input type="text" id="filtro-nombre-acopio" placeholder="Filtrar por nombre" value="${filtrosActivos.nombre}">
-                </div>
-                <div class="campo-form">
-                    <label for="filtro-fecha-desde-acopio">Fecha desde:</label>
+
+                    <p for="filtro-fecha-desde-acopio">Fecha desde</p>
                     <input type="date" id="filtro-fecha-desde-acopio" value="${filtrosActivos.fechaDesde}">
-                </div>
-                <div class="campo-form">
-                    <label for="filtro-fecha-hasta-acopio">Fecha hasta:</label>
+
+                    <p for="filtro-fecha-hasta-acopio">Fecha hasta</p>
                     <input type="date" id="filtro-fecha-hasta-acopio" value="${filtrosActivos.fechaHasta}">
-                </div>
-                <div class="campo-form">
-                    <label for="filtro-estado-acopio">Estado:</label>
+
+                    <p for="filtro-estado-acopio">Estado</p>
                     <select id="filtro-estado-acopio">
                         <option value="todos" ${filtrosActivos.estado === 'todos' ? 'selected' : ''}>Todos los estados</option>
                         <option value="Pendiente" ${filtrosActivos.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                         <option value="Recibido" ${filtrosActivos.estado === 'Recibido' ? 'selected' : ''}>Recibido</option>
                         <option value="En proceso" ${filtrosActivos.estado === 'En proceso' ? 'selected' : ''}>En proceso</option>
                     </select>
-                </div>
+
             </div>
             <div class="anuncio-botones" id="botones-filtro-acopio">
                 <button class="anuncio-btn green confirmar-acopio" id="btn-confirmar-acopio">
@@ -373,18 +375,14 @@ function configurarFiltros2() {
                 <button class="anuncio-btn blue limpiar-acopio" id="btn-limpiar-acopio">
                     <i class="fas fa-eraser"></i> Limpiar
                 </button>
-                <button class="anuncio-btn close cancelar-acopio" id="btn-cancelar-acopio">
-                    <i class="fas fa-times"></i>
-                </button>
             </div>
         `;
 
-        anuncio.style.display = 'flex';
+        mostrarAnuncio();
 
         // Configurar botones usando IDs únicos
         const btnConfirmar = document.getElementById('btn-confirmar-acopio');
         const btnLimpiar = document.getElementById('btn-limpiar-acopio');
-        const btnCancelar = document.getElementById('btn-cancelar-acopio');
 
         btnConfirmar.addEventListener('click', () => {
             filtrosActivos = {
@@ -396,7 +394,7 @@ function configurarFiltros2() {
 
             aplicarFiltros2();
             localStorage.setItem('filtrosRegistrosAcopio', JSON.stringify(filtrosActivos));
-            anuncio.style.display = 'none';
+            ocultarAnuncio();
         });
 
         btnLimpiar.addEventListener('click', () => {
@@ -415,12 +413,7 @@ function configurarFiltros2() {
             // Change this line from aplicarFiltros to aplicarFiltros2
             aplicarFiltros2();
             localStorage.removeItem('filtrosRegistrosAcopio');
-            anuncio.style.display = 'none';
-        });
-    
-
-        btnCancelar.addEventListener('click', () => {
-            anuncio.style.display = 'none';
+            ocultarAnuncio();
         });
     });
 
@@ -482,70 +475,62 @@ function mostrarFormularioEdicion(pedido) {
     const overlay = document.querySelector('.overlay');
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-edit"></i> Editar Registro</h2>
+        <div class="encabezado">
+            <h2>Editar registro</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
-        <p>Inforamción General:</p>
-            <div class="campo-form">
-                <label for="edit-nombre">Nombre:</label>
-                <input type="text" id="edit-nombre" value="${pedido[2] || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-cantidad">Cantidad:</label>
-                <input type="number" id="edit-cantidad" value="${pedido[3] || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-observaciones">Obs:</label>
-                <textarea id="edit-observaciones">${pedido[4] || ''}</textarea>
-            </div>
-            <div class="campo-form">
-                <label for="edit-cantidad-entregada">Cantidad Entregada:</label>
-                <input type="number" id="edit-cantidad-entregada" value="${pedido[5] || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-proveedor">Proveedor:</label>
-                <input type="text" id="edit-proveedor" value="${pedido[6] || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-costo">Costo:</label>
-                <input type="number" id="edit-costo" value="${pedido[7] || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-estado">Estado:</label>
+                <p for="edit-nombre">Nombre del producto</p>
+                <input type="text" id="edit-nombre"placeholder="Ingresa el producto" value="${pedido[2] || ''}">
+
+                <p for="edit-cantidad">Cantidad</p>
+                <input type="number" id="edit-cantidad" placeholder="Ingresa la cantidad" value="${pedido[3] || ''}">
+
+                <p for="edit-observaciones">Observaciones</p>
+                <textarea id="edit-observaciones"style="min-height: 100px" placeholder="Ingresa las observaciones">${pedido[4] || ''}</textarea>
+
+                <p for="edit-cantidad-entregada">Cantidad Entregada</p>
+                <input type="number" id="edit-cantidad-entregada" placeholder="Ingresa la cantidad entregada" value="${pedido[5] || ''}">
+
+                <p for="edit-proveedor">Proveedor</p>
+                <input type="text" id="edit-proveedor" placeholder="Ingresa el proveedor" value="${pedido[6] || ''}">
+
+                <p for="edit-costo">Costo</p>
+                <input type="number" id="edit-costo" placeholder="Ingresa el costo. Ej: 23" value="${pedido[7] || ''}">
+
+                <p for="edit-estado">Estado</p>
                 <select id="edit-estado">
                     <option value="Pendiente" ${pedido[8] === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                     <option value="En proceso" ${pedido[8] === 'En proceso' ? 'selected' : ''}>En proceso</option>
                     <option value="Recibido" ${pedido[8] === 'Recibido' ? 'selected' : ''}>Recibido</option>
                 </select>
-            </div>
-            <div class="campo-form">
-                <label for="edit-detalles">Detalles:</label>
-                <textarea id="edit-detalles">${pedido[9] || ''}</textarea>
-            </div>
-           <div class="campo-form">
-                <label for="edit-cantidad-compras">Cantidad Compras:</label>
-                <input type="number" id="edit-cantidad-compras" value="${pedido[10] || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-medida">Medida:</label>
-                <input type="text" id="edit-medida" value="${pedido[11] || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-entregado">Entregado:</label>
-                <input type="text" id="edit-entregado" value="${pedido[12] || ''}">
-            </div>
+
+                <p for="edit-detalles">Detalles</p>
+                <textarea id="edit-detalles" style="min-height: 100px" placeholder="Ingresa el detalle">${pedido[9] || ''}</textarea>
+                
+
+                <p for="edit-cantidad-compras">Cantidad Compras:</p>
+                <input type="number" id="edit-cantidad-compras" placeholder="Ingresa la cantidad entregada compras" value="${pedido[10] || ''}">
+
+                <p for="edit-medida">Medida</p>
+                <input type="text" id="edit-medida" placeholder="Ingresa la unidad de medida. Ej: Bls, Und" value="${pedido[11] || ''}">
+
+                <p for="edit-entregado">Entregado</p>
+                <input type="text" id="edit-entregado" placeholder="Ingresa la cantidad entregada" value="${pedido[12] || ''}">
+            
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
 
 
     // Configure buttons
     const btnGuardar = anuncio.querySelector('.guardar');
-    const btnCancelar = anuncio.querySelector('.cancelar');
+
 
     // ... in mostrarFormularioEdicion function ...
     btnGuardar.addEventListener('click', async () => {
@@ -609,23 +594,23 @@ function mostrarFormularioEdicion(pedido) {
             mostrarNotificacion('Error al actualizar registro: ' + error.message, 'error');
         } finally {
             ocultarCarga();
+            
         }
 
-        anuncio.style.display = 'none';
-        overlay.style.display = 'none';
+        ocultarAnuncio();
     });
 
-    btnCancelar.addEventListener('click', () => {
-        anuncio.style.display = 'none';
-        overlay.style.display = 'none';
-    });
 }
 function mostrarConfirmacionEliminar(pedido, registroCard) {
-    const anuncio = document.querySelector('.anuncio');
+    const anuncio = document.querySelector('.anuncio-down');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-trash"></i> Eliminar Registro</h2>
+        <div class="encabezado">
+            <h2>Registro Producción</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                <i class="fas fa-arrow-down"></i></button>
+        </div>
         <div class="form-grup">
             <p>¿Está seguro que desea eliminar este registro?</p>
             <div class="detalles-eliminacion">
@@ -638,14 +623,10 @@ function mostrarConfirmacionEliminar(pedido, registroCard) {
             <button class="anuncio-btn red confirmar-eliminacion">
                 <i class="fas fa-trash"></i> Eliminar
             </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
 
     const btnConfirmar = anuncioContenido.querySelector('.confirmar-eliminacion');
-    const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
     btnConfirmar.addEventListener('click', async () => {
         try {
@@ -668,39 +649,41 @@ function mostrarConfirmacionEliminar(pedido, registroCard) {
             mostrarNotificacion('Error al eliminar registro: ' + error.message, 'error');
         } finally {
             ocultarCarga();
-            anuncio.style.display = 'none';
+            ocultarAnuncioDown();
         }
     });
 
-    btnCancelar.addEventListener('click', () => {
-        anuncio.style.display = 'none';
-    });
-
-    anuncio.style.display = 'flex';
+    mostrarAnuncioDown();
 }
 function mostrarFormularioRechazo(id, nombre) {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-times-circle"></i> Rechazar Pedido</h2>
-        <div class="form-grup">
-            <p><strong>ID:</strong> ${id}</p>
-            <p><strong>Producto:</strong> ${nombre}</p>
-            <div class="fomr-grup">
-                <p>Razón del rechazo:</p>
-                <textarea id="razonRechazo" class="edit-input" rows="4" placeholder="Explique la razón del rechazo..."></textarea>
+        <div class="encabezado">
+            <h2>Rechazar pedido</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
+        <div class="relleno">
+            <div class="detalles-grup">
+                <div class="detalle-item">
+                    <p>ID:</p><span>${id}</span>
+                </div>
+                <div class="detalle-item">
+                    <p>Producto:</p><span>${nombre}</span>
+                </div>
             </div>
+             <p>Razón del rechazo</p>
+            <textarea id="razonRechazo" class="edit-input" rows="4" placeholder="Explique la razón del rechazo..."></textarea>
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn red confirmar-rechazo"><i class="fas fa-times"></i> Confirmar Rechazo</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
-
+    mostrarAnuncio();
     // Event listeners
     const btnConfirmar = contenido.querySelector('.confirmar-rechazo');
-    const btnCancelar = contenido.querySelector('.cancelar');
     const razonInput = contenido.querySelector('#razonRechazo');
 
     btnConfirmar.onclick = async () => {
@@ -721,7 +704,7 @@ function mostrarFormularioRechazo(id, nombre) {
             const data = await response.json();
             if (data.success) {
                 mostrarNotificacion('Pedido rechazado correctamente', 'success');
-                anuncio.style.display = 'none';
+                ocultarAnuncio();
                 cargarRegistrosAcopio(); // Recargar la vista
             } else {
                 throw new Error(data.error);
@@ -733,8 +716,6 @@ function mostrarFormularioRechazo(id, nombre) {
         }
     };
 
-    btnCancelar.onclick = () => anuncio.style.display = 'none';
-    anuncio.style.display = 'flex';
 }
 
 /* =============== FUNCIONES DE REGISTROS MOVIMIENTOS=============== */

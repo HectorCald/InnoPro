@@ -140,39 +140,38 @@ export async function mostrarFormularioAgregarUsuario() {
     const anuncioContenido = document.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-user-plus"></i> Agregar Usuario</h2>
+        <div class="encabezado">
+            <h2>Nuevo usuario</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
-            <div class="campo-form">
-                <label for="nombre">Nombre:</label>
-                <input type="text" id="nombre" class="form-input" placeholder="Nombre del usuario" style="text-transform: uppercase;">
-            </div>
-            <div class="campo-form">
-                <label for="pin">PIN:</label>
-                <input type="text" id="pin" class="form-input" placeholder="PIN de 4 dígitos" maxlength="4">
-            </div>
-            <div class="campo-form">
-                <label for="rol">Rol:</label>
-                <select id="rol" class="form-input">
-                    <option value="Administración">Administrador</option>
-                    <option value="Acopio">Acopio</option>
-                    <option value="Producción">Producción</option>
-                    <option value="Almacen">Almacen</option>
-                    <option value="Ventas">Ventas</option>
-                    <option value="Compras">Compras</option>
-                </select>
-            </div>
+            <p for="nombre">Nombre:</p>
+            <input type="text" id="nombre" class="form-input" placeholder="Nombre del usuario" style="text-transform: uppercase;">
+
+            <p for="pin">PIN:</p>
+            <input type="text" id="pin" class="form-input" placeholder="PIN de 4 dígitos" maxlength="4">
+
+            <p for="rol">Rol:</p>
+            <select id="rol" class="form-input">
+                <option value="">Selecciona</option>
+                <option value="Administración">Administrador</option>
+                <option value="Acopio">Acopio</option>
+                <option value="Producción">Producción</option>
+                <option value="Almacen">Almacen</option>
+                <option value="Ventas">Ventas</option>
+                <option value="Compras">Compras</option>
+            </select>
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
 
     const confirmed = await new Promise(resolve => {
         const btnConfirmar = anuncioContenido.querySelector('.confirmar');
-        const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
         btnConfirmar.addEventListener('click', () => {
             const formData = {
@@ -180,13 +179,8 @@ export async function mostrarFormularioAgregarUsuario() {
                 pin: document.getElementById('pin').value,
                 rol: document.getElementById('rol').value
             };
-            anuncio.style.display = 'none';
+            ocultarAnuncio();
             resolve(formData);
-        });
-
-        btnCancelar.addEventListener('click', () => {
-            anuncio.style.display = 'none';
-            resolve(false);
         });
     });
 
@@ -216,48 +210,44 @@ export async function mostrarFormularioAgregarUsuario() {
 
 /* =============== FUNCIONES DE DESCATIVAR USUARIOS=============== */
 export async function mostrarFormularioDesactivarUsuario() {
-    const anuncio = document.querySelector('.anuncio');
+
     const anuncioContenido = document.querySelector('.anuncio-contenido');
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-user-cog"></i> Estado Usuario</h2>
+        <div class="encabezado">
+            <h2>Desactivar/Activar usuario</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
-            <div class="campo-form">
-                <label for="pin">PIN del usuario:</label>
+
+                <p for="pin">PIN del usuario:</p>
                 <input type="text" id="pin" class="form-input" placeholder="Ingrese PIN" maxlength="4">
-            </div>
-            <div class="campo-form">
-                <label for="estado">Nuevo Estado:</label>
+
+                <p for="estado">Nuevo Estado:</p>
                 <select id="estado" class="form-input">
                     <option value="Activo">Activar</option>
                     <option value="Inactivo">Desactivar</option>
                 </select>
-            </div>
+
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn blue confirmar"><i class="fas fa-save"></i> Guardar Cambios</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
 
     const confirmed = await new Promise(resolve => {
         const btnConfirmar = anuncioContenido.querySelector('.confirmar');
-        const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
         btnConfirmar.addEventListener('click', () => {
             const formData = {
                 pin: document.getElementById('pin').value,
                 estado: document.getElementById('estado').value
             };
-            anuncio.style.display = 'none';
+            ocultarAnunci();
             resolve(formData);
-        });
-
-        btnCancelar.addEventListener('click', () => {
-            anuncio.style.display = 'none';
-            resolve(false);
         });
     });
 
@@ -303,30 +293,30 @@ export async function mostrarDetallesUsuario(pin) {
         }
 
         const usuario = data.usuario;
-        const anuncio = document.querySelector('.anuncio');
         const anuncioContenido = document.querySelector('.anuncio-contenido');
 
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-user-circle"></i> Detalles del Usuario</h2>
+            <div class="encabezado">
+                <h2>Información del usuario</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                    <i class="fas fa-arrow-right"></i></button>
+            </div>
             <div class="relleno">
                 <div class="detalles-grup">
                     <div class="detalle-item">
-                        <i class="fas fa-user"></i>
                         <p>Nombre:</p> 
                         <span>${usuario.nombre}</span>
                     </div>
                     <div class="detalle-item">
-                        <i class="fas fa-circle${usuario.estado ? ' text-success' : ' text-danger'}"></i>
                         <p>Estado:</p> 
                         <span>${usuario.estado ? 'Activo' : 'Inactivo'}</span>
                     </div>
                 </div>
-                <div class="campo-form">
-                    <label for="editar-pin">PIN:</label>
+  
+                    <p for="editar-pin">PIN:</p>
                     <input type="text" id="editar-pin" class="form-input" value="${usuario.pin}" maxlength="4">
-                </div>
-                <div class="campo-form">
-                    <label for="editar-rol">Rol:</label>
+
+                    <p for="editar-rol">Rol:</p>
                     <select id="editar-rol" class="form-input">
                         <option value="Administración" ${usuario.rol === 'Administración' ? 'selected' : ''}>Administrador</option>
                         <option value="Acopio" ${usuario.rol === 'Acopio' ? 'selected' : ''}>Acopio</option>
@@ -335,116 +325,125 @@ export async function mostrarDetallesUsuario(pin) {
                         <option value="Ventas" ${usuario.rol === 'Ventas' ? 'selected' : ''}>Ventas</option>
                         <option value="Compras" ${usuario.rol === 'Compras' ? 'selected' : ''}>Compras</option>
                     </select>
-                </div>
-                <div class="campo-form">
-                    <label for="editar-extras">Extras:</label>
+
+                    <p for="editar-extras">Extras:</p>
                     <select id="editar-extras" class="form-input">
                         <option value="">Sin extras</option>
                         <option value="CalcularMP" ${usuario.extras === 'CalcularMP' ? 'selected' : ''}>Calcular MP</option>
                         <option value="imgUpload" ${usuario.extras === 'imgUpload' ? 'selected' : ''}>Subir img</option>
                     </select>
-                </div>
-                <div class="campo-form">
-                    <label for="editar-estado">Estado:</label>
+
+                    <p for="editar-estado">Estado:</p>
                     <select id="editar-estado" class="form-input">
                         <option value="true" ${usuario.estado ? 'selected' : ''}>Activo</option>
                         <option value="false" ${!usuario.estado ? 'selected' : ''}>Inactivo</option>
                     </select>
-                </div>
+               
             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn blue guardar-cambios"><i class="fas fa-save"></i> Guardar Cambios</button>
                 <button class="anuncio-btn red eliminar-usuario"><i class="fas fa-trash"></i> Eliminar</button>
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             </div>`;
 
-        anuncio.style.display = 'flex';
+        mostrarAnuncio();
 
         const btnGuardar = anuncioContenido.querySelector('.guardar-cambios');
         const btnEliminar = anuncioContenido.querySelector('.eliminar-usuario');
-        const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
-        btnGuardar.onclick = async () => {
-            const datosActualizados = {
-                pinActual: usuario.pin,
-                nuevoPin: document.getElementById('editar-pin').value,
-                nuevoRol: document.getElementById('editar-rol').value,
-                nuevosExtras: document.getElementById('editar-extras').value,
-                nuevoEstado: document.getElementById('editar-estado').value === 'true'
-            };
-
-            try {
-                mostrarCarga();
-                const response = await fetch('/actualizar-usuario', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify(datosActualizados)
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    mostrarNotificacion('Usuario actualizado correctamente', 'success');
-                    anuncio.style.display = 'none';
-                    await cargarUsuarios();
-                } else {
-                    throw new Error(data.error || 'Error al actualizar usuario');
-                }
-            } catch (error) {
-                mostrarNotificacion(error.message, 'error');
-            } finally {
-                ocultarCarga();
-            }
-        };
-
-        btnEliminar.onclick = () => {
-            anuncioContenido.innerHTML = `
-                <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h2>
-                <div class="detalles-grup center">
-                    <p>¿Está seguro que desea eliminar el usuario "${usuario.nombre}"?</p>
-                    <p>Esta acción no se puede deshacer.</p>
-                </div>
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn red confirmar-eliminacion">Confirmar</button>
-                    <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
-                </div>
-            `;
-
-            const btnConfirmarEliminacion = anuncioContenido.querySelector('.confirmar-eliminacion');
-            const btnCancelarEliminacion = anuncioContenido.querySelector('.cancelar');
-
-            btnConfirmarEliminacion.onclick = async () => {
-                try {
-                    mostrarCarga();
-                    const response = await fetch('/eliminar-usuario', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({ pin: usuario.pin })
-                    });
-
-                    const data = await response.json();
-                    if (data.success) {
-                        mostrarNotificacion('Usuario eliminado correctamente', 'success');
-                        anuncio.style.display = 'none';
-                        await cargarUsuarios();
-                    } else {
-                        throw new Error(data.error || 'Error al eliminar usuario');
-                    }
-                } catch (error) {
-                    mostrarNotificacion(error.message, 'error');
-                } finally {
-                    ocultarCarga();
-                }
-            };
-
-            btnCancelarEliminacion.onclick = () => mostrarDetallesUsuario(usuario.pin);
-        };
-
-        btnCancelar.onclick = () => anuncio.style.display = 'none';
+        btnGuardar.onclick = () => actualizarUsuario(usuario);
+        btnEliminar.onclick = () => confirmarEliminarUsuario(usuario);
 
     } catch (error) {
         console.error('Error:', error);
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+
+/* =============== FUNCIONES DE ACTUALIZAR USUARIO =============== */
+async function actualizarUsuario(usuario) {
+    try {
+        const datosActualizados = {
+            pinActual: usuario.pin,
+            nuevoPin: document.getElementById('editar-pin').value,
+            nuevoRol: document.getElementById('editar-rol').value,
+            nuevosExtras: document.getElementById('editar-extras').value,
+            nuevoEstado: document.getElementById('editar-estado').value === 'true'
+        };
+
+        mostrarCarga();
+        const response = await fetch('/actualizar-usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(datosActualizados)
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion('Usuario actualizado correctamente', 'success');
+            ocultarAnuncio();
+            await cargarUsuarios();
+        } else {
+            throw new Error(data.error || 'Error al actualizar usuario');
+        }
+    } catch (error) {
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+
+/* =============== FUNCIONES DE ELIMINAR USUARIO =============== */
+function confirmarEliminarUsuario(usuario) {
+    const anuncio = document.querySelector('.anuncio-down');
+    const anuncioContenido = document.createElement('div');
+    anuncioContenido.className = 'anuncio-contenido';
+    
+    anuncioContenido.innerHTML = `
+        <div class="encabezado">
+            <h2>Eliminar Usuario</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                <i class="fas fa-arrow-down"></i></button>
+        </div>
+        <div class="detalles-grup center">
+            <p>¿Está seguro que desea eliminar el usuario "${usuario.nombre}"?</p>
+            <p>Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn red confirmar-eliminacion">Confirmar</button>
+        </div>
+    `;
+
+    anuncio.innerHTML = '';
+    anuncio.appendChild(anuncioContenido);
+    mostrarAnuncioDown();
+    ocultarAnuncio();
+
+    const btnConfirmarEliminacion = anuncioContenido.querySelector('.confirmar-eliminacion');
+    btnConfirmarEliminacion.onclick = () => eliminarUsuario(usuario);
+}
+
+async function eliminarUsuario(usuario) {
+    try {
+        mostrarCarga();
+        const response = await fetch('/eliminar-usuario', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ pin: usuario.pin })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            mostrarNotificacion('Usuario eliminado correctamente', 'success');
+            ocultarAnuncioDown();
+            await cargarUsuarios();
+        } else {
+            throw new Error(data.error || 'Error al eliminar usuario');
+        }
+    } catch (error) {
         mostrarNotificacion(error.message, 'error');
     } finally {
         ocultarCarga();

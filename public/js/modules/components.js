@@ -118,5 +118,6 @@ export function mostrarAnuncioDown() {
             anuncioVisible.classList.remove('slide-in');
         }, 300);
     }
+    ocultarAnuncio();
 }
 window.mostrarAnuncioDown = mostrarAnuncioDown;

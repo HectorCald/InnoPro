@@ -397,12 +397,16 @@ function centrarInputEnFoco() {
 /* =============== FUNCIONES LLAMDO =============== */
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        mostrarCarga();
         bienvenida();
         await iniciarApp();
         await inicializarHome();
     } catch (error) {
         console.error('Error durante la inicialización:', error);
+    }finally{
+        ocultarCarga();
     }
+    
     centrarInputEnFoco();
 });
 

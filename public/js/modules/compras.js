@@ -165,11 +165,17 @@ export async function eliminarPedido(button) {
         const id = card.dataset.id;
         const nombre = card.dataset.nombre;
 
-        const anuncio = document.querySelector('.anuncio');
-        const anuncioContenido = document.querySelector('.anuncio-contenido');
+        const anuncio2 = document.querySelector('.anuncio-down');
+        anuncio2.innerHTML = ''; // Limpiar el contenido existente
 
+        const anuncioContenido = document.createElement('div');
+        anuncioContenido.className = 'anuncio-contenido';
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-trash"></i> Eliminar Pedido</h2>
+            <div class="encabezado">
+                <h2>Eliminar pedido?</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                    <i class="fas fa-arrow-down"></i></button>
+            </div>
             <p>¿Está seguro que desea eliminar el siguiente pedido?</p>
             <div class="anuncio-detalles">
                 <p><strong>Producto:</strong> ${nombre}</p>
@@ -179,27 +185,23 @@ export async function eliminarPedido(button) {
                 <button class="anuncio-btn red confirmar">
                     <i class="fas fa-trash"></i> Eliminar
                 </button>
-                <button class="anuncio-btn close cancelar">
-                    <i class="fas fa-times"></i>
-                </button>
             </div>
         `;
+        anuncio2.appendChild(anuncioContenido);
 
-        anuncio.style.display = 'flex';
+        mostrarAnuncioDown();
+
 
         const confirmed = await new Promise(resolve => {
             const btnConfirmar = anuncioContenido.querySelector('.confirmar');
-            const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
             const handleClick = (value) => {
                 btnConfirmar.removeEventListener('click', () => handleClick(true));
-                btnCancelar.removeEventListener('click', () => handleClick(false));
-                anuncio.style.display = 'none';
+                ocultarAnuncioDown();
                 resolve(value);
             };
 
             btnConfirmar.addEventListener('click', () => handleClick(true));
-            btnCancelar.addEventListener('click', () => handleClick(false));
         });
 
         if (!confirmed) return;
@@ -241,27 +243,28 @@ export async function entregarPedido(button) {
         const anuncioContenido = document.querySelector('.anuncio-contenido');
 
         anuncioContenido.innerHTML = `
-            <h2><i class="fas fa-check-circle"></i>Entregar Pedido</h2>
+            <div class="encabezado">
+                <h2>Entregar pedido</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                    <i class="fas fa-arrow-right"></i></button>
+            </div>
             <div class="relleno">
-                <p>Entrega de: ${nombre} (${id})</p>
-                    <div class="campo-form">
-                        <label for="cantidad">Cantidad:</label>
+                <p class="subtitle">Entrega de: ${nombre} (${id})</p>
+
+                        <p for="cantidad">Cantidad:</p>
                         <input type="number" id="cantidad" class="form-input" placeholder="Cantidad en Kg.">
-                    </div>
-                    <div class="campo-form">
-                        <label for="proveedor">Proveedor:</label>
+
+
+                        <p for="proveedor">Proveedor:</p>
                         <input type="text" id="proveedor" class="form-input" placeholder="Nombre del proveedor">
-                    </div>
-                    <div class="campo-form">
-                        <label for="precio">Precio:</label>
+
+                        <p for="precio">Precio:</p>
                         <input type="number" id="precio" class="form-input" placeholder="0.00" step="0.01">
-                    </div>
-                    <div class="campo-form">
-                        <label for="precio">Transporte y otros:</label>
+
+                        <p for="precio">Transporte y otros:</p>
                         <input type="number" id="transporte" class="form-input" placeholder="0.00" step="0.01">
-                    </div>
-                    <div class="campo-form">
-                        <label for="observaciones">Cantidad:</label>
+
+                        <p for="observaciones">Cantidad:</p>
                         <div style="display: flex; gap: 10px;">
                             <input type="number" id="observaciones" class="form-input" style="flex: 2;" placeholder="Cantidad">
                             <select id="unidad" class="form-input" style="flex: 1;">
@@ -269,9 +272,9 @@ export async function entregarPedido(button) {
                                 <option value="Cja.">Cja.</option>
                             </select>
                         </div>
-                    </div>
-                <p>Estado:</p>  
-                <div class="campo-form">
+
+                <p class="subtitle">Estado:</p>  
+
                     <div class="anuncio-botones" style="margin-top: 10px;">
                             <button class="filter-btn active anuncio-btn" data-status="llego">
                                 Llegó
@@ -280,16 +283,14 @@ export async function entregarPedido(button) {
                                 No Llegó
                             </button>
                         </div>
-                </div>
+
             </div>
-            
             <div class="anuncio-botones">
                 <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
-                <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
             </div>
         `;
-
-        anuncio.style.display = 'flex';
+        anuncio.appendChild(anuncioContenido);
+        mostrarAnuncio();
 
         const filterButtons = anuncioContenido.querySelectorAll('.filter-btn');
         filterButtons.forEach(btn => {
@@ -302,7 +303,6 @@ export async function entregarPedido(button) {
 
         const confirmed = await new Promise(resolve => {
             const btnConfirmar = anuncioContenido.querySelector('.confirmar');
-            const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
             const handleConfirm = () => {
                 // Obtener y validar todos los valores
@@ -327,12 +327,12 @@ export async function entregarPedido(button) {
             const handleClick = (value) => {
                 btnConfirmar.removeEventListener('click', handleConfirm);
                 btnCancelar.removeEventListener('click', () => handleClick(false));
-                anuncio.style.display = 'none';
+                ocultarAnuncio();
                 resolve(value);
             };
 
             btnConfirmar.addEventListener('click', handleConfirm);
-            btnCancelar.addEventListener('click', () => handleClick(false));
+
         });
 
         if (!confirmed) return;

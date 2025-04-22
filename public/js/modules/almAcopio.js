@@ -843,7 +843,7 @@ function setupGuardarHandler(id) {
             const data = await response.json();
             if (data.success) {
                 mostrarNotificacion('Producto actualizado correctamente', 'success');
-                anuncio.style.display = 'none';
+                ocultarAnuncio()
                 setTimeout(() => cargarAlmacenBruto(), 500);
             } else {
                 throw new Error(data.error || 'Error al actualizar el producto');
@@ -1126,14 +1126,15 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
                 <i class="fas fa-arrow-right"></i></button>
         </div>
         <div class="relleno">
-                <p class="subtitle">Información general</p>
-                <p>Selcciona el producto</p>
-                <select id="productoIngreso" class="edit-input" required>
-                    <option value="">Seleccione un producto</option>
-                                ${window.productosAlmacen?.map(producto =>
-                    `<option value="${producto[1]}" ${productoSeleccionado === producto[1] ? 'selected' : ''}>${producto[1]}</option>`
-                ).join('') || ''}
-                </select>
+                <p>Nombre del producto</p>
+                <div class="autocomplete-container">
+                    <input type="text" id="productoIngreso" class="edit-input" 
+                           placeholder="Escriba para buscar..." 
+                           value="${productoSeleccionado}" required>
+                    <div class="sugerencias-container">
+                        <div id="sugerencias-productos" class="sugerencias-list"></div>
+                    </div>
+                </div>
 
 
                 <p>Tipo de materia</p>
@@ -1158,14 +1159,61 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
             </button>
         </div>
     `;
+    mostrarAnuncio();
 
-    const productoSelect = document.getElementById('productoIngreso');
+    const inputProducto = document.getElementById('productoIngreso');
+    const sugerenciasLista = document.getElementById('sugerencias-productos');
     const tipoSelect = document.getElementById('tipoIngreso');
     const loteInput = document.getElementById('loteIngreso');
 
+
+    inputProducto.addEventListener('input', () => {
+        const busqueda = inputProducto.value.toLowerCase();
+        const productos = window.productosAlmacen || [];
+        
+        // Clear suggestions if input is empty
+        if (!busqueda) {
+            sugerenciasLista.innerHTML = '';
+            sugerenciasLista.style.display = 'none';
+            return;
+        }
+
+        // Filter and show matching products
+        const sugerencias = productos
+            .map(producto => producto[1])
+            .filter(nombre => nombre.toLowerCase().includes(busqueda));
+
+        if (sugerencias.length > 0) {
+            sugerenciasLista.innerHTML = sugerencias
+                .map(nombre => `<li class="sugerencia-item">${nombre}</li>`)
+                .join('');
+            sugerenciasLista.style.display = 'flex';
+
+            // Add click handlers to suggestions
+            sugerenciasLista.querySelectorAll('.sugerencia-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    inputProducto.value = item.textContent;
+                    sugerenciasLista.style.display = 'none';
+                    actualizarLote();
+                });
+            });
+        } else {
+            sugerenciasLista.innerHTML = '<div class="sugerencia-item no-results">No se encontraron productos</div>';
+            sugerenciasLista.style.display = 'block';
+        }
+    });
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.autocomplete-container')) {
+            sugerenciasLista.style.display = 'none';
+        }
+    });
+
+
     // Función para obtener el siguiente número de lote
     const getNextLote = () => {
-        const producto = window.productosAlmacen?.find(p => p[1] === productoSelect.value);
+        const producto = window.productosAlmacen?.find(p => p[1] === inputProducto.value);
         if (!producto) return '1';
 
         const columnaIndex = tipoSelect.value === 'bruto' ? 2 : 3;
@@ -1177,12 +1225,11 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
 
     // Actualizar lote cuando cambie el producto o tipo
     const actualizarLote = () => {
-        if (productoSelect.value && tipoSelect.value) {
+        if (inputProducto.value && tipoSelect.value) {
             loteInput.value = getNextLote();
         }
     };
 
-    productoSelect.addEventListener('change', actualizarLote);
     tipoSelect.addEventListener('change', actualizarLote);
 
     // Set initial lote if producto is preselected
@@ -1190,14 +1237,13 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
         actualizarLote();
     }
 
-    mostrarAnuncio();
-
+    
     // Rest of your existing code...
     const btnProcesar = anuncioContenido.querySelector('.procesar');
 
     btnProcesar.onclick = async () => {
         try {
-            const producto = productoSelect.value;
+            const producto = document.getElementById('productoIngreso').value;
             const tipo = tipoSelect.value;
             const peso = document.getElementById('pesoIngreso').value;
             const lote = loteInput.value;
@@ -1210,7 +1256,7 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
 
             mostrarCarga();
 
-            // First process the ingreso
+            // Procesar el ingreso
             const ingresoResponse = await fetch('/procesar-ingreso-acopio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1229,7 +1275,7 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
                 throw new Error(ingresoData.error || 'Error al procesar el ingreso');
             }
 
-            // Then register the movement
+            // Registrar el movimiento
             const movimientoResponse = await fetch('/registrar-movimiento-acopio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1249,7 +1295,7 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
             }
 
             mostrarNotificacion('Ingreso procesado correctamente', 'success');
-           ocultarAnuncio();
+            ocultarAnuncio();
             cargarAlmacenBruto();
         } catch (error) {
             console.error('Error:', error);
@@ -1264,56 +1310,103 @@ export async function mostrarFormularioSalidaAcopio() {
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-arrow-circle-down"></i> Nueva Salida</h2>
+        <div class="encabezado">
+            <h2>Nueva salida</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
-            <div class="campo-form">
-                <label>Producto:</label>
-                <select id="productoSalida" class="edit-input" required>
-                    <option value="">Seleccione un producto</option>
-                    ${window.productosAlmacen?.map(producto =>
-        `<option value="${producto[1]}">${producto[1]}</option>`
-    ).join('') || ''}
-                </select>
-            </div>
-            <div class="campo-form">
-                <label>Tipo:</label>
+
+                <p>Nombre del producto</p>
+                <div class="autocomplete-container">
+                    <input type="text" id="productoIngreso" class="edit-input" 
+                           placeholder="Escriba para buscar..." 
+                           value="" required>
+                    <div class="sugerencias-container">
+                        <div id="sugerencias-productos" class="sugerencias-list"></div>
+                    </div>
+                </div>
+
+
+                <p>Tipo de materia</p>
                 <select id="tipoSalida" class="edit-input" required>
                     <option value="bruto">Materia Bruta</option>
                     <option value="prima">Materia Prima</option>
                 </select>
-            </div>
-            <div class="campo-form">
-                <label>Lote:</label>
+
+                <p>Lote (Seleccione uno disponible)</p>
                 <select id="loteSalida" class="edit-input" required>
                     <option value="">Seleccione un lote</option>
                 </select>
-            </div>
-            <div class="campo-form">
-                <label>Peso (kg):</label>
-                <input type="number" step="0.1" id="pesoSalida" class="edit-input" required>
-            </div>
-            <div class="campo-form">
-                <label>Operador:</label>
+
+                <p>Peso (kg)</p>
+                <input type="number" step="0.1" id="pesoSalida" class="edit-input" placeholder="Ingrese el peso. Ej: 13" required>
+
+                <p>Operador</p>
                 <input type="text" id="operarioSalida" class="edit-input" required>
-            </div>
-            <div class="campo-form">
-                <label>Razón:</label>
-                <textarea id="razonSalida" class="edit-input" required></textarea>
-            </div>
+
+                <p>Razón</p>
+                <textarea id="razonSalida" class="edit-input" placeholder="Ingrese la razón" required></textarea>
+
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn green procesar">Procesar Salida</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
     // Manejar cambios en producto y tipo para actualizar lotes
-    const productoSelect = document.getElementById('productoSalida');
+    const inputProducto = document.getElementById('productoIngreso');
+    const sugerenciasLista = document.getElementById('sugerencias-productos');
     const tipoSelect = document.getElementById('tipoSalida');
     const loteSelect = document.getElementById('loteSalida');
 
+    inputProducto.addEventListener('input', () => {
+        const busqueda = inputProducto.value.toLowerCase();
+        const productos = window.productosAlmacen || [];
+        
+        // Clear suggestions if input is empty
+        if (!busqueda) {
+            sugerenciasLista.innerHTML = '';
+            sugerenciasLista.style.display = 'none';
+            return;
+        }
+
+        // Filter and show matching products
+        const sugerencias = productos
+            .map(producto => producto[1])
+            .filter(nombre => nombre.toLowerCase().includes(busqueda));
+
+        if (sugerencias.length > 0) {
+            sugerenciasLista.innerHTML = sugerencias
+                .map(nombre => `<li class="sugerencia-item">${nombre}</li>`)
+                .join('');
+            sugerenciasLista.style.display = 'flex';
+
+            // Add click handlers to suggestions
+            sugerenciasLista.querySelectorAll('.sugerencia-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    inputProducto.value = item.textContent;
+                    sugerenciasLista.style.display = 'none';
+                    actualizarLote();
+                });
+            });
+        } else {
+            sugerenciasLista.innerHTML = '<div class="sugerencia-item no-results">No se encontraron productos</div>';
+            sugerenciasLista.style.display = 'block';
+        }
+    });
+
+      // Close suggestions when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.autocomplete-container')) {
+            sugerenciasLista.style.display = 'none';
+        }
+    });
+
+
+        // ... existing code ...
     const actualizarLotes = () => {
-        const producto = window.productosAlmacen?.find(p => p[1] === productoSelect.value);
+        const producto = window.productosAlmacen?.find(p => p[1] === inputProducto.value);
         if (!producto) return;
 
         const columnaIndex = tipoSelect.value === 'bruto' ? 2 : 3;
@@ -1331,18 +1424,25 @@ export async function mostrarFormularioSalidaAcopio() {
                 }).join('');
     };
 
-    productoSelect.onchange = actualizarLotes;
+
+    inputProducto.addEventListener('change', actualizarLotes);
+    tipoSelect.addEventListener('change', actualizarLotes);
+
+
+    sugerenciasLista.addEventListener('click', (e) => {
+        if (e.target.classList.contains('sugerencia-item')) {
+            setTimeout(actualizarLotes, 100); // Pequeño delay para asegurar que el valor del input se actualizó
+        }
+    });
+
     tipoSelect.onchange = actualizarLotes;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
 
-    contenido.querySelector('.cancelar').onclick = () => {
-        anuncio.style.display = 'none';
-    };
 
     contenido.querySelector('.procesar').onclick = async () => {
         try {
-            const producto = document.getElementById('productoSalida').value;
+            const producto = document.getElementById('productoIngreso').value; // Este es el ID correcto
             const tipo = document.getElementById('tipoSalida').value;
             const lote = document.getElementById('loteSalida').value;
             const peso = document.getElementById('pesoSalida').value;
@@ -1354,10 +1454,17 @@ export async function mostrarFormularioSalidaAcopio() {
                 return;
             }
 
+            // Validar que el producto exista
+            const productoExiste = window.productosAlmacen?.some(p => p[1] === producto);
+            if (!productoExiste) {
+                mostrarNotificacion('El producto seleccionado no es válido', 'error');
+                return;
+            }
+
             mostrarCarga();
 
             // Registrar el movimiento
-            await fetch('/registrar-movimiento-acopio', {
+            const movimientoResponse = await fetch('/registrar-movimiento-acopio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1369,33 +1476,33 @@ export async function mostrarFormularioSalidaAcopio() {
                 })
             });
 
+            if (!movimientoResponse.ok) {
+                throw new Error('Error al registrar el movimiento');
+            }
+
             // Procesar la salida
-            const response = await fetch('/procesar-salida-acopio', {
+            const salidaResponse = await fetch('/procesar-salida-acopio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ producto, tipo, peso, lote })
             });
 
-            const data = await response.json();
+            const data = await salidaResponse.json();
             if (data.success) {
                 mostrarNotificacion('Salida procesada correctamente', 'success');
-                anuncio.style.display = 'none';
+                ocultarAnuncio();
                 cargarAlmacenBruto();
-                setTimeout(() => {
-                    mostrarFormularioIngresoAcopio(producto);
-                    // Pre-establecer tipo a "prima" y el peso
-                    document.getElementById('tipoIngreso').value = 'prima';
-                    document.getElementById('pesoIngreso').value = peso;
-                }, 500);
             } else {
-                throw new Error(data.error);
+                throw new Error(data.error || 'Error al procesar la salida');
             }
         } catch (error) {
+            console.error('Error:', error);
             mostrarNotificacion(error.message, 'error');
         } finally {
             ocultarCarga();
         }
     };
+
 }
 
 

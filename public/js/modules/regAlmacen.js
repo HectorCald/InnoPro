@@ -170,24 +170,26 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
         const btnEliminar = registroCard.querySelector('.btn-eliminar-registro');
         btnEliminar.addEventListener('click', async (e) => {
             e.stopPropagation();
-            const anuncio = document.querySelector('.anuncio');
+            const anuncio = document.querySelector('.anuncio-down');
             const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
             anuncioContenido.innerHTML = `
-                <h2><i class="fas fa-trash"></i> Eliminación</h2>
+                <div class="encabezado">
+                    <h2>Eliminar registros?</h2>
+                    <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                        <i class="fas fa-arrow-down"></i></button>
+                </div>
                 <div class="detalles-grup center">
                     <p>¿Estás seguro de que deseas eliminar este registro?</p>
                 </div>
                 <div class="anuncio-botones">
                     <button class="anuncio-btn red confirmar"><i class="fas fa-trash"></i> Eliminar</button>
-                    <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
                 </div>
             `;
 
-            anuncio.style.display = 'flex';
+            mostrarAnuncioDown();
 
             const btnConfirmar = anuncio.querySelector('.confirmar');
-            const btnCancelar = anuncio.querySelector('.cancelar');
 
             btnConfirmar.addEventListener('click', async () => {
                 try {
@@ -214,11 +216,7 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
                 } finally {
                     ocultarCarga();
                 }
-                anuncio.style.display = 'none';
-            });
-
-            btnCancelar.addEventListener('click', () => {
-                anuncio.style.display = 'none';
+                ocultarAnuncioDown();
             });
         });
     }
@@ -435,48 +433,45 @@ function mostrarFormularioEdicion(movimiento) {
     const [id, fecha, tipo, producto, cantidad, operario, almacen] = movimiento;
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-edit"></i> Editar Movimiento</h2>
+        <div class="encabezado">
+            <h2>Editar registro</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
-            <div class="campo-form">
-                <label for="edit-tipo">Tipo:</label>
+
+                <p for="edit-tipo">Tipo:</p>
                 <select id="edit-tipo">
                     <option value="Ingreso" ${tipo === 'Ingreso' ? 'selected' : ''}>Ingreso</option>
                     <option value="Salida" ${tipo === 'Salida' ? 'selected' : ''}>Salida</option>
-                    <option value="Transferencia" ${tipo === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
-                    <option value="Ajuste" ${tipo === 'Ajuste' ? 'selected' : ''}>Ajuste</option>
                 </select>
-            </div>
-            <div class="campo-form">
-                <label for="edit-producto">Producto:</label>
+
+                <p for="edit-producto">Producto:</p>
                 <input type="text" id="edit-producto" value="${producto || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-cantidad">Cantidad:</label>
+
+                <p for="edit-cantidad">Cantidad:</p>
                 <input type="number" id="edit-cantidad" value="${cantidad || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-operario">Operario:</label>
+
+                <p for="edit-operario">Operario:</p>
                 <input type="text" id="edit-operario" value="${operario || ''}">
-            </div>
-            <div class="campo-form">
-                <label for="edit-almacen">Almacén:</label>
+
+                <p for="edit-almacen">Almacén:</p>
                 <select id="edit-almacen">
                     <option value="Principal" ${almacen === 'Principal' ? 'selected' : ''}>Principal</option>
                     <option value="Secundario" ${almacen === 'Secundario' ? 'selected' : ''}>Secundario</option>
                     <option value="Temporal" ${almacen === 'Temporal' ? 'selected' : ''}>Temporal</option>
                 </select>
-            </div>
+       
         </div>
         <div class="anuncio-botones">
             <button class="anuncio-btn green guardar"><i class="fas fa-save"></i> Guardar</button>
-            <button class="anuncio-btn close cancelar"><i class="fas fa-times"></i></button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+   mostrarAnuncio();
 
     const btnGuardar = anuncio.querySelector('.guardar');
-    const btnCancelar = anuncio.querySelector('.cancelar');
+
 
     btnGuardar.addEventListener('click', async () => {
         try {
@@ -538,7 +533,7 @@ function mostrarFormularioEdicion(movimiento) {
                     registroCard.replaceWith(newCard);
                 }
                 mostrarNotificacion('Movimiento actualizado correctamente', 'success');
-                anuncio.style.display = 'none';
+               ocultarAnuncio();
             } else {
                 throw new Error(data.error || 'Error al actualizar el movimiento');
             }
@@ -550,7 +545,4 @@ function mostrarFormularioEdicion(movimiento) {
         }
     });
 
-    btnCancelar.addEventListener('click', () => {
-        anuncio.style.display = 'none';
-    });
 }

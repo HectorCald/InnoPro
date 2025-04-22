@@ -243,7 +243,11 @@ function mostrarDetalleRegistroMP(registro) {
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2 class="titulo-modal"><i class="fas fa-calculator"></i> Detalle de Registro</h2>
+        <div class="encabezado">
+            <h2>Registro Producción</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
             <div class="producto-detalles">
                 <div class="detalle-seccion">
@@ -369,18 +373,14 @@ function mostrarDetalleRegistroMP(registro) {
             <button class="anuncio-btn red eliminar">
                 <i class="fas fa-trash"></i> Eliminar
             </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
 
     // Event listeners
     const btnEditar = contenido.querySelector('.editar');
     const btnEliminar = contenido.querySelector('.eliminar');
-    const btnCancelar = contenido.querySelector('.cancelar');
 
     contenido.querySelectorAll('.btn-info').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -389,9 +389,6 @@ function mostrarDetalleRegistroMP(registro) {
         });
     });
 
-    btnCancelar.onclick = () => {
-        anuncio.style.display = 'none';
-    };
 
     btnEditar.onclick = () => {
         editarRegistroMP(registro);
@@ -402,12 +399,16 @@ function mostrarDetalleRegistroMP(registro) {
     };
 }
 function mostrarConfirmacionEliminarMP(id, nombre) {
-    const anuncio = document.querySelector('.anuncio');
+    const anuncio = document.querySelector('.anuncio-down');
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2 class="titulo-modal"><i class="fas fa-trash"></i> Eliminar Registro</h2>
-        <div class="relleno">
+        <div class="encabezado">
+            <h2>Eliminar registro?</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                <i class="fas fa-arrow-down"></i></button>
+        </div>
+        <div class="form-grup">
             <p>¿Está seguro que desea eliminar el registro de ${nombre}?</p>
             <p class="text-danger"><strong>Esta acción no se puede deshacer.</strong></p>
         </div>
@@ -415,16 +416,13 @@ function mostrarConfirmacionEliminarMP(id, nombre) {
             <button class="anuncio-btn red confirmar">
                 <i class="fas fa-trash"></i> Eliminar
             </button>
-            <button class="anuncio-btn close cancelar">
-                 <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+   mostrarAnuncioDown();
 
     const btnConfirmar = contenido.querySelector('.confirmar');
-    const btnCancelar = contenido.querySelector('.cancelar');
+
 
     btnConfirmar.onclick = async () => {
         try {
@@ -436,7 +434,7 @@ function mostrarConfirmacionEliminarMP(id, nombre) {
             if (!response.ok) throw new Error('Error al eliminar');
 
             mostrarNotificacion('Registro eliminado exitosamente', 'success');
-            anuncio.style.display = 'none';
+            ocultarAnuncioDown();
             cargarRegistrosMP(); // Recargar lista
         } catch (error) {
             console.error('Error:', error);
@@ -446,9 +444,6 @@ function mostrarConfirmacionEliminarMP(id, nombre) {
         }
     };
 
-    btnCancelar.onclick = () => {
-        anuncio.style.display = 'none';
-    };
 }
 function editarRegistroMP(registro) {
     const anuncio = document.querySelector('.anuncio');
@@ -470,52 +465,50 @@ function editarRegistroMP(registro) {
 
     // Set up HTML template
     contenido.innerHTML = `
-        <h2><i class="fas fa-edit"></i> Editar Registro</h2>
+        <div class="encabezado">
+            <h2>Registro Producción</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
-            <div class="form-grup">
-                <div class="campo-form">
+            <p class="subtitle">Información general</p>
                     <p>Fecha:</p>
                     <input type="date" id="fechaMP" class="edit-input" value="${registro.fecha}">
-                </div>
-                <div class="campo-form">
+
                     <p>Nombre:</p>
                     <select id="nombreMP" class="edit-input">
                         <option value="${registro.nombre}">${registro.nombre}</option>
                     </select>
-                </div>
-                <div class="campo-form">
+
                     <p>Responsable:</p>
                     <select id="responsableMP" class="edit-input">
                         <option value="${registro.responsable}">${registro.responsable}</option>
                     </select>
-                </div>
-                <div class="campo-form">
+
                     <p>Peso Inicial:</p>
                     <input type="number" id="pesoInicialMP" class="edit-input" step="0.01" min="0" value="${registro.pesoInicial}">
-                </div>
-                <div class="campo-form">
+
                     <p>Peso Final:</p>
                     <input type="number" id="pesoFinalMP" class="edit-input" step="0.01" min="0" value="${registro.pesoFinal}">
-                </div>
-            </div>
+
             <div class="productos-seleccionados">
-                <p>Materias Primas:</p>
+                <p class="subtitle">Lista de materia prima</p>
                 <div class="lista-productos-seleccionados"></div>
             </div>
-            <p>Agregar Materia Prima:</p>
-            <div class="form-grup">
+            <p class="subtitle">Agregar Materia Prima</p>
+            <div class="form-grup" style="background:none">
                 <div class="autocomplete-wrapper">
                     <input type="text" id="buscarProducto" class="edit-input" placeholder="Escriba para buscar...">
                     <div class="sugerencias-container" style="display: none;"></div>
                 </div>
             </div>
-            <div class="producto-seleccionado form-grup" style="display: none;">
+            <div class="producto-seleccionado form-grup" style="display: none; background:none">
                 <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
-                <div class="campo-form">
+                <div class="campo-form"style="background:none">
                     <p>Gramaje:</p>
                     <input type="number" id="gramajeMP" class="edit-input" min="1">
                 </div>
-                <div class="campo-form">
+                <div class="campo-form"style="background:none">
                     <p>Cantidad:</p>
                     <input type="number" id="cantidadMP" class="edit-input" min="1">
                 </div>
@@ -528,13 +521,10 @@ function editarRegistroMP(registro) {
             <button class="anuncio-btn green guardar">
                 <i class="fas fa-save"></i> Guardar
             </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+
 
     async function cargarUsuarios() {
         try {
@@ -559,7 +549,7 @@ function editarRegistroMP(registro) {
         } catch (error) {
             console.error('Error al cargar usuarios:', error);
             mostrarNotificacion('Error al cargar usuarios', 'error');
-        }finally {
+        } finally {
             ocultarCarga();
         }
     }
@@ -575,7 +565,7 @@ function editarRegistroMP(registro) {
         } catch (error) {
             console.error('Error al cargar productos:', error);
             mostrarNotificacion('Error al cargar productos', 'error');
-        }finally {
+        } finally {
             ocultarCarga();
         }
     }
@@ -596,7 +586,7 @@ function editarRegistroMP(registro) {
             } catch (error) {
                 console.error('Error al cargar productos:', error);
                 mostrarNotificacion('Error al cargar productos', 'error');
-            }finally{
+            } finally {
                 ocultarCarga();
             }
         }
@@ -710,6 +700,7 @@ function editarRegistroMP(registro) {
         });
     }
 
+
     // Load initial data and configure events
     Promise.all([cargarUsuarios(), cargarProductosAlmacen()])
         .then(() => {
@@ -721,10 +712,9 @@ function editarRegistroMP(registro) {
             console.error('Error loading initial data:', error);
             mostrarNotificacion('Error al cargar datos iniciales', 'error');
         });
-
+    mostrarAnuncio();
     // Configure save and cancel buttons
     const btnGuardar = contenido.querySelector('.guardar');
-    const btnCancelar = contenido.querySelector('.cancelar');
 
     btnGuardar.onclick = async () => {
         const fecha = document.getElementById('fechaMP').value;
@@ -761,18 +751,14 @@ function editarRegistroMP(registro) {
             if (!response.ok) throw new Error('Error al actualizar');
 
             mostrarNotificacion('¡Registro actualizado exitosamente!', 'success');
-            anuncio.style.display = 'none';
+            ocultarAnuncio();
             cargarRegistrosMP();
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion('Error al actualizar el registro', 'error');
-        }finally {
+        } finally {
             ocultarCarga();
         }
-    };
-
-    btnCancelar.onclick = () => {
-        anuncio.style.display = 'none';
     };
 }
 
@@ -782,50 +768,50 @@ function mostrarFormularioRegistroMP() {
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
     contenido.innerHTML = `
-        <h2><i class="fas fa-calculator"></i> Registrar</h2>
+        <div class="encabezado">
+            <h2>Nuevo registro</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
         <div class="relleno">
-            <div class="form-grup">
-                <div class="campo-form">
+            <p class="subtitle">Información general</p>
                     <p>Fecha:</p>
                     <input type="date" id="fechaMP" class="edit-input" value="${new Date().toISOString().split('T')[0]}">
-                </div>
-                <div class="campo-form">
+
                     <p>Nombre:</p>
                     <select id="nombreMP" class="edit-input">
                         <option value="">Seleccione un usuario...</option>
                     </select>
-                </div>
-                <div class="campo-form">
+
                     <p>Responsable:</p>
                     <select id="responsableMP" class="edit-input">
                         <option value="">Seleccione un responsable...</option>
                     </select>
-                </div>
-                <div class="campo-form">
+
                     <p>Peso Inicial:</p>
                     <input type="number" id="pesoInicialMP" class="edit-input" step="0.01" min="0" placeholder="(Kg)">
-                </div>
-            </div>
-            <p>Materias Primas:</p>
-            <div class="form-grup">
+
+
+            <p class="subtitle">Lista de materia prima</p>
                 
+            <div class="form-grup" style="background:none">
                 <div class="lista-productos-seleccionados"></div>
             </div>
-            <p>Agregar Materia Prima:</p>
-            <div class="form-grup">
+            <p class="subtitle">Agregar Materia Prima</p>
+            <div class="form-grup" style="background:none">
                 <div class="autocomplete-wrapper">
                     <input type="text" id="buscarProducto" class="edit-input" placeholder="Escriba para buscar...">
                     <div class="sugerencias-container" style="display: none;"></div>
                 </div>
             </div>
-            <div class="producto-seleccionado form-grup" style="display: none;">
+            <div class="producto-seleccionado form-grup" style="display: none; background:none">
                 <p><strong>Selección:</strong> <span id="nombreProductoSeleccionado"></span></p>
                 <input type="hidden" id="idProductoSeleccionado">
-                <div class="campo-form">
+                <div class="campo-form"style="background:none">
                     <p>Gramaje:</p>
                     <input type="number" id="gramajeMP" class="edit-input" min="1">
                 </div>
-                <div class="campo-form">
+                <div class="campo-form"style="background:none">
                     <p>Cantidad:</p>
                     <input type="number" id="cantidadMP" class="edit-input" min="1">
                 </div>
@@ -838,13 +824,10 @@ function mostrarFormularioRegistroMP() {
             <button class="anuncio-btn green guardar" disabled>
                 <i class="fas fa-save"></i> Guardar
             </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
 
-    anuncio.style.display = 'flex';
+    mostrarAnuncio();
     let materiasSeleccionadas = [];
 
     // Cargar usuarios
@@ -1050,7 +1033,7 @@ function mostrarFormularioRegistroMP() {
                 if (!response.ok) throw new Error('Error al guardar');
 
                 mostrarNotificacion('¡Registro guardado exitosamente!', 'success');
-                anuncio.style.display = 'none';
+                ocultarAnuncio();
                 cargarRegistrosMP(); // Recargar lista de registros
             } catch (error) {
                 console.error('Error:', error);
@@ -1058,10 +1041,6 @@ function mostrarFormularioRegistroMP() {
             } finally {
                 ocultarCarga();
             }
-        };
-
-        btnCancelar.onclick = () => {
-            anuncio.style.display = 'none';
         };
     }
 }
