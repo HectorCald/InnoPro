@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualización Disponible - InnoPro</title>
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --accent-color: #007bff;
+            --text-color: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--primary-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .update-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .update-icon {
+            font-size: 4rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .update-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .update-features {
+            text-align: left;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .feature-item {
+            margin: 0.8rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-item i {
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            margin: 0.5rem;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-update {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-skip {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="update-container">
+        <i class="fas fa-sync-alt update-icon pulse"></i>
+        <h1 class="update-title">¡Nueva actualización disponible!</h1>
+
+        <div class="update-features">
+            <div class="feature-item">
+                <i class="fas fa-hdd"></i>
+                <span>Almacenamiento local interno mejorado para interfaces</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-bell"></i>
+                <span>Notificaciones push implementadas</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-paint-brush"></i>
+                <span>Nuevo rediseño de la interfaz</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Botones físicos de tareas optimizados</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-cloud"></i>
+                <span>Gestión mejorada de archivos (subida/descarga)</span>
+            </div>
+        </div>
+
+        <button id="btnUpdate" class="btn btn-update">
+            <i class="fas fa-download"></i> Actualizar ahora
+        </button>
+        <button id="btnSkip" class="btn btn-skip">
+            <i class="fas fa-check"></i> Ya está actualizado
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnUpdate = document.getElementById('btnUpdate');
+            const btnSkip = document.getElementById('btnSkip');
+            const UPDATE_KEY = 'innopro_update_status';
+            const CURRENT_VERSION = '2.0.2';
+
+            // Verificar si ya está actualizado
+            const checkUpdateStatus = () => {
+                try {
+                    const status = localStorage.getItem(UPDATE_KEY);
+                    if (status === CURRENT_VERSION) {
+                        window.location.href = '/';
+                    }
+                } catch (error) {
+                    console.error('Error al verificar estado:', error);
+                }
+            };
+
+            // Intentar marcar como actualizado
+            const markAsUpdated = async () => {
+                try {
+                    const response = await fetch('/confirmar-actualizacion', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '/dashboard_db';
+                    } else {
+                        throw new Error('Error al confirmar actualización');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al guardar el estado. La actualización seguirá siendo obligatoria.');
+                }
+            };;
+
+            // ... rest of the file remains the same ...
+            btnUpdate.addEventListener('click', () => {
+                window.location.href = '/descargar-apk';
+            });
+            // ... rest of the file remains the same ...
+
+            btnSkip.addEventListener('click', markAsUpdated);
+
+            // Verificar al cargar
+            checkUpdateStatus();
+        });
+    </script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
+</body>
+
+</html>

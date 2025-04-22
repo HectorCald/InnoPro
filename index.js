@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
-const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';6
+const JWT_SECRET = 'una_clave_secreta_muy_larga_y_segura_2024';
 
 /* ==================== CONFIGURACIÓN DE GOOGLE SHEETS ==================== */
 const auth = new google.auth.GoogleAuth({
@@ -121,10 +121,39 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
     res.redirect('/dashboard_db')   
 });
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    res.render('dashboard_db');
+    // Add update check middleware
+    const UPDATE_KEY = 'innopro_update_status';
+    const CURRENT_VERSION = '2.0.2';
+
+    // Check if update status exists in the request cookies
+    const updateStatus = req.cookies[UPDATE_KEY];
+
+    if (updateStatus === CURRENT_VERSION) {
+        res.render('dashboard_db');
+    } else {
+        res.render('Actualizacion');
+    }
 });
 app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
+});
+app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
+    const CURRENT_VERSION = '2.0.2';
+    res.cookie('innopro_update_status', CURRENT_VERSION, {
+        maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production'
+    });
+    res.json({ success: true });
+});
+app.get('/descargar-apk', requireAuth, (req, res) => {
+    const apkPath = join(__dirname, 'public', 'apk', 'InnoPro.apk');
+    res.download(apkPath, 'InnoPro.apk', (err) => {
+        if (err) {
+            console.error('Error al descargar APK:', err);
+            res.status(500).send('Error al descargar la aplicación');
+        }
+    });
 });
 
 
