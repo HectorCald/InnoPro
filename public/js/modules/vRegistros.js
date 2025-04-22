@@ -8,7 +8,7 @@ let filtrosActivos = {
     fechaHasta: '',
     estado: 'todos' // 'todos', 'verificados', 'no_verificados'
 };
-
+let productosCache = null;
 // Exportar funciones al scope global
 window.editarRegistro = editarRegistro;
 window.formatearFecha = formatearFecha;
@@ -28,6 +28,15 @@ async function inicializarReglas() {
         preciosBase = dataPrecios.preciosBase;
     } catch (error) {
         console.error('Error al cargar reglas:', error);
+    }
+}
+async function inicializarProductos() {
+    try {
+        const response = await fetch('/obtener-productos');
+        const data = await response.json();
+        productosCache = data.productos;
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
     }
 }
 /* ==================== FUNCIONES DE CÁLCULO Y UTILIDAD ==================== */
@@ -131,6 +140,32 @@ function crearRegistroCard(registro, esAdmin) {
     const fechaFormateada = `${dia}/${mes}/${año}`;
     const estaPagado = registro[13];
 
+    let detalleGrupos = '';
+    if (productosCache) {
+        const productoCoincidente = productosCache.find(p =>
+            p.nombre.toLowerCase() === registro[2].toLowerCase() &&
+            parseInt(p.gramaje) === parseInt(registro[4])
+        );
+
+        if (productoCoincidente && productoCoincidente.cantidadPorTira) {
+            const cantidadPorTira = parseInt(productoCoincidente.cantidadPorTira);
+            const envasesTerminados = parseInt(registro[7]);
+
+            // Only show groups if cantidadPorTira is greater than 1
+            if (cantidadPorTira > 1) {
+                const grupos = Math.floor(envasesTerminados / cantidadPorTira);
+                const sueltas = envasesTerminados % cantidadPorTira;
+
+                detalleGrupos = `
+                    <p><span>Tiras:</span> ${grupos} tiras de ${cantidadPorTira} unidades</p>
+                    ${sueltas > 0 ? `<p><span>Unidades sueltas:</span> ${sueltas} unidades</p>` : ''}
+                `;
+            }
+        }
+    }
+
+
+
     const registroCard = document.createElement('div');
     registroCard.className = 'registro-card';
     registroCard.dataset.id = registro[0];
@@ -171,52 +206,54 @@ function crearRegistroCard(registro, esAdmin) {
         </button>
     ` : '';
 
+    // ... código existente ...
     registroCard.innerHTML = `
-        <div class="registro-header">
-            ${registro[11] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
-            <div class="registro-fecha">${dia}/${mes}</div>
-            <div class="registro-producto">${registro[2] || 'Sin producto'}</div>
-            ${esAdmin ? `
-                <div class="registro-total ${!registro[11] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
-                     style="${estaPagado ? 'color: #888;' : ''}">${resultados.total.toFixed(2)} Bs.</div>
-                <i class="fas fa-info-circle info-icon"></i>
-                <div class="panel-info" ${estaPagado ? 'style="color: #888;"' : ''}>
-                    <h4>Desglose de Costos</h4>
-                    <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
-                    <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
-                    <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
-                    <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
-                    <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
-                </div>
-            ` : ''}
-        </div>
-        <div class="registro-detalles">
-            <p><span>Lote:</span> ${registro[3] || '-'}</p>
-            <p><span>Gramaje:</span> ${registro[4] || '-'}</p>
-            <p><span>Selección:</span> ${registro[5] || '-'}</p>
-            <p><span>Microondas:</span> ${registro[6] || '-'}</p>
-            <p><span>Envases:</span> ${registro[7] || '-'}</p>
-            <p><span>Vencimiento:</span> ${registro[8] || '-'}</p>
-            
-            ${registro[11] ? `
-                <p><span>Fecha Verificación:</span> ${registro[11]}</p>
-                <p><span>Cantidad Real:</span> ${registro[10] || '-'}</p>
-                <p><span>Observaciones:</span> ${registro[12] || '-'}</p>
-                <div class="acciones">
-                    ${botonesAdmin}
-                </div>
-            ` : `
-                <div class="acciones">
-                    ${!esAdmin ? `
-                        <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[9]}', '${registro[7]}')" class="btn-editar">
-                            <i class="fas fa-check-circle"></i> Verificar
-                        </button>
-                        ${botonEliminarUsuario}
-                    ` : botonesAdmin}
-                </div>
-            `}
-        </div>
-    `;
+    <div class="registro-header">
+        ${registro[11] ? '<i class="fas fa-check-circle verificado-icon"></i>' : ''}
+        <div class="registro-fecha">${dia}/${mes}</div>
+        <div class="registro-producto">${registro[2] || 'Sin producto'}</div>
+        ${esAdmin ? `
+            <div class="registro-total ${!registro[11] ? 'no-verificado' : ''} ${estaPagado ? 'pagado' : ''}" 
+                 style="${estaPagado ? 'color: #888;' : ''}">${resultados.total.toFixed(2)} Bs.</div>
+            <i class="fas fa-info-circle info-icon"></i>
+            <div class="panel-info" ${estaPagado ? 'style="color: #888;"' : ''}>
+                <h4>Desglose de Costos</h4>
+                <p><span>Envasado:</span> ${resultados.envasado.toFixed(2)} Bs.</p>
+                <p><span>Etiquetado:</span> ${resultados.etiquetado.toFixed(2)} Bs.</p>
+                <p><span>Sellado:</span> ${resultados.sellado.toFixed(2)} Bs.</p>
+                <p><span>Cernido:</span> ${resultados.cernido.toFixed(2)} Bs.</p>
+                <p class="total"><span>Total:</span> ${resultados.total.toFixed(2)} Bs.</p>
+            </div>
+        ` : ''}
+    </div>
+    <div class="registro-detalles">
+        <p><span>Lote:</span> ${registro[3] || '-'}</p>
+        <p><span>Gramaje:</span> ${registro[4] || '-'}</p>
+        <p><span>Selección:</span> ${registro[5] || '-'}</p>
+        <p><span>Microondas:</span> ${registro[6] || '-'}</p>
+        <p><span>Envases:</span> ${registro[7] || '-'}</p>
+        ${detalleGrupos} <!-- Aquí agregamos el detalle de grupos -->
+        <p><span>Vencimiento:</span> ${registro[8] || '-'}</p>
+        
+        ${registro[11] ? `
+            <p><span>Fecha Verificación:</span> ${registro[11]}</p>
+            <p><span>Cantidad Real:</span> ${registro[10] || '-'}</p>
+            <p><span>Observaciones:</span> ${registro[12] || '-'}</p>
+            <div class="acciones">
+                ${botonesAdmin}
+            </div>
+        ` : `
+            <div class="acciones">
+                ${!esAdmin ? `
+                    <button onclick="verificarRegistro('${registro[0]}', '${registro[1]}', '${registro[2]}', '${registro[9]}', '${registro[7]}')" class="btn-editar">
+                        <i class="fas fa-check-circle"></i> Verificar
+                    </button>
+                    ${botonEliminarUsuario}
+                ` : botonesAdmin}
+            </div>
+        `}
+    </div>
+`;
 
     // Solo configurar el panel de información si es administrador
     if (esAdmin) {
@@ -333,7 +370,11 @@ function ordenarRegistrosPorFecha(registros) {
 export async function cargarRegistros() {
     try {
         mostrarCarga();
-        await inicializarReglas();
+        await Promise.all([
+            inicializarReglas(),
+            inicializarProductos() // Asegúrate de que esta función esté definida
+        ]);
+
         const rolResponse = await fetch('/obtener-mi-rol');
         const userData = await rolResponse.json();
         const esAdmin = userData.rol === 'Administración';
@@ -848,7 +889,7 @@ function configurarFiltros() {
         filtrosActivos = JSON.parse(filtrosGuardados);
     }
 
-    nuevoBtn.addEventListener('click', async() => {
+    nuevoBtn.addEventListener('click', async () => {
         // Cargar valores guardados en los inputs
         const filtrosGuardados = localStorage.getItem('filtrosRegistros');
         const valoresGuardados = filtrosGuardados ? JSON.parse(filtrosGuardados) : {
@@ -868,11 +909,11 @@ function configurarFiltros() {
                         <p>Operario</p>
                          <select id="filtro-nombre" class="edit-input">
                         <option value="">Todos los operarios</option>
-                        ${usuarios.map(user => 
-                            `<option value="${user.nombre}" ${valoresGuardados.nombre === user.nombre ? 'selected' : ''}>
+                        ${usuarios.map(user =>
+            `<option value="${user.nombre}" ${valoresGuardados.nombre === user.nombre ? 'selected' : ''}>
                                 ${user.nombre}
                             </option>`
-                        ).join('')}
+        ).join('')}
                     </select>
                         <p>Fecha desde</p>
                         <input type="date" id="filtro-fecha-desde" value="${valoresGuardados.fechaDesde}">
@@ -1137,7 +1178,7 @@ function aplicarFiltros() {
                 <button class="anuncio-btn green Pagar"><i class="fas fa-dollar-sign"></i> Pagar</button>
             </div>
         `;
-        mostrarAnuncio();
+                mostrarAnuncio();
                 // Agregar el evento para actualizar el total cuando cambie el valor de extras
                 const inputExtras = anuncioContenido.querySelector('#total-extras');
                 const spanTotalGeneral = anuncioContenido.querySelector('#total-general-valor');
@@ -1149,7 +1190,7 @@ function aplicarFiltros() {
                     spanTotalGeneral.textContent = nuevoTotal.toFixed(2);
                 });
 
-                
+
 
                 anuncioContenido.querySelector('.registrar-cuentas').addEventListener('click', async () => {
                     try {
@@ -1217,7 +1258,7 @@ function aplicarFiltros() {
             } catch (error) {
                 console.error('Error al calcular totales:', error);
                 mostrarNotificacion('Error al calcular los totales: ' + error.message, 'error');
-            }finally{
+            } finally {
                 ocultarCarga();
             }
         });

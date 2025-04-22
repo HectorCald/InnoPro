@@ -35,7 +35,7 @@ export function mostrarFormularioProduccion() {
 
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
-    
+
     contenido.innerHTML = `
     <div class="encabezado">
         <h2>Registro Producción</h2>
@@ -51,8 +51,12 @@ export function mostrarFormularioProduccion() {
             <p>Lote*</p>
                 <input type="number" name="lote" placeholder="Ingresa el lote. Ej: 03557" required>
 
-            <p>Gramaje*</p>
-                <input type="number" name="gramaje" placeholder="Ingresa el gramaje. Ej: 13" required>
+            <p>Gramaje* (Autogenerado)<i class="fas fa-info-circle" id="gramaje-info" style="color:gray"></i></p>
+            <div class="campo-form" style="background:none;padding:0px">
+                <input type="number" name="gramaje" placeholder="Gramaje" readonly tabindex="-1" style="pointer-events: none;">
+                <input type="number" name="gramaje-special" placeholder="Ingresa gramaje especial" style="display: none;">
+            </div>
+                
 
             <p>Proceso* (Elige una opción)</p>
                 <div style="margin-bottom: 10px">
@@ -79,15 +83,15 @@ export function mostrarFormularioProduccion() {
                 <div style="display: flex; gap: 10px;">
                     <select name="mes" required style="width: 50%;">
                         <option value="">Mes</option>
-                        ${Array.from({length: 12}, (_, i) => i + 1)
-                            .map(num => `<option value="${String(num).padStart(2, '0')}">${String(num).padStart(2, '0')}</option>`)
-                            .join('')}
+                        ${Array.from({ length: 12 }, (_, i) => i + 1)
+            .map(num => `<option value="${String(num).padStart(2, '0')}">${String(num).padStart(2, '0')}</option>`)
+            .join('')}
                     </select>
                     <select name="año" required style="width: 50%;">
                         <option value="">Año</option>
-                        ${Array.from({length: 26}, (_, i) => i + 2025)
-                            .map(year => `<option value="${year}">${year}</option>`)
-                            .join('')}
+                        ${Array.from({ length: 26 }, (_, i) => i + 2025)
+            .map(year => `<option value="${year}">${year}</option>`)
+            .join('')}
                     </select>
                 </div>
 
@@ -114,7 +118,7 @@ export function mostrarFormularioProduccion() {
     const procesoBotones = anuncio.querySelectorAll('.proceso-btn');
     const microondasBotones = anuncio.querySelectorAll('.microondas-btn');
     const tiempoMicroondas = anuncio.querySelector('.microondas-tiempo');
-    
+
     procesoBotones.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -128,7 +132,7 @@ export function mostrarFormularioProduccion() {
             e.preventDefault();
             microondasBotones.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
+
             if (btn.id === 'si') {
                 tiempoMicroondas.style.display = 'block';
                 tiempoMicroondas.querySelector('input').required = true;
@@ -143,16 +147,17 @@ export function mostrarFormularioProduccion() {
 
     anuncio.querySelector('.confirmar').onclick = async (e) => {
         e.preventDefault();
-        
+
         const productoInput = document.getElementById('producto-input');
         const productoValue = productoInput.value.trim();
-        
+
         try {
             mostrarCarga();
             const response = await fetch('/obtener-productos');
             const data = await response.json();
-            
-            if (!data.productos.includes(productoValue)) {
+
+
+            if (!data.productos.some(p => p.nombre === productoValue)) {
                 mostrarNotificacion('El producto ingresado no existe en la lista', 'warning');
                 productoInput.classList.add('invalid');
                 ocultarCarga();
@@ -162,7 +167,7 @@ export function mostrarFormularioProduccion() {
             // Validar campos requeridos
             const requiredInputs = anuncio.querySelectorAll('input[required], select[required]');
             let isValid = true;
-            
+
             requiredInputs.forEach(input => {
                 if (!input.value.trim()) {
                     isValid = false;
@@ -171,7 +176,7 @@ export function mostrarFormularioProduccion() {
                     input.classList.remove('invalid');
                 }
             });
-        
+
             if (!isValid) {
                 mostrarNotificacion('Por favor complete todos los campos requeridos', 'warning');
                 ocultarCarga();
@@ -193,16 +198,19 @@ export function mostrarFormularioProduccion() {
                 ocultarCarga();
                 return;
             }
-        
-            // Recopilar datos del formulario
             const formData = {
                 producto: productoValue,
                 lote: document.querySelector('input[name="lote"]').value,
-                gramaje: document.querySelector('input[name="gramaje"]').value,
+                gramaje: (() => {
+                    const gramajeEspecial = document.querySelector('input[name="gramaje-special"]').value;
+                    const gramajeNormal = document.querySelector('input[name="gramaje"]').value;
+                    return (gramajeEspecial === "" || gramajeEspecial === "0") ? gramajeNormal : gramajeEspecial;
+                })(),
                 seleccion: procesoSeleccionado.value,
                 envasesTerminados: document.querySelector('input[name="envasesTerminados"]').value,
                 fechaVencimiento: `${document.querySelector('select[name="año"]').value}-${document.querySelector('select[name="mes"]').value}`,
             };
+
 
             // Manejar opción de microondas
             if (microondasSeleccionado.id === 'si') {
@@ -256,6 +264,22 @@ export function inicializarFormulario() {
     const productoInput = document.getElementById('producto-input');
     let productosDisponibles = [];
 
+    const gramajeInfo = document.getElementById('gramaje-info');
+    const gramajeSpecial = document.querySelector('input[name="gramaje-special"]');
+    const gramaje = document.querySelector('input[name="gramaje"]');
+    
+    gramajeInfo.addEventListener('click', function() {
+        if (gramajeSpecial.style.display === 'none') {
+            gramajeSpecial.style.display = 'block';
+            gramaje.style.display = 'none';
+            gramajeInfo.style.color = '#4CAF50'; // Verde cuando gramaje especial está visible
+        } else {
+            gramajeSpecial.style.display = 'none';
+            gramaje.style.display = 'block';
+            gramajeInfo.style.color = 'gray'; // Gris cuando gramaje normal está visible
+        }
+    });
+
     // Usar el contenedor de sugerencias existente
     const sugerenciasContainer = document.querySelector('.sugerencias-container');
     const sugerenciasList = sugerenciasContainer.querySelector('.sugerencias-list');
@@ -272,19 +296,67 @@ function inicializarEventosProducto(productoInput, sugerenciasContainer, sugeren
             .replace(/\s+/g, "");
     }
 
-    productoInput.addEventListener('input', function() {
-        const valorNormalizado = normalizarTexto(this.value.trim());
-        
-        if (valorNormalizado) {
-            const sugerencias = productosDisponibles.filter(producto => 
-                normalizarTexto(producto).includes(valorNormalizado)
+
+
+    sugerenciasList.querySelectorAll('li').forEach(li => {
+        li.addEventListener('click', function () {
+            const [nombre, gramajeTexto] = this.textContent.split(' - ');
+            const gramaje = gramajeTexto.replace('g', '');
+            productoInput.value = nombre; // Solo establecemos el nombre
+            document.querySelector('input[name="gramaje"]').value = gramaje;
+            sugerenciasContainer.style.display = 'none';
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!productoInput.contains(e.target) && !sugerenciasContainer.contains(e.target)) {
+            sugerenciasContainer.style.display = 'none';
+        }
+    });
+
+    async function cargarProductosValidados() {
+        try {
+            const response = await fetch('/obtener-productos');
+            const data = await response.json();
+
+            if (data.success) {
+                productosDisponibles.length = 0;
+                // Formatear los productos manteniendo la estructura original
+                productosDisponibles.push(...data.productos.map(producto => ({
+                    nombre: producto.nombre,
+                    gramaje: producto.gramaje,
+                    texto: `${producto.nombre} - ${producto.gramaje}g`
+                })));
+            }
+        } catch (error) {
+            console.error('Error al cargar productos:', error);
+        }
+    }
+
+    productoInput.addEventListener('input', function () {
+        const valorBusqueda = normalizarTexto(this.value.trim());
+
+        if (valorBusqueda) {
+            const sugerencias = productosDisponibles.filter(producto =>
+                normalizarTexto(producto.texto).includes(valorBusqueda)
             );
-            
+
             if (sugerencias.length > 0) {
                 sugerenciasList.innerHTML = sugerencias
-                    .map(producto => `<li>${producto}</li>`)
+                    .map(producto => `<li data-nombre="${producto.nombre}" data-gramaje="${producto.gramaje}">${producto.texto}</li>`)
                     .join('');
                 sugerenciasContainer.style.display = 'block';
+
+                // Manejar la selección de sugerencias
+                sugerenciasList.querySelectorAll('li').forEach(li => {
+                    li.addEventListener('click', function () {
+                        const nombre = this.dataset.nombre;
+                        const gramaje = this.dataset.gramaje;
+                        productoInput.value = nombre;
+                        document.querySelector('input[name="gramaje"]').value = gramaje;
+                        sugerenciasContainer.style.display = 'none';
+                    });
+                });
             } else {
                 sugerenciasContainer.style.display = 'none';
             }
@@ -293,42 +365,6 @@ function inicializarEventosProducto(productoInput, sugerenciasContainer, sugeren
         }
     });
 
-    sugerenciasList.addEventListener('click', function(e) {
-        if (e.target.tagName === 'LI') {
-            productoInput.value = e.target.textContent;
-            sugerenciasContainer.style.display = 'none';
-        }
-    });
-
-    document.addEventListener('click', function(e) {
-        if (!productoInput.contains(e.target) && !sugerenciasContainer.contains(e.target)) {
-            sugerenciasContainer.style.display = 'none';
-        }
-    });
-
-    async function cargarProductosValidados() {
-    try {
-        const response = await fetch('/obtener-productos');
-        const data = await response.json();
-
-        if (data.success) {
-            // Normalizar y eliminar duplicados
-            const productosUnicos = new Set(
-                data.productos.map(producto => 
-                    producto.trim() // Eliminar espacios en blanco al inicio y final
-                ).filter(Boolean) // Eliminar valores vacíos
-            );
-            
-            productosDisponibles.length = 0;
-            productosDisponibles.push(...Array.from(productosUnicos));
-            productosDisponibles.sort((a, b) => a.localeCompare(b, 'es')); // Ordenar alfabéticamente en español
-        }
-    } catch (error) {
-        console.error('Error al cargar productos:', error);
-    } finally {
-
-    }
-}
 
     cargarProductosValidados();
 }
@@ -366,7 +402,7 @@ function inicializarEventosFormulario(form, productoInput, productosDisponibles)
     });
 
     // Form submission
-    form.addEventListener('submit', async function(e) {
+    form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         if (!verificarHorario()) {
@@ -472,14 +508,15 @@ export async function cargarProductos() {
 
             data.productos.forEach(producto => {
                 const option = document.createElement('option');
-                option.value = producto;
+                // Asume que producto es un objeto con propiedades nombre y gramaje
+                option.value = `${producto.nombre} - ${producto.gramaje}g`;
+                option.setAttribute('data-nombre', producto.nombre);
+                option.setAttribute('data-gramaje', producto.gramaje);
                 datalist.appendChild(option);
             });
         }
     } catch (error) {
         console.error('Error al cargar productos:', error);
-    }
-    finally {
     }
 }
 
@@ -490,7 +527,7 @@ function verificarHorario() {
     const minutos = ahora.getMinutes();
     const tiempoActual = hora * 60 + minutos; // Convertir a minutos
 
-    const inicioJornada = 8 * 60;     const finJornada = 22 * 60; 
+    const inicioJornada = 8 * 60; const finJornada = 22 * 60;
 
     return tiempoActual >= inicioJornada && tiempoActual <= finJornada;
 }

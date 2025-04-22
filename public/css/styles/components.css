@@ -120,8 +120,9 @@
     margin: 0;
     gap: 5px !important;
     position: relative;
-    padding-right: 5px;
+    padding-right: 20px;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+    padding-left: 15px;
 }
 
 .anuncio-contenido i {
@@ -472,7 +473,7 @@
 }
 .nota{
     color: white!important;
-    font-size: 12px;
+    font-size: 11px !important;
     font-weight: normal;
     margin-top:10px !important;
 }

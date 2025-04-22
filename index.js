@@ -438,24 +438,28 @@ app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
 });
 
 /* ==================== API DE REGISTRO ==================== */
+// Modificar la ruta obtener-productos
 app.get('/obtener-productos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw',
-            range: 'Almacen general!A2:H' // Obtener solo la primera columna, excluyendo el título
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Almacen general!A2:E'
         });
 
-        const productos = response.data.values ? response.data.values.map(row => row[1]) : [];
+        const productos = response.data.values.map(row => ({
+            nombre: row[1] || '',
+            gramaje: row[2] || '',
+            cantidadPorTira: row[4] || ''  // Columna E
+        }));
+
         res.json({ success: true, productos });
     } catch (error) {
-        console.error('Error al obtener productos:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener lista de productos' 
-        });
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al obtener productos' });
     }
 });
+
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
         const { id, razon } = req.body;
