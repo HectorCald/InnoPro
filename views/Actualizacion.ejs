@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,6 +73,7 @@
             transition: transform 0.2s, background 0.3s;
             margin: 0.5rem;
             font-weight: bold;
+            width: 200px;
         }
 
         .btn:hover {
@@ -85,31 +85,54 @@
             color: white;
         }
 
-        .btn-skip {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-color);
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .pulse {
             animation: pulse 2s infinite;
         }
+
+        .rotating {
+            animation: rotate 1s linear infinite;
+        }
+
+        .update-progress {
+            display: none;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .update-message {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: var(--accent-color);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-color);
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
-
 <body>
     <div class="update-container">
         <i class="fas fa-sync-alt update-icon pulse"></i>
@@ -141,63 +164,34 @@
         <button id="btnUpdate" class="btn btn-update">
             <i class="fas fa-download"></i> Actualizar ahora
         </button>
-        <button id="btnSkip" class="btn btn-skip">
-            <i class="fas fa-check"></i> Ya está actualizado
-        </button>
+
+        <div class="update-progress" id="updateProgress">
+            <i class="fas fa-sync-alt update-icon rotating"></i>
+            <div class="update-message">Actualizando...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
     </div>
 
-    // ... rest of the file remains the same ...
+
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const btnUpdate = document.getElementById('btnUpdate');
-        const btnSkip = document.getElementById('btnSkip');
+        const updateProgress = document.getElementById('updateProgress');
+        const progressFill = document.getElementById('progressFill');
         const UPDATE_KEY = 'innopro_update_status';
-        const CURRENT_VERSION = '2.0.2';
+        const CURRENT_VERSION = '2.0.4';
 
-        // Verificar disponibilidad de localStorage
-        const checkLocalStorageAvailability = () => {
-            try {
-                localStorage.setItem('test', 'test');
-                localStorage.removeItem('test');
-                return true;
-            } catch (e) {
-                return false;
-            }
-        };
-
-        // Configurar botones según disponibilidad de localStorage
-        const setupButtons = () => {
-            if (!checkLocalStorageAvailability()) {
-                btnSkip.style.display = 'none';
-                btnUpdate.innerHTML = '<i class="fas fa-download"></i> Actualización Obligatoria';
-                btnUpdate.style.animation = 'pulse 2s infinite';
-            }
-        };
-
-        // Verificar si ya está actualizado
-        const checkUpdateStatus = () => {
-            try {
-                const status = localStorage.getItem(UPDATE_KEY);
-                if (status === CURRENT_VERSION) {
-                    window.location.href = '/';
-                }
-            } catch (error) {
-                console.error('Error al verificar estado:', error);
-                btnSkip.style.display = 'none';
-                btnUpdate.innerHTML = '<i class="fas fa-download"></i> Actualización Obligatoria';
-                btnUpdate.style.animation = 'pulse 2s infinite';
-            }
-        };
-
-        // Intentar marcar como actualizado
-        const markAsUpdated = async () => {
-            if (!checkLocalStorageAvailability()) {
-                alert('No se puede guardar el estado. La actualización es obligatoria.');
-                btnSkip.style.display = 'none';
-                btnUpdate.innerHTML = '<i class="fas fa-download"></i> Actualización Obligatoria';
-                btnUpdate.style.animation = 'pulse 2s infinite';
-                return;
+        const simulateUpdate = async () => {
+            btnUpdate.style.display = 'none';
+            updateProgress.style.display = 'block';
+            
+            // Simulate progress
+            for(let i = 0; i <= 100; i += 20) {
+                progressFill.style.width = `${i}%`;
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
 
             try {
@@ -210,33 +204,32 @@
 
                 if (response.ok) {
                     localStorage.setItem(UPDATE_KEY, CURRENT_VERSION);
-                    window.location.href = '/dashboard_db';
+                    updateProgress.querySelector('.update-message').textContent = 
+                        'Actualización completada. Por favor, reinicie la aplicación.';
+                    updateProgress.querySelector('.fas').classList.remove('rotating');
+                    updateProgress.querySelector('.fas').classList.add('fa-check');
+                    // Removed the redirect to dashboard
                 } else {
-                    throw new Error('Error al confirmar actualización');
+                    throw new Error('Error en la actualización');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al guardar el estado. La actualización seguirá siendo obligatoria.');
-                btnSkip.style.display = 'none';
-                btnUpdate.innerHTML = '<i class="fas fa-download"></i> Actualización Obligatoria';
-                btnUpdate.style.animation = 'pulse 2s infinite';
+                updateProgress.querySelector('.update-message').textContent = 
+                    'Error en la actualización. Intente nuevamente.';
+                updateProgress.querySelector('.fas').classList.remove('rotating');
+                updateProgress.querySelector('.fas').classList.add('fa-times');
+                // Show update button again after error
+                setTimeout(() => {
+                    btnUpdate.style.display = 'block';
+                    updateProgress.style.display = 'none';
+                }, 3000);
             }
         };
 
-        btnUpdate.addEventListener('click', () => {
-            window.location.href = '/descargar-apk';
-        });
-
-        btnSkip.addEventListener('click', markAsUpdated);
-
-        // Inicializar verificaciones
-        setupButtons();
-        checkUpdateStatus();
+        btnUpdate.addEventListener('click', simulateUpdate);
     });
 </script>
 
-// ... rest of the file remains the same ...
     <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
 </body>
-
 </html>

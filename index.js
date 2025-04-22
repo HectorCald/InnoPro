@@ -123,7 +123,7 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
 app.get('/dashboard_db', requireAuth, (req, res) => {
     // Add update check middleware
     const UPDATE_KEY = 'innopro_update_status';
-    const CURRENT_VERSION = '2.0.2';
+    const CURRENT_VERSION = '2.0.4';
 
     // Check if update status exists in the request cookies
     const updateStatus = req.cookies[UPDATE_KEY];
@@ -138,7 +138,7 @@ app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
 });
 app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
-    const CURRENT_VERSION = '2.0.2';
+    const CURRENT_VERSION = '2.0.4';
     res.cookie('innopro_update_status', CURRENT_VERSION, {
         maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
         httpOnly: true,
@@ -146,15 +146,7 @@ app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
     });
     res.json({ success: true });
 });
-app.get('/descargar-apk', requireAuth, (req, res) => {
-    const apkPath = join(__dirname, 'public', 'apk', 'InnoPro.apk');
-    res.download(apkPath, 'InnoPro.apk', (err) => {
-        if (err) {
-            console.error('Error al descargar APK:', err);
-            res.status(500).send('Error al descargar la aplicación');
-        }
-    });
-});
+
 
 
 
