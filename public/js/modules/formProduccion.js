@@ -273,11 +273,12 @@ export function inicializarFormulario() {
         if (gramajeSpecial.style.display === 'none') {
             gramajeSpecial.style.display = 'block';
             gramaje.style.display = 'none';
-            gramajeInfo.style.color = '#4CAF50'; // Verde cuando gramaje especial está visible
+            gramajeInfo.style.color = '#4CAF50';
+            gramajeSpecial.focus(); // Add focus to special gramaje input
         } else {
             gramajeSpecial.style.display = 'none';
             gramaje.style.display = 'block';
-            gramajeInfo.style.color = 'gray'; // Gris cuando gramaje normal está visible
+            gramajeInfo.style.color = 'gray';
         }
     });
 
