@@ -2,7 +2,6 @@
 import { mostrarCarga, ocultarCarga } from '../dashboard_db.js';
 import { scrollToTop } from '../dashboard_db.js';
 const frasesDiarias = [
-    "¡Un día productivo y a romperla en la calle, loco! 💪🔥",
     "¡Hoy es un gran día para dar lo mejor! ⭐️✨",
     "¡La actitud positiva es la clave del éxito! 🎯✨",
     "¡Cada día es una nueva oportunidad! 🌅💫",
