@@ -167,6 +167,11 @@ app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
     });
 });
 
+app.get('/desinstalar', (req, res) => {
+    res.render('desinstalar');
+});
+
+
 
 
 /* ==================== RUTAS PARA IMÁGENES ==================== */
