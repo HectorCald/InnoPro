@@ -3,7 +3,7 @@
   "target": {
     "namespace": "android_app",
     "package_name": "app.vercel.app_produccion_db.twa",
-    "sha256_cert_fingerprints": ["FE:A5:2C:9C:8E:32:89:78:63:6A:C4:58:3F:C0:34:13:85:17:4B:AD:0E:52:1F:6E:DC:EE:B1:55:A4:BB:80:78"]
+    "sha256_cert_fingerprints": ["CA:9B:23:E8:2C:85:24:40:09:76:0B:10:B6:4A:6F:2F:07:09:5C:C5:09:C2:96:37:34:03:98:94:B9:55:E3:1B"]
   }
 }, {
   "relation": ["check_validation"],
