@@ -9,7 +9,7 @@
   "form_factor": "wide",
   "id": "InnoPro",
   "orientation": "any",
-  "display_override": ["fullscreen"],
+  "display_override": ["fullscreen", "standalone"],
   "categories": ["productivity", "business"],
   "prefer_related_applications": true,
   "related_applications": [
