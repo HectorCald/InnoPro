@@ -39,107 +39,30 @@ export async function inicializarConfiguraciones() {
                 <h2><i class="fas fa-cog"></i> Otros Ajustes</h2>
                 <div class="ajustes-lista">
                     <div class="ajuste-item">
-                        <span>Notificaciones</span>
+                        <p>Notificaciones</p>
                         <label class="switch">
                             <input type="checkbox" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="ajuste-item">
-                        <span>Modo Oscuro</span>
+                        <p>Modo Oscuro</p>
                         <label class="switch">
                             <input type="checkbox" checked>
                             <span class="slider"></span>
                         </label>
-                    </div>
-                    <div class="ajuste-item">
-                        <button class="btn-desinstalar">
-                            <i class="fas fa-trash"></i> Borrar Almacenamiento
-                        </button>
                     </div>
                     
                 </div>
-                <div class="ajuste-item">
-                        <button class="logout-btn" onclick="manejarCierreSesion()">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Cerrar Sesión</span>
-                        </button>
-                    </div>
+  
+                <button class="logout-btn" onclick="manejarCierreSesion()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
+
+                
             </div>
         `;
-
-        const btnDesinstalar = configuracionesView.querySelector('.btn-desinstalar');
-        btnDesinstalar.addEventListener('click', async () => {
-            const anuncio = document.querySelector('.anuncio-down');
-            const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-
-            anuncioContenido.innerHTML = `
-                <div class="encabezado">
-                    <h2><i class="fas fa-exclamation-triangle"></i>Elimnacion de información?</h2>
-                    <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-                <div class="form-grup">
-                    <p style="color: #ff4444; font-weight: bold;text-align:center;">¡Advertencia!</p>
-                    <p class="subtitle" >Esta acción eliminará todos los datos de la aplicación:</p>
-                    <div class=detalles-grup>
-                    <p>Configuraciones guardadas</p>
-                        <p>Datos de sesión</p>
-                        <p>Caché almacenado</p>
-                        <p>Cookies</p>
-                    </div>
-                    <p class="subtitle">¿Estás seguro de que deseas continuar?</p>
-                </div>
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn red confirmar">
-                        <i class="fas fa-trash"></i> Sí, Eliminar
-                    </button>
-                </div>
-            `;
-
-            mostrarAnuncioDown();
-
-            const btnConfirmar = anuncioContenido.querySelector('.confirmar');
-            btnConfirmar.addEventListener('click', async () => {
-                try {
-                    mostrarCarga();
-                    const cacheKeys = await caches.keys();
-                    await Promise.all(cacheKeys.map(key => caches.delete(key)));
-
-                    // Limpiar almacenamiento
-                    localStorage.clear();
-                    sessionStorage.clear();
-
-                    // Limpiar IndexedDB
-                    const databases = await window.indexedDB.databases();
-                    databases.forEach(db => {
-                        window.indexedDB.deleteDatabase(db.name);
-                    });
-
-                    // Limpiar cookies
-                    document.cookie.split(";").forEach(cookie => {
-                        document.cookie = cookie
-                            .replace(/^ +/, "")
-                            .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
-                    });
-
-                    mostrarNotificacion('Aplicación desinstalada correctamente. Cerrando...', 'success');
-                    setTimeout(() => {
-                        mostrarCarga();
-                        window.location.href = '/desinstalar';
-                    }, 2000);
-                    window.close();
-
-                } catch (error) {
-                    console.error('Error al desinstalar:', error);
-                    mostrarNotificacion('Error al desinstalar la aplicación', 'error');
-                } finally {
-                    ocultarCarga();
-                    ocultarAnuncioDown();
-                }
-            });
-        });
 
         // Configurar evento para cambiar PIN
         const btnCambiarPin = configuracionesView.querySelector('.btn-cambiar-pin');

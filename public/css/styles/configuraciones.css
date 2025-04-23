@@ -36,13 +36,13 @@
     .config-section {
         background: var(--second-color);
         border-radius: 10px;
-        padding: 20px;
+        padding: 15px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
         h2 {
             color: var(--primary-text);
-            font-size: 17px;
-            margin-bottom: 15px;
+            font-size: 15px;
+            margin-bottom: 5px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -53,7 +53,7 @@
     .perfil-info {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 5px;
 
         p {
             margin: 5px 0;
@@ -66,7 +66,7 @@
         background: var(--tercer-color);
         color: white;
         border: none;
-        padding: 10px 15px;
+        padding: 10px;
         border-radius: 10px;
         cursor: pointer;
         display: flex;
@@ -83,14 +83,18 @@
     .ajustes-lista {
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .ajustes-lista p{
+        color: gray;
     }
 
     .ajuste-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 5px 0;
+        padding: 10px;
         border-bottom: 1px solid var(--border-color);
     }
 
@@ -167,5 +171,9 @@
         cursor: pointer;
         width: 100%;
         max-width: 400px;
+    }
+    .configuraciones-view p{
+        font-size: 13px;
+        color: gray !important;
     }
 }

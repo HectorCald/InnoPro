@@ -33,8 +33,6 @@ const auth = new google.auth.GoogleAuth({
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
-// ... código existente ...
-// ... código existente ...
 app.use(express.static(join(__dirname, 'public'), {
     setHeaders: (res, path) => {
         if (path.endsWith('.css')) {
