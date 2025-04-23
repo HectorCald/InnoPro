@@ -112,7 +112,7 @@ async function verificarPin(pin) {
 
 const APP_CONFIG = {
     UPDATE_KEY: 'innopro_update_status',
-    CURRENT_VERSION: '2.0.6',
+    CURRENT_VERSION: '2.0.14',
     MIN_VERSION: '2.0.5'
 };
 /* ==================== RUTAS DE VISTAS ==================== */

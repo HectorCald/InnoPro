@@ -118,9 +118,7 @@ async function bienvenida() {
                 dashboard.innerHTML = `
                     <div class="bienvenida">
                         <div class="profile-section">
-                            <div class="profile-picture">
-                                IP
-                            </div>
+                            <img src="/img/icon-48-48.png" alt="" class="profile-picture">
                             <div class="profile-info">
                                 <span class="profile-name">${data.nombre || 'Usuario'} <i class="fas fa-check-circle" style="color: orange; font-size: 0.8em;"></i></span>
                                 <span class="profile-role">@${data.rol || 'Usuario'}</span>
@@ -137,18 +135,13 @@ async function bienvenida() {
                     <div class="profile-modal">
                         <div class="modal-content">
                             <button class="close-modal"><i class="fas fa-times"></i></button>
-                            <div class="modal-profile-picture">
-                                InnoPro
-                            </div>
+                            <img src="/img/icon-72-72.png" alt="" class="modal-profile-picture">
+
                             <div class="modal-profile-name">
                                 ${data.nombre || 'Usuario'}
                                 <i class="fas fa-check-circle" style="color:orange;"></i>
                             </div>
                             <div class="modal-profile-role">@${data.rol || 'Usuario'}</div>
-                            <button class="logout-btn" onclick="manejarCierreSesion()">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span>Cerrar Sesión</span>
-                            </button>
                         </div>
                     </div>
                 `;

@@ -71,14 +71,12 @@
         cursor: pointer;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 8px;
         margin-top: 10px;
-        width: fit-content;
+        width: 100%;
+        max-width: 400px;
         font-size: 13px;
-
-        &:hover {
-            background: gray;
-        }
     }
 
     /* ===== LISTA DE AJUSTES ===== */
@@ -92,7 +90,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px 0;
+        padding: 5px 0;
         border-bottom: 1px solid var(--border-color);
     }
 
@@ -134,7 +132,7 @@
         }
     }
 
-    input:checked + .slider {
+    input:checked+.slider {
         background-color: var(--cero-color);
 
         &:before {
@@ -148,5 +146,26 @@
         flex-direction: column;
         gap: 8px;
         color: gray;
+    }
+
+    .btn-desinstalar {
+        background: var(--tercer-color);
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius:10px;
+        cursor: pointer;
+        width: 100%;
+        max-width: 400px;
+    }
+    .logout-btn {
+        background: #ff4444;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius:10px;
+        cursor: pointer;
+        width: 100%;
+        max-width: 400px;
     }
 }

@@ -53,11 +53,18 @@ export async function inicializarConfiguraciones() {
                         </label>
                     </div>
                     <div class="ajuste-item">
-                        <button class="btn-desinstalar" style="background: #ff4444; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">
-                            <i class="fas fa-trash"></i> Borrar data
+                        <button class="btn-desinstalar">
+                            <i class="fas fa-trash"></i> Borrar Almacenamiento
                         </button>
                     </div>
+                    
                 </div>
+                <div class="ajuste-item">
+                        <button class="logout-btn" onclick="manejarCierreSesion()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Cerrar Sesión</span>
+                        </button>
+                    </div>
             </div>
         `;
 
@@ -68,14 +75,14 @@ export async function inicializarConfiguraciones() {
 
             anuncioContenido.innerHTML = `
                 <div class="encabezado">
-                    <h2><i class="fas fa-exclamation-triangle"></i>Elimnacion de data</h2>
+                    <h2><i class="fas fa-exclamation-triangle"></i>Elimnacion de información?</h2>
                     <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
                         <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
                 <div class="form-grup">
-                    <p style="color: #ff4444; font-weight: bold;">¡Advertencia!</p>
-                    <p class="subtitle">Esta acción eliminará todos los datos de la aplicación:</p>
+                    <p style="color: #ff4444; font-weight: bold;text-align:center;">¡Advertencia!</p>
+                    <p class="subtitle" >Esta acción eliminará todos los datos de la aplicación:</p>
                     <div class=detalles-grup>
                     <p>Configuraciones guardadas</p>
                         <p>Datos de sesión</p>
@@ -86,7 +93,7 @@ export async function inicializarConfiguraciones() {
                 </div>
                 <div class="anuncio-botones">
                     <button class="anuncio-btn red confirmar">
-                        <i class="fas fa-trash"></i> Sí, Borrar
+                        <i class="fas fa-trash"></i> Sí, Eliminar
                     </button>
                 </div>
             `;
