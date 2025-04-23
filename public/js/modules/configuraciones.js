@@ -68,6 +68,7 @@ export async function inicializarConfiguraciones() {
         const btnCambiarPin = configuracionesView.querySelector('.btn-cambiar-pin');
         btnCambiarPin.addEventListener('click', mostrarFormularioCambioPin);
 
+        
 
 
     } catch (error) {
