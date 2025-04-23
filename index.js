@@ -122,7 +122,7 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
 });
 app.get('/dashboard_db', requireAuth, (req, res) => {
     const UPDATE_KEY = 'innopro_update_status';
-    const CURRENT_VERSION = '2.0.6';
+    const CURRENT_VERSION = '2.0.7';
     const MIN_VERSION = '2.0.5';
 
     // Verificar la versión del usuario
@@ -146,7 +146,7 @@ app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
 });
 app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
-    const CURRENT_VERSION = '2.0.6';
+    const CURRENT_VERSION = '2.0.7';
     res.cookie('innopro_update_status', CURRENT_VERSION, {
         maxAge: 365 * 24 * 60 * 60 * 1000,
         httpOnly: false // Changed to false so JavaScript can access it
