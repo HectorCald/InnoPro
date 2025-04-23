@@ -121,16 +121,24 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
     res.redirect('/dashboard_db')   
 });
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    // Add update check middleware
     const UPDATE_KEY = 'innopro_update_status';
     const CURRENT_VERSION = '2.0.6';
+    const MIN_VERSION = '2.0.5';
 
-    // Check if update status exists in the request cookies
-    const updateStatus = req.cookies[UPDATE_KEY];
+    // Verificar la versión del usuario
+    const userVersion = req.cookies[UPDATE_KEY];
 
-    if (updateStatus === CURRENT_VERSION) {
+    if (!userVersion) {
+        // Si no tiene versión, mostrar actualización
+        res.render('Actualizacion');
+    } else if (userVersion === MIN_VERSION) {
+        // Si tiene la versión mínima, mostrar mensaje de versión antigua
+        res.render('Actualizacion', { oldVersion: true });
+    } else if (userVersion === CURRENT_VERSION) {
+        // Si tiene la versión actual, mostrar dashboard
         res.render('dashboard_db');
     } else {
+        // Para cualquier otra versión, mostrar actualización
         res.render('Actualizacion');
     }
 });

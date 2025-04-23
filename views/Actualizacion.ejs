@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
             --primary-color: #1a1a1a;
             --accent-color: #369400;
             --text-color: #ffffff;
+            --warning-color: #ff4444;
         }
 
         body {
@@ -40,6 +42,10 @@
             margin-bottom: 1rem;
         }
 
+        .update-icon.warning {
+            color: var(--warning-color);
+        }
+
         .update-title {
             font-size: 1.8rem;
             margin-bottom: 1.5rem;
@@ -64,6 +70,10 @@
             color: var(--accent-color);
         }
 
+        .feature-item.warning i {
+            color: var(--warning-color);
+        }
+
         .btn {
             padding: 12px 24px;
             border: none;
@@ -85,15 +95,33 @@
             color: white;
         }
 
+        .text-warning {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .pulse {
@@ -133,104 +161,129 @@
         }
     </style>
 </head>
+
 <body>
     <div class="update-container">
-        <i class="fas fa-sync-alt update-icon pulse"></i>
-        <h1 class="update-title">¡Nueva actualización disponible!</h1>
-
-        <div class="update-features">
-            <div class="feature-item">
-                <i class="fas fa-hdd"></i>
-                <span>Almacenamiento local interno mejorado para interfaces</span>
+        <% if (typeof oldVersion !=='undefined' && oldVersion) { %>
+            <i class="fas fa-exclamation-triangle update-icon warning pulse"></i>
+            <h1 class="update-title">¡Tu versión es muy antigua!</h1>
+            <div class="update-features">
+                <div class="feature-item warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Tu versión actual (2.0.5) ya no es compatible con el sistema</span>
+                </div>
+                <div class="feature-item warning">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Es necesario instalar una nueva versión de la aplicación</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-tools"></i>
+                    <span>Esta actualización requiere una instalación manual</span>
+                </div>
             </div>
-            <div class="feature-item">
-                <i class="fas fa-bell"></i>
-                <span>Notificaciones push implementadas</span>
-            </div>
-            <div class="feature-item">
-                <i class="fas fa-paint-brush"></i>
-                <span>Nuevo rediseño de la interfaz</span>
-            </div>
-            <div class="feature-item">
-                <i class="fas fa-mobile-alt"></i>
-                <span>Botones físicos de tareas optimizados</span>
-            </div>
-            <div class="feature-item">
-                <i class="fas fa-cloud"></i>
-                <span>Gestión mejorada de archivos (subida/descarga)</span>
-            </div>
-        </div>
-
-        <button id="btnUpdate" class="btn btn-update">
-            <i class="fas fa-download"></i> Actualizar ahora
-        </button>
-        <p>Si estas teniendo problemas para actulizar es probable que tengas que comunicarte con el administador del sistema.</p>
-
-        <div class="update-progress" id="updateProgress">
-            <i class="fas fa-sync-alt update-icon rotating"></i>
-            <div class="update-message">Actualizando...</div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-        </div>
+            <p class="text-warning">Por favor, contacta al administrador del sistema para obtener la nueva versión.</p>
+            <p>No podrás acceder al sistema hasta que se realice la actualización manual.</p>
+            <% } else { %>
+                <i class="fas fa-sync-alt update-icon pulse"></i>
+                <h1 class="update-title">¡Nueva actualización disponible!</h1>
+                <div class="update-features">
+                    <div class="feature-item">
+                        <i class="fas fa-hdd"></i>
+                        <span>Almacenamiento local interno mejorado para interfaces</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-bell"></i>
+                        <span>Notificaciones push implementadas</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-paint-brush"></i>
+                        <span>Nuevo rediseño de la interfaz</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>Botones físicos de tareas optimizados</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-cloud"></i>
+                        <span>Gestión mejorada de archivos (subida/descarga)</span>
+                    </div>
+                </div>
+                <button id="btnUpdate" class="btn btn-update">
+                    <i class="fas fa-download"></i> Actualizar ahora
+                </button>
+                <p>Si estás teniendo problemas para actualizar, contacta al administrador del sistema.</p>
+                <div class="update-progress" id="updateProgress">
+                    <i class="fas fa-sync-alt update-icon rotating"></i>
+                    <div class="update-message">Actualizando...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+                <% } %>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnUpdate = document.getElementById('btnUpdate');
+            const updateProgress = document.getElementById('updateProgress');
+            const progressFill = document.getElementById('progressFill');
+            const UPDATE_KEY = 'innopro_update_status';
+            const CURRENT_VERSION = '2.0.6';
 
+            if (btnUpdate) {
+                const simulateUpdate = async () => {
+                    btnUpdate.style.display = 'none';
+                    updateProgress.style.display = 'block';
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const btnUpdate = document.getElementById('btnUpdate');
-        const updateProgress = document.getElementById('updateProgress');
-        const progressFill = document.getElementById('progressFill');
-        const UPDATE_KEY = 'innopro_update_status';
-        const CURRENT_VERSION = '2.0.6';
-
-        const simulateUpdate = async () => {
-            btnUpdate.style.display = 'none';
-            updateProgress.style.display = 'block';
-            
-            // Simulate progress
-            for(let i = 0; i <= 100; i += 20) {
-                progressFill.style.width = `${i}%`;
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-
-            try {
-                const response = await fetch('/confirmar-actualizacion', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
+                    for (let i = 0; i <= 100; i += 20) {
+                        progressFill.style.width = `${i}%`;
+                        await new Promise(resolve => setTimeout(resolve, 500));
                     }
-                });
 
-                if (response.ok) {
-                    localStorage.setItem(UPDATE_KEY, CURRENT_VERSION);
-                    updateProgress.querySelector('.update-message').textContent = 
-                        'Actualización completada. Por favor, reinicie la aplicación.';
-                    updateProgress.querySelector('.fas').classList.remove('rotating');
-                    updateProgress.querySelector('.fas').classList.add('fa-check');
-                    // Removed the redirect to dashboard
-                } else {
-                    throw new Error('Error en la actualización');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                updateProgress.querySelector('.update-message').textContent = 
-                    'Error en la actualización. Intente nuevamente.';
-                updateProgress.querySelector('.fas').classList.remove('rotating');
-                updateProgress.querySelector('.fas').classList.add('fa-times');
-                // Show update button again after error
-                setTimeout(() => {
-                    btnUpdate.style.display = 'block';
-                    updateProgress.style.display = 'none';
-                }, 3000);
+                    try {
+                        const response = await fetch('/confirmar-actualizacion', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            updateProgress.querySelector('.update-message').textContent =
+                                'Actualización completada. Por favor, reinicie la aplicación.';
+                            updateProgress.querySelector('.fas').classList.remove('rotating');
+                            updateProgress.querySelector('.fas').classList.add('fa-check');
+
+                            // Mostrar mensaje de reinicio
+                            setTimeout(() => {
+                                alert('La aplicación se cerrará. Por favor, vuelva a iniciar sesión.');
+                                window.location.href = '/';
+                            }, 2000);
+                        } else {
+                            throw new Error('Error en la actualización');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        updateProgress.querySelector('.update-message').textContent =
+                            'Error en la actualización. Intente nuevamente.';
+                        updateProgress.querySelector('.fas').classList.remove('rotating');
+                        updateProgress.querySelector('.fas').classList.add('fa-times');
+
+                        setTimeout(() => {
+                            btnUpdate.style.display = 'block';
+                            updateProgress.style.display = 'none';
+                        }, 3000);
+                    }
+                };
+
+                btnUpdate.addEventListener('click', simulateUpdate);
             }
-        };
-
-        btnUpdate.addEventListener('click', simulateUpdate);
-    });
-</script>
+        });
+    </script>
 
     <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
 </body>
+
 </html>
