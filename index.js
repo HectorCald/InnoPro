@@ -109,7 +109,6 @@ async function verificarPin(pin) {
         throw error;
     }
 }
-
 const APP_CONFIG = {
     UPDATE_KEY: 'innopro_update_status',
     CURRENT_VERSION: '2.0.6',

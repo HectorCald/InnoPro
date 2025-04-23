@@ -88,7 +88,7 @@ class LoginPin {
             console.error('Error:', error);
             this.resetPin();
             this.showError('Error de conexión. Intente nuevamente.');
-        } 
+        }
     }
 
 
@@ -159,15 +159,103 @@ class Modal {
 
 /* =============== FUNCIONES DE LLAMADO =============== */
 document.addEventListener('DOMContentLoaded', async () => {
-    const loginPin = new LoginPin();
-    const modal = new Modal();
+    const UPDATE_KEY = 'innopro_update_status';
+    const currentVersion = localStorage.getItem(UPDATE_KEY);
+    const versionElement = document.querySelector('.version');
+    if (versionElement) {
+        versionElement.textContent = `Versión: ${currentVersion || 'Sin version'}`;
+    }
 
+    const loginPin = new LoginPin();
+    const pinModal = new Modal();
+
+    // Configuración del modal de limpieza
+    const cleanupModal = {
+        modal: document.getElementById('cleanupModal'),
+        confirmBtn: document.querySelector('#cleanupModal .confirmar'),
+        closeBtn: document.querySelector('#cleanupModal .modal-close'),
+
+        init() {
+            this.confirmBtn.addEventListener('click', () => this.handleConfirm());
+            this.closeBtn.addEventListener('click', () => this.close());
+            window.addEventListener('click', (e) => {
+                if (e.target === this.modal) this.close();
+            });
+        },
+
+        open() {
+            this.modal.style.display = 'flex';
+        },
+
+        close() {
+            this.modal.style.display = 'none';
+        },
+
+        async handleConfirm() {
+            try {
+                mostrarCarga();
+                // Limpiar caché
+                const cacheKeys = await caches.keys();
+                await Promise.all(cacheKeys.map(key => caches.delete(key)));
+
+                // Limpiar almacenamientos
+                localStorage.clear();
+                sessionStorage.clear();
+
+                // Eliminar bases de datos IndexedDB
+                const databases = await window.indexedDB.databases();
+                await Promise.all(
+                    databases.map(db =>
+                        new Promise((resolve, reject) => {
+                            const request = indexedDB.deleteDatabase(db.name);
+                            request.onsuccess = resolve;
+                            request.onerror = reject;
+                        })
+                    )
+                );
+
+                // Eliminar cookies (método más robusto)
+                document.cookie.split(';').forEach(cookie => {
+                    const eqPos = cookie.indexOf('=');
+                    const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+                });
+
+                mostrarNotificacion('Datos borrados correctamente', 'success');
+
+                // Redireccionar después de 1 segundo
+                setTimeout(() => {
+                    window.location.replace('/desinstalar');
+                }, 1000);
+
+            } catch (error) {
+                console.error('Error en limpieza:', error);
+                mostrarNotificacion('Error al limpiar el almacenamiento', 'error');
+            } finally {
+                ocultarCarga();
+                this.close();
+            }
+        }
+
+
+    };
+    cleanupModal.init();
+
+    // Manejador del botón de desinstalación
+    const btnDesinstalar = document.querySelector('.btn-desinstalar');
+    if (btnDesinstalar) {
+        btnDesinstalar.addEventListener('click', () => {
+            cleanupModal.open();
+        });
+    }
+
+    // Configuración de botón de consulta (si existe)
     const btnConsulta = document.querySelector('.consultarProducto');
     if (btnConsulta) {
         btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
     }
-});
 
+});
 /* =============== FUNCIONES DE CARGA LOANDERS =============== */
 function mostrarCarga() {
     const cargaDiv = document.querySelector('.carga');
