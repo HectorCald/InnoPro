@@ -5,8 +5,8 @@ export async function inicializarConfiguraciones() {
     
     try {
         mostrarCarga();
-        const userData = await response.json();
         const response = await fetch('/obtener-mi-rol');
+        const userData = await response.json();
         usuarioActual = userData;
         const UPDATE_KEY = 'innopro_update_status';
         const currentVersion = localStorage.getItem(UPDATE_KEY);
