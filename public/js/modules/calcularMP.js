@@ -878,11 +878,17 @@ function mostrarFormularioRegistroMP() {
 
         async function cargarProductos() {
             try {
+                mostrarCarga();
                 const response = await fetch('/obtener-productos');
+                if (!response.ok) throw new Error('Error al cargar productos');
                 const data = await response.json();
-                productos = data.productos;
+                // Extraer solo los nombres de los productos
+                productos = data.productos.map(producto => producto.nombre);
             } catch (error) {
                 console.error('Error al cargar productos:', error);
+                mostrarNotificacion('Error al cargar productos', 'error');
+            } finally {
+                ocultarCarga();
             }
         }
 
@@ -890,24 +896,25 @@ function mostrarFormularioRegistroMP() {
 
         inputBuscar.addEventListener('input', () => {
             const busqueda = inputBuscar.value.toLowerCase().trim();
-
+        
             if (busqueda.length < 2) {
                 sugerencias.style.display = 'none';
                 return;
             }
-
+        
+            // Filtrar usando los nombres de los productos
             const productosFiltrados = productos.filter(producto =>
                 producto.toLowerCase().includes(busqueda)
             );
-
+        
             if (productosFiltrados.length > 0) {
                 sugerencias.innerHTML = `
-                <ul class="sugerencias-list">
-                    ${productosFiltrados.map(producto => `
-                        <li class="sugerencia-item">${producto}</li>
-                    `).join('')}
-                </ul>
-            `;
+                    <ul class="sugerencias-list">
+                        ${productosFiltrados.map(producto => `
+                            <li class="sugerencia-item">${producto}</li>
+                        `).join('')}
+                    </ul>
+                `;
                 sugerencias.style.display = 'block';
 
                 // Manejar clics en sugerencias
