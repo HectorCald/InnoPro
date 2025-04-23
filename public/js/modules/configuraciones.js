@@ -54,7 +54,7 @@ export async function inicializarConfiguraciones() {
                     </div>
                     <div class="ajuste-item">
                         <button class="btn-desinstalar" style="background: #ff4444; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">
-                            <i class="fas fa-trash"></i> Desinstalar Aplicación
+                            <i class="fas fa-trash"></i> Borrar data
                         </button>
                     </div>
                 </div>
@@ -68,7 +68,7 @@ export async function inicializarConfiguraciones() {
 
             anuncioContenido.innerHTML = `
                 <div class="encabezado">
-                    <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Desinstalación</h2>
+                    <h2><i class="fas fa-exclamation-triangle"></i>Elimnacion de data</h2>
                     <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
                         <i class="fas fa-arrow-right"></i>
                     </button>
@@ -86,7 +86,7 @@ export async function inicializarConfiguraciones() {
                 </div>
                 <div class="anuncio-botones">
                     <button class="anuncio-btn red confirmar">
-                        <i class="fas fa-trash"></i> Sí, Desinstalar
+                        <i class="fas fa-trash"></i> Sí, Borrar
                     </button>
                 </div>
             `;
