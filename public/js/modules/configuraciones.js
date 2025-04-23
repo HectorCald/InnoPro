@@ -68,7 +68,14 @@ export async function inicializarConfiguraciones() {
         const btnCambiarPin = configuracionesView.querySelector('.btn-cambiar-pin');
         btnCambiarPin.addEventListener('click', mostrarFormularioCambioPin);
 
-        
+        const switches = configuracionesView.querySelectorAll('.switch input[type="checkbox"]');
+        switches.forEach(switchEl => {
+            switchEl.addEventListener('click', (e) => {
+                e.preventDefault();
+                mostrarNotificacion('Esta opción no se puede desactivar en este momento', 'error');
+                switchEl.checked = true;
+            });
+        });
 
 
     } catch (error) {

@@ -139,8 +139,8 @@
                 width: 100%;
 
                 &.active {
-                    background: var(--second-button);
-                    border-color: var(--second-button);
+                    background: var(--cuarto-color);
+                    border-color: var(--cuarto-color);
                     color: white;
                 }
 

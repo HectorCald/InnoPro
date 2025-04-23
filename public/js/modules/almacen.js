@@ -456,7 +456,7 @@ async function mostrarListaSalidas() {
                                     -
                                 </button>
                                 <input type="number" value="${cantidad}" min="1" max="${stockActual}"
-                                    onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; width: 70px; border:1px solid gray;padding:10px">
+                                    onchange="actualizarCantidadSalida('${id}', this.value)" style="text-align:center; min-width: 70px; border:1px solid gray;padding:10px">
                                 <button class="btn-cantidad anuncio-btn green" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="actualizarCantidadSalida('${id}', 'sumar')">
                                     +
                                 </button>

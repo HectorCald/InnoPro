@@ -252,13 +252,14 @@
         display: flex;
         gap: 10px;
         margin-top: 10px;
+        font-size: 14px;
     }
 
     .btn-editar,
     .btn-editar-registro {
         padding: 15px;
         border: none;
-        border-radius: 15px;
+        border-radius: 10px;
         cursor: pointer;
         display: flex;
         justify-content: center;
@@ -278,7 +279,7 @@
     .btn-pagar-registro {
         padding: 15px;
         border: none;
-        border-radius: 15px;
+        border-radius: 10px;
         cursor: pointer;
         display: flex;
         justify-content: center;
@@ -298,7 +299,7 @@
     .btn-eliminar-registro {
         padding: 15px;
         border: none;
-        border-radius: 15px;
+        border-radius: 10px;
         cursor: pointer;
         display: flex;
         align-items: center;

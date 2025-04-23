@@ -17,6 +17,7 @@ import { inicializarConfiguraciones } from './modules/configuraciones.js';
 import { inicializarGestionPro } from './modules/gestionPro.js';
 import { inicializarCalcularMP } from './modules/calcularMP.js';
 import { initializeImgUpload } from './modules/imgUpload.js';
+import { ocultarAnuncio } from './modules/components.js';
 
 export function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
@@ -154,7 +155,7 @@ async function bienvenida() {
 
 
                 profileSection.addEventListener('click', () => {
-                    document.querySelector('.anuncio').style.display = 'none';
+                    ocultarAnuncio();
                     modal.style.display = 'block';
                     setTimeout(() => {
                         modal.classList.add('show');

@@ -80,8 +80,8 @@
         height: fit-content;
 
         &.active {
-            background: var(--second-button);
-            border-color: var(--second-button);
+            background: var(--cuarto-color);
+            border-color: var(--cuarto-color);
             color: white;
         }
 
@@ -119,10 +119,6 @@
         gap: 10px;
         transition: all 0.3s ease;
         font-size: 15px;
-
-        &:hover {
-            background: #252525;
-        }
 
         i {
             color: #3498db;
@@ -291,7 +287,7 @@
     .btn-editar, .btn-editar-registro {
         padding: 15px;
         border: none;
-        border-radius: 15px;
+        border-radius: 10px;
         cursor: pointer;
         display: flex;
         justify-content: center;
@@ -301,31 +297,21 @@
         background: #2196F3;
         color: white;
         width: 100%;
-
-        &:hover {
-            background: #1976D2;
-            transform: translateY(-2px);
-        }
     }
 
     .btn-eliminar-registro {
         padding: 15px;
         border: none;
-        border-radius: 15px;
+        border-radius: 10px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
         transition: all 0.3s ease;
-        background: #ff0000;
+        background: var(--error);
         color: white;
         width: 100%;
-
-        &:hover {
-            background: #d32f2f;
-            transform: translateY(-2px);
-        }
     }
 
     /* ===== ICONOS Y ESTADOS ===== */

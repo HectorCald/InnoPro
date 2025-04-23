@@ -1,20 +1,15 @@
 
+
 :root {
 
     --primary-text: #ffffff;
-
-
-    --background: rgb(238, 238, 238);
     --primary-color: #242424;
     --second-color: #1a1a1a;
     --cero-color: rgb(61, 61, 61);
 
-
-    --primary-button: #00a2d8;
-    --second-button: #00796f;
+    --cuarto-color: #0087a5;
     --tercer-color: #f37500;
 
-
-    --error: #ff4d4d;
+    --error: #fc3737;
     --success: #4CAF50;
 }

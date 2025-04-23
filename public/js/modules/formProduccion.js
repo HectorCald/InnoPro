@@ -90,7 +90,7 @@ export function mostrarFormularioProduccion() {
                     </select>
                     <select name="año" required style="width: 50%;">
                         <option value="">Año</option>
-                        ${Array.from({ length: 26 }, (_, i) => i + 2025)
+                        ${Array.from({ length: 10 }, (_, i) => i + 2025)
             .map(year => `<option value="${year}">${year}</option>`)
             .join('')}
                     </select>

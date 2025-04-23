@@ -94,8 +94,8 @@
         height: fit-content;
 
         &.active {
-            background: var(--second-button);
-            border-color: var(--second-button);
+            background: var(--cuarto-color);
+            border-color: var(--cuerto-color);
             color: white;
         }
 

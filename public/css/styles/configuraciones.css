@@ -64,7 +64,7 @@
 
     /* ===== BOTÓN CAMBIAR PIN ===== */
     .btn-cambiar-pin {
-        background: var(--tercer-color);
+        background: var(--cuarto-color);
         color: white;
         border: none;
         padding: 10px;

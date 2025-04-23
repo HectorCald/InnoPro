@@ -85,7 +85,7 @@
         font-size: 17px;
 
         &:hover {
-            background-color: var(--second-button);
+            background-color: var(--tercer-color);
             color: white;
         }
     }
@@ -184,8 +184,8 @@
                 }
 
                 &.active {
-                    background: var(--tercer-color);
-                    border-color: var(--tercer-color);
+                    background: var(--cuarto-color);
+                    border-color: var(--cuarto-color);
                     color: white;
                 }
 

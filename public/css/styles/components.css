@@ -170,11 +170,14 @@
     cursor: pointer;
     font-weight: 500;
     font-size: 14px !important;
-    transition: all 0.3s ease;
     width: 100%;
     padding: 10px;
     background: none;
     color: white;
+    transition: background-color 0.5s ease, border-color 0.5s ease ;
+}
+.anuncio-btn:hover {
+    transform: none;
 }
 .anuncio-btn i {
     color: white;
@@ -222,7 +225,8 @@
 }
 
 .anuncio-btn.active {
-    background: var(--tercer-color);
+    background-color: var(--tercer-color);
+    border: 1px solid var(--tercer-color);
 }
 
 .anuncio-btn.delete,
@@ -271,20 +275,19 @@
 .anuncio-contenido textarea {
     width: 100%;
     padding: 11px;
-    border: none;
+    border: 1px solid var(--primary-color);
     border-radius: 10px;
     background: var(--primary-color);
     color: var(--primary-text);
     font-size: 14px !important;
     margin-bottom:5px;
     outline: none;
+    transition: border-color 0.5s ease-in-out;
 }
 .anuncio-contenido input:focus,
 .anuncio-contenido textarea:focus,
 .anuncio-contenido select:focus {
-    transition: border-color 0.3s ease-in-out;
     border: 1px solid var(--tercer-color);
-    outline: none;
 }
 
 .anuncio-contenido input[type="date"] {
@@ -474,13 +477,12 @@
     background-color: var(--tercer-color);
 }
 .nota{
-    color: white!important;
-    font-size: 11px !important;
-    font-weight: normal;
+    color: var(--error) !important;
+    font-size: 12px !important;
     margin-top:10px !important;
 }
 .nota i{
-    color: red !important;
+    color: var(--error);
     font-size: 12px;
 }
 

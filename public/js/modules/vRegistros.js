@@ -149,13 +149,14 @@ function crearRegistroCard(registro, esAdmin) {
 
         if (productoCoincidente && productoCoincidente.cantidadPorTira) {
             const cantidadPorTira = parseInt(productoCoincidente.cantidadPorTira);
-            const envasesTerminados = parseInt(registro[7]);
-
-            // Only show groups if cantidadPorTira is greater than 1
+            // Usar el valor verificado o real en lugar de envases terminados
+            const cantidadReal = parseInt(registro[10]) || parseInt(registro[7]);
+    
+            // Solo mostrar grupos si cantidadPorTira es mayor que 1
             if (cantidadPorTira > 1) {
-                const grupos = Math.floor(envasesTerminados / cantidadPorTira);
-                const sueltas = envasesTerminados % cantidadPorTira;
-
+                const grupos = Math.floor(cantidadReal / cantidadPorTira);
+                const sueltas = cantidadReal % cantidadPorTira;
+    
                 detalleGrupos = `
                     <p><span>Tiras:</span> ${grupos} tiras de ${cantidadPorTira} unidades</p>
                     ${sueltas > 0 ? `<p><span>Unidades sueltas:</span> ${sueltas} unidades</p>` : ''}
@@ -1291,7 +1292,6 @@ function formatearFecha(fecha) {
     }
     return fecha;
 }
-
 async function cargarUsuarios() {
     try {
         const response = await fetch('/obtener-usuarios');
