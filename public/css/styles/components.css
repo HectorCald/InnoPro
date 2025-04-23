@@ -3,7 +3,7 @@
 
 .anuncio {
     position: fixed;
-    top: 70px !important;
+    top: 60px !important;
     right: 0;
     width: 100%;
     height: calc(100vh - 70px) !important;

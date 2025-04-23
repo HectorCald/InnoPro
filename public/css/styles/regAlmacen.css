@@ -27,7 +27,8 @@
         color: var(--primary-text);
         font-size: 17px;
         font-weight: 500;
-        padding-block: 15px;
+        padding-block: 10px;
+        padding-top: 0;
 
         i {
             color: var(--primary-text);

@@ -11,7 +11,7 @@
     padding: 1em;
     display: none;
     flex-direction: column;
-    gap: 1em;
+    gap: 10px;
 
     /* ===== CONFIGURACIÓN DEL SCROLL ===== */
     &::-webkit-scrollbar {
@@ -22,7 +22,8 @@
 
     /* ===== TÍTULO DE LA SECCIÓN ===== */
     .title {
-        padding-block: 15px;
+        padding-block: 10px;
+        padding-top: 0;
         border-bottom: 1px solid rgb(83, 83, 83);
 
         h3 {
