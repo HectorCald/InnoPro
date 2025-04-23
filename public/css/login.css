@@ -412,7 +412,7 @@ body {
 /* ===== BOTÓN DESINSTALAR ===== */
 .btn-desinstalar {
     background: var(--second-color);
-    color: red;
+    color: rgb(252, 78, 78);
     border: none;
     padding: 10px;
     border-radius: 10px;
