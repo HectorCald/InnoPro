@@ -394,3 +394,18 @@ body {
         opacity: 0;
     }
 }
+/* Agregar al final del archivo */
+@media (max-width: 768px) {
+    .view {
+        -webkit-overflow-scrolling: touch; /* Para scroll suave en iOS */
+        overflow-y: auto;
+        height: 100%;
+        padding-bottom: 60px; /* Espacio para evitar que el contenido se oculte */
+    }
+    
+    body {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
+}
