@@ -375,12 +375,13 @@ function mostrarCarrito() {
                                 onchange="actualizarCantidad('${nombre}', this.value)" style="text-align:center; width: 70px; border:1px solid gray;padding: 10px">
                             <button class="btn-cantidad anuncio-btn green" style="min-width:30px; height:30px; border-radius:50%; font-size:20px; padding:0; display:flex; align-items:center; justify-content:center; margin:0 5px;" onclick="cambiarCantidad('${nombre}', 1)">+</button>
                             <select class="unidad-medida" style="width: 50px">
-                                <option value="unid.">und.</option>
+                                <option value="unidades">und.</option>
                                 <option value="cajas">cj.</option>
                                 <option value="bolsas">bls.</option>
-                                <option value="qq">qq</option>
-                                <option value="kg">kg</option>
+                                <option value="quintales">qq</option>
+                                <option value="kilos">kg.</option>
                                 <option value="arroba">@</option>
+                                <option value="libras">lbrs.</option>
                             </select>
                         </div>
                         

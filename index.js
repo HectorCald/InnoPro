@@ -3535,6 +3535,8 @@ app.put('/actualizar-registro-mp', requireAuth, async (req, res) => {
     }
 });
 
+
+
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {
