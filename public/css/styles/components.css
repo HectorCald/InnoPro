@@ -14,7 +14,7 @@
     display: none;
     flex-direction: column;
     overflow: hidden;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
 }
 @media screen and (min-width: 768px) {
@@ -59,7 +59,7 @@
     border-radius: 0;
     width: 100%;
     max-width: 450px;
-    height: calc(100vh - 70px);
+    height: calc(100vh - 60px);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
