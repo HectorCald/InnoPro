@@ -12,6 +12,17 @@
   "display_override": ["fullscreen", "standalone"],
   "categories": ["productivity", "business"],
   "prefer_related_applications": true,
+  "storage": {
+    "clearOnUninstall": true,
+    "preferences": "clear",
+    "cache": "clear"
+  },
+  
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "clearSiteData"
+  ],
   "related_applications": [
     {
       "platform": "play",
