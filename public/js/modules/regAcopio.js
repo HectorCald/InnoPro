@@ -607,7 +607,7 @@ function mostrarConfirmacionEliminar(pedido, registroCard) {
 
     anuncioContenido.innerHTML = `
         <div class="encabezado">
-            <h2>Registro Producción</h2>
+            <h2>Eliminar pedido?</h2>
             <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
                 <i class="fas fa-arrow-down"></i></button>
         </div>

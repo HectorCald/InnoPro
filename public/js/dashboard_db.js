@@ -354,7 +354,6 @@ export async function registrarNotificacion(origen, destino, mensaje) {
 function centrarInputEnFoco() {
     document.addEventListener('focusin', (e) => {
         if (e.target.tagName.toLowerCase() === 'input' || 
-            e.target.tagName.toLowerCase() === 'select' || 
             e.target.tagName.toLowerCase() === 'textarea') {
             
             const contenedorRelleno = e.target.closest('.relleno');
