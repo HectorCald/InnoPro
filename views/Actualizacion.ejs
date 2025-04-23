@@ -189,7 +189,7 @@
                 <div class="update-features">
                     <div class="feature-item">
                         <i class="fas fa-code-branch"></i>
-                        <span>Actualización a la versión ${CURRENT_VERSION}</span>
+                        <span id="versionText"></span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-hdd"></i>
@@ -233,6 +233,7 @@
             const progressFill = document.getElementById('progressFill');
             const UPDATE_KEY = 'innopro_update_status';
             const CURRENT_VERSION = '2.0.7';
+            document.getElementById('versionText').textContent = `Actualización a la versión ${CURRENT_VERSION}`;
 
             if (btnUpdate) {
                 const simulateUpdate = async () => {
