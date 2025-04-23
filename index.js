@@ -148,11 +148,14 @@ app.get('/mantenimiento', requireAuth, (req, res) => {
 app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
     const CURRENT_VERSION = '2.0.6';
     res.cookie('innopro_update_status', CURRENT_VERSION, {
-        maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production'
+        maxAge: 365 * 24 * 60 * 60 * 1000,
+        httpOnly: false // Changed to false so JavaScript can access it
     });
-    res.json({ success: true });
+    
+    res.json({ 
+        success: true,
+        version: CURRENT_VERSION // Send version in response
+    });
 });
 
 

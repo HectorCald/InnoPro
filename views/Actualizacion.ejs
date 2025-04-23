@@ -251,14 +251,16 @@
                         const data = await response.json();
 
                         if (response.ok) {
+                            // Store version in localStorage
+                            localStorage.setItem(UPDATE_KEY, CURRENT_VERSION);
+
                             updateProgress.querySelector('.update-message').textContent =
                                 'Actualización completada. Por favor, reinicie la aplicación.';
                             updateProgress.querySelector('.fas').classList.remove('rotating');
                             updateProgress.querySelector('.fas').classList.add('fa-check');
 
-                            // Mostrar mensaje de reinicio
                             setTimeout(() => {
-                                alert('La aplicación se cerrará. Por favor, vuelva a iniciar sesión.');
+                                alert('Actualización completada. Por favor, vuelva a iniciar sesión.');
                                 window.location.href = '/';
                             }, 2000);
                         } else {

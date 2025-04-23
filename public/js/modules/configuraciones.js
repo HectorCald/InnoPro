@@ -5,9 +5,10 @@ export async function inicializarConfiguraciones() {
     
     try {
         mostrarCarga();
-        const response = await fetch('/obtener-mi-rol');
         const userData = await response.json();
         usuarioActual = userData;
+        const UPDATE_KEY = 'innopro_update_status';
+        const currentVersion = localStorage.getItem(UPDATE_KEY);
 
         configuracionesView.innerHTML = `
         <div class="title">
@@ -27,7 +28,7 @@ export async function inicializarConfiguraciones() {
                 <div class="config-section app-info">
                     <h2><i class="fas fa-info-circle"></i> Información de la Aplicación</h2>
                     <div class="app-details">
-                        <p><strong>Versión:</strong> Beta: 1.0.7</p>
+                        <p><strong>Versión:</strong> ${currentVersion}</p>
                         <p><strong>Última actualización:</strong> ${new Date().toLocaleDateString()}</p>
                         <p><strong>Desarrollado por:</strong> Damabrava</p>
                     </div>
@@ -86,10 +87,10 @@ async function mostrarFormularioCambioPin() {
     anuncioContenido.innerHTML = `
         
          <div class="encabezado">
-       <h2>Cambiar PIN</h2>
-         <button class="anuncio-btn close" onclick="ocultarAnuncio()">
-            <i class="fas fa-arrow-right"></i></button>
-    </div>
+        <h2>Cambiar PIN</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
 
         <div class="relleno">
             <p for="pin-actual">PIN Actual*</label>
