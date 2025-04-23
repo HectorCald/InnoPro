@@ -232,7 +232,7 @@
             const updateProgress = document.getElementById('updateProgress');
             const progressFill = document.getElementById('progressFill');
             const UPDATE_KEY = 'innopro_update_status';
-            const CURRENT_VERSION = '2.0.7';
+            const CURRENT_VERSION = '2.0.6';
             document.getElementById('versionText').textContent = `Actualización a la versión ${CURRENT_VERSION}`;
 
             if (btnUpdate) {
@@ -250,7 +250,8 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
-                            }
+                            },
+                            body: JSON.stringify({ version: CURRENT_VERSION })
                         });
 
                         const data = await response.json();

@@ -110,6 +110,11 @@ async function verificarPin(pin) {
     }
 }
 
+const APP_CONFIG = {
+    UPDATE_KEY: 'innopro_update_status',
+    CURRENT_VERSION: '2.0.6',
+    MIN_VERSION: '2.0.5'
+};
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
     res.render('login');
@@ -121,43 +126,46 @@ app.get('/dashboard_alm', requireAuth, (req, res) => {
     res.redirect('/dashboard_db')   
 });
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    const UPDATE_KEY = 'innopro_update_status';
-    const CURRENT_VERSION = '2.0.7';
-    const MIN_VERSION = '2.0.5';
-
-    // Verificar la versión del usuario
-    const userVersion = req.cookies[UPDATE_KEY];
+    const userVersion = req.cookies[APP_CONFIG.UPDATE_KEY];
 
     if (!userVersion) {
-        // Si no tiene versión, mostrar actualización
-        res.render('Actualizacion');
-    } else if (userVersion === MIN_VERSION) {
-        // Si tiene la versión mínima, mostrar mensaje de versión antigua
-        res.render('Actualizacion', { oldVersion: true });
-    } else if (userVersion === CURRENT_VERSION) {
-        // Si tiene la versión actual, mostrar dashboard
+        res.render('Actualizacion', { 
+            updateKey: APP_CONFIG.UPDATE_KEY,
+            currentVersion: APP_CONFIG.CURRENT_VERSION,
+            minVersion: APP_CONFIG.MIN_VERSION
+        });
+    } else if (userVersion === APP_CONFIG.MIN_VERSION) {
+        res.render('Actualizacion', { 
+            oldVersion: true,
+            updateKey: APP_CONFIG.UPDATE_KEY,
+            currentVersion: APP_CONFIG.CURRENT_VERSION,
+            minVersion: APP_CONFIG.MIN_VERSION
+        });
+    } else if (userVersion === APP_CONFIG.CURRENT_VERSION) {
         res.render('dashboard_db');
     } else {
-        // Para cualquier otra versión, mostrar actualización
-        res.render('Actualizacion');
+        res.render('Actualizacion', {
+            updateKey: APP_CONFIG.UPDATE_KEY,
+            currentVersion: APP_CONFIG.CURRENT_VERSION,
+            minVersion: APP_CONFIG.MIN_VERSION
+        });
     }
 });
 app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
 });
 app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
-    const CURRENT_VERSION = '2.0.7';
-    res.cookie('innopro_update_status', CURRENT_VERSION, {
+    const { version } = req.body;
+    res.cookie('innopro_update_status', version, {
         maxAge: 365 * 24 * 60 * 60 * 1000,
-        httpOnly: false // Changed to false so JavaScript can access it
+        httpOnly: false
     });
     
     res.json({ 
         success: true,
-        version: CURRENT_VERSION // Send version in response
+        version: version
     });
 });
-
 
 
 
