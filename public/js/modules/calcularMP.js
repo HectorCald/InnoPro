@@ -419,11 +419,9 @@ function mostrarConfirmacionEliminarMP(id, nombre) {
         </div>
     `;
 
-   mostrarAnuncioDown();
+    mostrarAnuncioDown();
 
     const btnConfirmar = contenido.querySelector('.confirmar');
-
-
     btnConfirmar.onclick = async () => {
         try {
             mostrarCarga();
@@ -431,19 +429,24 @@ function mostrarConfirmacionEliminarMP(id, nombre) {
                 method: 'DELETE'
             });
 
-            if (!response.ok) throw new Error('Error al eliminar');
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Error al eliminar');
+            }
 
             mostrarNotificacion('Registro eliminado exitosamente', 'success');
-            ocultarAnuncioDown();
-            cargarRegistrosMP(); // Recargar lista
+            cargarRegistrosMP();
+
+
         } catch (error) {
             console.error('Error:', error);
-            mostrarNotificacion('Error al eliminar el registro', 'error');
+            mostrarNotificacion(error.message || 'Error al eliminar el registro', 'error');
         } finally {
             ocultarCarga();
+            ocultarAnuncioDown();
         }
     };
-
 }
 function editarRegistroMP(registro) {
     const anuncio = document.querySelector('.anuncio');
@@ -582,7 +585,9 @@ function editarRegistroMP(registro) {
                 const response = await fetch('/obtener-productos');
                 if (!response.ok) throw new Error('Error al cargar productos');
                 const data = await response.json();
-                productos = data.productos;
+                // Asegurarnos de que productos sea un array de strings
+                productos = Array.isArray(data.productos) ?
+                    data.productos.map(p => typeof p === 'string' ? p : p.nombre) : [];
             } catch (error) {
                 console.error('Error al cargar productos:', error);
                 mostrarNotificacion('Error al cargar productos', 'error');
@@ -591,7 +596,7 @@ function editarRegistroMP(registro) {
             }
         }
 
-        // Load products when initializing
+        // Cargar productos inmediatamente
         cargarProductos();
 
         inputBuscar.addEventListener('input', () => {
@@ -608,14 +613,15 @@ function editarRegistroMP(registro) {
 
             if (productosFiltrados.length > 0) {
                 sugerencias.innerHTML = `
-                    <ul class="sugerencias-list">
-                        ${productosFiltrados.map(producto => `
-                            <li class="sugerencia-item">${producto}</li>
-                        `).join('')}
-                    </ul>
-                `;
+                <ul class="sugerencias-list">
+                    ${productosFiltrados.map(producto => `
+                        <li class="sugerencia-item">${producto}</li>
+                    `).join('')}
+                </ul>
+            `;
                 sugerencias.style.display = 'block';
 
+                // Agregar eventos click a las sugerencias
                 sugerencias.querySelectorAll('.sugerencia-item').forEach(item => {
                     item.addEventListener('click', () => {
                         document.getElementById('nombreProductoSeleccionado').textContent = item.textContent;
@@ -630,16 +636,9 @@ function editarRegistroMP(registro) {
             }
         });
 
-        // Close suggestions when clicking outside
+        // Cerrar sugerencias al hacer clic fuera
         document.addEventListener('click', (e) => {
             if (!inputBuscar.contains(e.target) && !sugerencias.contains(e.target)) {
-                sugerencias.style.display = 'none';
-            }
-        });
-
-        // Close suggestions when pressing Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
                 sugerencias.style.display = 'none';
             }
         });
@@ -896,17 +895,17 @@ function mostrarFormularioRegistroMP() {
 
         inputBuscar.addEventListener('input', () => {
             const busqueda = inputBuscar.value.toLowerCase().trim();
-        
+
             if (busqueda.length < 2) {
                 sugerencias.style.display = 'none';
                 return;
             }
-        
+
             // Filtrar usando los nombres de los productos
             const productosFiltrados = productos.filter(producto =>
                 producto.toLowerCase().includes(busqueda)
             );
-        
+
             if (productosFiltrados.length > 0) {
                 sugerencias.innerHTML = `
                     <ul class="sugerencias-list">

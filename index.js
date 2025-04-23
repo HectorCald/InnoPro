@@ -3376,7 +3376,7 @@ app.delete('/eliminar-registro-mp/:id', requireAuth, async (req, res) => {
         const { id } = req.params;
         const sheets = google.sheets({ version: 'v4', auth });
 
-        // Get the spreadsheet to find the sheet ID
+        // Obtener el spreadsheet primero
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
@@ -3392,14 +3392,17 @@ app.delete('/eliminar-registro-mp/:id', requireAuth, async (req, res) => {
             });
         }
 
-        // Get all records to find the row to delete
+        // Obtener registros para encontrar la fila a eliminar
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Materia prima!A2:K'
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => row[0] === id);
+        const rowIndex = rows.findIndex(row => 
+            row[0] === id || 
+            `RMP-${rows.indexOf(row) + 1}` === id
+        );
 
         if (rowIndex === -1) {
             return res.status(404).json({ 
@@ -3408,7 +3411,7 @@ app.delete('/eliminar-registro-mp/:id', requireAuth, async (req, res) => {
             });
         }
 
-        // Delete the row using batchUpdate
+        // Eliminar la fila
         await sheets.spreadsheets.batchUpdate({
             spreadsheetId: process.env.SPREADSHEET_ID,
             requestBody: {
@@ -3417,7 +3420,7 @@ app.delete('/eliminar-registro-mp/:id', requireAuth, async (req, res) => {
                         range: {
                             sheetId: mpSheet.properties.sheetId,
                             dimension: 'ROWS',
-                            startIndex: rowIndex + 1, // +1 because we started from A2
+                            startIndex: rowIndex + 1,
                             endIndex: rowIndex + 2
                         }
                     }
