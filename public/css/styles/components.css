@@ -6,7 +6,7 @@
     top: 60px !important;
     right: 0;
     width: 100%;
-    height: calc(100vh - 70px) !important;
+    height: calc(100vh - 60px) !important;
     background-color: rgba(24, 24, 24, 0.352);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(8px);
