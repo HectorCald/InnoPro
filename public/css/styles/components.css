@@ -646,7 +646,7 @@
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: calc(100vh - 70px);
+    height: calc(100vh - 60px);
     justify-content: center;
     align-items: center;
     background-color: rgba(24, 24, 24, 0.352);

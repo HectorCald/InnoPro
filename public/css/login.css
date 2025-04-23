@@ -459,6 +459,7 @@ body {
     border: none;
     width: 100%;
     color: white;
+    font-size: 13px !important;
 }
 
 .anuncio-btn:hover {
