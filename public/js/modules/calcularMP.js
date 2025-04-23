@@ -28,13 +28,13 @@ export function inicializarCalcularMP() {
             </div>
         </div>
     `;
+    configurarBusqueda();
+    cargarRegistrosMP();
 
     const btnRegistrar = container.querySelector('.btn-registrar-mp');
     btnRegistrar.onclick = mostrarFormularioRegistroMP;
-    configurarBusqueda();
 
-    // Cargar registros
-    cargarRegistrosMP();
+    
 }
 function configurarBusqueda() {
     const searchInput = document.getElementById('searchMP');
@@ -531,7 +531,6 @@ function editarRegistroMP(registro) {
 
     async function cargarUsuarios() {
         try {
-            mostrarCarga();
             const response = await fetch('/obtener-usuarios');
             if (!response.ok) throw new Error('Error al cargar usuarios');
 
@@ -559,7 +558,6 @@ function editarRegistroMP(registro) {
 
     async function cargarProductosAlmacen() {
         try {
-            mostrarCarga();
             const response = await fetch('/obtener-almacen-general');
             if (!response.ok) throw new Error('Error al cargar productos');
 
@@ -581,7 +579,7 @@ function editarRegistroMP(registro) {
 
         async function cargarProductos() {
             try {
-                mostrarCarga();
+
                 const response = await fetch('/obtener-productos');
                 if (!response.ok) throw new Error('Error al cargar productos');
                 const data = await response.json();
@@ -592,7 +590,7 @@ function editarRegistroMP(registro) {
                 console.error('Error al cargar productos:', error);
                 mostrarNotificacion('Error al cargar productos', 'error');
             } finally {
-                ocultarCarga();
+
             }
         }
 
@@ -697,6 +695,7 @@ function editarRegistroMP(registro) {
                 actualizarListaProductos();
             };
         });
+
     }
 
 
@@ -829,13 +828,9 @@ function mostrarFormularioRegistroMP() {
     mostrarAnuncio();
     let materiasSeleccionadas = [];
 
-    // Cargar usuarios
+
     cargarUsuarios();
-
-    // Cargar productos
     cargarProductosAlmacen();
-
-    // Configurar eventos
     configurarBuscadorProductos();
     configurarBotonAgregar();
     configurarBotonesGuardarCancelar();
@@ -877,7 +872,6 @@ function mostrarFormularioRegistroMP() {
 
         async function cargarProductos() {
             try {
-                mostrarCarga();
                 const response = await fetch('/obtener-productos');
                 if (!response.ok) throw new Error('Error al cargar productos');
                 const data = await response.json();
@@ -887,7 +881,6 @@ function mostrarFormularioRegistroMP() {
                 console.error('Error al cargar productos:', error);
                 mostrarNotificacion('Error al cargar productos', 'error');
             } finally {
-                ocultarCarga();
             }
         }
 
@@ -1005,7 +998,6 @@ function mostrarFormularioRegistroMP() {
 
     function configurarBotonesGuardarCancelar() {
         const btnGuardar = document.querySelector('.guardar');
-        const btnCancelar = document.querySelector('.cancelar');
 
         btnGuardar.onclick = async () => {
             const fecha = document.getElementById('fechaMP').value;
