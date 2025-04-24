@@ -88,7 +88,8 @@ if ('navigation' in window) {
 export function ocultarAnuncioDown() {
     const anuncioVisible = document.querySelector('.anuncio-down');
     const overlay = document.querySelector('.overlay');
-    
+    const container = document.querySelector('.container'); // Ensure this line is included
+
     if (anuncioVisible && anuncioVisible.style.display === 'flex') {
         anuncioVisible.classList.add('slide-out');
 
@@ -98,10 +99,12 @@ export function ocultarAnuncioDown() {
         }, 300);
 
         if (overlay) overlay.style.display = 'none';
-        if (container) container.classList.remove('no-touch');
+        if (container) container.classList.remove('no-touch'); // Ensure this line is included
     }
 }
 window.ocultarAnuncioDown = ocultarAnuncioDown;
+
+
 
 export function mostrarAnuncioDown() {
     const anuncioVisible = document.querySelector('.anuncio-down');

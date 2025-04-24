@@ -1,5 +1,3 @@
-
-
 /* ==================== FUNCIONES DE INICIO DE ALMACEN ==================== */
 let productosParaIngresar = new Map();
 let productosParaSalida = new Map();
@@ -125,8 +123,8 @@ export async function cargarAlmacen() {
 window.agregarAIngresos = (id, nombre, gramaje) => {
     const button = document.querySelector(`.btn-card.ingreso[onclick*="${id}"]`);
     const anuncio = document.querySelector('.anuncio');
-    const listaProductos = document.querySelector('.carrito-productos');
-    
+    const listaProductos = document.querySelector('.carrito-productos2');
+
     if (productosParaIngresar.has(id)) {
         // Si el producto existe, lo removemos
         productosParaIngresar.delete(id);
@@ -148,7 +146,7 @@ window.agregarAIngresos = (id, nombre, gramaje) => {
             button.style.color = '#fff';
             button.disabled = true;
         }
-        
+
         // Si la lista está abierta, agregamos el nuevo elemento
         if (anuncio.style.display !== 'none' && listaProductos) {
             const nuevoItem = document.createElement('div');
@@ -186,7 +184,7 @@ window.agregarASalidas = (id, nombre, gramaje, stockActual) => {
     const button = document.querySelector(`.btn-card.salida[onclick*="${id}"]`);
     const anuncio = document.querySelector('.anuncio');
     const listaProductos = document.querySelector('.carrito-productos');
-    
+
     if (productosParaSalida.has(id)) {
         // Si el producto existe, lo removemos
         productosParaSalida.delete(id);
@@ -208,7 +206,7 @@ window.agregarASalidas = (id, nombre, gramaje, stockActual) => {
             button.style.color = '#fff';
             button.disabled = true;
         }
-        
+
         // Si la lista está abierta, agregamos el nuevo elemento
         if (anuncio.style.display !== 'none' && listaProductos) {
             const nuevoItem = document.createElement('div');
@@ -304,7 +302,7 @@ async function mostrarListaIngresos() {
             <button class="anuncio-btn close" onclick="ocultarAnuncio()">
                 <i class="fas fa-arrow-right"></i></button>
         </div>
-            <div class="carrito-productos relleno">
+            <div class="carrito-productos2 relleno">
                 ${Array.from(productosParaIngresar.entries()).map(([id, { nombre, gramaje, cantidad }]) => `
                     <div class="carrito-item form-grup" data-id="${id}" style="margin-top:5px; position: relative;">
                         
@@ -340,7 +338,7 @@ async function mostrarListaIngresos() {
         if (productosParaIngresar.has(id)) {
             const producto = productosParaIngresar.get(id);
             let nuevaCantidad;
-    
+
             if (accion === 'sumar') {
                 nuevaCantidad = producto.cantidad + 1;
             } else if (accion === 'restar') {
@@ -349,10 +347,10 @@ async function mostrarListaIngresos() {
                 // Si viene del input
                 nuevaCantidad = parseInt(accion) || 1;
             }
-            
+
             producto.cantidad = nuevaCantidad;
             productosParaIngresar.set(id, producto);
-            
+
             // Actualizar solo el input
             const inputCantidad = document.querySelector(`.carrito-item[data-id="${id}"] input[type="number"]`);
             if (inputCantidad) {
@@ -366,7 +364,7 @@ async function mostrarListaIngresos() {
             if (itemElement) {
                 // Remove from Map
                 productosParaIngresar.delete(id);
-                
+
                 // Reset the original button state
                 const button = document.querySelector(`.btn-card.ingreso[onclick*="${id}"]`);
                 if (button) {
@@ -375,18 +373,18 @@ async function mostrarListaIngresos() {
                     button.style.color = '';
                     button.disabled = false;
                 }
-    
+
                 // Animate and remove the item
                 itemElement.style.transition = 'all 0.3s ease';
                 itemElement.style.opacity = '0';
                 itemElement.style.height = '0';
                 itemElement.style.margin = '0';
                 itemElement.style.padding = '0';
-    
+
                 setTimeout(() => {
                     itemElement.remove();
                     actualizarContadorIngresos();
-                    
+
                     // Close modal if no items left
                     if (productosParaIngresar.size === 0) {
                         ocultarAnuncio();
@@ -402,69 +400,72 @@ async function mostrarListaIngresos() {
         try {
             const anuncio = document.querySelector('.anuncio-down');
             const contenido = anuncio.querySelector('.anuncio-contenido');
-    
-            // Mostrar formulario de razón
+
             contenido.innerHTML = `
-                 <div class="encabezado">
-                    <h2>Confirmación de Ingreso</h2>
-                    <button class="anuncio-btn close" onclick="ocultarAnuncioDoen()">
-                        <i class="fas fa-arrow-down"></i></button>
-                </div>
-                <div class="form-grup"style="background:none">
-                    <p>Por favor, indique la razón del ingreso:</p>
-                    <textarea id="razonMovimiento" class="edit-input" style="width: 100%; min-height: 100px;" placeholder="Escriba la razón..."></textarea>
-                </div>
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn green finalizar">
-                        <i class="fas fa-check"></i> Finalizar Ingreso
-                    </button>
-                </div>
-            `;
+    <div class="encabezado">
+        <h2>Confirmación de Ingreso</h2>
+        <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+            <i class="fas fa-arrow-down"></i></button>
+    </div>
+    <div class="form-grup" style="background:none">
+        <p>Por favor, indique la razón del ingreso:</p>
+        <textarea id="razonMovimiento" class="edit-input" style="width: 100%; min-height: 100px;" placeholder="Escriba la razón..."></textarea>
+    </div>
+    <div class="anuncio-botones">
+        <button class="anuncio-btn green finalizar">
+            <i class="fas fa-check"></i> Finalizar Ingreso
+        </button>
+    </div>
+    `;
             mostrarAnuncioDown();
+
             const btnFinalizar = contenido.querySelector('.finalizar');
             btnFinalizar.onclick = async () => {
-                const razon = document.getElementById('razonMovimiento').value.trim();
-                if (!razon) {
-                    mostrarNotificacion('Por favor, indique la razón del ingreso', 'warning');
-                    return;
-                }
-    
-                mostrarCarga();
-                const usuario = await obtenerUsuarioActual();
-                
-                for (const [id, { cantidad, nombre, gramaje }] of productosParaIngresar) {
-                    const response = await fetch('/ingresar-stock-almacen', {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, cantidad })
-                    });
-    
-                    const data = await response.json();
-                    if (!data.success) {
-                        throw new Error(`Error al procesar el ingreso`);
+                try {
+                    const razon = document.getElementById('razonMovimiento').value.trim();
+                    if (!razon) {
+                        mostrarNotificacion('Por favor, indique la razón del ingreso', 'warning');
+                        return;
                     }
-    
-                    const nombreCompleto = `${nombre} - ${gramaje}gr`;
-                    await registrarMovimiento('Ingreso', nombreCompleto, cantidad, razon);
+
+                    mostrarCarga();
+
+                    for (const [id, { cantidad, nombre, gramaje }] of productosParaIngresar) {
+                        const response = await fetch('/ingresar-stock-almacen', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, cantidad })
+                        });
+
+                        const data = await response.json();
+                        if (!data.success) {
+                            throw new Error(data.error || 'Error al procesar el ingreso');
+                        }
+
+                        const nombreCompleto = `${nombre} - ${gramaje}gr`;
+                        await registrarMovimiento('Ingreso', nombreCompleto, cantidad, razon);
+                    }
+
+                    productosParaIngresar.clear();
+                    actualizarContadorIngresos();
+                    ocultarAnuncio();
+                    
+                    await cargarAlmacen();
+                    ocultarAnuncioDown();
+                    mostrarNotificacion('Ingresos procesados correctamente', 'success');
+                } catch (error) {
+                    console.error('Error:', error);
+                    mostrarNotificacion(error.message, 'error');
+                } finally {
+                    ocultarCarga();
                 }
-    
-                mostrarNotificacion('Ingresos procesados correctamente', 'success');
-                productosParaIngresar.clear();
-                actualizarContadorIngresos();
-                ocultarAnuncioDown();
-                cargarAlmacen();
             };
-    
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion(error.message, 'error');
-        } finally {
             ocultarCarga();
-            document.getElementById('searchProduct').value = '';
         }
     };
-    
-    
 }
 async function mostrarListaSalidas() {
     const anuncio = document.querySelector('.anuncio');
@@ -512,7 +513,7 @@ async function mostrarListaSalidas() {
         if (productosParaSalida.has(id)) {
             const producto = productosParaSalida.get(id);
             let nuevaCantidad;
-    
+
             if (accion === 'sumar') {
                 nuevaCantidad = producto.cantidad + 1;
             } else if (accion === 'restar') {
@@ -521,16 +522,16 @@ async function mostrarListaSalidas() {
                 // Si viene del input
                 nuevaCantidad = parseInt(accion) || 1;
             }
-            
+
             // Validar contra stock
             if (nuevaCantidad > producto.stockActual) {
                 nuevaCantidad = producto.stockActual;
                 mostrarNotificacion('No hay suficiente stock', 'warning');
             }
-            
+
             producto.cantidad = nuevaCantidad;
             productosParaSalida.set(id, producto);
-            
+
             // Actualizar solo el input
             const inputCantidad = document.querySelector(`.carrito-item[data-id="${id}"] input[type="number"]`);
             if (inputCantidad) {
@@ -544,7 +545,7 @@ async function mostrarListaSalidas() {
             if (itemElement) {
                 // Remove from Map
                 productosParaSalida.delete(id);
-                
+
                 // Reset the original button state
                 const button = document.querySelector(`.btn-card.salida[onclick*="${id}"]`);
                 if (button) {
@@ -553,21 +554,21 @@ async function mostrarListaSalidas() {
                     button.style.color = '';
                     button.disabled = false;
                 }
-    
+
                 // Animate and remove the item
                 itemElement.style.transition = 'all 0.3s ease';
                 itemElement.style.opacity = '0';
                 itemElement.style.height = '0';
                 itemElement.style.margin = '0';
                 itemElement.style.padding = '0';
-    
+
                 setTimeout(() => {
                     itemElement.remove();
                     actualizarContadorSalidas();
-                    
+
                     // Close modal if no items left
                     if (productosParaSalida.size === 0) {
-                       ocultarAnuncio();
+                        ocultarAnuncio();
                     }
                 }, 300);
             }
@@ -576,73 +577,77 @@ async function mostrarListaSalidas() {
             mostrarNotificacion('Error al eliminar el item', 'error');
         }
     };
+
     window.procesarSalidas = async () => {
         try {
             const anuncio = document.querySelector('.anuncio-down');
             const contenido = anuncio.querySelector('.anuncio-contenido');
-    
+
             contenido.innerHTML = `
-                 <div class="encabezado">
-                    <h2>Confirmación de Salida</h2>
-                    <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
-                        <i class="fas fa-arrow-down"></i></button>
-                </div>
-                <div class="form-grup" style="background:none">
-                    <p>Por favor, indique la razón de la salida:</p>
-                    <textarea id="razonMovimiento" class="edit-input" style="width: 100%; min-height: 100px;" placeholder="Escriba la razón..."></textarea>
-                </div>
-                <div class="anuncio-botones">
-                    <button class="anuncio-btn green finalizar">
-                        <i class="fas fa-check"></i> Finalizar Salida
-                    </button>
-                </div>
-            `;
+            <div class="encabezado">
+                <h2>Confirmación de Salida</h2>
+                <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                    <i class="fas fa-arrow-down"></i></button>
+            </div>
+            <div class="form-grup" style="background:none">
+                <p>Por favor, indique la razón de la salida:</p>
+                <textarea id="razonMovimiento" class="edit-input" style="width: 100%; min-height: 100px;" placeholder="Escriba la razón..."></textarea>
+            </div>
+            <div class="anuncio-botones">
+                <button class="anuncio-btn green finalizar">
+                    <i class="fas fa-check"></i> Finalizar Salida
+                </button>
+            </div>
+        `;
             mostrarAnuncioDown();
 
             const btnFinalizar = contenido.querySelector('.finalizar');
             btnFinalizar.onclick = async () => {
-                const razon = document.getElementById('razonMovimiento').value.trim();
-                if (!razon) {
-                    mostrarNotificacion('Por favor, indique la razón de la salida', 'warning');
-                    return;
-                }
-    
-                mostrarCarga();
-                const usuario = await obtenerUsuarioActual();
-    
-                for (const [id, { cantidad, nombre, gramaje }] of productosParaSalida) {
-                    const response = await fetch('/retirar-stock-almacen', {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, cantidad })
-                    });
-    
-                    const data = await response.json();
-                    if (!data.success) {
-                        throw new Error(data.error || `Error al procesar la salida de ${nombre}`);
+                try {
+                    const razon = document.getElementById('razonMovimiento').value.trim();
+                    if (!razon) {
+                        mostrarNotificacion('Por favor, indique la razón de la salida', 'warning');
+                        return;
                     }
-    
-                    const nombreCompleto = `${nombre} - ${gramaje}gr`;
-                    await registrarMovimiento('Salida', nombreCompleto, cantidad, razon);
+
+                    mostrarCarga();
+
+                    for (const [id, { cantidad, nombre, gramaje }] of productosParaSalida) {
+                        const response = await fetch('/retirar-stock-almacen', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, cantidad })
+                        });
+
+                        const data = await response.json();
+                        if (!data.success) {
+                            throw new Error(data.error || `Error al procesar la salida de ${nombre}`);
+                        }
+
+                        const nombreCompleto = `${nombre} - ${gramaje}gr`;
+                        await registrarMovimiento('Salida', nombreCompleto, cantidad, razon);
+                    }
+
+                    productosParaSalida.clear();
+                    actualizarContadorSalidas();
+                    ocultarAnuncio();
+                    
+                    await cargarAlmacen();
+                    ocultarAnuncioDown();
+                    mostrarNotificacion('Salidas procesadas correctamente', 'success');
+                } catch (error) {
+                    console.error('Error:', error);
+                    mostrarNotificacion(error.message, 'error');
+                } finally {
+                    ocultarCarga();
                 }
-    
-                mostrarNotificacion('Salidas procesadas correctamente', 'success');
-                productosParaSalida.clear();
-                actualizarContadorSalidas();
-                ocultarAnuncioDown();
-                cargarAlmacen();
             };
-    
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion(error.message, 'error');
-        } finally {
             ocultarCarga();
-            document.getElementById('searchProduct').value = '';
         }
     };
-
-    
 }
 
 
@@ -1377,12 +1382,12 @@ window.mostrarDetalleProductoGral = function (producto) {
                         <select id="editTags" class="edit-input">
                             <option value="">Seleccionar</option>
                             ${window.productosAlmacen && window.productosAlmacen[0] && window.productosAlmacen[0][8] ?
-                                window.productosAlmacen[0][8].split(';')
-                                    .filter(tag => tag.trim())
-                                    .map(tag => `<option value="${tag}">${tag}</option>`)
-                                    .join('')
-                                : '<option disabled>No hay etiquetas disponibles</option>'
-                            }
+            window.productosAlmacen[0][8].split(';')
+                .filter(tag => tag.trim())
+                .map(tag => `<option value="${tag}">${tag}</option>`)
+                .join('')
+            : '<option disabled>No hay etiquetas disponibles</option>'
+        }
                         </select>
                         <div class="detalle-item">
                             <i class="fas fa-plus-circle add btn-add-tag-edit"></i>
@@ -1410,7 +1415,7 @@ window.mostrarDetalleProductoGral = function (producto) {
             <button class="anuncio-btn red eliminar">Eliminar</button>
         </div>
     `;
-   mostrarAnuncio();
+    mostrarAnuncio();
 
     function actualizarTagsUI() {
         const tagsContainer = contenido.querySelector('#tags-container');
@@ -1624,7 +1629,7 @@ function mostrarConfirmacionEliminar(id, nombre) {
 
     mostrarAnuncioDown();
     ocultarAnuncio();
-    
+
     anuncio.querySelector('.confirmar').onclick = async () => {
         try {
             mostrarCarga();
