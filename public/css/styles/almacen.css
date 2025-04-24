@@ -151,6 +151,54 @@
             }
         }
     }
+    .filter-options-almacenGral {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        min-height: 50px;
+        margin-bottom: 5px;
+        overflow-x: auto;
+        padding: 0;
+        justify-content: flex-start !important;
+        align-items: center;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* ===== BOTÓN DE FILTRO ===== */
+    .filter-btn-acopio {
+        padding: 10px 15px;
+        border-radius: 10px;
+        background-color: var(--cero-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        flex: 0 0 auto;
+        white-space: nowrap;
+        border: none;
+        gap: 10px;
+        cursor: pointer;
+        min-width: fit-content;
+        height: fit-content;
+
+        &.active {
+            background: var(--cuarto-color);
+            border-color: var(--cuarto-color);
+            color: white;
+        }
+
+        i {
+            font-size: 14px;
+        }
+
+        p {
+            margin: 0;
+        }
+    }
 
     .products-grid {
         display: grid;

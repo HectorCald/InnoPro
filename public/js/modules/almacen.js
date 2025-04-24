@@ -2,7 +2,7 @@
 let productosParaIngresar = new Map();
 let productosParaSalida = new Map();
 
-export function inicializarAlmacenGral() {
+export async function inicializarAlmacenGral() {
     const container = document.querySelector('.almacen-view');
     if (!container) return;
     container.innerHTML = '';
@@ -48,7 +48,6 @@ export function inicializarAlmacenGral() {
     const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
     btnSalidas.onclick = mostrarListaSalidas;
 
-
     const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-box').parentElement;
     btnAgregar.onclick = mostrarFormularioAgregarProducto;
 
@@ -58,19 +57,27 @@ export function inicializarAlmacenGral() {
     const btnPedidos = container.querySelector('.btn-agregar-pedido i.fa-clipboard-list').parentElement;
     btnPedidos.onclick = () => mostrarFormularioPedidos('');
 
+    await cargarAlmacen(); // Ensure data is loaded before showing products
     mostrarProductos();
+
+    console.log("Almacen General Initialized");
 };
+
 export async function cargarAlmacen() {
     try {
         mostrarCarga();
         const response = await fetch('/obtener-almacen-general');
         const data = await response.json();
 
-        if (!data.success) {
+        if (!data.pedidos || data.pedidos.length === 0) {
             throw new Error(data.error || 'Error al cargar los productos');
         }
 
         const productsContainer = document.getElementById('productsContainer-general');
+        if (!productsContainer) {
+            return;
+        }
+
         window.productosAlmacen = data.pedidos;
         productsContainer.innerHTML = '';
 
@@ -88,6 +95,11 @@ export async function cargarAlmacen() {
 
             const productCard = document.createElement('div');
             productCard.className = `product-card ${stockClass}`;
+            productCard.dataset.id = id;
+            productCard.dataset.tags = (producto[8] || '') // Asegurar manejo de mayúsculas y espacios
+            .split(';')
+            .map(tag => tag.trim().toLowerCase())
+            .join(';');
             productCard.onclick = () => mostrarDetalleProductoGral(producto);
             productCard.innerHTML = `
                 <div class="product-info">
@@ -112,14 +124,49 @@ export async function cargarAlmacen() {
             productsContainer.appendChild(productCard);
         });
 
+        const etiquetasContainer = document.querySelector('.filter-options-almacenGral');
+        if (etiquetasContainer) {
+            etiquetasContainer.innerHTML = obtenerEtiquetas();
+            console.log("Etiquetas updated");
+        }
+
     } catch (error) {
-        console.error('Error al cargar el almacén:', error);
         mostrarNotificacion('Error al cargar los productos', 'error');
     } finally {
         ocultarCarga();
         scrollToTop('.almacen-view')
     }
 };
+
+function obtenerEtiquetas() {
+    if (!window.productosAlmacen || window.productosAlmacen.length === 0) {
+        return '<p>No hay etiquetas disponibles</p>';
+    }
+
+    // Limpiar y normalizar tags
+    const etiquetas = window.productosAlmacen
+        .flatMap(producto => (producto[8] || '').split(';'))
+        .map(tag => tag.trim().toLowerCase())
+        .filter(tag => tag.length > 0);
+    
+    // Eliminar duplicados usando Set
+    const etiquetasUnicas = [...new Set(etiquetas)].sort();
+
+    if (etiquetasUnicas.length === 0) {
+        return '<p>No hay etiquetas disponibles</p>';
+    }
+
+    return `
+        <button class="filter-btn-acopio active" data-tag="all">
+            <i class="fas fa-layer-group"></i> <p>Todos</p>
+        </button>
+        ${etiquetasUnicas.map(tag => `
+        <button class="filter-btn-acopio" data-tag="${tag}">
+            <i class="fas fa-tag"></i> <p>${tag.charAt(0).toUpperCase() + tag.slice(1)}</p>
+        </button>
+        `).join('')}
+    `;
+}
 window.agregarAIngresos = (id, nombre, gramaje) => {
     const button = document.querySelector(`.btn-card.ingreso[onclick*="${id}"]`);
     const anuncio = document.querySelector('.anuncio');
@@ -449,7 +496,7 @@ async function mostrarListaIngresos() {
                     productosParaIngresar.clear();
                     actualizarContadorIngresos();
                     ocultarAnuncio();
-                    
+
                     await cargarAlmacen();
                     ocultarAnuncioDown();
                     mostrarNotificacion('Ingresos procesados correctamente', 'success');
@@ -631,7 +678,7 @@ async function mostrarListaSalidas() {
                     productosParaSalida.clear();
                     actualizarContadorSalidas();
                     ocultarAnuncio();
-                    
+
                     await cargarAlmacen();
                     ocultarAnuncioDown();
                     mostrarNotificacion('Salidas procesadas correctamente', 'success');
@@ -674,6 +721,9 @@ export function mostrarProductos() {
                    </button>
                 </div>
             </div>
+            <div class="filter-options-almacenGral">
+                ${obtenerEtiquetas()}
+            </div>
             <div class="products-grid" id="productsContainer-general">
             </div>
         </div>
@@ -681,6 +731,61 @@ export function mostrarProductos() {
 
     // Call cargarAlmacen after creating the container
     cargarAlmacen();
+
+    document.getElementById('productsContainer-general').addEventListener('click', (e) => {
+        const productCard = e.target.closest('.product-card');
+        if (productCard) {
+            const productId = productCard.dataset.id;
+            const producto = window.productosAlmacen.find(p => p[0] === productId);
+            if (producto) mostrarDetalleProductoGral(producto);
+        }
+    });
+    const tagsContainer = document.querySelector('.filter-options-almacenGral');
+    if (tagsContainer) {
+        tagsContainer.addEventListener('click', (e) => {
+            const tagButton = e.target.closest('.filter-btn-acopio');
+            if (tagButton) {
+                const selectedTag = tagButton.dataset.tag;
+                
+                document.querySelectorAll('.filter-btn-acopio').forEach(btn => 
+                    btn.classList.remove('active'));
+                tagButton.classList.add('active');
+        
+                const allProducts = document.querySelectorAll('.product-card');
+                const productsContainer = document.getElementById('productsContainer-general');
+                let anyVisible = false;
+        
+                allProducts.forEach(product => {
+                    if (selectedTag === 'all') {
+                        product.style.display = 'grid';
+                        anyVisible = true;
+                    } else {
+                        // Modificar esta parte para manejar múltiples etiquetas
+                        const productTags = product.dataset.tags?.toLowerCase().split(';') || [];
+                        const match = productTags.some(tag => tag.trim() === selectedTag);
+                        product.style.display = match ? 'grid' : 'none';
+                        if (match) anyVisible = true;
+                    }
+                });
+
+                // Mostrar mensaje si no hay resultados
+                const noResultsMessage = productsContainer.querySelector('.no-results-message');
+                if (!anyVisible) {
+                    if (!noResultsMessage) {
+                        productsContainer.innerHTML += `
+                    <div class="no-results-message" style="width: 100%; text-align: center; padding: 20px; color: var(--primary-text);">
+                        <i class="fas fa-tag" style="font-size: 40px; margin-bottom: 10px;"></i>
+                        <p>No hay productos con la etiqueta "${selectedTag}"</p>
+                    </div>
+                `;
+                    }
+                } else if (noResultsMessage) {
+                    noResultsMessage.remove();
+                }
+            }
+        });
+    }
+
 
     function normalizarTexto(texto) {
         return texto.toLowerCase()
@@ -790,6 +895,7 @@ export function mostrarProductos() {
         });
     });
 };
+
 async function obtenerUsuarioActual() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -912,6 +1018,7 @@ function mostrarFormularioFormato() {
             mostrarNotificacion('Error al agregar el formato', 'error');
         } finally {
             ocultarCarga();
+            ocultarAnuncio();
         }
     });
 
@@ -956,6 +1063,8 @@ function mostrarFormularioFormato() {
             mostrarNotificacion('Error al agregar la etiqueta', 'error');
         } finally {
             ocultarCarga();
+            await cargarAlmacen();
+            ocultarAnuncio();
         }
     });
 
@@ -1677,7 +1786,7 @@ function mostrarConfirmacionEliminarTag(nombre) {
                 <p>Esta acción eliminará esta etiqueta de todos los productos.</p>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn red confirmar">Confirmar</button>>
+            <button class="anuncio-btn red confirmar">Confirmar</button>
         </div>
     `;
     mostrarAnuncioDown();
@@ -1809,7 +1918,4 @@ async function registrarMovimiento(tipo, producto, cantidad, razon = '') {
         throw error;
     }
 }
-
-
-
 

@@ -58,14 +58,14 @@ export function inicializarAlmacen() {
     mostrarProductosBruto();
     window.agregarAlCarrito = (nombre) => {
         carritoProductos.set(nombre, 1);
-        
+
         // Disable the button
         const button = document.querySelector(`.btn-card.pedido[onclick*="${nombre}"]`);
         if (button) {
             button.classList.add('disabled');
             button.disabled = true;
         }
-    
+
         // Update cart counter and animate
         updateCartCounter();
         const carritoAbierto = document.querySelector('.anuncio').style.display === 'flex';
@@ -110,6 +110,15 @@ export function mostrarProductosBruto() {
 
     // Call cargarAlmacen after creating the container
     cargarAlmacenBruto();
+
+    document.getElementById('productsContainer').addEventListener('click', (e) => {
+        const productCard = e.target.closest('.product-card');
+        if (productCard) {
+            const productId = productCard.dataset.id;
+            const producto = window.productosAlmacen.find(p => p[0] === productId);
+            if (producto) mostrarDetalleProductoAcopio(producto);
+        }
+    });
 
     function normalizarTexto(texto) {
         return texto.toLowerCase()
@@ -317,6 +326,7 @@ export async function cargarAlmacenBruto() {
 
             const productCard = document.createElement('div');
             productCard.className = `product-card ${stockClass}`;
+            productCard.dataset.id = producto[0];
             productCard.onclick = (e) => {
                 if (!e.target.closest('.btn-card')) {
                     mostrarDetalleProductoAcopio(producto);
@@ -420,7 +430,7 @@ function mostrarCarrito() {
 function updateCartCounter() {
     const cartButton = document.querySelector('.btn-agregar-pedido i.fa-shopping-cart').parentElement;
     const cartSize = carritoProductos.size;
-    
+
     // Remove existing counter if present
     const existingCounter = cartButton.querySelector('.cart-counter');
     if (existingCounter) {
@@ -432,10 +442,10 @@ function updateCartCounter() {
         cartButton.insertAdjacentHTML('beforeend', `
             <span class="cart-counter">${cartSize}</span>
         `);
-        
+
         // Add success color
         cartButton.classList.add('has-items');
-        
+
         // Force reflow and trigger animation
         cartButton.classList.remove('bell-animation');
         void cartButton.offsetWidth; // Force reflow
@@ -479,7 +489,7 @@ window.eliminarDelCarrito = (nombre) => {
         setTimeout(() => {
             productoElement.remove();
             carritoProductos.delete(nombre);
-            
+
             // Reset the original add-to-cart button
             const button = document.querySelector(`.btn-card.pedido[onclick*="${nombre}"]`);
             if (button) {
@@ -506,7 +516,7 @@ window.finalizarPedidosCarrito = async () => {
         carritoProductos.forEach((cantidad, nombre) => {
             const unidad = document.querySelector(`.producto-carrito[data-nombre="${nombre}"] .unidad-medida`).value;
             const observaciones = document.querySelector(`.producto-carrito[data-nombre="${nombre}"] .observaciones-pedido`).value;
-            
+
             pedidos.push({
                 nombre,
                 cantidad: `${cantidad} ${unidad}`,
@@ -645,9 +655,9 @@ window.editarProductoAcopio = function (producto) {
             </div>
             <div id="materiaBrutaEntries" style="background:none">
                 ${pesoBrutoLote ? pesoBrutoLote.split(';').map((item, index) => {
-                    const [peso, lote] = item.split('-').map(val => val.trim());
-                    const pesoFormateado = peso.replace(',', '.');
-                    return `
+        const [peso, lote] = item.split('-').map(val => val.trim());
+        const pesoFormateado = peso.replace(',', '.');
+        return `
                         <div class="campo-form entrada-peso" data-index="${index}" style="background:none">
                             <div class="detalle-item" style="background:none">
                                 <input type="number" step="0.01" id="editPesoBruto_${index}" value="${pesoFormateado}" class="edit-input" placeholder="Peso">
@@ -655,7 +665,7 @@ window.editarProductoAcopio = function (producto) {
                                 <i class="fas fa-trash delete delete-entry" data-type="bruto"></i>
                             </div>
                         </div>`;
-                 }).join('') : ''}
+    }).join('') : ''}
             </div>
 
         <p class="subtitle">Materia Prima:</p>
@@ -669,9 +679,9 @@ window.editarProductoAcopio = function (producto) {
             </div>
             <div id="materiaPrimaEntries" style="background:none">
                 ${pesoPrimaLote ? pesoPrimaLote.split(';').map((item, index) => {
-                    const [peso, lote] = item.split('-').map(val => val.trim());
-                    const pesoFormateado = peso.replace(',', '.');
-                    return `
+        const [peso, lote] = item.split('-').map(val => val.trim());
+        const pesoFormateado = peso.replace(',', '.');
+        return `
                             <div class="campo-form entrada-peso" data-index="${index}" style="background:none">
                             <div class="detalle-item" style="background:none">
                                 <input type="number" step="0.01" id="editPesoPrima_${index}" value="${pesoFormateado}" class="edit-input" placeholder="Peso">
@@ -679,7 +689,7 @@ window.editarProductoAcopio = function (producto) {
                                 <i class="fas fa-trash delete delete-entry" data-type="prima"></i>
                             </div>
                         </div>`;
-            }).join('') : ''}
+    }).join('') : ''}
                     </div>
             `;
     document.querySelectorAll('.delete-entry').forEach(deleteBtn => {
@@ -1177,7 +1187,7 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
     inputProducto.addEventListener('input', () => {
         const busqueda = inputProducto.value.toLowerCase();
         const productos = window.productosAlmacen || [];
-        
+
         // Clear suggestions if input is empty
         if (!busqueda) {
             sugerenciasLista.innerHTML = '';
@@ -1244,81 +1254,81 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
         actualizarLote();
     }
 
-    
+
     // Rest of your existing code...
     const btnProcesar = anuncioContenido.querySelector('.procesar');
 
     btnProcesar.onclick = async () => {
-    try {
-        const producto = document.getElementById('productoIngreso').value;
-        const tipo = tipoSelect.value;
-        const peso = document.getElementById('pesoIngreso').value;
-        const lote = loteInput.value;
-        const razon = document.getElementById('razonIngreso').value;
+        try {
+            const producto = document.getElementById('productoIngreso').value;
+            const tipo = tipoSelect.value;
+            const peso = document.getElementById('pesoIngreso').value;
+            const lote = loteInput.value;
+            const razon = document.getElementById('razonIngreso').value;
 
-        if (!producto || !tipo || !peso || !razon) {
-            mostrarNotificacion('Por favor complete todos los campos', 'error');
-            return;
+            if (!producto || !tipo || !peso || !razon) {
+                mostrarNotificacion('Por favor complete todos los campos', 'error');
+                return;
+            }
+
+            mostrarCarga();
+
+            // Procesar el ingreso
+            const ingresoResponse = await fetch('/procesar-ingreso-acopio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    producto,
+                    tipo,
+                    peso,
+                    lote,
+                    razon
+                })
+            });
+
+            const ingresoData = await ingresoResponse.json();
+
+            if (!ingresoData.success) {
+                throw new Error(ingresoData.error || 'Error al procesar el ingreso');
+            }
+
+            // Registrar el movimiento
+            const movimientoResponse = await fetch('/registrar-movimiento-acopio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipo: 'Ingreso ' + tipo,
+                    producto,
+                    cantidad: peso,
+                    operario: 'Sistema',
+                    razon
+                })
+            });
+
+            const movimientoData = await movimientoResponse.json();
+
+            if (!movimientoData.success) {
+                throw new Error('Error al registrar el movimiento');
+            }
+
+            mostrarNotificacion('Ingreso procesado correctamente', 'success');
+
+            // Show ingress summary instead of closing the modal
+            mostrarResumenIngreso({
+                nombre: producto,
+                tipo: tipo,
+                peso: peso,  // Cambiamos el nombre de la propiedad
+                lote: lote,
+                observaciones: razon
+            });
+
+            cargarAlmacenBruto();
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion(error.message, 'error');
+        } finally {
+            ocultarCarga();
         }
-
-        mostrarCarga();
-
-        // Procesar el ingreso
-        const ingresoResponse = await fetch('/procesar-ingreso-acopio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                producto,
-                tipo,
-                peso,
-                lote,
-                razon
-            })
-        });
-
-        const ingresoData = await ingresoResponse.json();
-
-        if (!ingresoData.success) {
-            throw new Error(ingresoData.error || 'Error al procesar el ingreso');
-        }
-
-        // Registrar el movimiento
-        const movimientoResponse = await fetch('/registrar-movimiento-acopio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                tipo: 'Ingreso ' + tipo,
-                producto,
-                cantidad: peso,
-                operario: 'Sistema',
-                razon
-            })
-        });
-
-        const movimientoData = await movimientoResponse.json();
-
-        if (!movimientoData.success) {
-            throw new Error('Error al registrar el movimiento');
-        }
-
-        mostrarNotificacion('Ingreso procesado correctamente', 'success');
-        
-        // Show ingress summary instead of closing the modal
-        mostrarResumenIngreso({
-            nombre: producto,
-            tipo: tipo,
-            peso: peso,  // Cambiamos el nombre de la propiedad
-            lote: lote,
-            observaciones: razon
-        });
-        
-        cargarAlmacenBruto();
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion(error.message, 'error');
-    } finally {
-        ocultarCarga();
-    }
     };
 }
 window.mostrarFormularioIngresoAcopio = mostrarFormularioIngresoAcopio;
@@ -1380,7 +1390,7 @@ export async function mostrarFormularioSalidaAcopio() {
     inputProducto.addEventListener('input', () => {
         const busqueda = inputProducto.value.toLowerCase();
         const productos = window.productosAlmacen || [];
-        
+
         // Clear suggestions if input is empty
         if (!busqueda) {
             sugerenciasLista.innerHTML = '';
@@ -1413,15 +1423,15 @@ export async function mostrarFormularioSalidaAcopio() {
         }
     });
 
-      // Close suggestions when clicking outside
-      document.addEventListener('click', (e) => {
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (e) => {
         if (!e.target.closest('.autocomplete-container')) {
             sugerenciasLista.style.display = 'none';
         }
     });
 
 
-        // ... existing code ...
+    // ... existing code ...
     const actualizarLotes = () => {
         const producto = window.productosAlmacen?.find(p => p[1] === inputProducto.value);
         if (!producto) return;
@@ -1524,7 +1534,7 @@ export async function mostrarFormularioSalidaAcopio() {
 function mostrarResumenIngreso(productoIngresado) {
     // Agregar el nuevo ingreso a la lista
     listaIngresos.push(productoIngresado);
-    
+
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
@@ -1588,7 +1598,7 @@ window.compartirListaWhatsApp = compartirListaWhatsApp;
 
 function compartirListaWhatsApp() {
     let mensajeWhatsApp = "INGRESOS DE MATERIA PRIMA\n\n";
-    
+
     listaIngresos.forEach((producto, index) => {
         mensajeWhatsApp += `=== Ingreso ${index + 1} ===\n`;
         mensajeWhatsApp += `Producto: ${producto.nombre}\n`;
@@ -1598,7 +1608,7 @@ function compartirListaWhatsApp() {
         }
         mensajeWhatsApp += '\n';
     });
-    
+
     mensajeWhatsApp += '\nRegistrado en la aplicación de InnoPro';
 
     const mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
