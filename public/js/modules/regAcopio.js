@@ -1,5 +1,5 @@
 /* =============== FUNCIONES DE INICIO REGISTROS ACOPIO =============== */
-
+import { mostrarFormularioIngresoAcopio } from './almAcopio.js';
 let filtrosActivos = {
     nombre: '',
     fechaDesde: '',
@@ -74,7 +74,7 @@ export async function cargarRegistrosAcopio() {
             <div class="registros-grupo registros-movimientos"></div>
         </div>
     </div>`;
-    configurarFiltrosBotones();
+            configurarFiltrosBotones();
             // Cargar pedidos
             const registrosPedidosContainer = container.querySelector('.registros-pedidos');
             const registrosOrdenados = ordenarRegistrosPorFecha(dataPedidos.pedidos);
@@ -109,7 +109,7 @@ export async function cargarRegistrosAcopio() {
     }
     configurarFiltros2();
 
-    
+
 }
 function crearPedidoCard(pedido, isAdmin) {
     const [dia, mes, año] = pedido[1].split('/');
@@ -282,20 +282,17 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
 
         // Configurar botón de ingreso para estado Recibido
         if (pedido[8] === 'Recibido') {
+            // Modificar donde se llama a mostrarFormularioIngresoAcopio
             const btnIngresar = registroCard.querySelector('.btn-ingresar-acopio');
             if (btnIngresar) {
-                btnIngresar.addEventListener('click', (e) => {
+                btnIngresar.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const anuncio = document.querySelector('.anuncio');
-                    const overlay = document.querySelector('.overlay');
-
-                    if (overlay) overlay.style.display = 'flex';
-                    if (anuncio) {
-                        anuncio.style.display = 'flex';
-                        // Aquí está el problema - Asegurarnos de pasar el nombre del producto correctamente
+                    try {
                         const nombreProducto = pedido[2];
-
-                        window.mostrarFormularioIngresoAcopio(nombreProducto);
+                        await mostrarFormularioIngresoAcopio(nombreProducto);
+                    } catch (error) {
+                        console.error('Error completo:', error);
+                        mostrarNotificacion('Error al mostrar el formulario. Por favor, intente nuevamente.', 'error');
                     }
                 });
             }
@@ -402,14 +399,14 @@ function configurarFiltros2() {
             document.getElementById('filtro-fecha-desde-acopio').value = '';
             document.getElementById('filtro-fecha-hasta-acopio').value = '';
             document.getElementById('filtro-estado-acopio').value = 'todos';
-    
+
             filtrosActivos = {
                 nombre: '',
                 fechaDesde: '',
                 fechaHasta: '',
                 estado: 'todos'
             };
-    
+
             // Change this line from aplicarFiltros to aplicarFiltros2
             aplicarFiltros2();
             localStorage.removeItem('filtrosRegistrosAcopio');
@@ -430,7 +427,7 @@ function aplicarFiltros2() {
     registros.forEach(registro => {
         const nombreElement = registro.querySelector('.registro-producto-acopio');
         const estadoElement = registro.querySelector('.registro-estado-acopio');
-        
+
         // Skip if required elements are not found
         if (!nombreElement || !estadoElement) return;
 
@@ -594,7 +591,7 @@ function mostrarFormularioEdicion(pedido) {
             mostrarNotificacion('Error al actualizar registro: ' + error.message, 'error');
         } finally {
             ocultarCarga();
-            
+
         }
 
         ocultarAnuncio();

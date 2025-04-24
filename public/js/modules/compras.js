@@ -8,15 +8,6 @@ export function inicializarCompras() {
             <div class="title">
                 <h3><i class="fas fa-shopping-cart"></i> Compras Acopio</h3>
             </div>
-            <div class="entregados-section">
-                <div class="section-header">
-                    <h3><i class="fas fa-check-circle"></i> Resumen de Entregas</h3>
-                    <button class="btn-copiar" onclick="copiarResumen()">
-                        <i class="fas fa-copy"></i> Copiar
-                    </button>
-                </div>
-                <div class="resumen-mensaje"></div>
-            </div>
             <div class="pedidos-section">
                 <div class="section-header collapsible">
                     <h3><i class="fas fa-clock"></i> Pedidos Pendientes</h3>
@@ -235,153 +226,124 @@ export async function entregarPedido(button) {
         const card = button.closest('.pedido-card');
         const id = card.dataset.id;
         const nombre = card.dataset.nombre;
-
-        // Obtener el estado actual del pedido
-        const estadoActual = card.closest('.pedidos-list').classList.contains('proceso') ? 'En proceso' : 'Pendiente';
+        const listContainer = card.closest('.pedidos-list');
+        const tipo = listContainer.classList.contains('pendientes') ? 'pendientes' : 
+                    listContainer.classList.contains('proceso') ? 'proceso' : 'rechazados';
 
         const anuncio = document.querySelector('.anuncio');
-        const anuncioContenido = document.querySelector('.anuncio-contenido');
-
-        anuncioContenido.innerHTML = `
-            <div class="encabezado">
-                <h2>Entregar pedido</h2>
-                <button class="anuncio-btn close" onclick="ocultarAnuncio()">
-                    <i class="fas fa-arrow-right"></i></button>
-            </div>
-            <div class="relleno">
-                <p class="subtitle">Entrega de: ${nombre} (${id})</p>
-
-                        <p for="cantidad">Cantidad:</p>
-                        <input type="number" id="cantidad" class="form-input" placeholder="Cantidad en Kg.">
-
-
-                        <p for="proveedor">Proveedor:</p>
-                        <input type="text" id="proveedor" class="form-input" placeholder="Nombre del proveedor">
-
-                        <p for="precio">Precio:</p>
-                        <input type="number" id="precio" class="form-input" placeholder="0.00" step="0.01">
-
-                        <p for="precio">Transporte y otros:</p>
-                        <input type="number" id="transporte" class="form-input" placeholder="0.00" step="0.01">
-
-                        <p for="observaciones">Cantidad:</p>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="number" id="observaciones" class="form-input" style="flex: 2;" placeholder="Cantidad">
-                            <select id="unidad" class="form-input" style="flex: 1;">
-                                <option value="Bls.">Bls.</option>
-                                <option value="Cja.">Cja.</option>
-                            </select>
-                        </div>
-
-                <p class="subtitle">Estado:</p>  
-
+        anuncio.innerHTML = `
+            <div class="anuncio-contenido">
+                <div class="encabezado">
+                    <h2>Entregar pedido</h2>
+                    <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                        <i class="fas fa-arrow-right"></i></button>
+                </div>
+                <div class="relleno">
+                    <p class="subtitle">Entrega de: ${nombre} (${id})</p>
+                    <p for="cantidad">Cantidad:</p>
+                    <input type="number" id="cantidad" class="form-input" placeholder="Cantidad en Kg.">
+                    <p for="proveedor">Proveedor:</p>
+                    <input type="text" id="proveedor" class="form-input" placeholder="Nombre del proveedor">
+                    <p for="precio">Precio:</p>
+                    <input type="number" id="precio" class="form-input" placeholder="0.00" step="0.01">
+                    <p for="precio">Transporte y otros:</p>
+                    <input type="number" id="transporte" class="form-input" placeholder="0.00" step="0.01">
+                    <p for="observaciones">Cantidad:</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="observaciones" class="form-input" style="flex: 2;" placeholder="Cantidad">
+                        <select id="unidad" class="form-input" style="flex: 1;">
+                            <option value="Bls.">Bls.</option>
+                            <option value="Cja.">Cja.</option>
+                        </select>
+                    </div>
+                    <p class="subtitle">Estado:</p>  
                     <div class="anuncio-botones" style="margin-top: 10px;">
-                            <button class="filter-btn active anuncio-btn" data-status="llego">
-                                Llegó
-                            </button>
-                            <button class="filter-btn anuncio-btn" data-status="no-llego">
-                                No Llegó
-                            </button>
-                        </div>
-
-            </div>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
+                        <button class="filter-btn active anuncio-btn" data-status="llego">Llegó</button>
+                        <button class="filter-btn anuncio-btn" data-status="no-llego">No Llegó</button>
+                    </div>
+                </div>
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn green confirmar"><i class="fas fa-check"></i> Confirmar</button>
+                </div>
             </div>
         `;
-        anuncio.appendChild(anuncioContenido);
+
         mostrarAnuncio();
 
-        const filterButtons = anuncioContenido.querySelectorAll('.filter-btn');
+        // Configurar botones de estado
+        const filterButtons = anuncio.querySelectorAll('.filter-btn');
         filterButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent button default action
+                e.preventDefault();
                 filterButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             });
         });
 
+        // Esperar confirmación
         const confirmed = await new Promise(resolve => {
-            const btnConfirmar = anuncioContenido.querySelector('.confirmar');
-
+            const btnConfirmar = anuncio.querySelector('.confirmar');
             const handleConfirm = () => {
-                // Obtener y validar todos los valores
-                const transporteInput = document.getElementById('transporte');
-                const transporteValue = transporteInput ? transporteInput.value : '0';
-                console.log('Valor del input transporte:', transporteValue); // Debugging
-
                 const formData = {
                     cantidad: document.getElementById('cantidad').value,
                     proveedor: document.getElementById('proveedor').value,
                     precio: document.getElementById('precio').value,
-                    transporte: transporteValue,
+                    transporte: document.getElementById('transporte').value || '0',
                     observaciones: document.getElementById('observaciones').value,
                     unidad: document.getElementById('unidad').value,
-                    estado: anuncioContenido.querySelector('.filter-btn.active').dataset.status
+                    estado: anuncio.querySelector('.filter-btn.active').dataset.status
                 };
 
-                console.log('FormData completo:', formData); // Debugging
-                handleClick(formData);
-            };
+                if (!formData.cantidad || !formData.proveedor) {
+                    mostrarNotificacion('Por favor complete los campos requeridos', 'warning');
+                    return;
+                }
 
-            const handleClick = (value) => {
-                btnConfirmar.removeEventListener('click', handleConfirm);
-                btnCancelar.removeEventListener('click', () => handleClick(false));
                 ocultarAnuncio();
-                resolve(value);
+                resolve(formData);
             };
-
             btnConfirmar.addEventListener('click', handleConfirm);
-
         });
 
         if (!confirmed) return;
 
         mostrarCarga();
 
-        // Obtener el usuario actual primero
+        // Obtener usuario y enviar datos
         const userResponse = await fetch('/obtener-mi-rol');
         const userData = await userResponse.json();
         const usuarioActual = userData.nombre;
 
-
         const response = await fetch('/entregar-pedido', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id: id,
-                cantidad: confirmed.cantidad,
-                proveedor: confirmed.proveedor,
-                precio: confirmed.precio,
-                transporte: confirmed.transporte || '0', // Aseguramos que se envíe el valor
-                observaciones: confirmed.observaciones,
-                unidad: confirmed.unidad,
-                estado: confirmed.estado
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, ...confirmed })
         });
 
         const data = await response.json();
 
         if (data.success) {
-            // Enviar notificación
-            try {
-                await registrarNotificacion(
-                    usuarioActual,    // origen (usuario actual)
-                    'Acopio',         // destino
-                    `Se hizo la entrega de: ${nombre} cantidad ${confirmed.observaciones} ${confirmed.unidad}`
-                );
-            } catch (notifError) {
-                console.error('Error al enviar notificación:', notifError);
-            }
+            // Registrar notificación
+            await registrarNotificacion(
+                usuarioActual,
+                'Acopio',
+                `Se hizo la entrega de: ${nombre} cantidad ${confirmed.observaciones} ${confirmed.unidad}`
+            );
 
+            // Actualizar UI
+            const counter = document.querySelector(`.contador-${tipo}`);
+            if (counter) {
+                counter.textContent = parseInt(counter.textContent) - 1;
+            }
+            card.remove();
+
+            // Mostrar resumen
+            await mostrarResumenEntrega(confirmed, nombre);
             mostrarNotificacion('Pedido entregado correctamente', 'success');
-            actualizarResumenEntregas(nombre, confirmed.observaciones);
-            await cargarPedidos();
         } else {
             throw new Error(data.error || 'Error al entregar el pedido');
         }
+
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error al entregar el pedido: ' + error.message, 'error');
@@ -389,39 +351,109 @@ export async function entregarPedido(button) {
         ocultarCarga();
     }
 }
-function actualizarResumenEntregas(producto, observaciones) {
-    const resumenDiv = document.querySelector('.resumen-mensaje');
-    const productosEntregados = resumenDiv.getAttribute('data-entregas') ?
-        JSON.parse(resumenDiv.getAttribute('data-entregas')) : [];
 
-    productosEntregados.push({ producto, observaciones });
-    resumenDiv.setAttribute('data-entregas', JSON.stringify(productosEntregados));
+let entregasRealizadas = [];
 
-    const mensaje = generarMensajeResumen(productosEntregados);
-    resumenDiv.innerHTML = mensaje;
-}
-function generarMensajeResumen(productos) {
-    if (!productos.length) return '';
-
-    const listaProductos = productos
-        .map(p => `• ${p.producto}${p.observaciones ? `: (${p.observaciones})` : ''}`)
-        .join('\n');
-
-    return `SE TRAJO MATERIA PRIMA\n\nEntregado:\n${listaProductos}\n\nLos productos ya se encuentran como entregado en la aplicación de Damabrava.`;
-}
-window.copiarResumen = function () {
-    const resumenDiv = document.querySelector('.resumen-mensaje');
-    const texto = resumenDiv.textContent;
-
-    if (!texto.trim()) {
-        mostrarNotificacion('No hay entregas para copiar', 'error');
+export function compartirEntregas() {
+    if (entregasRealizadas.length === 0) {
+        mostrarNotificacion('No hay entregas para compartir', 'warning');
         return;
     }
 
-    navigator.clipboard.writeText(texto).then(() => {
-        mostrarNotificacion('Resumen copiado al portapapeles', 'success');
-    }).catch(err => {
-        console.error('Error al copiar:', err);
-        mostrarNotificacion('Error al copiar el resumen', 'error');
-    });
+    const mensaje = `*Resumen de Entregas*%0A%0A` +
+        entregasRealizadas.map(entrega =>
+            `Producto: ${entrega.nombre}%0A` +
+            `Cantidad: ${entrega.observaciones} ${entrega.unidad}%0A` +
+            `Estado: ${entrega.estado === 'llego' ? 'Llegó' : 'No llegó'}%0A` +
+            `-------------------%0A`
+        ).join('') +
+        `Los productos ya se encuentran como entregas en la aplicación de InnoPro`;
+
+    window.open(`https://wa.me/?text=${mensaje}`, '_blank');
 }
+export async function mostrarResumenEntrega(datosEntrega, nombre) {
+    try {
+        // Agregar la nueva entrega al array
+        entregasRealizadas.push({ ...datosEntrega, nombre });
+
+        // Limpiar y preparar el anuncio
+        const anuncio = document.querySelector('.anuncio');
+        anuncio.innerHTML = `
+            <div class="anuncio-contenido">
+                <div class="encabezado">
+                    <h2>Resumen de Entregas</h2>
+                    <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div class="relleno">
+                    <div class="detalles-grup">
+                        ${entregasRealizadas.map(entrega => `
+                            <div class="detalles-entrega">
+                                <div class="detalle-item">
+                                    <p>Producto:</p><span>${entrega.nombre}</span>
+                                </div>
+                                <div class="detalle-item">
+                                    <p>Cantidad:</p><span>${entrega.cantidad} Kg</span>
+                                </div>
+                                <div class="detalle-item">
+                                    <p>Proveedor:</p><span>${entrega.proveedor}</span>
+                                </div>
+                                <div class="detalle-item">
+                                    <p>Precio:</p><span>S/. ${entrega.precio}</span>
+                                </div>
+                                <div class="detalle-item">
+                                    <p>Transporte:</p><span>S/. ${entrega.transporte || '0'}</span>
+                                </div>
+                                <div class="detalle-item">
+                                    <p>Detalles:</p><span>${entrega.observaciones} ${entrega.unidad}</span>
+                                </div>
+                                <div class="detalle-item">
+                                    <p>Estado:</p><span>${entrega.estado === 'llego' ? 'Llegó' : 'No llegó'}</span>
+                                </div>
+                            </div>
+                        `).join('<hr>')}
+                    </div>
+                </div>
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn red btn-limpiar">
+                        <i class="fas fa-broom"></i> Limpiar
+                    </button>
+                    <button class="anuncio-btn blue btn-seguir">
+                        <i class="fas fa-plus"></i> Seguir
+                    </button>
+                    <button class="anuncio-btn green whatsapp btn-whatsapp">
+                        <i class="fab fa-whatsapp"></i> Enviar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Configurar los botones después de crear el contenido
+        const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
+        const btnLimpiar = anuncioContenido.querySelector('.btn-limpiar');
+        const btnSeguir = anuncioContenido.querySelector('.btn-seguir');
+        const btnWhatsapp = anuncioContenido.querySelector('.btn-whatsapp');
+
+        btnLimpiar.addEventListener('click', () => {
+            entregasRealizadas = [];
+            ocultarAnuncio();
+            cargarPedidos();
+        });
+
+        btnSeguir.addEventListener('click', () => {
+            ocultarAnuncio();
+        });
+
+        btnWhatsapp.addEventListener('click', compartirEntregas);
+
+        mostrarAnuncio();
+    } catch (error) {
+        console.error('Error en mostrarResumenEntrega:', error);
+        mostrarNotificacion('Error al mostrar el resumen de entregas', 'error');
+    }
+}
+
+
+
+

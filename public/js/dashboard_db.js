@@ -3,8 +3,7 @@ import { inicializarUsuarios, cargarUsuarios, mostrarDetallesUsuario, mostrarFor
 import { editarRegistro,calcularTotal, pagarRegistro, eliminarRegistro, cargarRegistros, verificarRegistro } from './modules/vRegistros.js';
 import { inicializarFormulario, inicializarFormularioProduccion, resetearFormulario, cargarProductos, mostrarFormularioProduccion } from './modules/formProduccion.js';
 import { cargarRegistrosCuentas, mostrarDetalles, crearTarjetaRegistro } from './modules/misCuentasProduccion.js';
-
-import { inicializarCompras } from './modules/compras.js';
+import { inicializarCompras, entregarPedido } from './modules/compras.js';
 import { inicializarAlmacen, mostrarFormularioIngresoAcopio, mostrarFormularioSalidaAcopio } from './modules/almAcopio.js';
 import { inicializarHome } from './modules/home.js';
 import { initializeMenu} from './modules/menu.js';
@@ -73,6 +72,7 @@ window.mostrarFormularioSalidaAcopio = mostrarFormularioSalidaAcopio;
 
 // Funciones de gestión de compras
 window.inicializarCompras = inicializarCompras;
+window.entregarPedido = entregarPedido;
 
 // Funciones de notificaciones y sesión
 window.mostrarNotificacion = mostrarNotificacion;

@@ -159,14 +159,13 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
     });
 
     if (isAdmin) {
-        // Configurar botón de editar
+
         const btnEditar = registroCard.querySelector('.btn-editar-registro');
         btnEditar.addEventListener('click', (e) => {
             e.stopPropagation();
             mostrarFormularioEdicion(pedido);
         });
 
-        // Configurar botón de eliminar
         const btnEliminar = registroCard.querySelector('.btn-eliminar-registro');
         btnEliminar.addEventListener('click', async (e) => {
             e.stopPropagation();

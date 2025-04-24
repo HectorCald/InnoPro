@@ -469,9 +469,10 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
         });
 
         const productos = response.data.values.map(row => ({
+            id: row[0] || '',
             nombre: row[1] || '',
             gramaje: row[2] || '',
-            cantidadPorTira: row[4] || ''  // Columna E
+            cantidadPorTira: row[4] || '' 
         }));
 
         res.json({ success: true, productos });

@@ -1115,8 +1115,14 @@ window.eliminarTarea = async (id) => {
     }
 };
 
+
+let listaIngresos = [];
 /* =============== FUNCIONES DE INGRESO Y SALDIAS DEL ALMACEN ACOPIO =============== */
 export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
+    if (!window.productosAlmacen) {
+        mostrarNotificacion('Error: No se han cargado los productos', 'error');
+        return;
+    }
     const anuncio = document.querySelector('.anuncio');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
 
@@ -1151,7 +1157,7 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
                 <input type="text" id="loteIngreso" class="edit-input" readonly>
 
                 <p>Razón:</p>
-                <textarea id="razonIngreso" class="edit-input" placeholder="Ingresa una razon del ingreso" required></textarea>
+                <textarea style="min-height:100px" id="razonIngreso" class="edit-input" placeholder="Ingresa una razon del ingreso" required></textarea>
 
         </div>
         <div class="anuncio-botones">
@@ -1243,69 +1249,79 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
     const btnProcesar = anuncioContenido.querySelector('.procesar');
 
     btnProcesar.onclick = async () => {
-        try {
-            const producto = document.getElementById('productoIngreso').value;
-            const tipo = tipoSelect.value;
-            const peso = document.getElementById('pesoIngreso').value;
-            const lote = loteInput.value;
-            const razon = document.getElementById('razonIngreso').value;
+    try {
+        const producto = document.getElementById('productoIngreso').value;
+        const tipo = tipoSelect.value;
+        const peso = document.getElementById('pesoIngreso').value;
+        const lote = loteInput.value;
+        const razon = document.getElementById('razonIngreso').value;
 
-            if (!producto || !tipo || !peso || !razon) {
-                mostrarNotificacion('Por favor complete todos los campos', 'error');
-                return;
-            }
-
-            mostrarCarga();
-
-            // Procesar el ingreso
-            const ingresoResponse = await fetch('/procesar-ingreso-acopio', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    producto,
-                    tipo,
-                    peso,
-                    lote,
-                    razon
-                })
-            });
-
-            const ingresoData = await ingresoResponse.json();
-
-            if (!ingresoData.success) {
-                throw new Error(ingresoData.error || 'Error al procesar el ingreso');
-            }
-
-            // Registrar el movimiento
-            const movimientoResponse = await fetch('/registrar-movimiento-acopio', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tipo: 'Ingreso ' + tipo,
-                    producto,
-                    cantidad: peso,
-                    operario: 'Sistema',
-                    razon
-                })
-            });
-
-            const movimientoData = await movimientoResponse.json();
-
-            if (!movimientoData.success) {
-                throw new Error('Error al registrar el movimiento');
-            }
-
-            mostrarNotificacion('Ingreso procesado correctamente', 'success');
-            ocultarAnuncio();
-            cargarAlmacenBruto();
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarNotificacion(error.message, 'error');
-        } finally {
-            ocultarCarga();
+        if (!producto || !tipo || !peso || !razon) {
+            mostrarNotificacion('Por favor complete todos los campos', 'error');
+            return;
         }
+
+        mostrarCarga();
+
+        // Procesar el ingreso
+        const ingresoResponse = await fetch('/procesar-ingreso-acopio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                producto,
+                tipo,
+                peso,
+                lote,
+                razon
+            })
+        });
+
+        const ingresoData = await ingresoResponse.json();
+
+        if (!ingresoData.success) {
+            throw new Error(ingresoData.error || 'Error al procesar el ingreso');
+        }
+
+        // Registrar el movimiento
+        const movimientoResponse = await fetch('/registrar-movimiento-acopio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tipo: 'Ingreso ' + tipo,
+                producto,
+                cantidad: peso,
+                operario: 'Sistema',
+                razon
+            })
+        });
+
+        const movimientoData = await movimientoResponse.json();
+
+        if (!movimientoData.success) {
+            throw new Error('Error al registrar el movimiento');
+        }
+
+        mostrarNotificacion('Ingreso procesado correctamente', 'success');
+        
+        // Show ingress summary instead of closing the modal
+        mostrarResumenIngreso({
+            nombre: producto,
+            tipo: tipo,
+            peso: peso,  // Cambiamos el nombre de la propiedad
+            lote: lote,
+            observaciones: razon
+        });
+        
+        cargarAlmacenBruto();
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion(error.message, 'error');
+    } finally {
+        ocultarCarga();
+    }
     };
 }
+window.mostrarFormularioIngresoAcopio = mostrarFormularioIngresoAcopio;
 export async function mostrarFormularioSalidaAcopio() {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -1505,6 +1521,87 @@ export async function mostrarFormularioSalidaAcopio() {
     };
 
 }
+function mostrarResumenIngreso(productoIngresado) {
+    // Agregar el nuevo ingreso a la lista
+    listaIngresos.push(productoIngresado);
+    
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
 
+    contenido.innerHTML = `
+        <div class="encabezado">
+            <h2>Ingresos Registrados</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        <div class="relleno">
+            <div class="detalles-grup">
+                ${listaIngresos.map(producto => `
+                    <div class="producto-ingresado">
+                        <p class="subtitle">Detalles del ingreso:</p>
+                        <div class="detalle-item">
+                            <p>Producto:</p>
+                            <span>${producto.nombre}</span>
+                        </div>
+                        <div class="detalle-item">
+                            <p>Peso ${producto.tipo === 'bruto' ? 'Bruto' : 'Prima'}:</p>
+                            <span>${producto.peso} kg</span>
+                        </div>
+                        <div class="detalle-item">
+                            <p>Lote:</p>
+                            <span>${producto.lote}</span>
+                        </div>
+                        ${producto.observaciones ? `
+                            <div class="detalle-item">
+                                <p>Observaciones:</p>
+                                <span>${producto.observaciones}</span>
+                            </div>
+                        ` : ''}
+                        <hr style="margin: 10px 0;">
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn red" onclick="limpiarListaIngresos()">
+                <i class="fas fa-trash"></i> Limpiar
+            </button>
+            <button class="anuncio-btn blue" onclick="mostrarFormularioIngresoAcopio()">
+                <i class="fas fa-plus"></i> Seguir
+            </button>
+            <button class="anuncio-btn green" onclick="compartirListaWhatsApp()">
+                <i class="fab fa-whatsapp"></i> Enviar
+            </button>
+        </div>
+    `;
 
+    mostrarAnuncio();
+}
+
+window.limpiarListaIngresos = () => {
+    listaIngresos = [];
+    mostrarNotificacion('Lista de ingresos limpiada', 'success');
+    ocultarAnuncio();
+};
+window.compartirListaWhatsApp = compartirListaWhatsApp;
+
+function compartirListaWhatsApp() {
+    let mensajeWhatsApp = "INGRESOS DE MATERIA PRIMA\n\n";
+    
+    listaIngresos.forEach((producto, index) => {
+        mensajeWhatsApp += `=== Ingreso ${index + 1} ===\n`;
+        mensajeWhatsApp += `Producto: ${producto.nombre}\n`;
+        mensajeWhatsApp += `Peso: ${producto.peso} kg\n`;
+        if (producto.observaciones) {
+            mensajeWhatsApp += `Observaciones: ${producto.observaciones}\n`;
+        }
+        mensajeWhatsApp += '\n';
+    });
+    
+    mensajeWhatsApp += '\nRegistrado en la aplicación de InnoPro';
+
+    const mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
+    window.open(`https://wa.me/?text=${mensajeCodificado}`, '_blank');
+}
 
