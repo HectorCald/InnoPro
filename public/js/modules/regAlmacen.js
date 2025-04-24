@@ -69,7 +69,7 @@ export async function cargarRegistrosAlmacenGral() {
 }
 function crearMovimientoCard(movimiento, isAdmin) {
     try {
-        const [id, fechaCompleta, tipo, producto, cantidad, operario, almacen] = movimiento;
+        const [id, fechaCompleta, tipo, producto, cantidad, operario, almacen, razon] = movimiento;
 
         // Procesar la fecha
         const [fecha, hora] = fechaCompleta.split(', ');
@@ -122,6 +122,7 @@ function crearMovimientoCard(movimiento, isAdmin) {
                 <p><span>Cantidad:</span> ${cantidad}</p>
                 <p><span>Operario:</span> ${operario}</p>
                 <p><span>Almacén:</span> ${almacen}</p>
+                <p><span>Motivo:</span> ${razon}</p>
                 ${botonesAdmin}
             </div>
         `;

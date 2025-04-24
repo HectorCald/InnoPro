@@ -335,6 +335,7 @@ async function mostrarListaIngresos() {
             </button>
         </div>
     `;
+    mostrarAnuncio();
     window.actualizarCantidadIngreso = (id, accion) => {
         if (productosParaIngresar.has(id)) {
             const producto = productosParaIngresar.get(id);
@@ -399,30 +400,61 @@ async function mostrarListaIngresos() {
     };
     window.procesarIngresos = async () => {
         try {
-            mostrarCarga();
-            const usuario = await obtenerUsuarioActual();
-            
-            for (const [id, { cantidad, nombre }] of productosParaIngresar) {
-                const response = await fetch('/ingresar-stock-almacen', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, cantidad })
-                });
+            const anuncio = document.querySelector('.anuncio-down');
+            const contenido = anuncio.querySelector('.anuncio-contenido');
     
-                const data = await response.json();
-                if (!data.success) {
-                    throw new Error(`Error al procesar el ingreso`);
+            // Mostrar formulario de razón
+            contenido.innerHTML = `
+                 <div class="encabezado">
+                    <h2>Confirmación de Ingreso</h2>
+                    <button class="anuncio-btn close" onclick="ocultarAnuncioDoen()">
+                        <i class="fas fa-arrow-down"></i></button>
+                </div>
+                <div class="form-grup"style="background:none">
+                    <p>Por favor, indique la razón del ingreso:</p>
+                    <textarea id="razonMovimiento" class="edit-input" style="width: 100%; min-height: 100px;" placeholder="Escriba la razón..."></textarea>
+                </div>
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn green finalizar">
+                        <i class="fas fa-check"></i> Finalizar Ingreso
+                    </button>
+                </div>
+            `;
+            mostrarAnuncioDown();
+            const btnFinalizar = contenido.querySelector('.finalizar');
+            btnFinalizar.onclick = async () => {
+                const razon = document.getElementById('razonMovimiento').value.trim();
+                if (!razon) {
+                    mostrarNotificacion('Por favor, indique la razón del ingreso', 'warning');
+                    return;
                 }
     
-                // Registrar el movimiento
-                await registrarMovimiento('Ingreso', nombre, cantidad);
-            }
+                mostrarCarga();
+                const usuario = await obtenerUsuarioActual();
+                
+                for (const [id, { cantidad, nombre, gramaje }] of productosParaIngresar) {
+                    const response = await fetch('/ingresar-stock-almacen', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, cantidad })
+                    });
     
-            mostrarNotificacion('Ingresos procesados correctamente', 'success');
-            productosParaIngresar.clear();
-            actualizarContadorIngresos();
-            ocultarAnuncio();
-            cargarAlmacen();
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error(`Error al procesar el ingreso`);
+                    }
+    
+                    const nombreCompleto = `${nombre} - ${gramaje}gr`;
+                    await registrarMovimiento('Ingreso', nombreCompleto, cantidad, razon);
+                }
+    
+                mostrarNotificacion('Ingresos procesados correctamente', 'success');
+                productosParaIngresar.clear();
+                actualizarContadorIngresos();
+                ocultarAnuncioDown();
+                cargarAlmacen();
+            };
+    
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion(error.message, 'error');
@@ -431,7 +463,7 @@ async function mostrarListaIngresos() {
             document.getElementById('searchProduct').value = '';
         }
     };
-    mostrarAnuncio();
+    
     
 }
 async function mostrarListaSalidas() {
@@ -475,7 +507,7 @@ async function mostrarListaSalidas() {
             </button>
         </div>
     `;
-
+    mostrarAnuncio();
     window.actualizarCantidadSalida = (id, accion) => {
         if (productosParaSalida.has(id)) {
             const producto = productosParaSalida.get(id);
@@ -546,30 +578,61 @@ async function mostrarListaSalidas() {
     };
     window.procesarSalidas = async () => {
         try {
-            mostrarCarga();
-            const usuario = await obtenerUsuarioActual();
+            const anuncio = document.querySelector('.anuncio-down');
+            const contenido = anuncio.querySelector('.anuncio-contenido');
     
-            for (const [id, { cantidad, nombre }] of productosParaSalida) {
-                const response = await fetch('/retirar-stock-almacen', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, cantidad })
-                });
-    
-                const data = await response.json();
-                if (!data.success) {
-                    throw new Error(data.error || `Error al procesar la salida de ${nombre}`);
+            contenido.innerHTML = `
+                 <div class="encabezado">
+                    <h2>Confirmación de Salida</h2>
+                    <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                        <i class="fas fa-arrow-down"></i></button>
+                </div>
+                <div class="form-grup" style="background:none">
+                    <p>Por favor, indique la razón de la salida:</p>
+                    <textarea id="razonMovimiento" class="edit-input" style="width: 100%; min-height: 100px;" placeholder="Escriba la razón..."></textarea>
+                </div>
+                <div class="anuncio-botones">
+                    <button class="anuncio-btn green finalizar">
+                        <i class="fas fa-check"></i> Finalizar Salida
+                    </button>
+                </div>
+            `;
+            mostrarAnuncioDown();
+
+            const btnFinalizar = contenido.querySelector('.finalizar');
+            btnFinalizar.onclick = async () => {
+                const razon = document.getElementById('razonMovimiento').value.trim();
+                if (!razon) {
+                    mostrarNotificacion('Por favor, indique la razón de la salida', 'warning');
+                    return;
                 }
     
-                // Registrar el movimiento usando la función existente
-                await registrarMovimiento('Salida', nombre, cantidad);
-            }
+                mostrarCarga();
+                const usuario = await obtenerUsuarioActual();
     
-            mostrarNotificacion('Salidas procesadas correctamente', 'success');
-            productosParaSalida.clear();
-            actualizarContadorSalidas();
-            ocultarAnuncio();
-            cargarAlmacen();
+                for (const [id, { cantidad, nombre, gramaje }] of productosParaSalida) {
+                    const response = await fetch('/retirar-stock-almacen', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, cantidad })
+                    });
+    
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error(data.error || `Error al procesar la salida de ${nombre}`);
+                    }
+    
+                    const nombreCompleto = `${nombre} - ${gramaje}gr`;
+                    await registrarMovimiento('Salida', nombreCompleto, cantidad, razon);
+                }
+    
+                mostrarNotificacion('Salidas procesadas correctamente', 'success');
+                productosParaSalida.clear();
+                actualizarContadorSalidas();
+                ocultarAnuncioDown();
+                cargarAlmacen();
+            };
+    
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion(error.message, 'error');
@@ -579,9 +642,8 @@ async function mostrarListaSalidas() {
         }
     };
 
-    mostrarAnuncio();
+    
 }
-
 
 
 
@@ -1716,9 +1778,9 @@ function mostrarConfirmacionEliminarPrecio(nombre) {
 
 
 /* ==================== FUNCIONES DE REGISTRO DEL MOVIMIENTO SALIDA O INGRESO DE ALMACEN ==================== */
-async function registrarMovimiento(tipo, producto, cantidad) {
+async function registrarMovimiento(tipo, producto, cantidad, razon = '') {
     try {
-        const operario = await obtenerUsuarioActual(); // Esperar a obtener el usuario
+        const operario = await obtenerUsuarioActual();
         const response = await fetch('/registrar-movimiento-almacen', {
             method: 'POST',
             headers: {
@@ -1728,7 +1790,8 @@ async function registrarMovimiento(tipo, producto, cantidad) {
                 tipo,
                 producto,
                 cantidad,
-                operario
+                operario,
+                razon
             })
         });
 
@@ -1738,9 +1801,9 @@ async function registrarMovimiento(tipo, producto, cantidad) {
         }
     } catch (error) {
         console.error('Error:', error);
-        mostrarNotificacion('Error al registrar el movimiento', 'error');
+        throw error;
     }
-};
+}
 
 
 

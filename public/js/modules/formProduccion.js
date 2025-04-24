@@ -1,5 +1,6 @@
 
 import { registrarNotificacion } from './advertencia.js';
+import { ocultarAnuncio } from './components.js';
 
 /* =============== FUNCIONES DE INCIO DE FORMULARIO PRODUCCION =============== */
 export function inicializarFormularioProduccion() {
@@ -247,7 +248,7 @@ export function mostrarFormularioProduccion() {
                     `Se registró una nueva producción de ${formData.producto}`
                 );
                 mostrarNotificacion('Registro guardado correctamente', 'success');
-                document.querySelector('.anuncio').style.display = 'none';
+                ocultarAnuncio();
             } else {
                 throw new Error(result.error || 'Error desconocido');
             }

@@ -456,11 +456,13 @@
 .sugerencias-container{
     border: none;
     border-radius: 10px;
+    width: 100%;
 }
 .sugerencias-container .sugerencias-list{
     display:flex;
     flex-direction: column;
     gap:5px;
+    width: 100%;
 }
 .sugerencias-container .sugerencias-list li{
     background: var(--primary-color);
@@ -470,6 +472,7 @@
     padding-left:15px;
     border-radius: 10px;
     font-size: 14px;
+    width: 100%;
 }
 .sugerencias-container .sugerencias-list li:hover{
     background-color: var(--tercer-color);

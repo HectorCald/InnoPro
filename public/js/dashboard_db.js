@@ -89,6 +89,7 @@ window.cargarRegistrosAlmacenGral = cargarRegistrosAlmacenGral;
 window.inicializarAlmacenGral = inicializarAlmacenGral;
 window.cargarAlmacen = cargarAlmacen;
 window.mostrarProductos = mostrarProductos;
+ 
 
 // Funciones de configuraciones
 window.inicializarConfiguraciones = inicializarConfiguraciones;

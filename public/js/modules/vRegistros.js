@@ -1,4 +1,5 @@
 import { registrarNotificacion } from './advertencia.js';
+import { mostrarAnuncio } from './components.js';
 /* ==================== VARIABLES GLOBALES Y CONFIGURACIÓN INICIAL ==================== */
 let reglasEspeciales = null;
 let preciosBase = null;
@@ -151,12 +152,12 @@ function crearRegistroCard(registro, esAdmin) {
             const cantidadPorTira = parseInt(productoCoincidente.cantidadPorTira);
             // Usar el valor verificado o real en lugar de envases terminados
             const cantidadReal = parseInt(registro[10]) || parseInt(registro[7]);
-    
+
             // Solo mostrar grupos si cantidadPorTira es mayor que 1
             if (cantidadPorTira > 1) {
                 const grupos = Math.floor(cantidadReal / cantidadPorTira);
                 const sueltas = cantidadReal % cantidadPorTira;
-    
+
                 detalleGrupos = `
                     <p><span>Tiras:</span> ${grupos} tiras de ${cantidadPorTira} unidades</p>
                     ${sueltas > 0 ? `<p><span>Unidades sueltas:</span> ${sueltas} unidades</p>` : ''}
@@ -573,7 +574,7 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
                 },
                 body: JSON.stringify({
                     id,
-                    verificacion: cantidadReal,
+                    verificacion: cantidadReal.toString(),
                     fechaVerificacion,
                     observaciones,
                     cantidadDeclarada: envases
@@ -604,6 +605,7 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
             mostrarNotificacion('Error al guardar la verificación: ' + error.message, 'error');
         } finally {
             ocultarCarga();
+            mostrarFormularioIngreso(producto)
         }
     });
 
@@ -613,6 +615,195 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
         document.querySelector('.container').classList.remove('no-touch');
     });
 }
+export async function mostrarFormularioIngreso(producto) {
+    try {
+        mostrarCarga();
+        const response = await fetch('/obtener-almacen-general');
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error('Error al cargar los productos');
+        }
+        window.productosAlmacen = data.pedidos;
+
+        const anuncio = document.querySelector('.anuncio');
+        const contenido = anuncio.querySelector('.anuncio-contenido');
+
+        contenido.innerHTML = `
+    <div class="encabezado">
+        <h2>Realizar Ingreso</h2>
+        <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+            <i class="fas fa-arrow-right"></i></button>
+    </div>
+    <div class="relleno">
+        <p>Buscar Producto y seleccionar:</p>
+        <input type="text" id="buscarProducto" class="edit-input" placeholder="Escriba para buscar...">
+        <input type="hidden" id="idProductoSeleccionado">
+        <div class="sugerencias-container" style="display: none;">
+            <div class="productos-sugeridos sugerencias-list"></div>
+        </div>
+        <p>Cantidad de tiras:</p>
+        <input type="number" id="cantidadIngreso" class="edit-input" min="1" placeholder="Cantidad">
+    </div>
+    <div class="anuncio-botones">
+        <button class="anuncio-btn green ingresar" disabled><i class="fas fa-plus-circle"></i> Procesar Ingreso</button>
+    </div>
+`;
+
+
+        mostrarAnuncio();
+
+        const inputBuscar = contenido.querySelector('#buscarProducto');
+        const sugerencias = contenido.querySelector('.productos-sugeridos');
+        const container = contenido.querySelector('.sugerencias-container');
+        const btnIngresar = contenido.querySelector('.ingresar');
+
+        const handleInput = () => {
+            const busqueda = inputBuscar.value.toLowerCase().trim();
+            if (busqueda.length < 2) {
+                container.style.display = 'none';
+                sugerencias.style.display = 'none';
+                return;
+            }
+
+            const productosFiltrados = window.productosAlmacen.filter(producto =>
+                producto[1].toLowerCase().includes(busqueda)
+            );
+
+            if (productosFiltrados.length > 0) {
+                sugerencias.innerHTML = productosFiltrados.map(producto => `
+                    <li class="sugerencia-item" data-id="${producto[0]}" data-nombre="${producto[1]}" data-gramaje="${producto[2]}">
+                        ${producto[1]} - ${producto[2]}gr
+                    </li>
+                `).join('');
+                container.style.display = 'flex';
+                sugerencias.style.display = 'flex';
+
+                // In the sugerencias click handler
+                sugerencias.querySelectorAll('.sugerencia-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const id = item.dataset.id;
+                        const nombre = item.dataset.nombre;
+                        const gramaje = item.dataset.gramaje;
+                        document.getElementById('idProductoSeleccionado').value = id;
+                        inputBuscar.value = `${nombre} - ${gramaje}gr`;
+                        container.style.display = 'none';  // Hide the container
+                        sugerencias.style.display = 'none';
+                        btnIngresar.disabled = false;
+                    });
+                });
+            } else {
+                sugerencias.innerHTML = '<div class="no-resultados">No se encontraron productos</div>';
+                sugerencias.style.display = 'flex';
+            }
+        };
+
+        inputBuscar.addEventListener('input', handleInput);
+
+        if (producto) {
+            inputBuscar.value = producto;
+            setTimeout(handleInput, 100);
+        }
+
+        btnIngresar.onclick = async () => {
+            const id = document.getElementById('idProductoSeleccionado').value;
+            const productoCompleto = inputBuscar.value;
+            const cantidad = parseInt(document.getElementById('cantidadIngreso').value);
+
+            if (!id || !cantidad || cantidad < 1) {
+                mostrarNotificacion('Complete los campos correctamente', 'error');
+                return;
+            }
+
+            try {
+                mostrarCarga();
+                // Primero actualizar el stock
+                const response = await fetch('/ingresar-stock-almacen', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                        cantidad: cantidad
+                    })
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Error al procesar el ingreso');
+                }
+
+                
+
+                mostrarNotificacion('Producto ingresado correctamente', 'success');
+                ocultarAnuncio();
+                await registrarMovimiento('Ingreso',productoCompleto, cantidad, 'Ingreso de producción');
+
+                try {
+                } catch (error) {
+                    console.error('Error al recargar almacén:', error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion(error.message, 'error');
+            } finally {
+                ocultarCarga();
+            }
+        };
+
+    } catch (error) {
+        console.error('Error al mostrar formulario:', error);
+        mostrarNotificacion('Error al cargar el formulario', 'error');
+    } finally {
+        ocultarCarga();
+    }
+}
+async function obtenerUsuarioActual() {
+    try {
+        const response = await fetch('/obtener-mi-rol');
+        const data = await response.json();
+
+        if (data.nombre) {
+            return data.nombre;
+        }
+
+        if (data.error) {
+            console.error('Error al obtener usuario:', data.error);
+            return 'Sistema';
+        }
+
+        return 'Sistema';
+    } catch (error) {
+        console.error('Error al obtener usuario:', error);
+        return 'Sistema';
+    }
+};
+async function registrarMovimiento(tipo, producto, cantidad, razon) {
+    try {
+        const operario = await obtenerUsuarioActual(); // Esperar a obtener el usuario
+        const response = await fetch('/registrar-movimiento-almacen', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tipo,
+                producto,
+                cantidad,
+                operario,
+                razon
+            })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error('Error al registrar movimiento');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error al registrar el movimiento', 'error');
+    }
+};
 export async function eliminarRegistro(id) {
     try {
         const razon = await mostrarModalConfirmacion(

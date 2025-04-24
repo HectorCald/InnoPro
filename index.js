@@ -459,7 +459,6 @@ app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
 });
 
 /* ==================== API DE REGISTRO ==================== */
-// Modificar la ruta obtener-productos
 app.get('/obtener-productos', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -481,7 +480,6 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al obtener productos' });
     }
 });
-
 app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
         const { id, razon } = req.body;
@@ -2881,7 +2879,7 @@ app.put('/retirar-stock-almacen', requireAuth, async (req, res) => {
 });
 app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
     try {
-        const { tipo, producto, cantidad, operario } = req.body;
+        const { tipo, producto, cantidad, operario,razon } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
         // Obtener el último ID
@@ -2908,7 +2906,7 @@ app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
         // Insertar nuevo registro incluyendo el operario
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Movimientos alm-gral!A:G',
+            range: 'Movimientos alm-gral!A:H',
             valueInputOption: 'USER_ENTERED',
             resource: {
                 values: [[
@@ -2918,7 +2916,8 @@ app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
                     producto,
                     cantidad,
                     operario,
-                    'Almacén General'
+                    'Almacén General',
+                    razon
                 ]]
             }
         });
@@ -3135,7 +3134,7 @@ app.get('/obtener-movimientos-almacen', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Movimientos alm-gral!A:G'
+            range: 'Movimientos alm-gral!A:H'
         });
 
         const rows = response.data.values || [];
