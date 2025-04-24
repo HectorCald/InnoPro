@@ -750,6 +750,12 @@ export function mostrarProductos() {
                 document.querySelectorAll('.filter-btn-acopio').forEach(btn => 
                     btn.classList.remove('active'));
                 tagButton.classList.add('active');
+                
+                tagButton.scrollIntoView({
+                    behavior: 'smooth',
+                    inline: 'center',
+                    block: 'nearest'
+                });
         
                 const allProducts = document.querySelectorAll('.product-card');
                 const productsContainer = document.getElementById('productsContainer-general');
