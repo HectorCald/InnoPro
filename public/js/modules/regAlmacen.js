@@ -75,6 +75,9 @@ function crearMovimientoCard(movimiento, isAdmin) {
         const [fecha, hora] = fechaCompleta.split(', ');
         const [dia, mes] = fecha.split('/');
 
+        // Separar nombre y gramaje
+        const [nombre, gramaje] = producto.split('-');
+
         // Determinar la clase según el tipo
         let tipoClase = '';
         switch (tipo.toLowerCase()) {
@@ -113,7 +116,7 @@ function crearMovimientoCard(movimiento, isAdmin) {
         registroCard.innerHTML = `
             <div class="registro-header">
                 <div class="registro-fecha">${dia}/${mes}</div>
-                <div class="registro-producto-acopio">${producto}</div>
+                <div class="registro-producto-acopio">${nombre}</div>
                 <div class="registro-tipo-movimiento ${tipoClase}">${tipo}</div>
             </div>
             <div class="registro-detalles">
@@ -123,6 +126,7 @@ function crearMovimientoCard(movimiento, isAdmin) {
                 <p><span>Operario:</span> ${operario}</p>
                 <p><span>Almacén:</span> ${almacen}</p>
                 <p><span>Motivo:</span> ${razon}</p>
+                <p><span>Gramaje:</span> ${gramaje}</p> <!-- Display gramaje separately -->
                 ${botonesAdmin}
             </div>
         `;

@@ -55,7 +55,6 @@ app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
 /* ==================== FUNCIONES DE UTILIDAD ==================== */
-
 function requireAuth(req, res, next) {
     const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
     if (!token) {
@@ -112,6 +111,7 @@ const APP_CONFIG = {
     CURRENT_VERSION: '2.0.6',
     MIN_VERSION: '2.0.5'
 };
+
 /* ==================== RUTAS DE VISTAS ==================== */
 app.get('/', (req, res) => {
     res.render('login');
@@ -163,7 +163,6 @@ app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
         version: version
     });
 });
-
 app.get('/desinstalar', (req, res) => {
     res.render('desinstalar');
 });

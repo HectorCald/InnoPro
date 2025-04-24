@@ -1,5 +1,6 @@
 /* =============== FUNCIONES DE INICIO REGISTROS ACOPIO =============== */
 import { mostrarFormularioIngresoAcopio } from './almAcopio.js';
+import { mostrarAnuncioDown, ocultarAnuncioDown } from './components.js';
 let filtrosActivos = {
     nombre: '',
     fechaDesde: '',
@@ -903,12 +904,16 @@ function mostrarFormularioEdicionMovimiento(movimiento) {
     anuncio.style.display = 'flex';
 }
 function mostrarConfirmacionEliminarMovimiento(movimiento, movimientoCard) {
-    const anuncio = document.querySelector('.anuncio');
+    const anuncio = document.querySelector('.anuncio-down');
     const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
     const [id, fecha, tipo, producto] = movimiento;
 
     anuncioContenido.innerHTML = `
-        <h2><i class="fas fa-trash"></i> Eliminar Movimiento</h2>
+        <div class="encabezado">
+            <h2>Eliminar Movimiento?</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
+                <i class="fas fa-arrow-down"></i></button>
+        </div>
         <div class="form-grup">
             <p>¿Está seguro que desea eliminar este movimiento?</p>
             <div class="detalles-eliminacion">
@@ -922,14 +927,10 @@ function mostrarConfirmacionEliminarMovimiento(movimiento, movimientoCard) {
             <button class="anuncio-btn red confirmar-eliminacion">
                 <i class="fas fa-trash"></i> Eliminar
             </button>
-            <button class="anuncio-btn close cancelar">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
-
+    mostrarAnuncioDown();
     const btnConfirmar = anuncioContenido.querySelector('.confirmar-eliminacion');
-    const btnCancelar = anuncioContenido.querySelector('.cancelar');
 
     btnConfirmar.addEventListener('click', async () => {
         try {
@@ -952,15 +953,9 @@ function mostrarConfirmacionEliminarMovimiento(movimiento, movimientoCard) {
             mostrarNotificacion('Error al eliminar movimiento: ' + error.message, 'error');
         } finally {
             ocultarCarga();
-            anuncio.style.display = 'none';
+            ocultarAnuncioDown();
         }
     });
-
-    btnCancelar.addEventListener('click', () => {
-        anuncio.style.display = 'none';
-    });
-
-    anuncio.style.display = 'flex';
 }
 
 /* =============== FUNCIONES DE UTILIDAD =============== */
