@@ -750,7 +750,7 @@ export function mostrarProductos() {
                 document.querySelectorAll('.filter-btn-acopio').forEach(btn => 
                     btn.classList.remove('active'));
                 tagButton.classList.add('active');
-                
+
                 tagButton.scrollIntoView({
                     behavior: 'smooth',
                     inline: 'center',
@@ -811,11 +811,16 @@ export function mostrarProductos() {
         if (almacenView) {
             const searchBarPosition = searchInput.getBoundingClientRect().top + window.scrollY;
             almacenView.scrollTo({
-                top: searchBarPosition - 80, // 20px offset from top
+                top: searchBarPosition - 70,
                 behavior: 'smooth'
             });
+            searchIcon.style.color='#f37500';
         }
     });
+    searchInput.addEventListener('blur', () => {
+        searchIcon.style.color = 'gray';
+    });
+    
     searchInput.addEventListener('input', (e) => {
         const searchTerm = normalizarTexto(e.target.value);
         const products = document.querySelectorAll('.product-card');
