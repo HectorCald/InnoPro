@@ -470,7 +470,7 @@ body {
 .bienvenido-user{
     margin: 0 ;
     padding: 0 !important;
-    margin-top: 40px !important;
+    margin-top: 100px !important;
     color: var(--tercer-color) !important;
     font-weight: 600 !important;
     font-size: 17px !important;
