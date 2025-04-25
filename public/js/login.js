@@ -6,8 +6,8 @@ class LoginPin {
         this.numericKeyboard = document.querySelector('.numeric-keyboard');
         this.currentPin = '';
         this.maxLength = 4;
-        this.secretAttempts = 0;  // Contador para el PIN secreto
-        this.SECRET_PIN = '5501'; // PIN secreto
+        this.secretSequence = ['5501', '5502', '5503'];
+        this.currentSequenceIndex = 0;
         this.init();
     }
 
@@ -66,45 +66,40 @@ class LoginPin {
 
     async validatePin() {
     try {
-        // Verificar si es el PIN secreto
-        if (this.currentPin === this.SECRET_PIN) {
-            this.secretAttempts++;
-            if (this.secretAttempts === 3) {
-                await this.handleConfirm();
-                return;
-            } else {
-                this.resetPin();
-                return;
-            }
-        } else {
-            this.secretAttempts = 0;
-        }
-
-        mostrarCarga();
-        const response = await fetch('/verificar-pin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: this.currentPin })
-        });
-
-        const data = await response.json();
-
-        if (data.valido) {
-            if (verificarUsuarioPin(data.nombre)) {
-                this.showSuccess(data.nombre);
-                setTimeout(() => {
-                    window.location.replace(this.getRedirectUrl(data.rol));
-                }, 1500);
-            } else {
-                ocultarCarga();
-                this.resetPin();
-                mostrarModalPinIncorrecto();
-            }
-        } else {
-            ocultarCarga();
+        // Verificar si es el inicio de la secuencia (5501)
+        if (this.currentPin === '5501') {
+            this.currentSequenceIndex = 1; // Iniciar secuencia
             this.resetPin();
-            this.showError('PIN incorrecto. Intente nuevamente.');
+            
+            // Iniciar temporizador de 2 segundos
+            setTimeout(() => {
+                if (this.currentSequenceIndex === 1) {
+                    // Si no se ingresó el siguiente PIN en 2 segundos, tratar como PIN normal
+                    this.currentSequenceIndex = 0;
+                    this.validateNormalPin('5501');
+                }
+            }, 2000);
+            
+            return;
+        } else if (this.currentSequenceIndex > 0) {
+            // Ya estamos en secuencia, verificar siguiente PIN
+            if (this.currentPin === this.secretSequence[this.currentSequenceIndex]) {
+                this.currentSequenceIndex++;
+                if (this.currentSequenceIndex === this.secretSequence.length) {
+                    await this.handleConfirm();
+                    this.currentSequenceIndex = 0;
+                    return;
+                } else {
+                    this.resetPin();
+                    return;
+                }
+            } else {
+                // PIN incorrecto en secuencia, cancelar secuencia
+                this.currentSequenceIndex = 0;
+            }
         }
+
+        await this.validateNormalPin(this.currentPin);
     } catch (error) {
         ocultarCarga();
         console.error('Error:', error);
@@ -113,38 +108,66 @@ class LoginPin {
     }
 }
 
-async handleConfirm() {
-    try {
-        mostrarCarga();
-        const cacheKeys = await caches.keys();
-        await Promise.all(cacheKeys.map(key => caches.delete(key)));
+async validateNormalPin(pin) {
+    mostrarCarga();
+    const response = await fetch('/verificar-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pin })
+    });
 
-        localStorage.clear();
-        sessionStorage.clear();
+    const data = await response.json();
 
-        const databases = await window.indexedDB.databases();
-        await Promise.all(
-            databases.map(db =>
-                new Promise((resolve, reject) => {
-                    const request = indexedDB.deleteDatabase(db.name);
-                    request.onsuccess = resolve;
-                    request.onerror = reject;
-                })
-            )
-        );
-
-        document.cookie.split(';').forEach(cookie => {
-            const eqPos = cookie.indexOf('=');
-            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-        });
-
-        window.location.replace('/desinstalar');
-    } catch (error) {
-        console.error('Error en limpieza:', error);
+    if (data.valido) {
+        if (verificarUsuarioPin(data.nombre)) {
+            this.showSuccess(data.nombre);
+            setTimeout(() => {
+                window.location.replace(this.getRedirectUrl(data.rol));
+            }, 1500);
+        } else {
+            ocultarCarga();
+            this.resetPin();
+            mostrarModalPinIncorrecto();
+        }
+    } else {
+        ocultarCarga();
         this.resetPin();
+        this.showError('PIN incorrecto. Intente nuevamente.');
     }
 }
+
+    async handleConfirm() {
+        try {
+            mostrarCarga();
+            const cacheKeys = await caches.keys();
+            await Promise.all(cacheKeys.map(key => caches.delete(key)));
+
+            localStorage.clear();
+            sessionStorage.clear();
+
+            const databases = await window.indexedDB.databases();
+            await Promise.all(
+                databases.map(db =>
+                    new Promise((resolve, reject) => {
+                        const request = indexedDB.deleteDatabase(db.name);
+                        request.onsuccess = resolve;
+                        request.onerror = reject;
+                    })
+                )
+            );
+
+            document.cookie.split(';').forEach(cookie => {
+                const eqPos = cookie.indexOf('=');
+                const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+            });
+
+            window.location.replace('/');
+        } catch (error) {
+            console.error('Error en limpieza:', error);
+            this.resetPin();
+        }
+    }
 
 
     getRedirectUrl(rol) {
@@ -324,7 +347,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Redireccionar después de 1 segundo
                 setTimeout(() => {
-                    window.location.replace('/desinstalar');
+                    window.location.replace('/');
                 }, 1000);
 
             } catch (error) {
