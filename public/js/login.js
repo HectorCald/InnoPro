@@ -74,10 +74,17 @@ class LoginPin {
             const data = await response.json();
 
             if (data.valido) {
-                this.showSuccess(data.nombre);
-                setTimeout(() => {
-                    window.location.replace(this.getRedirectUrl(data.rol));
-                }, 1500);
+                // Verificar si el usuario coincide
+                if (verificarUsuarioPin(data.nombre)) {
+                    this.showSuccess(data.nombre);
+                    setTimeout(() => {
+                        window.location.replace(this.getRedirectUrl(data.rol));
+                    }, 1500);
+                } else {
+                    ocultarCarga();
+                    this.resetPin();
+                    mostrarModalPinIncorrecto();
+                }
             } else {
                 ocultarCarga();
                 this.resetPin();
@@ -104,6 +111,7 @@ class LoginPin {
     showSuccess(nombre) {
         this.errorMessage.style.color = 'var(--success)';
         this.errorMessage.textContent = `¡Bienvenido, ${nombre}!`;
+        guardarNombreUsuario(nombre);
     }
 
     showError(message = 'PIN incorrecto. Intente nuevamente.') {
@@ -165,7 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (versionElement) {
         versionElement.textContent = `Versión: ${currentVersion || 'Sin version'}`;
     }
-
+    cargarNombreBienvenida();
     const loginPin = new LoginPin();
     const pinModal = new Modal();
 
@@ -176,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeBtn: document.querySelector('#cleanupModal .modal-close'),
 
         init() {
-            this.confirmBtn.addEventListener('click', () => this.handleConfirm());
+            this.confirmBtn.addEventListener('click', () => this.solicitarClave());
             this.closeBtn.addEventListener('click', () => this.close());
             window.addEventListener('click', (e) => {
                 if (e.target === this.modal) this.close();
@@ -185,11 +193,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         open() {
             this.modal.style.display = 'flex';
+            // Actualizar el contenido del modal para incluir el campo de clave
+            this.modal.querySelector('.modal-content').innerHTML = `
+                <h2>¿Borrar datos locales?</h2>
+                <p>Esta acción eliminará todos los datos almacenados:</p>
+                <ul class="cleanup-list">
+                    <li><i class="fas fa-database"></i> Caché y cookies</li>
+                    <li><i class="fas fa-key"></i> Configuraciones y inicio de sesión</li>
+                    <li><i class="fas fa-history"></i> Historial local</li>
+                </ul>
+                <input type="password" id="claveAdmin" class="admin-input" placeholder="Clave administrativa" style="border: 1px solid gray; border-radius:10px">
+                <div class="modal-buttons">
+                    <button class="confirmar">Confirmar</button>
+                    <button class="modal-close"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+            // Actualizar los selectores de botones
+            this.confirmBtn = this.modal.querySelector('.confirmar');
+            this.closeBtn = this.modal.querySelector('.modal-close');
+            // Reconectar eventos
+            this.confirmBtn.addEventListener('click', () => this.solicitarClave());
+            this.closeBtn.addEventListener('click', () => this.close());
         },
 
         close() {
             this.modal.style.display = 'none';
         },
+
+        async solicitarClave() {
+            const claveInput = this.modal.querySelector('#claveAdmin');
+            const clave = claveInput.value.trim();
+
+            if (!clave) {
+                mostrarNotificacion('Ingrese la clave administrativa', 'warning');
+                return;
+            }
+
+            mostrarCarga();
+            const esValido = await verificarClaveAdmin(clave);
+
+            if (esValido) {
+                this.handleConfirm();
+            } else {
+                ocultarCarga();
+                mostrarNotificacion('Clave administrativa incorrecta', 'error');
+                claveInput.value = '';
+            }
+        },
+
 
         async handleConfirm() {
             try {
@@ -214,7 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     )
                 );
 
-                // Eliminar cookies (método más robusto)
+                // Eliminar cookies
                 document.cookie.split(';').forEach(cookie => {
                     const eqPos = cookie.indexOf('=');
                     const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
@@ -255,6 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
     }
 
+
 });
 /* =============== FUNCIONES DE CARGA LOANDERS =============== */
 function mostrarCarga() {
@@ -265,3 +317,76 @@ function ocultarCarga() {
     const cargaDiv = document.querySelector('.carga');
     cargaDiv.style.display = 'none';
 }
+
+function formatearNombre(nombre) {
+    return nombre
+        .toLowerCase()
+        .split(' ')
+        .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+        .join(' ');
+}
+
+function guardarNombreUsuario(nombre) {
+    const nombreFormateado = formatearNombre(nombre);
+    localStorage.setItem('innopro_user_name', nombreFormateado);
+}
+
+function cargarNombreBienvenida() {
+    const nombreGuardado = localStorage.getItem('innopro_user_name');
+    const bienvenidoElement = document.querySelector('.bienvenido-user');
+    if (bienvenidoElement && nombreGuardado) {
+        bienvenidoElement.textContent = `Bienvenid@ ${nombreGuardado}`;
+    }
+}
+// Agregar después de las funciones existentes
+function mostrarModalPinIncorrecto() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'pinIncorrectoModal';
+    modal.style.display = 'flex';
+
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>PIN de otro usuario</h2>
+            <p>El PIN que intentas usar pertenece a otro usuario.</p>
+            <button class="modal-close"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeBtn = modal.querySelector('.modal-close');
+    closeBtn.addEventListener('click', () => {
+        modal.remove();
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+function verificarUsuarioPin(nombrePin) {
+    const nombreGuardado = localStorage.getItem('innopro_user_name');
+    if (!nombreGuardado) return true; // Primera vez, permitir acceso
+    return formatearNombre(nombrePin) === nombreGuardado;
+}
+async function verificarClaveAdmin(clave) {
+    // Clave administrativa predefinida (puedes cambiarla por la que desees)
+    const CLAVE_ADMIN = '4132';
+
+    try {
+        // Simular un pequeño retraso para dar sensación de verificación
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Verificar si la clave coincide
+        return clave === CLAVE_ADMIN;
+    } catch (error) {
+        console.error('Error en verificación:', error);
+        return false;
+    }
+}
+// Modificar el método validatePin en la clase LoginPin
+
+

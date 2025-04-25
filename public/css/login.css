@@ -83,7 +83,7 @@ body {
     color: gray;
     font-size: 13px;
     margin-bottom: 10px;
-    margin-top: 20px;
+    margin-top: 0px;
     width: 100%;
     text-align: center;
 }
@@ -438,6 +438,7 @@ body {
     align-items: center;
     gap: 10px;
     color: var(--primary-text);
+    font-size: 13px;
 }
 
 .anuncio-botones {
@@ -465,4 +466,44 @@ body {
 .anuncio-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.bienvenido-user{
+    margin: 0 ;
+    padding: 0 !important;
+    margin-top: 20px !important;
+    color: var(--tercer-color) !important;
+    font-weight: 500 !important;
+}
+/* Agregar al final del archivo */
+#pinIncorrectoModal .modal-content {
+    border: 2px solid var(--error);
+}
+
+#pinIncorrectoModal h2 {
+    color: var(--error);
+}
+/* Estilos para el input administrativo */
+.admin-input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background: var(--primary-color);
+    color: var(--primary-text);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+.confirmar{
+    width: 100%;
+    padding: 10px;
+    background-color: rgb(205, 0, 0);
+    color: white;
+    border: none;
+    border-radius: 10px;
 }
