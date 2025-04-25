@@ -347,8 +347,8 @@ function mostrarModalPinIncorrecto() {
 
     modal.innerHTML = `
         <div class="modal-content">
-            <h2>PIN de otro usuario</h2>
-            <p>El PIN que intentas usar pertenece a otro usuario.</p>
+            <h2>ADVERTENCIA!</h2>
+            <p>El PIN que intentas usar pertenece a otro usuario. Esta acción no esta permitida!</p>
             <button class="modal-close"><i class="fas fa-times"></i></button>
         </div>
     `;

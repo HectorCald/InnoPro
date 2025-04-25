@@ -477,11 +477,14 @@ body {
 }
 /* Agregar al final del archivo */
 #pinIncorrectoModal .modal-content {
-    border: 2px solid var(--error);
+    border: 1px solid var(--error);
+    padding: 10px;
 }
 
 #pinIncorrectoModal h2 {
     color: var(--error);
+    font-size: 15px;
+    padding-top: 10px;
 }
 /* Estilos para el input administrativo */
 .admin-input {
