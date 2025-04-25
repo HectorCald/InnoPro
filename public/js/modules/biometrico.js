@@ -1,7 +1,7 @@
 const WORK_COORDINATES = {
     latitude: -19.0289818,    // Coordenada corregida para Santa Cruz
     longitude: -65.2501004,  // Coordenada real de Santa Cruz de la Sierra
-    radius: 1000              // Radio ampliado a 500 metros 
+    radius: 100              // Radio ampliado a 500 metros 
 };
 export function inicializarBiometrico() {
     const container = document.querySelector('.biometrico-view');
@@ -44,9 +44,10 @@ async function registrarBiometrico(tipo) {
         const position = await obtenerUbicacion();
         console.log('Tu ubicación actual:', position.coords.latitude, position.coords.longitude);
         
+        const distancia = estaEnAreaLaboral(position);
         
-        if (!estaEnAreaLaboral(position)) {
-            mostrarNotificacion('Registro fuera del área laboral', 'error');
+        if (distancia > WORK_COORDINATES.radius) {
+            mostrarNotificacion(`Registro fuera del área laboral (${Math.round(distancia)} metros)`, 'error');
             return;
         }
 
@@ -67,7 +68,7 @@ async function registrarBiometrico(tipo) {
     } catch (error) {
         console.error('Error:', error);
         mostrarNotificacion('Error en el registro', 'error');
-    }finally{
+    } finally {
         ocultarCarga();
     }
 }
@@ -122,5 +123,5 @@ function estaEnAreaLaboral(pos) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
     const distancia = R * c;
-    return distancia <= WORK_COORDINATES.radius;
+    return distancia; // Devolvemos la distancia calculada en lugar del booleano
 }
