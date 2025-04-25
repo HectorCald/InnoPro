@@ -110,6 +110,11 @@ async function bienvenida() {
         const data = await response.json();
 
         if (data) {
+            const nombreFormateado = data.nombre ? data.nombre
+                .toLowerCase()
+                .split(' ')
+                .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+                .join(' ') : 'Usuario';
             const dashboard = document.querySelector('.dashboard');
             if (dashboard) {
                 dashboard.innerHTML = `
@@ -117,7 +122,7 @@ async function bienvenida() {
                         <div class="profile-section">
                             <img src="/img/icon-48-48.png" alt="" class="profile-picture">
                             <div class="profile-info">
-                                <span class="profile-name">${data.nombre || 'Usuario'} <i class="fas fa-check-circle" style="color: orange; font-size: 0.8em;"></i></span>
+                                <span class="profile-name">${nombreFormateado} <i class="fas fa-check-circle" style="color: orange; font-size: 0.8em;"></i></span>
                                 <span class="profile-role">@${data.rol || 'Usuario'}</span>
                             </div>
                         </div>
