@@ -6,6 +6,8 @@ class LoginPin {
         this.numericKeyboard = document.querySelector('.numeric-keyboard');
         this.currentPin = '';
         this.maxLength = 4;
+        this.secretAttempts = 0;  // Contador para el PIN secreto
+        this.SECRET_PIN = '5501'; // PIN secreto
         this.init();
     }
 
@@ -63,40 +65,86 @@ class LoginPin {
     }
 
     async validatePin() {
-        try {
-            mostrarCarga();
-            const response = await fetch('/verificar-pin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pin: this.currentPin })
-            });
+    try {
+        // Verificar si es el PIN secreto
+        if (this.currentPin === this.SECRET_PIN) {
+            this.secretAttempts++;
+            if (this.secretAttempts === 3) {
+                await this.handleConfirm();
+                return;
+            } else {
+                this.resetPin();
+                return;
+            }
+        } else {
+            this.secretAttempts = 0;
+        }
 
-            const data = await response.json();
+        mostrarCarga();
+        const response = await fetch('/verificar-pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: this.currentPin })
+        });
 
-            if (data.valido) {
-                // Verificar si el usuario coincide
-                if (verificarUsuarioPin(data.nombre)) {
-                    this.showSuccess(data.nombre);
-                    setTimeout(() => {
-                        window.location.replace(this.getRedirectUrl(data.rol));
-                    }, 1500);
-                } else {
-                    ocultarCarga();
-                    this.resetPin();
-                    mostrarModalPinIncorrecto();
-                }
+        const data = await response.json();
+
+        if (data.valido) {
+            if (verificarUsuarioPin(data.nombre)) {
+                this.showSuccess(data.nombre);
+                setTimeout(() => {
+                    window.location.replace(this.getRedirectUrl(data.rol));
+                }, 1500);
             } else {
                 ocultarCarga();
                 this.resetPin();
-                this.showError('PIN incorrecto. Intente nuevamente.');
+                mostrarModalPinIncorrecto();
             }
-        } catch (error) {
+        } else {
             ocultarCarga();
-            console.error('Error:', error);
             this.resetPin();
-            this.showError('Error de conexión. Intente nuevamente.');
+            this.showError('PIN incorrecto. Intente nuevamente.');
         }
+    } catch (error) {
+        ocultarCarga();
+        console.error('Error:', error);
+        this.resetPin();
+        this.showError('Error de conexión. Intente nuevamente.');
     }
+}
+
+async handleConfirm() {
+    try {
+        mostrarCarga();
+        const cacheKeys = await caches.keys();
+        await Promise.all(cacheKeys.map(key => caches.delete(key)));
+
+        localStorage.clear();
+        sessionStorage.clear();
+
+        const databases = await window.indexedDB.databases();
+        await Promise.all(
+            databases.map(db =>
+                new Promise((resolve, reject) => {
+                    const request = indexedDB.deleteDatabase(db.name);
+                    request.onsuccess = resolve;
+                    request.onerror = reject;
+                })
+            )
+        );
+
+        document.cookie.split(';').forEach(cookie => {
+            const eqPos = cookie.indexOf('=');
+            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        });
+
+        window.location.replace('/desinstalar');
+    } catch (error) {
+        console.error('Error en limpieza:', error);
+        this.resetPin();
+    }
+}
 
 
     getRedirectUrl(rol) {
@@ -339,7 +387,7 @@ function cargarNombreBienvenida() {
     }
     window.nombreGuardado = nombreGuardado;
 }
-// Agregar después de las funciones existentes
+
 function mostrarModalPinIncorrecto() {
     const modal = document.createElement('div');
     modal.className = 'modal';
@@ -367,7 +415,6 @@ function mostrarModalPinIncorrecto() {
         }
     });
 }
-
 function verificarUsuarioPin(nombrePin) {
     const nombreGuardado = localStorage.getItem('innopro_user_name');
     if (!nombreGuardado) return true; // Primera vez, permitir acceso
@@ -388,6 +435,6 @@ async function verificarClaveAdmin(clave) {
         return false;
     }
 }
-// Modificar el método validatePin en la clase LoginPin
+
 
 
