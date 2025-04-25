@@ -181,7 +181,7 @@
                     <span>Esta actualización requiere una instalación manual</span>
                 </div>
             </div>
-
+            
             <p class="text-warning">Por favor, contacta al administrador del sistema para obtener la nueva versión.</p>
             <p>No podrás acceder al sistema hasta que se realice la actualización manual.</p>
             <% } else { %>
@@ -241,71 +241,37 @@
             document.getElementById('versionText').textContent = `Actualización a la versión ${CURRENT_VERSION}`;
 
             if (btnUpdate) {
-
-
                 const simulateUpdate = async () => {
                     btnUpdate.style.display = 'none';
                     updateProgress.style.display = 'block';
 
+                    for (let i = 0; i <= 100; i += 20) {
+                        progressFill.style.width = `${i}%`;
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+
                     try {
-                        // Clear all browser data
-                        // 1. Clear all caches
-                        const cacheKeys = await caches.keys();
-                        await Promise.all(cacheKeys.map(key => caches.delete(key)));
-
-                        // 2. Clear IndexedDB databases
-                        const databases = await window.indexedDB.databases();
-                        await Promise.all(
-                            databases.map(db =>
-                                new Promise((resolve, reject) => {
-                                    const request = indexedDB.deleteDatabase(db.name);
-                                    request.onsuccess = resolve;
-                                    request.onerror = reject;
-                                })
-                            )
-                        );
-
-                        // 3. Clear localStorage and sessionStorage
-                        localStorage.clear();
-                        sessionStorage.clear();
-
-                        // 4. Clear all cookies
-                        document.cookie.split(";").forEach(cookie => {
-                            const eqPos = cookie.indexOf("=");
-                            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-                            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-                        });
-
-                        // 5. Clear service workers
-                        if ('serviceWorker' in navigator) {
-                            const registrations = await navigator.serviceWorker.getRegistrations();
-                            await Promise.all(registrations.map(registration => registration.unregister()));
-                        }
-
-                        // Simulate progress
-                        for (let i = 0; i <= 100; i += 20) {
-                            progressFill.style.width = `${i}%`;
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                        }
-
                         const response = await fetch('/confirmar-actualizacion', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
                             body: JSON.stringify({ version: CURRENT_VERSION })
                         });
 
+                        const data = await response.json();
+
                         if (response.ok) {
-                            // Store new version temporarily
-                            sessionStorage.setItem(UPDATE_KEY, CURRENT_VERSION);
+                            // Store version in localStorage
+                            localStorage.setItem(UPDATE_KEY, CURRENT_VERSION);
 
                             updateProgress.querySelector('.update-message').textContent =
-                                'Limpieza completada. Reiniciando...';
+                                'Actualización completada. Cargando...';
                             updateProgress.querySelector('.fas').classList.remove('rotating');
                             updateProgress.querySelector('.fas').classList.add('fa-check');
 
-                            // Force reload from server
                             setTimeout(() => {
-                                window.location.replace('/');
+                                window.location.href = '/';
                             }, 2000);
                         } else {
                             throw new Error('Error en la actualización');
@@ -323,7 +289,6 @@
                         }, 3000);
                     }
                 };
-
 
                 btnUpdate.addEventListener('click', simulateUpdate);
             }
