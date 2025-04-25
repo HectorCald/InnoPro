@@ -135,10 +135,14 @@ export function mostrarProductosBruto() {
         if (almacenView) {
             const searchBarPosition = searchInput.getBoundingClientRect().top + window.scrollY;
             almacenView.scrollTo({
-                top: searchBarPosition - 80, // 20px offset from top
+                top: searchBarPosition - 70, // 20px offset from top
                 behavior: 'smooth'
             });
         }
+        searchIcon.style.color = '#f37500';
+    });
+    searchInput.addEventListener('blur', () => {
+        searchIcon.style.color = 'gray';
     });
     searchInput.addEventListener('input', (e) => {
         const searchTerm = normalizarTexto(e.target.value);
@@ -332,25 +336,26 @@ export async function cargarAlmacenBruto() {
                     mostrarDetalleProductoAcopio(producto);
                 }
             };
+
             productCard.innerHTML = `
-            <div class="product-info">
-                <div class="product-name">
-                    <div class="acciones-rapidas-acopio">
-                        <button class="btn-card pedido ${carritoProductos.has(nombre) ? 'disabled' : ''}" 
-                                onclick="agregarAlCarrito('${nombre}')"
-                                ${carritoProductos.has(nombre) ? 'disabled' : ''}>
-                            <i class="fas fa-cart-plus"></i>
-                        </button>
-                    </div>
-                    <span>${nombre || 'Sin nombre'}</span>
-                </div>   
-                <div class="product-quantity">
-                    <div class="registro-estado-acopio estado-bruto">${totalBruto.toFixed(1)}</div>
-                    <div class="registro-estado-acopio estado-prima">${totalPrima.toFixed(1)}</div>
-                    
-                </div>             
+    <div class="product-info">
+        <div class="product-name">
+            <div class="acciones-rapidas-acopio">
+                <button class="btn-card pedido ${carritoProductos.has(nombre) ? 'disabled' : ''}" 
+                        onclick="event.stopPropagation(); agregarAlCarrito('${nombre}')"
+                        ${carritoProductos.has(nombre) ? 'disabled' : ''}>
+                    <i class="fas fa-cart-plus"></i>
+                </button>
             </div>
-        `;
+            <span>${nombre || 'Sin nombre'}</span>
+        </div>   
+        <div class="product-quantity">
+            <div class="registro-estado-acopio estado-bruto">${totalBruto.toFixed(1)}</div>
+            <div class="registro-estado-acopio estado-prima">${totalPrima.toFixed(1)}</div>
+        </div>             
+    </div>
+`;
+
 
             productsContainer.appendChild(productCard);
         });
