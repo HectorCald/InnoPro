@@ -35,6 +35,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(join(__dirname, 'public'), {
     setHeaders: (res, path) => {
+        // Cabecera para evitar caché
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+
         if (path.endsWith('.css')) {
             res.setHeader('Content-Type', 'text/css');
         } else if (path.endsWith('.js')) {
