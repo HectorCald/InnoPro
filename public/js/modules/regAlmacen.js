@@ -228,7 +228,7 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
 function ordenarRegistrosPorFecha(registros) {
     return registros.sort((a, b) => {
         try {
-            // Convert date strings to Date objects (format: "DD/MM/YYYY, HH:mm:ss")
+            // Convertir strings de fecha a objetos Date (formato: "DD/MM/YYYY, HH:mm:ss")
             const [fechaA, horaA] = a[1].split(', ');
             const [diaA, mesA, yearA] = fechaA.split('/');
             const dateA = new Date(`${yearA}-${mesA}-${diaA} ${horaA}`);
@@ -237,7 +237,7 @@ function ordenarRegistrosPorFecha(registros) {
             const [diaB, mesB, yearB] = fechaB.split('/');
             const dateB = new Date(`${yearB}-${mesB}-${diaB} ${horaB}`);
 
-            // Sort in descending order (most recent first)
+            // Ordenar de forma descendente (más reciente primero)
             return dateB - dateA;
         } catch (error) {
             console.error('Error al ordenar fechas:', error);
@@ -290,8 +290,6 @@ function configurarFiltros2() {
                             <option value="todos">Todos los tipos</option>
                             <option value="Ingreso">Ingreso</option>
                             <option value="Salida">Salida</option>
-                            <option value="Transferencia">Transferencia</option>
-                            <option value="Ajuste">Ajuste</option>
                         </select>
 
                         <p for="filtro-almacen">Almacén</p>

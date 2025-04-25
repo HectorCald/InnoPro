@@ -134,7 +134,7 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                 icono: 'fa-mortar-pestle',
                 texto: 'Acopio',
                 submenu: [
-                    { clase: 'opcion-btn submenu-item', vista: 'almAcopio-view', icono: 'fa-warehouse', texto: 'Alm Bruto', onclick: 'onclick="inicializarAlmacen()"' },
+                    { clase: 'opcion-btn submenu-item', vista: 'almAcopio-view', icono: 'fa-dolly', texto: 'Gestionar', onclick: 'onclick="inicializarAlmacen()"' },
                     { clase: 'opcion-btn submenu-item', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAcopio()"' },
                     { clase: 'opcion-btn submenu-item', vista: 'compras-view', icono: 'fa-shopping-cart', texto: 'Compras', onclick: 'onclick="inicializarCompras()"' }
                 ]
@@ -154,7 +154,7 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                 icono: 'fa-warehouse',
                 texto: 'Almacen',
                 submenu: [
-                    { clase: 'opcion-btn submenu-item', vista: 'almacen-view', icono: 'fa-dolly', texto: 'Gestion', onclick: 'onclick="inicializarAlmacenGral()"' },
+                    { clase: 'opcion-btn submenu-item', vista: 'almacen-view', icono: 'fa-dolly', texto: 'Gestionar', onclick: 'onclick="inicializarAlmacenGral()"' },
                     { clase: 'opcion-btn submenu-item', vista: 'regAlmacen-view', icono: 'fa-history', texto: 'Registros', onclick: 'onclick="cargarRegistrosAlmacenGral()"' }
 
                 ]

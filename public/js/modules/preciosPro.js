@@ -359,6 +359,23 @@ async function mostrarFormularioRegla() {
         const responseProductos = await fetch('/obtener-productos');
         const dataProductos = await responseProductos.json();
         
+        // Verificar y procesar los productos
+        if (!dataProductos.productos || !Array.isArray(dataProductos.productos)) {
+            throw new Error('Formato de datos de productos inválido');
+        }
+
+        // Filtrar productos: eliminar duplicados y saltar primera fila
+        const productosFormateados = [...new Set(
+            dataProductos.productos
+                .slice(1) // Saltar primera fila
+                .map(producto => 
+                    typeof producto === 'object' ? 
+                    producto.nombre || String(producto) : 
+                    String(producto)
+                )
+                .filter(Boolean) // Eliminar valores vacíos
+        )].sort(); // Ordenar alfabéticamente
+        
         const anuncio = document.querySelector('.anuncio');
         const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
         
@@ -370,17 +387,17 @@ async function mostrarFormularioRegla() {
             </div>
             <div class="relleno">
                     <p>Busca el producto para seleccionar</p>
-                     <input type="text" class="buscador" placeholder="Buscar producto..." id="buscador-producto">
+                    <input type="text" class="buscador" placeholder="Buscar producto..." id="buscador-producto">
                     <p>Selecciona un producto</p>
-                     <select id="producto-select">
+                    <select id="producto-select">
                         <option value="">Seleccione un producto</option>
-                        ${dataProductos.productos.map(producto => 
+                        ${productosFormateados.map(producto => 
                             `<option value="${producto}">${producto}</option>`
                         ).join('')}
                     </select>
                 
-                        <p>Selecciona un precio base</p>
-                     <select id="tipo-base">
+                    <p>Selecciona un precio base</p>
+                    <select id="tipo-base">
                         <option value="">Seleccione tipo</option>
                         <option value="etiquetado">Etiquetado</option>
                         <option value="sellado">Sellado</option>
@@ -388,14 +405,13 @@ async function mostrarFormularioRegla() {
                         <option value="cernido">Cernido especial</option>
                     </select>
                 
-                <div id="precio-cernido-container" class="campo-form" style="display: none; background:none">
-                    <p>Precio base cernido:</p>
-                    <input type="text" id="precio-cernido-especial" 
-                        pattern="[0-9]*[.,]?[0-9]*" 
-                        placeholder="Ejemplo: 0.3">
-                </div>
+                    <div id="precio-cernido-container" class="campo-form" style="display: none; background:none">
+                        <p>Precio base cernido:</p>
+                        <input type="text" id="precio-cernido-especial" 
+                            pattern="[0-9]*[.,]?[0-9]*" 
+                            placeholder="Ejemplo: 0.3">
+                    </div>
                     <p>Seleccion un multiplicador</p>
-                    
                     <select id="multiplicador">
                         <option value="">Seleccione multiplicador</option>
                         ${[1,2,3,4,5].map(num => 
@@ -403,26 +419,21 @@ async function mostrarFormularioRegla() {
                         ).join('')}
                     </select>
 
-
                     <p>Rango de gramaje (opcional):</p>
                     <div class="rango-inputs campo-form" style="background:none">
                         <input type="number" id="gramaje-min" placeholder="Mínimo" min="0">
                         <input type="number" id="gramaje-max" placeholder="Máximo" min="0">
                     </div>
-
             </div>
             <div class="anuncio-botones">
                 <button class="anuncio-btn green confirmar"><i class="fas fa-plus-circle"></i>  Agregar</button>
             </div>
         `;
-
-        
-
         configurarEventosFormulario(anuncio);
         await initializePreciosPro();
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al cargar productos: ' + error.message);
+        mostrarNotificacion('Error al cargar productos: ' + error.message, 'error');
     } finally {
         ocultarCarga();
         mostrarAnuncio();
@@ -432,7 +443,7 @@ function configurarEventosFormulario(anuncio) {
     // Evento para mostrar/ocultar campos según tipo
     document.getElementById('tipo-base').addEventListener('change', (e) => {
         const precioCernidoContainer = document.getElementById('precio-cernido-container');
-        const multiplicadorContainer = document.getElementById('multiplicador-container');
+        const multiplicadorContainer = document.getElementById('multiplicador').parentElement;
         
         if (e.target.value === 'cernido') {
             precioCernidoContainer.style.display = 'block';
@@ -477,21 +488,36 @@ function configurarEventosFormulario(anuncio) {
         }
     });
 
-    // Implementar búsqueda
+    // Implementar búsqueda mejorada
     const buscador = document.getElementById('buscador-producto');
     const productoSelect = document.getElementById('producto-select');
     const productosOriginales = [...productoSelect.options];
 
     buscador.addEventListener('input', (e) => {
-        const busqueda = e.target.value.toLowerCase();
-        productoSelect.innerHTML = '<option value="">Seleccione un producto</option>';
+        const busqueda = e.target.value.toLowerCase().trim();
+        
+        // Restaurar todas las opciones originales
+        productoSelect.innerHTML = '';
         productosOriginales.forEach(option => {
-            if (option.text.toLowerCase().includes(busqueda)) {
-                productoSelect.appendChild(option.cloneNode(true));
+            const optionClone = option.cloneNode(true);
+            if (optionClone.value === '' || optionClone.text.toLowerCase().includes(busqueda)) {
+                productoSelect.appendChild(optionClone);
             }
         });
+
+        // Si hay una coincidencia exacta, seleccionarla
+        const coincidenciaExacta = Array.from(productoSelect.options).find(
+            opt => opt.text.toLowerCase() === busqueda
+        );
+        if (coincidenciaExacta) {
+            productoSelect.value = coincidenciaExacta.value;
+        }
     });
 
+    // Sincronizar select con buscador
+    productoSelect.addEventListener('change', (e) => {
+        buscador.value = e.target.value;
+    });
 
     // Evento para agregar
     anuncio.querySelector('.confirmar').addEventListener('click', async () => {
@@ -503,7 +529,7 @@ function configurarEventosFormulario(anuncio) {
             const multiplicador = base === 'cernido' ? '1' : document.getElementById('multiplicador').value;
             const gramajeMin = document.getElementById('gramaje-min').value;
             const gramajeMax = document.getElementById('gramaje-max').value;
-            
+
             let precioCernido = document.getElementById('precio-cernido-especial').value;
             if (base === 'cernido' && precioCernido) {
                 precioCernido = precioCernido.replace(',', '.');
@@ -512,7 +538,7 @@ function configurarEventosFormulario(anuncio) {
                 }
             }
 
-            // Validaciones modificadas
+            // Validaciones
             if (!base) {
                 throw new Error('Por favor seleccione un tipo');
             }
@@ -533,7 +559,6 @@ function configurarEventosFormulario(anuncio) {
                 throw new Error('El gramaje mínimo debe ser menor o igual que el máximo');
             }
 
-            // Usar el producto seleccionado o el término de búsqueda
             const producto = productoSeleccionado || busquedaProducto;
             if (!producto) {
                 throw new Error('Por favor ingrese un nombre de producto o seleccione uno de la lista');
@@ -568,7 +593,7 @@ function configurarEventosFormulario(anuncio) {
             }
         } catch (error) {
             console.error('Error:', error);
-            alert(error.message);
+            mostrarNotificacion(error.message, 'error');
         } finally {
             ocultarCarga();
         }
