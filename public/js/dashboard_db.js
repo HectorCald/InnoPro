@@ -17,6 +17,7 @@ import { inicializarGestionPro } from './modules/gestionPro.js';
 import { inicializarCalcularMP } from './modules/calcularMP.js';
 import { initializeImgUpload } from './modules/imgUpload.js';
 import { ocultarAnuncio } from './modules/components.js';
+import { inicializarBiometrico, } from './modules/biometrico.js';
 
 export function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
@@ -102,6 +103,9 @@ window.inicializarCalcularMP = inicializarCalcularMP;
 
 window.ocultarCarga = ocultarCarga;
 window.mostrarCarga = mostrarCarga;
+
+// Funciones de biometrico
+window.inicializarBiometrico = inicializarBiometrico;
 
 /* =============== FUNCIONES DE INICIO APLICACION=============== */
 async function bienvenida() {
@@ -217,7 +221,7 @@ async function iniciarApp() {
             return;
         }
 
-        const vistas = document.querySelectorAll('imgUpload-view, .calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
+        const vistas = document.querySelectorAll('biometrico-view, imgUpload-view, .calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
 
         // Ocultar todas las vistas inicialmente
         vistas.forEach(vista => {

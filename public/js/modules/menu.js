@@ -185,6 +185,13 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
             icono: 'fa-puzzle-piece',
             texto: 'Subir img',
             onclick: 'onclick="initializeImgUpload()"'
+        },
+        'Biometrico': {
+            clase: 'opcion-btn submenu-item',
+            vista: 'biometrico-view',
+            icono: 'fa-puzzle-piece',
+            texto: 'Biometrico',
+            onclick: 'onclick="inicializarBiometrico()"'
         }
     };
 

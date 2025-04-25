@@ -3535,6 +3535,83 @@ app.put('/actualizar-registro-mp', requireAuth, async (req, res) => {
 });
 
 
+/* ==================== RUTAS DE BIOMTRICO ==================== */
+// ... código existente ...
+
+app.post('/registrar-biometrico', requireAuth, async (req, res) => {
+    try {
+        const { tipo } = req.body;
+        const fechaHora = new Date().toLocaleString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).replace(/,/, ';');
+
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Biometrico!A2:D'
+        });
+        
+        const nextId = response.data.values ? `BM-${response.data.values.length + 1}` : 'BM-1';
+        
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Biometrico!A2:D',
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [[
+                    nextId,
+                    fechaHora,
+                    req.user.nombre,
+                    req.body.coordenadas.latitude + ', ' + req.body.coordenadas.longitude
+                ]]
+            }
+        });
+        
+        res.json({ 
+            success: true,
+            registro: {
+                id: nextId,
+                fechaHora,
+                nombre: req.user.nombre,
+                ubicacion: req.body.coordenadas.latitude + ', ' + req.body.coordenadas.longitude
+            }
+        });
+    } catch (error) {
+        console.error('Error registrando biométrico:', error);
+        res.status(500).json({ error: 'Error en el servidor' });
+    }
+});
+
+// ... resto del código ...
+app.get('/obtener-biometrico', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Biometrico!A2:F'
+        });
+        
+        const registros = (response.data.values || []).map(row => ({
+            id: row[0],
+            fecha: row[1].split(';')[0],
+            hora: row[1].split(';')[1],
+            nombre: row[2],
+            ubicacion: row[4],
+            tipo: row[5]
+        }));
+        
+        res.json(registros);
+    } catch (error) {
+        console.error('Error obteniendo registros:', error);
+        res.status(500).json({ error: 'Error en el servidor' });
+    }
+});
+
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {
