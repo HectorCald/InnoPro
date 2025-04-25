@@ -75,11 +75,7 @@ window.addEventListener('popstate', (event) => {
         ocultarAnuncioDown();
         window.history.pushState(null, '', window.location.href);
     } else {
-        // Si no hay anuncios visibles, ir a inicio
-        if (typeof cambiarVista === 'function') {
-            cambiarVista('home-view', 'inicializarHome');
-            window.history.pushState(null, '', window.location.href);
-        }
+        window.location.reload();
     }
 });
 
