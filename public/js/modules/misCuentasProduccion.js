@@ -177,6 +177,14 @@ function configurarFiltrosBotones() {
             boton.classList.add('active');
             filtroActual.verificacion = boton.dataset.estado;
             aplicarFiltros();
+            // Hacer scroll al botón cuando se active
+            setTimeout(() => {
+                boton.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }, 100);
         });
     });
 
@@ -186,6 +194,14 @@ function configurarFiltrosBotones() {
             boton.classList.add('active');
             filtroActual.periodo = boton.dataset.tiempo;
             aplicarFiltros();
+            // Hacer scroll al botón cuando se active
+            setTimeout(() => {
+                boton.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }, 100);
         });
     });
 }

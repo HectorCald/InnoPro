@@ -61,6 +61,11 @@ function mostrarAdvertencias(notificaciones) {
         if (badge) badge.style.display = 'none';
         return;
     }
+    notificaciones.sort((a, b) => {
+        const fechaA = parsearFecha(a.fecha);
+        const fechaB = parsearFecha(b.fecha);
+        return fechaB - fechaA;
+    });
 
     // Filtrar y procesar notificaciones del desarrollador
     notificaciones.forEach(notif => {
@@ -136,8 +141,7 @@ function mostrarInterfazNotificaciones(advertenciaDiv, notificaciones) {
             </div>
             <div class="anuncio-botones">
                 <button class="btn-eliminar-todas">
-                    <i class="fas fa-trash"></i>
-                    Eliminar todas las notificaciones
+                    <i class="fas fa-trash"></i> Eliminar todo
                 </button>
             </div>
         </div>
