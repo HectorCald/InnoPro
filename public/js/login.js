@@ -337,6 +337,7 @@ function cargarNombreBienvenida() {
     if (bienvenidoElement && nombreGuardado) {
         bienvenidoElement.textContent = `${nombreGuardado}`;
     }
+    window.nombreGuardado = nombreGuardado;
 }
 // Agregar después de las funciones existentes
 function mostrarModalPinIncorrecto() {
@@ -347,8 +348,8 @@ function mostrarModalPinIncorrecto() {
 
     modal.innerHTML = `
         <div class="modal-content">
-            <h2>ADVERTENCIA!</h2>
-            <p>El PIN que intentas usar pertenece a otro usuario. Esta acción no esta permitida!</p>
+            <h2><strong>ADVERTENCIA!</strong></h2>
+            <p>Por seguridad, no está permitido usar un <strong>PIN</strong>  que no corresponde al usuario <strong> ${nombreGuardado}</strong>.</p>
             <button class="modal-close"><i class="fas fa-times"></i></button>
         </div>
     `;
