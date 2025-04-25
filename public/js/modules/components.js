@@ -65,6 +65,7 @@ window.addEventListener('orientationchange', () => {
     }, 300);
 });
 // Manejador del botón físico de retroceso
+// Manejador del botón físico de retroceso
 window.addEventListener('popstate', (event) => {
     const anuncio = document.querySelector('.anuncio');
     const anunciodown = document.querySelector('.anuncio-down');
@@ -73,6 +74,12 @@ window.addEventListener('popstate', (event) => {
         ocultarAnuncio();
         ocultarAnuncioDown();
         window.history.pushState(null, '', window.location.href);
+    } else {
+        // Si no hay anuncios visibles, ir a inicio
+        if (typeof cambiarVista === 'function') {
+            cambiarVista('home-view', 'inicializarHome');
+            window.history.pushState(null, '', window.location.href);
+        }
     }
 });
 
