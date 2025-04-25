@@ -25,7 +25,7 @@
     /* ===== TÍTULO ===== */
     .title {
         padding-block: 10px;
-        padding-top: 0;
+        padding-top: 5px;
         border-bottom: 1px solid #2c2c2c;
         font-size: 16px;
         margin: 0;
@@ -35,10 +35,10 @@
     .precios-container {
         display: flex;
         flex-direction: column;
-        gap: 1.5em;
-        margin-top: 1em;
-        background-color: var(--cero-color);
-        border-radius: 20px;
+        gap: 5px;
+        margin-top: 5px;
+        background-color: var(--second-color);
+        border-radius: 10px;
     }
 
     /* ===== SECCIÓN DE PRECIOS ===== */
@@ -98,33 +98,32 @@
 
     /* ===== SECCIÓN DE REGLAS ===== */
     .reglas-section {
-        margin-top: 10px;
+        display: grid;
+        grid-template-columns: repeat(1fr);
+        gap: 10px;
+        width: 100%;
         padding: 15px;
-        background: var(--card-background);
-        border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .reglas-container {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(1fr);
         gap: 10px;
-        margin-top: 15px;
+        width: 100%;
     }
 
     /* ===== ITEMS DE REGLAS ===== */
     .regla-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px;
-        background-color: var(--primary-color);
+        background: var(--cero-color);
         border-radius: 10px;
-        gap: 10px;
-        font-size: 13px;
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+
 
         &:hover {
-            background-color: rgb(42, 42, 42);
+            background-color: rgb(34, 34, 34);
         }
     }
 
@@ -132,10 +131,11 @@
     .regla-detalles {
         display: flex;
         gap: 15px;
+        font-size: 13px;
 
         .detalle-grupo {
             display: flex;
-            border: 1px solid gray;
+            background-color: rgb(55, 55, 55);
             padding: 10px;
             border-radius: 10px;
         }
@@ -145,6 +145,11 @@
     @media (max-width: 768px) {
         .regla-detalles {
             display: none !important;
+        }
+    }
+    @media screen and (min-width: 768px) {
+        .reglas-container{
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
         }
     }
 

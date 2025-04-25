@@ -58,9 +58,8 @@ export async function initializePreciosPro() {
                         </button>
                     </div>
                 </div>
-
+                <h3 style="padding-left:15px; margin:0">Reglas Especiales</h3>
                 <div class="reglas-section">
-                    <h3>Reglas Especiales</h3>
                    <div class="reglas-container">
                         ${reglas.map((regla, index) => `
                              <div class="regla-item">
