@@ -470,10 +470,10 @@ body {
 .bienvenido-user{
     margin: 0 ;
     padding: 0 !important;
-    margin-top: 20px !important;
+    margin-top: 40px !important;
     color: var(--tercer-color) !important;
     font-weight: 600 !important;
-    font-size: 15px !important;
+    font-size: 17px !important;
 }
 /* Agregar al final del archivo */
 #pinIncorrectoModal .modal-content {

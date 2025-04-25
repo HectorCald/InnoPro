@@ -167,9 +167,6 @@ app.get('/desinstalar', (req, res) => {
     res.render('desinstalar');
 });
 
-
-
-
 /* ==================== RUTAS PARA IMÁGENES ==================== */
 app.post('/subir-imagen', requireAuth, async (req, res) => {
     try {
@@ -208,7 +205,6 @@ app.post('/subir-imagen', requireAuth, async (req, res) => {
         });
     }
 });
-
 app.get('/obtener-imagen/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
@@ -245,6 +241,7 @@ app.get('/obtener-imagen/:id', requireAuth, async (req, res) => {
         });
     }
 });
+
 /* ==================== RUTAS DE API - AUTENTICACIÓN ==================== */
 app.post('/verificar-pin', async (req, res) => {
     try {
