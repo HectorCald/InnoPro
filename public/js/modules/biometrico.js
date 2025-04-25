@@ -1,7 +1,7 @@
 const WORK_COORDINATES = {
-    latitude: -19.0289818,    // Coordenada corregida para Santa Cruz
-    longitude: -65.2501004,  // Coordenada real de Santa Cruz de la Sierra
-    radius: 100              // Radio ampliado a 500 metros 
+    latitude: -19.028296,    // Coordenada corregida para Santa Cruz
+    longitude: -65.255620,  // Coordenada real de Santa Cruz de la Sierra
+    radius: 20              // Radio ampliado a 500 metros 
 };
 export function inicializarBiometrico() {
     const container = document.querySelector('.biometrico-view');
