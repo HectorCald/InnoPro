@@ -387,7 +387,7 @@ function centrarInputEnFoco() {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         mostrarCarga();
-        await bienvenida();
+        bienvenida();
         await iniciarApp();
         await inicializarHome();
     } catch (error) {

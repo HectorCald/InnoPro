@@ -64,8 +64,6 @@ window.addEventListener('orientationchange', () => {
         window.scrollTo(0, 1);
     }, 300);
 });
-// Manejador del botón físico de retroceso
-// Manejador del botón físico de retroceso
 window.addEventListener('popstate', (event) => {
     const anuncio = document.querySelector('.anuncio');
     const anunciodown = document.querySelector('.anuncio-down');
