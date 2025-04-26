@@ -193,9 +193,7 @@
 }
 .carga {
     margin-top: 60px;
-    height: calc(100vh - 120px);
-    margin-bottom: 60px;
-    
+    height: calc(100vh - 60px);
 }
 
 /* ===== MEDIA QUERY PARA PANTALLAS GRANDES ===== */

@@ -653,7 +653,7 @@
     background-color: rgba(24, 24, 24, 0.352);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(8px);
-    z-index: 9;
+    z-index: 999999;
 }
 .anuncio-down .anuncio-contenido{
     height: fit-content;
