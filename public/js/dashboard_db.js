@@ -147,53 +147,7 @@ async function bienvenida() {
                             <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                         </button>
                     </div>
-                    <div class="profile-modal">
-                        <div class="modal-content">
-                            <button class="close-modal"><i class="fas fa-times"></i></button>
-                            <img src="/icons/icon-512x512.png" alt="" class="modal-profile-picture">
-
-                            <div class="modal-profile-name">
-                                ${data.nombre || 'Usuario'}
-                                <i class="fas fa-check-circle" style="color:orange;"></i>
-                            </div>
-                            <div class="modal-profile-role">@${data.rol || 'Usuario'}</div>
-                        </div>
-                    </div>
                 `;
-
-                const profileSection = dashboard.querySelector('.profile-section');
-                const modal = dashboard.querySelector('.profile-modal');
-                const modalContent = modal.querySelector('.modal-content');
-                const closeBtn = modal.querySelector('.close-modal');
-                const menuSecundario = dashboard.querySelector('.menu-secundario');
-
-
-                profileSection.addEventListener('click', () => {
-                    ocultarAnuncio();
-                    modal.style.display = 'block';
-                    setTimeout(() => {
-                        modal.classList.add('show');
-                        modalContent.classList.add('show');
-                    }, 10);
-                });
-
-                function cerrarModal() {
-                    modal.classList.remove('show');
-                    modalContent.classList.remove('show');
-                    modal.classList.add('hide');
-                    modalContent.classList.add('hide');
-                    setTimeout(() => {
-                        modal.style.display = 'none';
-                        modal.classList.remove('hide');
-                        modalContent.classList.remove('hide');
-                    }, 300);
-                }
-
-                closeBtn.addEventListener('click', cerrarModal);
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) cerrarModal();
-                });
-               
             }
         }
     } catch (error) {
