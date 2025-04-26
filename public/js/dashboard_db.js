@@ -15,9 +15,7 @@ import { cargarRegistrosAlmacenGral } from './modules/regAlmacen.js';
 import { inicializarConfiguraciones } from './modules/configuraciones.js';
 import { inicializarGestionPro } from './modules/gestionPro.js';
 import { inicializarCalcularMP } from './modules/calcularMP.js';
-import { initializeImgUpload } from './modules/imgUpload.js';
-import { ocultarAnuncio } from './modules/components.js';
-import { inicializarBiometrico, } from './modules/biometrico.js';
+import { ocultarAnuncio, mostrarAnuncio } from './modules/components.js';
 
 export function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
@@ -30,7 +28,6 @@ export function scrollToTop(ventana) {
 }
 
 
-window.initializeImgUpload = initializeImgUpload;
 window.scrollToTop = scrollToTop;
 
 // Funciones del menú y navegación,
@@ -104,8 +101,6 @@ window.inicializarCalcularMP = inicializarCalcularMP;
 window.ocultarCarga = ocultarCarga;
 window.mostrarCarga = mostrarCarga;
 
-// Funciones de biometrico
-window.inicializarBiometrico = inicializarBiometrico;
 
 /* =============== FUNCIONES DE INICIO APLICACION=============== */
 async function bienvenida() {

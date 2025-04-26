@@ -330,8 +330,6 @@ export async function mostrarDetallesUsuario(pin) {
                     <select id="editar-extras" class="form-input">
                         <option value="">Sin extras</option>
                         <option value="CalcularMP" ${usuario.extras === 'CalcularMP' ? 'selected' : ''}>Calcular MP</option>
-                        <option value="imgUpload" ${usuario.extras === 'imgUpload' ? 'selected' : ''}>Subir img</option>
-                        <option value="Biometrico" ${usuario.extras === 'Biometrico' ? 'selected' : ''}>Biometrico</option>
                     </select>
 
                     <p for="editar-estado">Estado:</p>
