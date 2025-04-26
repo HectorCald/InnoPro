@@ -32,7 +32,8 @@ export async function inicializarConfiguraciones() {
                         <p><strong>Versión:</strong> ${currentVersion}</p>
                         <p><strong>Última actualización:</strong> ${new Date().toLocaleDateString()}</p>
                         <p><strong>Desarrollado por:</strong> Damabrava</p>
-                        <p><strong>Detalles de la ultima actulización:</strong> Ahora todo carga al ingresar tu <strong>PIN</strong> y si quieres recargar alguna pagina manten presionado el boton de dicha pagina.</p>
+                        <p>-----------------</strong></p>
+                        <p><strong>Detalles de la ultima actualización:</strong> Ahora todo carga al ingresar tu <strong>PIN</strong> y si quieres recargar alguna pagina manten presionado el boton de dicha pagina.</p>
                     </div>
                 </div>
 

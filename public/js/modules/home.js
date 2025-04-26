@@ -248,29 +248,26 @@ function manejarAtajo(vista) {
             return;
         }
 
-        // Para otras vistas, proceder normalmente
+        // Ocultar vistas primero
         document.querySelectorAll('.view').forEach(v => {
             v.style.display = 'none';
             v.style.opacity = '0';
         });
 
-        // Actualizar iconos en el menú
-        document.querySelectorAll('.opcion-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.getAttribute('data-vista') === vista) {
-                btn.classList.add('active');
-            }
-        });
-
-        // Mostrar la vista seleccionada
+        // Mostrar nueva vista inmediatamente
         const vistaSeleccionada = document.querySelector(`.${vista}`);
         if (vistaSeleccionada) {
             vistaSeleccionada.style.display = 'flex';
-            setTimeout(() => {
+            requestAnimationFrame(() => {
                 vistaSeleccionada.style.opacity = '1';
                 scrollToTop(`.${vista}`);
-            }, 100);
+            });
         }
+
+        // Actualizar estados activos
+        document.querySelectorAll('.opcion-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-vista') === vista);
+        });
 
     } catch (error) {
         console.error('Error al manejar atajo:', error);
