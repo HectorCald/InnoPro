@@ -218,6 +218,7 @@ export async function initializeMenu(roles, opcionesDiv, vistas, funcionesExtras
             }, 100);
         }
 
+
     } catch (error) {
         console.error('Error al inicializar el menú:', error);
         throw error;
@@ -712,6 +713,14 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
             }
         });
     });
+    menuSecundario.querySelectorAll('.opcion-btn').forEach(boton => {
+        boton.addEventListener('click', (e) => {
+            const vistaId = boton.dataset.vista;
+            if (vistaId) {
+                cambiarVista(vistaId);
+            }
+        });
+    });
 
     // Global view management functions
     window.actualizarBotonActivo = (vistaId) => {
@@ -783,3 +792,106 @@ function handleLongPress(element, callback, duration = 500) {
     }
 }
 
+
+const historialNavegacion = [];
+
+function agregarAlHistorial(vista) {
+    // Evitar duplicados consecutivos
+    if (historialNavegacion[historialNavegacion.length - 1] !== vista) {
+        historialNavegacion.push(vista);
+    }
+}
+
+// ... código existente ...
+
+export function regresarAInicio() {
+    const homeView = document.querySelector('.home-view');
+    if (!homeView) return;
+
+    // Ocultar todas las vistas
+    document.querySelectorAll('.view').forEach(v => {
+        v.style.display = 'none';
+        v.style.opacity = '0';
+    });
+
+    // Mostrar vista inicio
+    homeView.style.display = 'flex';
+    homeView.style.opacity = '1';
+    homeView.classList.add('active');
+
+    // Actualizar botón activo
+    document.querySelectorAll('.opcion-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const botonInicio = document.querySelector('[data-vista="home-view"]');
+    if (botonInicio) {
+        botonInicio.classList.add('active');
+    }
+
+    // Actualizar el historial del navegador
+    window.history.replaceState({ vista: 'home' }, '', window.location.href);
+    
+    // Limpiar el historial interno y agregar inicio
+    historialNavegacion.length = 0;
+    agregarAlHistorial('home-view');
+    
+    // Forzar actualización del estado de navegación
+    window.dispatchEvent(new Event('popstate'));
+}
+
+// Modificar la función cambiarVista
+function cambiarVista(vistaId) {
+    // Solo agregar al historial si no es la misma vista
+    if (historialNavegacion[historialNavegacion.length - 1] !== vistaId) {
+        agregarAlHistorial(vistaId);
+    }
+    
+    // Ocultar todas las vistas
+    document.querySelectorAll('.view').forEach(v => {
+        v.style.display = 'none';
+        v.style.opacity = '0';
+    });
+
+    // Mostrar nueva vista
+    const vistaActual = document.querySelector(`.${vistaId}`);
+    if (vistaActual) {
+        vistaActual.style.display = 'flex';
+        setTimeout(() => {
+            vistaActual.style.opacity = '1';
+        }, 10);
+    }
+
+    // Actualizar historial del navegador
+    window.history.pushState({ vista: vistaId }, '', window.location.href);
+}
+
+// Agregar manejo del evento popstate
+window.addEventListener('popstate', (event) => {
+    const vistaActual = event.state?.vista || 'home-view';
+    
+    // Ocultar todas las vistas
+    document.querySelectorAll('.view').forEach(v => {
+        v.style.display = 'none';
+        v.style.opacity = '0';
+    });
+
+    // Mostrar la vista correspondiente
+    const nuevaVista = document.querySelector(`.${vistaActual}`);
+    if (nuevaVista) {
+        nuevaVista.style.display = 'flex';
+        setTimeout(() => {
+            nuevaVista.style.opacity = '1';
+        }, 10);
+    }
+
+    // Actualizar botón activo
+    document.querySelectorAll('.opcion-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const botonActivo = document.querySelector(`[data-vista="${vistaActual}"]`);
+    if (botonActivo) {
+        botonActivo.classList.add('active');
+    }
+});
+
+// ... resto del código ...

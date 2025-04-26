@@ -1,3 +1,4 @@
+import { regresarAInicio } from './menu.js';
 export function ocultarAnuncio() {
     const anuncioVisible = document.querySelector('.anuncio');
     const overlay = document.querySelector('.overlay');
@@ -64,18 +65,40 @@ window.addEventListener('orientationchange', () => {
         window.scrollTo(0, 1);
     }, 300);
 });
+
+
+
+// ... código existente ...
+
+// ... código existente ...
+
+// ... código existente ...
+
 window.addEventListener('popstate', (event) => {
     const anuncio = document.querySelector('.anuncio');
     const anunciodown = document.querySelector('.anuncio-down');
+    const homeView = document.querySelector('.home-view');
 
+    // Si hay anuncio visible, cerrarlo primero
     if (anuncio && anuncio.style.display === 'flex' || anunciodown && anunciodown.style.display === 'flex') {
         ocultarAnuncio();
         ocultarAnuncioDown();
-        window.history.pushState(null, '', window.location.href);
-    } else {
-        window.location.reload();
+        
+        // Agregar un nuevo estado al historial para manejar el segundo "Atrás"
+        window.history.pushState({shouldGoHome: true}, '');
+        return;
+    }
+
+    // Si el estado anterior indica que debemos regresar a inicio
+    if (event.state?.shouldGoHome && homeView && !homeView.classList.contains('active')) {
+        regresarAInicio();
     }
 });
+
+// ... resto del código ...
+
+
+
 
 // Soporte para Navigation API (experimental)
 if ('navigation' in window) {

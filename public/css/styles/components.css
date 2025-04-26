@@ -10,7 +10,7 @@
     background-color: rgba(24, 24, 24, 0.352);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(8px);
-    z-index: 9;
+    z-index: 999999;
     display: none;
     flex-direction: column;
     overflow: hidden;
@@ -595,7 +595,7 @@
     background-color: rgba(0, 0, 0, 0.352);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    z-index: 9999;
+    z-index: 9999999;
     display: none;
     justify-content: center;
     align-items: center;
