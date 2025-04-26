@@ -1,3 +1,4 @@
+
 /* ==================== FUNCIONES DE NOTIFIACIONES DE INICIO ==================== */
 export async function cargarNotificaciones() {
     try {

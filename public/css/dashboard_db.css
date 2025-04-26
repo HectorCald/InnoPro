@@ -43,6 +43,8 @@
 @import 'styles/pwa.css';
 @import 'styles/biometrico.css';
 
+@import 'styles/screen-carga.css';
+
 /* ===== ESTILOS GLOBALES ===== */
 body, .container {
     background-color: var(--primary-color) !important;

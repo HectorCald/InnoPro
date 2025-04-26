@@ -101,10 +101,24 @@ window.inicializarCalcularMP = inicializarCalcularMP;
 window.ocultarCarga = ocultarCarga;
 window.mostrarCarga = mostrarCarga;
 
+function initializeLoadingScreenEarly() {
+    const screenCarga = document.querySelector('.screen-carga');
+    if (!screenCarga) return;
 
+    screenCarga.style.display = 'flex';
+    screenCarga.style.opacity = '1';
+    screenCarga.innerHTML = `
+        <img src="/icons/icon-512x512.png" alt="Logo" class="logo">
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        <div class="loading-text">Iniciando aplicación...</div>
+    `;
+}
 /* =============== FUNCIONES DE INICIO APLICACION=============== */
 async function bienvenida() {
     try {
+        initializeLoadingScreenEarly();
         const response = await fetch('/obtener-mi-rol');
         const data = await response.json();
 
@@ -119,7 +133,7 @@ async function bienvenida() {
                 dashboard.innerHTML = `
                     <div class="bienvenida">
                         <div class="profile-section">
-                            <img src="/img/icon-48-48.png" alt="" class="profile-picture">
+                            <img src="/icons/icon-512x512.png" alt="" class="profile-picture">
                             <div class="profile-info">
                                 <span class="profile-name">${nombreFormateado} <i class="fas fa-check-circle" style="color: orange; font-size: 0.8em;"></i></span>
                                 <span class="profile-role">@${data.rol || 'Usuario'}</span>
@@ -136,7 +150,7 @@ async function bienvenida() {
                     <div class="profile-modal">
                         <div class="modal-content">
                             <button class="close-modal"><i class="fas fa-times"></i></button>
-                            <img src="/img/icon-72-72.png" alt="" class="modal-profile-picture">
+                            <img src="/icons/icon-512x512.png" alt="" class="modal-profile-picture">
 
                             <div class="modal-profile-name">
                                 ${data.nombre || 'Usuario'}
@@ -235,7 +249,7 @@ async function iniciarApp() {
         
         // Inicializar el menú
         await initializeMenu(roles, opcionesDiv, vistas, funcionesExtra);
-        await cargarNotificaciones();
+        
     } catch (error) {
         console.error('Error al iniciar la aplicación:', error);
         mostrarNotificacion('Error al cargar el menú: ' + error.message, 'error');
@@ -391,13 +405,20 @@ function centrarInputEnFoco() {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         mostrarCarga();
+        initializeLoadingScreenEarly();
+        
         bienvenida();
         await iniciarApp();
         await inicializarHome();
+        
+        
+
     } catch (error) {
         console.error('Error durante la inicialización:', error);
-    }finally{
+        mostrarNotificacion('Error durante la inicialización', 'error');
+    } finally {
         ocultarCarga();
+        await cargarNotificaciones();
     }
     
     centrarInputEnFoco();
@@ -406,7 +427,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 /* =============== FUNCIONES DE MOSTRAR NOTIFIACION INICIAL=============== */
 window.mostrarNotificacionesPanel = async function() {
     try {
-        mostrarCarga();
         const advertenciaDiv = document.querySelector('.advertencia');
         if (!advertenciaDiv) {
             console.error('No se encontró el elemento .advertencia');

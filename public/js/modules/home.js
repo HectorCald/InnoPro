@@ -56,12 +56,12 @@ function inicializarEventos() {
     const deleteButtons = document.querySelectorAll('.delete-notification');
     const anuncio = document.querySelector('.anuncio');
     const overlay = document.querySelector('.overlay');
-    
+
     if (deleteButtons.length && anuncio && overlay) {
         deleteButtons.forEach(button => {
             button.addEventListener('click', async (e) => {
                 e.preventDefault();
-                
+
                 const titulo = anuncio.querySelector('h2');
                 if (titulo) {
                     titulo.textContent = '¿Eliminar notificación?';
@@ -90,34 +90,31 @@ async function obtenerAtajos() {
         // Define available shortcuts by role using the same structure as dashboard_db.js
         const atajosPorRol = {
             'Producción': [
-
-                { 
+                {
                     clase: 'opcion-btn',
-                    vista: 'home-view',
+                    vista: 'formProduccion-view',
                     icono: 'fa-clipboard-list',
                     texto: 'Formulario',
                     detalle: 'Aqui puedes llenar el formulario un vez terminado el proceso de producción',
                     onclick: 'onclick="mostrarFormularioProduccion()"'
                 },
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'cuentasProduccion-view',
                     icono: 'fa-history',
                     texto: 'Registros',
-                    detalle: 'Aqui puedes ver todos los registros de producción que hiciste',
-                    onclick: 'onclick="cargarRegistrosCuentas()"'
+                    detalle: 'Aqui puedes ver todos los registros de producción que hiciste'
                 },
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'gestionPro-view',
                     icono: 'fa-chart-line',
                     texto: 'Estadisticas de registros',
-                    detalle: 'Aqui puedes ver las estadisticas de tu registros de producción.',
-                    onclick: 'onclick="inicializarGestionPro()"'
+                    detalle: 'Aqui puedes ver las estadisticas de tu registros de producción.'
                 }
             ],
             'Acopio': [
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'almAcopio-view',
                     icono: 'fa-dolly',
@@ -125,7 +122,7 @@ async function obtenerAtajos() {
                     detalle: 'Aqui puedes gestionar el almacen de Acopio: (Materia Prima, Materia Bruta, Movimientos).',
                     onclick: 'onclick="inicializarAlmacen()"'
                 },
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'regAcopio-view',
                     icono: 'fa-history',
@@ -135,7 +132,7 @@ async function obtenerAtajos() {
                 }
             ],
             'Almacen': [
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'verificarRegistros-view',
                     icono: 'fa-check-double',
@@ -143,7 +140,7 @@ async function obtenerAtajos() {
                     detalle: 'Aqui puedes verificar la cantidad real de los registros de producción.',
                     onclick: 'onclick="cargarRegistros()"'
                 },
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'almacen-view',
                     icono: 'fa-dolly',
@@ -151,7 +148,7 @@ async function obtenerAtajos() {
                     detalle: 'Aqui puedes gestionar el almacen de la empresa: (stock, Productos, ingresos, salidas).',
                     onclick: 'onclick="inicializarAlmacenGral()"'
                 },
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'regAlmacen-view',
                     icono: 'fa-history',
@@ -161,7 +158,7 @@ async function obtenerAtajos() {
                 }
             ],
             'Administración': [
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'compras-view',
                     icono: 'fa-shopping-cart',
@@ -169,7 +166,7 @@ async function obtenerAtajos() {
                     detalle: 'Aqui puedes gestionar las compras de materia prima y entregarlas hacia acopio.',
                     onclick: 'onclick="inicializarCompras()"'
                 },
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'regAlmacen-view',
                     icono: 'fa-search',
@@ -177,7 +174,7 @@ async function obtenerAtajos() {
                     detalle: 'Aqui puedes gestionar todos los registros de Almacen. (Eliminar, Editar, Movimientos)',
                     onclick: 'onclick="cargarRegistrosAlmacenGral()"'
                 },
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'verificarRegistros-view',
                     icono: 'fa-search',
@@ -185,7 +182,7 @@ async function obtenerAtajos() {
                     detalle: 'Aqui puedes gestionar todos los registros de producción. (Eliminar, Editar, Pagar, Calcular pagos)',
                     onclick: 'onclick="cargarRegistros()"'
                 },
-                { 
+                {
                     clase: 'opcion-btn',
                     vista: 'regAcopio-view',
                     icono: 'fa-search',
@@ -211,17 +208,18 @@ async function obtenerAtajos() {
     } catch (error) {
         console.error('Error al obtener atajos:', error);
         return [];
-    }finally{
+    } finally {
         ocultarCarga();
     }
 }
+// Modificar la función generarAtajos para quitar el onclick
 function generarAtajos(atajos) {
     if (!atajos || atajos.length === 0) return '';
 
     return `
         <div class="shortcuts-grid">
             ${atajos.map(a => `
-                <div class="shortcut-card" onclick="manejarAtajo('${a.vista}', '${a.onclick.replace('onclick="', '').replace('"', '')}')">
+                <div class="shortcut-card" data-funcion="${a.onclick ? a.onclick.replace('onclick="', '').replace('"', '') : ''}" onclick="manejarAtajo('${a.vista}')">
                     <i class="fas ${a.icono}"></i>
                     <div class="info-atajo">
                         <span>${a.texto}</span>
@@ -232,36 +230,52 @@ function generarAtajos(atajos) {
         </div>
     `;
 }
-function manejarAtajo(vista, accion) {
-    // Hide all views
-    document.querySelectorAll('.view').forEach(v => {
-        v.style.display = 'none';
-        v.style.opacity = '0';
-    });
 
-    // Show selected view
-    const vistaSeleccionada = document.querySelector(`.${vista}`);
-    if (vistaSeleccionada) {
-        vistaSeleccionada.style.display = 'flex';
-        setTimeout(() => {
-            vistaSeleccionada.style.opacity = '1';
-        }, 0);
-    }
-
-    // Actualizar botón activo en el menú
-    document.querySelectorAll('.opcion-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.vista === vista) {
-            btn.classList.add('active');
+function manejarAtajo(vista) {
+    try {
+        mostrarCarga();
+        
+        // Si es el formulario, solo ejecutar la función sin cambiar vistas
+        const clickedCard = event.currentTarget;
+        const funcionName = clickedCard.dataset.funcion;
+        
+        if (vista === 'formProduccion-view' && funcionName) {
+            const fn = window[funcionName.replace(/[()]/g, '')];
+            if (typeof fn === 'function') {
+                fn();
+            }
+            ocultarCarga();
+            return;
         }
-    });
 
-    // Execute the action
-    const cleanAction = accion.replace('window.', '').replace('()', '');
-    if (typeof window[cleanAction] === 'function') {
-        window[cleanAction]();
-    } else {
-        console.warn(`La función ${cleanAction} no está definida`);
+        // Para otras vistas, proceder normalmente
+        document.querySelectorAll('.view').forEach(v => {
+            v.style.display = 'none';
+            v.style.opacity = '0';
+        });
+
+        // Actualizar iconos en el menú
+        document.querySelectorAll('.opcion-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-vista') === vista) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Mostrar la vista seleccionada
+        const vistaSeleccionada = document.querySelector(`.${vista}`);
+        if (vistaSeleccionada) {
+            vistaSeleccionada.style.display = 'flex';
+            setTimeout(() => {
+                vistaSeleccionada.style.opacity = '1';
+                scrollToTop(`.${vista}`);
+            }, 100);
+        }
+
+    } catch (error) {
+        console.error('Error al manejar atajo:', error);
+    } finally {
+        ocultarCarga();
     }
 }
 window.manejarAtajo = manejarAtajo;
