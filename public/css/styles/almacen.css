@@ -243,7 +243,7 @@
             }
 
             .product-quantity {
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: bold;
                 color: var(--tercer-color);
                 background-color: rgba(255, 166, 0, 0.079);
@@ -256,8 +256,8 @@
         .btn-card {
             color: white;
             border-radius: 5px;
-            width: 30px;
-            height: 30px;
+            min-width: 30px;
+            min-height: 30px;
             border: none;
             display: flex;
             justify-content: center;
@@ -271,6 +271,7 @@
             justify-content: center;
             align-items: center;
             gap: 5px;
+            margin-left: 10px;
         }
 
         .btn-card.salida {

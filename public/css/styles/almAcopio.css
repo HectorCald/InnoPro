@@ -232,7 +232,7 @@
             }
 
             .product-quantity {
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: bold;
                 color: var(--second-button);
             }
@@ -259,7 +259,9 @@
         .btn-card.pedido {
             background: none;
             border: 1px solid #00C851;
+            margin-left: 10px;
         }
+
 
         .btn-card i {
             font-size: 15px;
