@@ -1,8 +1,15 @@
 /* ==================== FUNCIONES DE INICIO DE ALMACEN ==================== */
 let productosParaIngresar = new Map();
 let productosParaSalida = new Map();
-
+async function obtnerMiRol(){
+    const userResponse = await fetch('/obtener-mi-rol');
+    const userData = await userResponse.json();
+    window.rol = userData.rol;
+}
+obtnerMiRol();
 export async function inicializarAlmacenGral() {
+
+    const isAdmin = window.rol === 'Administración';
     const container = document.querySelector('.almacen-view');
     if (!container) return;
     container.innerHTML = '';
@@ -23,20 +30,24 @@ export async function inicializarAlmacenGral() {
                     <p>Salidas</p>
                 </div>
                 <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                       <i class="fas fa-box"></i>
-                    </button>
-                    <p>Agregar</p>
-                </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                        <i class="fas fa-cog"></i>
-                    </button>
-                    <p>Formato</p>
-                </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
                         <i class="fas fa-clipboard-list"></i>
                     </button>
                     <p>Pedidos</p>
                 </div>
+                ${isAdmin ? `<div class="cuadro-btn">
+                    <button class="btn-agregar-pedido">
+                        <i class="fas fa-box"></i>
+                    </button>
+                    <p>Agregar</p>
+                </div>` : ''}
+                    
+                   ${isAdmin ? `<div class="cuadro-btn">
+                    <button class="btn-agregar-pedido">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <p>Formato</p>
+                </div>` : ''}
+
             </div>    
             <div class="almacen-general-productos"></div>
         </div>
@@ -47,12 +58,18 @@ export async function inicializarAlmacenGral() {
 
     const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
     btnSalidas.onclick = mostrarListaSalidas;
-
-    const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-box').parentElement;
-    btnAgregar.onclick = mostrarFormularioAgregarProducto;
-
-    const btnFormato = container.querySelector('.btn-agregar-pedido i.fa-cog').parentElement;
-    btnFormato.onclick = mostrarFormularioFormato;
+    if (isAdmin) {
+        const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-box').parentElement;
+        if (btnAgregar) {
+            btnAgregar.onclick = mostrarFormularioAgregarProducto;
+        }
+    }
+    if (isAdmin) {
+        const btnFormato = container.querySelector('.btn-agregar-pedido i.fa-cog')?.parentElement;
+        if (btnFormato) {
+            btnFormato.onclick = mostrarFormularioFormato;
+        }
+    }
 
     const btnPedidos = container.querySelector('.btn-agregar-pedido i.fa-clipboard-list').parentElement;
     btnPedidos.onclick = () => mostrarFormularioPedidos('');
@@ -1338,12 +1355,14 @@ function mostrarFormularioPedidos() {
 };
 
 /* ==================== FUNCIONES DE LOS DETALLES Y ELIMINACION DE TAGS Y PRECIOS ==================== */
-window.mostrarDetalleProductoGral = function (producto) {
+window.mostrarDetalleProductoGral = async function (producto) {
     const [id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios, tag, indexId, indexNombre] = producto;
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
     const tagsSeleccionados = new Set(tag ? tag.split(';').filter(t => t.trim()) : []);
 
+    const isAdmin = window.rol === 'Administración';
+    
     function formatearPrecios(preciosStr, num) {
         if (!preciosStr) return '<div class="detalle-item"><span>No registrado</span></div>';
 
@@ -1530,9 +1549,9 @@ window.mostrarDetalleProductoGral = function (producto) {
             </div>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn blue editar">Editar</button>
+            ${isAdmin ?'<button class="anuncio-btn blue editar">Editar</button>' : ''}
             <button class="anuncio-btn green guardar" style="display: none;">Guardar</button>
-            <button class="anuncio-btn red eliminar">Eliminar</button>
+            ${isAdmin ? '<button class="anuncio-btn red eliminar">Eliminar</button>' : ''}
         </div>
     `;
     mostrarAnuncio();
@@ -1658,9 +1677,12 @@ window.mostrarDetalleProductoGral = function (producto) {
         selectIndex.value = '';
     });
 
-    anuncio.querySelector('.eliminar').onclick = () => {
-        mostrarConfirmacionEliminar(id, nombre);
-    };
+    const btnEliminar = anuncio.querySelector('.eliminar');
+    if (btnEliminar) {
+        btnEliminar.onclick = () => {
+            mostrarConfirmacionEliminar(id, nombre);
+        };
+    }
 
     btnEditar.onclick = () => {
         const detallesGrup = contenido.querySelector('.detalle-seccion');
@@ -1736,7 +1758,7 @@ function mostrarConfirmacionEliminar(id, nombre) {
         <div class="encabezado">
             <h2>Eliminar Producto</h2>
             <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
-                <i class="fas fa-arrow-right"></i></button>
+                <i class="fas fa-arrow-down"></i></button>
         </div>
         <div class="detalles-grup center">
             <p>¿Está seguro que desea eliminar el producto "${nombre}"?</p>

@@ -1,11 +1,18 @@
 import { cargarRegistrosAcopio } from "./regAcopio.js";
 
 /* =============== FUNCIONES DE INICIO DE ALMACEN ACOPIO =============== */
+async function obtnerMiRol(){
+    const userResponse = await fetch('/obtener-mi-rol');
+    const userData = await userResponse.json();
+    window.rol = userData.rol;
+}
+obtnerMiRol();
 let carritoProductos = new Map();
 export function inicializarAlmacen() {
     const container = document.querySelector('.almAcopio-view');
     // Asegurarnos que el contenedor esté visible
     container.style.display = 'flex';
+    const isAdmin = window.rol === 'Administración';
 
     container.innerHTML = `
         <div class="title">
@@ -13,11 +20,14 @@ export function inicializarAlmacen() {
         </div>
         <div class="alamcenGral-container">
             <div class="almacen-botones">
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                       <i class="fas fa-plus-circle"></i>
+
+                ${isAdmin ? `<div class="cuadro-btn">
+                    <button class="btn-agregar-pedido">
+                        <i class="fas fa-plus-circle"></i>
                     </button>
                     <p>Agregar</p>
-                </div>
+                </div>` : ''}
+
                 <div class="cuadro-btn" style="display:none"><button class="btn-agregar-pedido">
                        <i class="fas fa-tasks"></i>
                     </button>
@@ -38,18 +48,18 @@ export function inicializarAlmacen() {
                     </button>
                     <p>Pedidos</p>
                 </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                       <i class="fas fa-dollar-sign"></i>
-                    </button>
-                    <p>Precios</p>
-                </div>
             </div>    
             <div class="lista-productos acopio-productos"></div>
         </div>
     `;
-    const btnAgregarAcopio = container.querySelector('.btn-agregar-pedido i.fa-plus-circle').parentElement;
-    btnAgregarAcopio.onclick = () => mostrarFormularioAgregarAcopio('');
 
+    if (isAdmin) {
+        const btnAgregarAcopio = container.querySelector('.btn-agregar-pedido i.fa-plus-circle').parentElement;
+        if (btnAgregarAcopio) {
+            btnAgregarAcopio.onclick = () => mostrarFormularioAgregarAcopio('');
+        }
+    }
+    
     const btnAgregarTarea = container.querySelector('.btn-agregar-pedido i.fa-tasks').parentElement;
     btnAgregarTarea.onclick = () => mostrarFormularioAgregarTarea('');
 
@@ -579,6 +589,7 @@ window.finalizarPedidosCarrito = async () => {
 
 /* =============== FUNCIONES DE DETALLES Y EDICION DE PRODUCTOSA DEL ALMACEN =============== */
 window.mostrarDetalleProductoAcopio = function (producto) {
+    const isAdmin = window.rol === 'Administración';
     const [id, nombre, pesoBrutoLote, pesoPrimaLote] = producto;
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
@@ -625,7 +636,8 @@ window.mostrarDetalleProductoAcopio = function (producto) {
         <div class="anuncio-botones">
             <button class="anuncio-btn blue editar"><i class="fas fa-edit"></i> Editar</button>
             <button class="anuncio-btn green guardar" style="display: none;"><i class="fas fa-save"></i> Guardar</button>
-            <button class="anuncio-btn red eliminar"><i class="fas fa-trash"></i> Eliminar</button>
+            ${isAdmin ? '<button class="anuncio-btn red eliminar"><i class="fas fa-trash"></i> Eliminar</button>' : ''}
+            
         </div>
     `;
 
