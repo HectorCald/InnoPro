@@ -358,19 +358,22 @@ export async function cargarAlmacenBruto() {
             productCard.innerHTML = `
     <div class="product-info">
         <div class="product-name">
-            <div class="acciones-rapidas-acopio">
+            
+            <span>${nombre || 'Sin nombre'}</span>
+        </div>   
+        <div class="acciones-rapidas-acopio">
+        <div class="product-quantity">
+
+            <div class="registro-estado-acopio estado-bruto">${totalBruto.toFixed(1)}</div>
+            <div class="registro-estado-acopio estado-prima">${totalPrima.toFixed(1)}</div>
+        </div>    
                 <button class="btn-card pedido ${carritoProductos.has(nombre) ? 'disabled' : ''}" 
                         onclick="event.stopPropagation(); agregarAlCarrito('${nombre}')"
                         ${carritoProductos.has(nombre) ? 'disabled' : ''}>
                     <i class="fas fa-cart-plus"></i>
                 </button>
             </div>
-            <span>${nombre || 'Sin nombre'}</span>
-        </div>   
-        <div class="product-quantity">
-            <div class="registro-estado-acopio estado-bruto">${totalBruto.toFixed(1)}</div>
-            <div class="registro-estado-acopio estado-prima">${totalPrima.toFixed(1)}</div>
-        </div>             
+                 
     </div>
 `;
 
@@ -638,7 +641,6 @@ window.mostrarDetalleProductoAcopio = function (producto) {
             <button class="anuncio-btn blue editar"><i class="fas fa-edit"></i> Editar</button>
             <button class="anuncio-btn green guardar" style="display: none;"><i class="fas fa-save"></i> Guardar</button>
             ${isAdmin ? '<button class="anuncio-btn red eliminar"><i class="fas fa-trash"></i> Eliminar</button>' : ''}
-            
         </div>
     `;
 

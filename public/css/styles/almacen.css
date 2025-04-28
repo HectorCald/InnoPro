@@ -17,6 +17,7 @@
     &::-webkit-scrollbar {
         display: none;
     }
+
     -ms-overflow-style: none;
     scrollbar-width: none;
 
@@ -82,11 +83,6 @@
         height: 50px;
         justify-content: center;
         font-size: 17px;
-
-        &:hover {
-            background-color: var(--tercer-color);
-            color: white;
-        }
     }
 
     /* ===== CABECERA Y BÚSQUEDA ===== */
@@ -113,7 +109,8 @@
                 font-size: 16px;
                 transition: border-color 0.5s ease-in-out;
             }
-            input:focus{
+
+            input:focus {
                 border: 1px solid var(--tercer-color);
             }
 
@@ -156,6 +153,7 @@
             }
         }
     }
+
     .filter-options-almacenGral {
         display: flex;
         gap: 10px;
@@ -170,6 +168,7 @@
         &::-webkit-scrollbar {
             display: none;
         }
+
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
@@ -249,7 +248,8 @@
                 color: var(--tercer-color);
             }
         }
-        .btn-card{
+
+        .btn-card {
             color: white;
             border-radius: 5px;
             width: 30px;
@@ -260,21 +260,26 @@
             align-items: center;
             background-color: var(--cero-color);
         }
-        .acciones-rapidas, .acciones-precios{
+
+        .acciones-rapidas,
+        .acciones-precios {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 5px;
         }
-        .btn-card.salida{
-            border:1px solid #ff4444;
+
+        .btn-card.salida {
+            border: 1px solid #ff4444;
             color: #ff4444;
         }
-        .btn-card.ingreso{
-            border:1px solid #00C851;
+
+        .btn-card.ingreso {
+            border: 1px solid #00C851;
             color: #00C851;
         }
-        .btn-card i{
+
+        .btn-card i {
             font-size: 20px;
         }
     }
@@ -320,7 +325,7 @@
         .almacen-header-general {
             justify-content: space-between;
             flex-wrap: nowrap;
-            
+
             .search-bar {
                 min-width: auto;
                 width: 300px;
@@ -335,42 +340,76 @@
                     width: auto;
                 }
             }
-            
+
         }
+
         .products-grid {
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         }
+
         .almacen-botones {
             display: flex;
             gap: 2vw;
             justify-content: center;
             margin-bottom: 10px;
         }
+
+        .filter-options-almacenGral {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            min-height: 50px;
+            margin-bottom: 0;
+            overflow-x: auto;
+            padding: 0;
+            justify-content: flex-start !important;
+            align-items: center;
+            padding-bottom: 5px;
+
+            &::-webkit-scrollbar {
+                height: 8px;
+                background-color: var(--primary-color);
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background-color: var(--cero-color);
+                border-radius: 4px;
+            }
+
+            &::-webkit-scrollbar-thumb:hover {
+                background-color: var(--cero-color);
+            }
+
+            -ms-overflow-style: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--cero-color) var(--primary-color);
+        }
     }
+
     /* Price button styles */
-.btn-card.precios {
-    border:1px solid yellow !important;
-    color: yellow;
-    border: none;
-    border-radius: 5px;
-    padding: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    .btn-card.precios {
+        border: 1px solid yellow !important;
+        color: yellow;
+        border: none;
+        border-radius: 5px;
+        padding: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
 
-.btn-card.precios i {
-    font-size: 15px;
-}
+    .btn-card.precios i {
+        font-size: 15px;
+    }
 
-/* Active state for the main prices button */
-.btn-agregar-pedido.active {
-    background-color: #f37500;
-    color: white;
-}
+    /* Active state for the main prices button */
+    .btn-agregar-pedido.active {
+        background-color: #f37500;
+        color: white;
+    }
 }
 
 .contador {
@@ -391,7 +430,7 @@
 .btn-card.disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    
+
 }
 
 .cantidad-control {
