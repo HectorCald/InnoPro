@@ -1,3 +1,5 @@
+import { cargarRegistrosAcopio } from "./regAcopio.js";
+
 /* =============== FUNCIONES DE INICIO DE ALMACEN ACOPIO =============== */
 let carritoProductos = new Map();
 export function inicializarAlmacen() {
@@ -35,6 +37,11 @@ export function inicializarAlmacen() {
                        <i class="fas fa-shopping-cart"></i>
                     </button>
                     <p>Pedidos</p>
+                </div>
+                <div class="cuadro-btn"><button class="btn-agregar-pedido">
+                       <i class="fas fa-dollar-sign"></i>
+                    </button>
+                    <p>Precios</p>
                 </div>
             </div>    
             <div class="lista-productos acopio-productos"></div>
@@ -566,6 +573,7 @@ window.finalizarPedidosCarrito = async () => {
     } finally {
         ocultarCarga();
         inicializarAlmacen();
+        cargarRegistrosAcopio();
     }
 };
 

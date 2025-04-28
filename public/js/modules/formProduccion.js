@@ -1,6 +1,7 @@
 
 import { registrarNotificacion } from './advertencia.js';
 import { ocultarAnuncio } from './components.js';
+import { cargarRegistrosCuentas } from './misCuentasProduccion.js';
 
 /* =============== FUNCIONES DE INCIO DE FORMULARIO PRODUCCION =============== */
 export function inicializarFormularioProduccion() {
@@ -257,6 +258,7 @@ export function mostrarFormularioProduccion() {
             mostrarNotificacion('Error al guardar el registro: ' + error.message, 'error');
         } finally {
             ocultarCarga();
+            cargarRegistrosCuentas();
         }
     };
 }
@@ -328,7 +330,7 @@ function inicializarEventosProducto(productoInput, sugerenciasContainer, sugeren
                 productosDisponibles.push(...data.productos.map(producto => ({
                     nombre: producto.nombre,
                     gramaje: producto.gramaje,
-                    texto: `${producto.nombre} - ${producto.gramaje}g`
+                    texto: `${producto.nombre} - ${producto.gramaje} gr.`
                 })));
             }
         } catch (error) {
@@ -512,7 +514,7 @@ export async function cargarProductos() {
             data.productos.forEach(producto => {
                 const option = document.createElement('option');
                 // Asume que producto es un objeto con propiedades nombre y gramaje
-                option.value = `${producto.nombre} - ${producto.gramaje}g`;
+                option.value = `${producto.nombre} - ${producto.gramaje}gr.`;
                 option.setAttribute('data-nombre', producto.nombre);
                 option.setAttribute('data-gramaje', producto.gramaje);
                 datalist.appendChild(option);
