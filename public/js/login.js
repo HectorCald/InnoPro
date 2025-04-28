@@ -65,76 +65,90 @@ class LoginPin {
     }
 
     async validatePin() {
-    try {
-        // Verificar si es el inicio de la secuencia (5501)
-        if (this.currentPin === '5501') {
-            this.currentSequenceIndex = 1; // Iniciar secuencia
-            this.resetPin();
-            
-            // Iniciar temporizador de 2 segundos
-            setTimeout(() => {
-                if (this.currentSequenceIndex === 1) {
-                    // Si no se ingresó el siguiente PIN en 2 segundos, tratar como PIN normal
-                    this.currentSequenceIndex = 0;
-                    this.validateNormalPin('5501');
-                }
-            }, 2000);
-            
-            return;
-        } else if (this.currentSequenceIndex > 0) {
-            // Ya estamos en secuencia, verificar siguiente PIN
-            if (this.currentPin === this.secretSequence[this.currentSequenceIndex]) {
-                this.currentSequenceIndex++;
-                if (this.currentSequenceIndex === this.secretSequence.length) {
-                    await this.handleConfirm();
-                    this.currentSequenceIndex = 0;
-                    return;
+        try {
+            // Verificar si es el inicio de la secuencia (5501)
+            if (this.currentPin === '5501') {
+                this.currentSequenceIndex = 1; // Iniciar secuencia
+                this.resetPin();
+
+                // Iniciar temporizador de 2 segundos
+                setTimeout(() => {
+                    if (this.currentSequenceIndex === 1) {
+                        // Si no se ingresó el siguiente PIN en 2 segundos, tratar como PIN normal
+                        this.currentSequenceIndex = 0;
+                        this.validateNormalPin('5501');
+                    }
+                }, 2000);
+
+                return;
+            } else if (this.currentSequenceIndex > 0) {
+                // Ya estamos en secuencia, verificar siguiente PIN
+                if (this.currentPin === this.secretSequence[this.currentSequenceIndex]) {
+                    this.currentSequenceIndex++;
+                    if (this.currentSequenceIndex === this.secretSequence.length) {
+                        await this.handleConfirm();
+                        this.currentSequenceIndex = 0;
+                        return;
+                    } else {
+                        this.resetPin();
+                        return;
+                    }
                 } else {
-                    this.resetPin();
-                    return;
+                    // PIN incorrecto en secuencia, cancelar secuencia
+                    this.currentSequenceIndex = 0;
                 }
-            } else {
-                // PIN incorrecto en secuencia, cancelar secuencia
-                this.currentSequenceIndex = 0;
             }
+
+            await this.validateNormalPin(this.currentPin);
+        } catch (error) {
+            ocultarCarga();
+            console.error('Error:', error);
+            this.resetPin();
+            this.showError('Error de conexión. Intente nuevamente.');
         }
-
-        await this.validateNormalPin(this.currentPin);
-    } catch (error) {
-        ocultarCarga();
-        console.error('Error:', error);
-        this.resetPin();
-        this.showError('Error de conexión. Intente nuevamente.');
     }
-}
 
-async validateNormalPin(pin) {
-    mostrarCarga();
-    const response = await fetch('/verificar-pin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: pin })
-    });
+    autoLogin() {
+        const savedPin = localStorage.getItem('innopro_user_pin');
+        const savedName = localStorage.getItem('innopro_user_name');
+        
+        if (savedPin && savedName) {
+            this.currentPin = savedPin;
+            this.updatePinDots();
+            this.validatePin();
+        }
+    }
 
-    const data = await response.json();
 
-    if (data.valido) {
-        if (verificarUsuarioPin(data.nombre)) {
-            this.showSuccess(data.nombre);
-            setTimeout(() => {
-                window.location.replace(this.getRedirectUrl(data.rol));
-            }, 1500);
+    async validateNormalPin(pin) {
+        mostrarCarga();
+        const response = await fetch('/verificar-pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pin })
+        });
+
+        const data = await response.json();
+
+        if (data.valido) {
+            if (verificarUsuarioPin(data.nombre)) {
+                // Guardar el PIN junto con el nombre
+                localStorage.setItem('innopro_user_pin', pin);
+                this.showSuccess(data.nombre);
+                setTimeout(() => {
+                    window.location.replace(this.getRedirectUrl(data.rol));
+                }, 1500);
+            } else {
+                ocultarCarga();
+                this.resetPin();
+                mostrarModalPinIncorrecto();
+            }
         } else {
             ocultarCarga();
             this.resetPin();
-            mostrarModalPinIncorrecto();
+            this.showError('PIN incorrecto. Intente nuevamente.');
         }
-    } else {
-        ocultarCarga();
-        this.resetPin();
-        this.showError('PIN incorrecto. Intente nuevamente.');
     }
-}
 
     async handleConfirm() {
         try {
