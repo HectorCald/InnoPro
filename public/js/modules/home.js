@@ -269,6 +269,12 @@ function manejarAtajo(vista) {
             btn.classList.toggle('active', btn.getAttribute('data-vista') === vista);
         });
 
+        // Agregar al historial del navegador
+        window.history.pushState({ 
+            vista: vista,
+            menuHistory: [...(window.history.state?.menuHistory || []), vista]
+        }, '', window.location.href);
+
     } catch (error) {
         console.error('Error al manejar atajo:', error);
     } finally {

@@ -837,7 +837,6 @@ export function regresarAInicio() {
     window.dispatchEvent(new Event('popstate'));
 }
 
-// Modificar la función cambiarVista
 function cambiarVista(vistaId) {
     // Solo agregar al historial si no es la misma vista
     if (historialNavegacion[historialNavegacion.length - 1] !== vistaId) {
@@ -866,7 +865,6 @@ function cambiarVista(vistaId) {
     }, '', window.location.href);
 }
 
-// Agregar manejo del evento popstate
 window.addEventListener('popstate', (event) => {
     const vistaActual = event.state?.vista || 'home-view';
     const homeView = document.querySelector('.home-view');
