@@ -1,16 +1,15 @@
 /* ==================== FUNCIONES DE INICIO DE ALMACEN ==================== */
 let productosParaIngresar = new Map();
 let productosParaSalida = new Map();
-async function obtnerMiRol(){
+async function obtnerMiRol() {
     const userResponse = await fetch('/obtener-mi-rol');
     const userData = await userResponse.json();
     window.rol = userData.rol;
 }
 obtnerMiRol();
 export async function inicializarAlmacenGral() {
-
-    const isAdmin = window.rol === 'Administración';
     const container = document.querySelector('.almacen-view');
+    const isAdmin = window.rol === 'Administración';
     if (!container) return;
     container.innerHTML = '';
     container.innerHTML = `
@@ -29,25 +28,24 @@ export async function inicializarAlmacenGral() {
                     </button>
                     <p>Salidas</p>
                 </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                        <i class="fas fa-clipboard-list"></i>
-                    </button>
-                    <p>Pedidos</p>
-                </div>
                 ${isAdmin ? `<div class="cuadro-btn">
                     <button class="btn-agregar-pedido">
                         <i class="fas fa-box"></i>
                     </button>
                     <p>Agregar</p>
                 </div>` : ''}
-                    
-                   ${isAdmin ? `<div class="cuadro-btn">
+                ${isAdmin ? `<div class="cuadro-btn">
                     <button class="btn-agregar-pedido">
                         <i class="fas fa-cog"></i>
                     </button>
                     <p>Formato</p>
                 </div>` : ''}
-
+                ${isAdmin ? `<div class="cuadro-btn">
+                    <button class="btn-agregar-pedido">
+                        <i class="fas fa-clipboard-list"></i>
+                    </button>
+                    <p>Precios</p>
+                </div>` : ''}
             </div>    
             <div class="almacen-general-productos"></div>
         </div>
@@ -58,23 +56,29 @@ export async function inicializarAlmacenGral() {
 
     const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
     btnSalidas.onclick = mostrarListaSalidas;
-    
 
-    const btnPedidos = container.querySelector('.btn-agregar-pedido i.fa-clipboard-list').parentElement;
-    btnPedidos.onclick = () => mostrarFormularioPedidos('');
-    
     if (isAdmin) {
         const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-box').parentElement;
         if (btnAgregar) {
             btnAgregar.onclick = mostrarFormularioAgregarProducto;
         }
     }
+
     if (isAdmin) {
-        const btnFormato = container.querySelector('.btn-agregar-pedido i.fa-cog')?.parentElement;
+        const btnFormato = container.querySelector('.btn-agregar-pedido i.fa-cog').parentElement;
         if (btnFormato) {
             btnFormato.onclick = mostrarFormularioFormato;
         }
     }
+
+    if (isAdmin) {
+        const btnPedidos = container.querySelector('.btn-agregar-pedido i.fa-clipboard-list').parentElement;
+        if (btnPedidos) {
+            btnPedidos.onclick = () => mostrarFormularioPedidos('');
+        }
+    }
+
+
 
     await cargarAlmacen(); // Ensure data is loaded before showing products
     mostrarProductos();
@@ -116,9 +120,9 @@ export async function cargarAlmacen() {
             productCard.className = `product-card ${stockClass}`;
             productCard.dataset.id = id;
             productCard.dataset.tags = (producto[8] || '') // Asegurar manejo de mayúsculas y espacios
-            .split(';')
-            .map(tag => tag.trim().toLowerCase())
-            .join(';');
+                .split(';')
+                .map(tag => tag.trim().toLowerCase())
+                .join(';');
             productCard.onclick = () => mostrarDetalleProductoGral(producto);
             productCard.innerHTML = `
                 <div class="product-info">
@@ -167,7 +171,7 @@ function obtenerEtiquetas() {
         .flatMap(producto => (producto[8] || '').split(';'))
         .map(tag => tag.trim().toLowerCase())
         .filter(tag => tag.length > 0);
-    
+
     // Eliminar duplicados usando Set
     const etiquetasUnicas = [...new Set(etiquetas)].sort();
 
@@ -308,10 +312,15 @@ window.agregarASalidas = (id, nombre, gramaje, stockActual) => {
 };
 
 function actualizarContadorIngresos() {
-    const btnIngresar = document.querySelector('.btn-agregar-pedido i.fa-arrow-circle-down').parentElement;
+    const btnCuadro = document.querySelector('.almacen-view .cuadro-btn:has(.fa-arrow-circle-down)');
+    const btnIngresar = btnCuadro?.querySelector('.btn-agregar-pedido');
+
+    if (!btnCuadro || !btnIngresar) return;
+
     const contador = btnIngresar.querySelector('.contador') || document.createElement('span');
     contador.className = 'contador';
     contador.textContent = productosParaIngresar.size;
+
     contador.style.cssText = `
         position: absolute;
         top: -8px;
@@ -322,21 +331,43 @@ function actualizarContadorIngresos() {
         padding: 2px 6px;
         font-size: 12px;
         display: ${productosParaIngresar.size > 0 ? 'block' : 'none'};
+        z-index: 1000;
     `;
+
     btnIngresar.style.position = 'relative';
     if (!btnIngresar.querySelector('.contador')) {
         btnIngresar.appendChild(contador);
     }
 
-    // Cambiar el color a naranja cuando hay items
-    btnIngresar.style.backgroundColor = productosParaIngresar.size > 0 ? '#f37500' : '';
+    if (productosParaIngresar.size > 0) {
+        btnCuadro.classList.add('active');
+        btnIngresar.style.backgroundColor = '#f37500';
+        btnIngresar.style.color = '#ffffff';
+        const icono = btnIngresar.querySelector('i');
+        if (icono) icono.style.color = '#ffffff';
+        const texto = btnCuadro.querySelector('p');
+        if (texto) texto.style.color = '#ffffff';
+    } else {
+        btnCuadro.classList.remove('active');
+        btnIngresar.style.backgroundColor = '';
+        btnIngresar.style.color = '';
+        const icono = btnIngresar.querySelector('i');
+        if (icono) icono.style.color = '';
+        const texto = btnCuadro.querySelector('p');
+        if (texto) texto.style.color = '';
+    }
 }
 
 function actualizarContadorSalidas() {
-    const btnSalidas = document.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
+    const btnCuadro = document.querySelector('.almacen-view .cuadro-btn:has(.fa-arrow-circle-up)');
+    const btnSalidas = btnCuadro?.querySelector('.btn-agregar-pedido');
+
+    if (!btnCuadro || !btnSalidas) return;
+
     const contador = btnSalidas.querySelector('.contador') || document.createElement('span');
     contador.className = 'contador';
     contador.textContent = productosParaSalida.size;
+
     contador.style.cssText = `
         position: absolute;
         top: -8px;
@@ -347,14 +378,31 @@ function actualizarContadorSalidas() {
         padding: 2px 6px;
         font-size: 12px;
         display: ${productosParaSalida.size > 0 ? 'block' : 'none'};
+        z-index: 1000;
     `;
+
     btnSalidas.style.position = 'relative';
     if (!btnSalidas.querySelector('.contador')) {
         btnSalidas.appendChild(contador);
     }
 
-    // Cambiar el color a naranja cuando hay items
-    btnSalidas.style.backgroundColor = productosParaSalida.size > 0 ? 'orange' : '';
+    if (productosParaSalida.size > 0) {
+        btnCuadro.classList.add('active');
+        btnSalidas.style.backgroundColor = '#f37500';
+        btnSalidas.style.color = '#ffffff';
+        const icono = btnSalidas.querySelector('i');
+        if (icono) icono.style.color = '#ffffff';
+        const texto = btnCuadro.querySelector('p');
+        if (texto) texto.style.color = '#ffffff';
+    } else {
+        btnCuadro.classList.remove('active');
+        btnSalidas.style.backgroundColor = '';
+        btnSalidas.style.color = '';
+        const icono = btnSalidas.querySelector('i');
+        if (icono) icono.style.color = '';
+        const texto = btnCuadro.querySelector('p');
+        if (texto) texto.style.color = '';
+    }
 }
 
 
@@ -765,8 +813,8 @@ export function mostrarProductos() {
             const tagButton = e.target.closest('.filter-btn-acopio');
             if (tagButton) {
                 const selectedTag = tagButton.dataset.tag;
-                
-                document.querySelectorAll('.filter-btn-acopio').forEach(btn => 
+
+                document.querySelectorAll('.filter-btn-acopio').forEach(btn =>
                     btn.classList.remove('active'));
                 tagButton.classList.add('active');
 
@@ -775,11 +823,11 @@ export function mostrarProductos() {
                     inline: 'center',
                     block: 'nearest'
                 });
-        
+
                 const allProducts = document.querySelectorAll('.product-card');
                 const productsContainer = document.getElementById('productsContainer-general');
                 let anyVisible = false;
-        
+
                 allProducts.forEach(product => {
                     if (selectedTag === 'all') {
                         product.style.display = 'grid';
@@ -833,13 +881,13 @@ export function mostrarProductos() {
                 top: searchBarPosition - 70,
                 behavior: 'smooth'
             });
-            searchIcon.style.color='#f37500';
+            searchIcon.style.color = '#f37500';
         }
     });
     searchInput.addEventListener('blur', () => {
         searchIcon.style.color = 'gray';
     });
-    
+
     searchInput.addEventListener('input', (e) => {
         const searchTerm = normalizarTexto(e.target.value);
         const products = document.querySelectorAll('.product-card');
@@ -1357,14 +1405,13 @@ function mostrarFormularioPedidos() {
 };
 
 /* ==================== FUNCIONES DE LOS DETALLES Y ELIMINACION DE TAGS Y PRECIOS ==================== */
-window.mostrarDetalleProductoGral = async function (producto) {
+window.mostrarDetalleProductoGral = function (producto) {
     const [id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios, tag, indexId, indexNombre] = producto;
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
     const tagsSeleccionados = new Set(tag ? tag.split(';').filter(t => t.trim()) : []);
-
     const isAdmin = window.rol === 'Administración';
-    
+
     function formatearPrecios(preciosStr, num) {
         if (!preciosStr) return '<div class="detalle-item"><span>No registrado</span></div>';
 
@@ -1551,8 +1598,9 @@ window.mostrarDetalleProductoGral = async function (producto) {
             </div>
         </div>
         <div class="anuncio-botones">
-            ${isAdmin ?'<button class="anuncio-btn blue editar">Editar</button>' : ''}
+            
             <button class="anuncio-btn green guardar" style="display: none;">Guardar</button>
+            ${isAdmin ? '<button class="anuncio-btn blue editar">Editar</button>' : ''}
             ${isAdmin ? '<button class="anuncio-btn red eliminar">Eliminar</button>' : ''}
         </div>
     `;
@@ -1679,12 +1727,9 @@ window.mostrarDetalleProductoGral = async function (producto) {
         selectIndex.value = '';
     });
 
-    const btnEliminar = anuncio.querySelector('.eliminar');
-    if (btnEliminar) {
-        btnEliminar.onclick = () => {
-            mostrarConfirmacionEliminar(id, nombre);
-        };
-    }
+    anuncio.querySelector('.eliminar').onclick = () => {
+        mostrarConfirmacionEliminar(id, nombre);
+    };
 
     btnEditar.onclick = () => {
         const detallesGrup = contenido.querySelector('.detalle-seccion');
@@ -1760,7 +1805,7 @@ function mostrarConfirmacionEliminar(id, nombre) {
         <div class="encabezado">
             <h2>Eliminar Producto</h2>
             <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
-                <i class="fas fa-arrow-down"></i></button>
+                <i class="fas fa-arrow-right"></i></button>
         </div>
         <div class="detalles-grup center">
             <p>¿Está seguro que desea eliminar el producto "${nombre}"?</p>

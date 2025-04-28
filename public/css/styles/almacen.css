@@ -222,6 +222,10 @@
         cursor: pointer;
         transition: all 0.3s ease;
 
+        &:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background-color: #2c2c2c;
+        }
 
         .product-info {
             display: flex;
@@ -247,26 +251,28 @@
         }
         .btn-card{
             color: white;
-            border-radius: 50%;
+            border-radius: 5px;
             width: 30px;
             height: 30px;
             border: none;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: none;
+            background: none;
         }
         .acciones-rapidas{
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 5px;
         }
         .btn-card.salida{
-            background-color: #ff4444;
+            border:1px solid #ff4444;
+            color: #ff4444;
         }
         .btn-card.ingreso{
-            background-color: #00C851;
+            border:1px solid #00C851;
+            color: #00C851;
         }
         .btn-card i{
             font-size: 20px;
