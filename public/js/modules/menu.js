@@ -802,8 +802,6 @@ function agregarAlHistorial(vista) {
     }
 }
 
-// ... código existente ...
-
 export function regresarAInicio() {
     const homeView = document.querySelector('.home-view');
     if (!homeView) return;
@@ -862,7 +860,10 @@ function cambiarVista(vistaId) {
     }
 
     // Actualizar historial del navegador
-    window.history.pushState({ vista: vistaId }, '', window.location.href);
+    window.history.pushState({ 
+        vista: vistaId,
+        menuHistory: window.history.state?.menuHistory || []
+    }, '', window.location.href);
 }
 
 // Agregar manejo del evento popstate

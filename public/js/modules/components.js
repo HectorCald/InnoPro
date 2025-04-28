@@ -1,4 +1,5 @@
 import { regresarAInicio } from './menu.js';
+let menuHistorial = [];
 export function ocultarAnuncio() {
     const anuncioVisible = document.querySelector('.anuncio');
     const overlay = document.querySelector('.overlay');
@@ -25,8 +26,14 @@ export function mostrarAnuncio() {
     const container = document.querySelector('.container');
 
     if (anuncioVisible) {
-        // Agregar estado al historial
-        window.history.pushState({anuncioAbierto: true}, '');
+        // Guardar el historial actual antes de mostrar el anuncio
+        menuHistorial = [...window.history.state?.menuHistory || []];
+        
+        // Agregar estado al historial con el historial del menú guardado
+        window.history.pushState({
+            anuncioAbierto: true,
+            menuHistory: menuHistorial
+        }, '');
         
         anuncioVisible.classList.add('slide-in');
         anuncioVisible.style.display = 'flex';
@@ -67,36 +74,46 @@ window.addEventListener('orientationchange', () => {
 });
 
 
-
-// ... código existente ...
-
-// ... código existente ...
-
-// ... código existente ...
-
 window.addEventListener('popstate', (event) => {
     const anuncio = document.querySelector('.anuncio');
     const anunciodown = document.querySelector('.anuncio-down');
     const homeView = document.querySelector('.home-view');
 
-    // Si hay anuncio visible, cerrarlo primero
+    // Si hay anuncio visible, cerrarlo y restaurar historial
     if (anuncio && anuncio.style.display === 'flex' || anunciodown && anunciodown.style.display === 'flex') {
         ocultarAnuncio();
         ocultarAnuncioDown();
         
-        // Agregar un nuevo estado al historial para manejar el segundo "Atrás"
-        window.history.pushState({shouldGoHome: true}, '');
+        // Restaurar el historial del menú
+        if (event.state?.menuHistory) {
+            event.state.menuHistory.forEach(estado => {
+                window.history.pushState(estado, '');
+            });
+        }
         return;
     }
 
-    // Si el estado anterior indica que debemos regresar a inicio
-    if (event.state?.shouldGoHome && homeView && !homeView.classList.contains('active')) {
+    // Manejar la navegación normal del menú
+    if (event.state?.vista) {
+        const vistaId = event.state.vista;
+        const vistaActual = document.querySelector(`.${vistaId}`);
+        if (vistaActual) {
+            document.querySelectorAll('.view').forEach(v => {
+                v.style.display = 'none';
+                v.style.opacity = '0';
+            });
+            vistaActual.style.display = 'flex';
+            vistaActual.style.opacity = '1';
+            
+            // Actualizar botón activo
+            if (typeof window.actualizarBotonActivo === 'function') {
+                window.actualizarBotonActivo(vistaId);
+            }
+        }
+    } else if (homeView && !homeView.classList.contains('active')) {
         regresarAInicio();
     }
 });
-
-// ... resto del código ...
-
 
 
 
@@ -134,12 +151,16 @@ export function mostrarAnuncioDown() {
     const anuncioVisible = document.querySelector('.anuncio-down');
 
     if (anuncioVisible) {
-        // Agregar estado al historial
-        window.history.pushState({anuncioAbierto: true}, '');
+        // Guardar el historial actual antes de mostrar el anuncio
+        menuHistorial = [...window.history.state?.menuHistory || []];
+        
+        window.history.pushState({
+            anuncioAbierto: true,
+            menuHistory: menuHistorial
+        }, '');
         
         anuncioVisible.classList.add('slide-in');
         anuncioVisible.style.display = 'flex';
-
 
         setTimeout(() => {
             anuncioVisible.classList.remove('slide-in');
