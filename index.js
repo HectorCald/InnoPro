@@ -116,8 +116,6 @@ const APP_CONFIG = {
 };
 
 /* ==================== RUTAS DE VISTAS ==================== */
-// ... código existente ...
-
 app.get('/', (req, res) => {
     // Verificar si hay credenciales en localStorage
     const token = req.cookies.token;
@@ -137,8 +135,6 @@ app.get('/', (req, res) => {
     // Si no hay token o es inválido, mostrar la página de login
     res.render('login');
 });
-
-// ... resto del código existente ...
 app.get('/dashboard', requireAuth, (req, res) => {
     res.redirect('/dashboard_db')
 });

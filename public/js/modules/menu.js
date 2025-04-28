@@ -869,6 +869,13 @@ function cambiarVista(vistaId) {
 // Agregar manejo del evento popstate
 window.addEventListener('popstate', (event) => {
     const vistaActual = event.state?.vista || 'home-view';
+    const homeView = document.querySelector('.home-view');
+    
+    // Si estamos en la vista de inicio, prevenir navegación hacia atrás
+    if (homeView && homeView.style.display === 'flex') {
+        window.history.pushState({ vista: 'home-view' }, '', window.location.href);
+        return;
+    }
     
     // Ocultar todas las vistas
     document.querySelectorAll('.view').forEach(v => {
@@ -894,5 +901,3 @@ window.addEventListener('popstate', (event) => {
         botonActivo.classList.add('active');
     }
 });
-
-// ... resto del código ...
