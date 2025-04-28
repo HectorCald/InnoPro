@@ -241,8 +241,8 @@
         .btn-card {
             color: white;
             border-radius: 5px;
-            width: 35px;
-            height: 35px;
+            width: 30px;
+            height: 30px;
             border: none;
             display: flex;
             justify-content: center;
@@ -258,12 +258,12 @@
 
         .btn-card.pedido {
             background: none;
-            border: 1px solid var(--success);
+            border: 1px solid #00C851;
         }
 
         .btn-card i {
             font-size: 15px;
-            color: var(--success) !important;
+            color: #00C851 !important;
         }
 
         .btn-card.pedido.disabled {

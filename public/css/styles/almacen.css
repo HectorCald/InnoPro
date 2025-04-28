@@ -246,6 +246,9 @@
                 font-size: 13px;
                 font-weight: bold;
                 color: var(--tercer-color);
+                background-color: rgba(255, 166, 0, 0.079);
+                border-radius: 10px;
+                padding: 5px 10px;
             }
         }
 
