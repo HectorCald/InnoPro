@@ -58,6 +58,11 @@ export async function inicializarAlmacenGral() {
 
     const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
     btnSalidas.onclick = mostrarListaSalidas;
+    
+
+    const btnPedidos = container.querySelector('.btn-agregar-pedido i.fa-clipboard-list').parentElement;
+    btnPedidos.onclick = () => mostrarFormularioPedidos('');
+    
     if (isAdmin) {
         const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-box').parentElement;
         if (btnAgregar) {
@@ -70,9 +75,6 @@ export async function inicializarAlmacenGral() {
             btnFormato.onclick = mostrarFormularioFormato;
         }
     }
-
-    const btnPedidos = container.querySelector('.btn-agregar-pedido i.fa-clipboard-list').parentElement;
-    btnPedidos.onclick = () => mostrarFormularioPedidos('');
 
     await cargarAlmacen(); // Ensure data is loaded before showing products
     mostrarProductos();

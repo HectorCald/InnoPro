@@ -53,12 +53,7 @@ export function inicializarAlmacen() {
         </div>
     `;
 
-    if (isAdmin) {
-        const btnAgregarAcopio = container.querySelector('.btn-agregar-pedido i.fa-plus-circle').parentElement;
-        if (btnAgregarAcopio) {
-            btnAgregarAcopio.onclick = () => mostrarFormularioAgregarAcopio('');
-        }
-    }
+    
     
     const btnAgregarTarea = container.querySelector('.btn-agregar-pedido i.fa-tasks').parentElement;
     btnAgregarTarea.onclick = () => mostrarFormularioAgregarTarea('');
@@ -90,6 +85,12 @@ export function inicializarAlmacen() {
             mostrarCarrito(); // Actualiza la lista sin cerrar el modal
         }
     };
+    if (isAdmin) {
+        const btnAgregarAcopio = container.querySelector('.btn-agregar-pedido i.fa-plus-circle').parentElement;
+        if (btnAgregarAcopio) {
+            btnAgregarAcopio.onclick = () => mostrarFormularioAgregarAcopio('');
+        }
+    }
 }
 export function mostrarProductosBruto() {
     const container = document.querySelector('.acopio-productos');
@@ -645,15 +646,15 @@ window.mostrarDetalleProductoAcopio = function (producto) {
 
     const btnEditar = contenido.querySelector('.editar');
     const btnGuardar = contenido.querySelector('.guardar');
-
+    btnEditar.onclick = () => {
+        editarProductoAcopio(producto);
+    };
 
     anuncio.querySelector('.eliminar').onclick = () => {
         mostrarConfirmacionEliminar(id, nombre);
     };
 
-    btnEditar.onclick = () => {
-        editarProductoAcopio(producto);
-    };
+    
 };
 window.editarProductoAcopio = function (producto) {
     const [id, nombre, pesoBrutoLote, pesoPrimaLote] = producto;
