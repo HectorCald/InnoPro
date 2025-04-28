@@ -1,5 +1,5 @@
 /* =============== FUNCIONES DE INCIO DE MENU=============== */
-
+import{ocultarAnuncio } from './components.js';
 // Añadir esta función al inicio del archivo
 const funcionesPorRol = {
     'Producción': ['inicializarHome', 'cargarRegistrosCuentas', 'inicializarGestionPro', 'inicializarConfiguraciones'],
@@ -78,29 +78,48 @@ function initializeLoadingScreen(roles) {
 
     // Función para actualizar progreso
     function actualizarProgreso(vista) {
-        if (!checkConnection()) return;
-        checkLoadSpeed();
+    if (!checkConnection()) return;
+    checkLoadSpeed();
 
-        // Eliminar el incremento automático
-        const porcentaje = (vistasCompletadas / totalVistas) * 100;
-        progressBar.style.width = `${porcentaje}%`;
+    // Calcular porcentaje actual
+    const porcentaje = (vistasCompletadas / totalVistas) * 100;
+    
+    // Animación suave del progreso
+    let currentProgress = parseFloat(progressBar.style.width) || 0;
+    const targetProgress = porcentaje;
+    const animationDuration = 500; // Duración de la animación en ms
+    const startTime = Date.now();
 
-        // Actualizar texto con reintentos
+    const animateProgress = () => {
+        const elapsedTime = Date.now() - startTime;
+        const progress = Math.min(elapsedTime / animationDuration, 1);
+        currentProgress = currentProgress + (targetProgress - currentProgress) * progress;
+        
+        // Actualizar barra de progreso
+        progressBar.style.width = `${currentProgress}%`;
+        
+        // Actualizar texto con animación numérica
         const vistaText = funcionToText[vista] || vista;
-        loadingText.textContent = `Cargando ${vistaText}... ${Math.round(porcentaje)}%${intentos > 1 ? ` [Intentos: ${intentos}]` : ''}`;
+        loadingText.textContent = `Cargando ${vistaText}... ${Math.round(currentProgress)}%${intentos > 1 ? ` [Intentos: ${intentos}]` : ''}`;
 
-        // Rest of the function remains the same
-        if (vistasCompletadas >= totalVistas) {
-            loadingStatus.className = 'loading-status success';
-            loadingStatus.textContent = 'Carga completada';
-            setTimeout(() => {
-                screenCarga.classList.add('hidden');
-                setTimeout(() => {
-                    screenCarga.style.display = 'none';
-                }, 500);
-            }, 500);
+        if (progress < 1) {
+            requestAnimationFrame(animateProgress);
         }
+    };
+
+    animateProgress();
+
+    if (vistasCompletadas >= totalVistas) {
+        loadingStatus.className = 'loading-status success';
+        loadingStatus.textContent = 'Carga completada';
+        setTimeout(() => {
+            screenCarga.classList.add('hidden');
+            setTimeout(() => {
+                screenCarga.style.display = 'none';
+            }, 500);
+        }, 500);
     }
+}
     let intentos = 0;
     
     async function ejecutarFuncionConReintentos(funcion) {
@@ -615,6 +634,7 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                     e.preventDefault();
                     e.stopPropagation();
 
+
                     const vistaId = item.dataset.vista;
                     const vistaActual = document.querySelector(`.${vistaId}`);
 
@@ -838,6 +858,10 @@ export function regresarAInicio() {
 }
 
 function cambiarVista(vistaId) {
+
+    if (typeof ocultarAnuncio === 'function') {
+        ocultarAnuncio();
+    }
     // Solo agregar al historial si no es la misma vista
     if (historialNavegacion[historialNavegacion.length - 1] !== vistaId) {
         agregarAlHistorial(vistaId);

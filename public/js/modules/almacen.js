@@ -42,7 +42,7 @@ export async function inicializarAlmacenGral() {
                 </div>` : ''}
                 ${isAdmin ? `<div class="cuadro-btn">
                     <button class="btn-agregar-pedido">
-                        <i class="fas fa-clipboard-list"></i>
+                        <i class="fas fa-dollar-sign"></i>
                     </button>
                     <p>Precios</p>
                 </div>` : ''}
@@ -72,9 +72,9 @@ export async function inicializarAlmacenGral() {
     }
 
     if (isAdmin) {
-        const btnPedidos = container.querySelector('.btn-agregar-pedido i.fa-clipboard-list').parentElement;
-        if (btnPedidos) {
-            btnPedidos.onclick = () => mostrarFormularioPedidos('');
+        const btnPrecios = container.querySelector('.btn-agregar-pedido i.fa-dollar-sign').parentElement;
+        if (btnPrecios) {
+            btnPrecios.onclick = () => mostrarFormularioPrecios('');
         }
     }
 
@@ -1400,9 +1400,48 @@ function mostrarFormularioAgregarProducto() {
         }
     };
 };
-function mostrarFormularioPedidos() {
-    mostrarNotificacion('Esta opción aun esta en desarrollo', 'warning');
+
+window.mostrarFormularioPrecios = function() {
+    const btnPrecios = document.querySelector('.btn-agregar-pedido i.fa-dollar-sign').parentElement;
+    const accionesRapidas = document.querySelectorAll('.acciones-rapidas');
+    const modoPrecios = !btnPrecios.classList.contains('active');
+
+    btnPrecios.classList.toggle('active');
+    btnPrecios.style.backgroundColor = modoPrecios ? '#f37500' : '';
+
+    accionesRapidas.forEach(accion => {
+        const card = accion.closest('.product-info');
+        if (!card) return;
+
+        // Asegurarse de que exista el div de precios, si no, crearlo
+        let accionPrecios = card.querySelector('.acciones-precios');
+        if (!accionPrecios) {
+            accionPrecios = document.createElement('div');
+            accionPrecios.className = 'acciones-precios';
+            accionPrecios.innerHTML = `
+                <div class="product-quantity">${accion.querySelector('.product-quantity').textContent}</div>
+                <button class="btn-card precios" onclick="verPrecios('${card.dataset.id}')">
+                    <i class="fas fa-dollar-sign"></i>
+                </button>
+            `;
+            card.appendChild(accionPrecios);
+        }
+
+        // Alternar visibilidad
+        if (modoPrecios) {
+            accion.style.display = 'none';
+            accionPrecios.style.display = 'flex';
+        } else {
+            accion.style.display = 'flex';
+            accionPrecios.style.display = 'none';
+        }
+    });
 };
+window.verPrecios = function(productId) {
+    // Aquí puedes implementar la lógica para mostrar los precios del producto
+    console.log(`Ver precios del producto ${productId}`);
+};
+
 
 /* ==================== FUNCIONES DE LOS DETALLES Y ELIMINACION DE TAGS Y PRECIOS ==================== */
 window.mostrarDetalleProductoGral = function (producto) {
