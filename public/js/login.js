@@ -420,7 +420,7 @@ function cargarNombreBienvenida() {
     const nombreGuardado = localStorage.getItem('innopro_user_name');
     const bienvenidoElement = document.querySelector('.bienvenido-user');
     if (bienvenidoElement && nombreGuardado) {
-        bienvenidoElement.textContent = `${nombreGuardado}`;
+        bienvenidoElement.textContent = `Hola, ${nombreGuardado}`;
     }
     window.nombreGuardado = nombreGuardado;
 }
