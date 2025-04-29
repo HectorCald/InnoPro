@@ -338,7 +338,6 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                 submenu: [
                     { clase: 'opcion-btn submenu-item', vista: 'verificarRegistros-view', icono: 'fa-history', texto: 'Registros' },
                     { clase: 'opcion-btn submenu-item', vista: 'preciosPro-view', icono: 'fa-dollar-sign', texto: 'Precios' }
-
                 ]
             },
             {
@@ -348,11 +347,12 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                 submenu: [
                     { clase: 'opcion-btn submenu-item', vista: 'almacen-view', icono: 'fa-dolly', texto: 'Gestionar' },
                     { clase: 'opcion-btn submenu-item', vista: 'regAlmacen-view', icono: 'fa-history', texto: 'Registros' }
-
                 ]
             },
+            { clase: 'opcion-btn desktop-only', vista: 'usuarios-view', icono: 'fa-users-cog', texto: 'Usuarios' },
+            { clase: 'opcion-btn desktop-only', vista: 'configuraciones-view', icono: 'fa-cog', texto: 'Ajustes' },
             {
-                clase: 'opcion-btn submenu-trigger',
+                clase: 'opcion-btn submenu-trigger mobile-only',
                 icono: 'fa-ellipsis-h',
                 texto: 'Otros',
                 submenu: [
@@ -360,7 +360,6 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                     { clase: 'opcion-btn submenu-item', vista: 'configuraciones-view', icono: 'fa-cog', texto: 'Ajustes' }
                 ]
             }
-
         ]
     };
     const funcionesExtrasConfig = {

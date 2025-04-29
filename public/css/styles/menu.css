@@ -321,4 +321,16 @@
         background: var(--secondary-color) !important;
         transform: none !important;
     }
+    
+}
+@media screen and (min-width: 1024px) {
+    .mobile-only {
+        display: none !important;
+    }
+}
+
+@media screen and (max-width: 1023px) {
+    .desktop-only {
+        display: none !important;
+    }
 }

@@ -125,6 +125,23 @@ export async function cargarUsuarios() {
                     });
                 }
             });
+
+            searchInput.addEventListener('focus', () => {
+                const usuarios = document.querySelector('.usuarios-view');
+                if (usuarios) {
+                    const searchBarPosition = searchInput.getBoundingClientRect().top + window.scrollY;
+                    usuarios.scrollTo({
+                        top: searchBarPosition - 70,
+                        behavior: 'smooth'
+                    });
+                    searchIcon.style.color = '#f37500';
+                }
+            });
+
+            searchInput.addEventListener('blur', () => {
+                searchIcon.style.color = 'gray';
+            });
+
         }
     } catch (error) {
         console.error('Error:', error);
@@ -399,7 +416,7 @@ function confirmarEliminarUsuario(usuario) {
     const anuncio = document.querySelector('.anuncio-down');
     const anuncioContenido = document.createElement('div');
     anuncioContenido.className = 'anuncio-contenido';
-    
+
     anuncioContenido.innerHTML = `
         <div class="encabezado">
             <h2>Eliminar Usuario</h2>
