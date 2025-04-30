@@ -108,45 +108,90 @@ class LoginPin {
         }
     }
 
-    autoLogin() {
-        const savedPin = localStorage.getItem('innopro_user_pin');
-        const savedName = localStorage.getItem('innopro_user_name');
-        
-        if (savedPin && savedName) {
-            this.currentPin = savedPin;
-            this.updatePinDots();
-            this.validatePin();
-        }
-    }
-
 
     async validateNormalPin(pin) {
         mostrarCarga();
+        const nombreGuardado = localStorage.getItem('innopro_user_name');
+
         const response = await fetch('/verificar-pin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pin })
+            body: JSON.stringify({
+                pin: pin,
+                nombreGuardado: nombreGuardado
+            })
         });
 
         const data = await response.json();
 
         if (data.valido) {
-            if (verificarUsuarioPin(data.nombre)) {
-                // Guardar el PIN junto con el nombre
-                localStorage.setItem('innopro_user_pin', pin);
-                this.showSuccess(data.nombre);
-                setTimeout(() => {
-                    window.location.replace(this.getRedirectUrl(data.rol));
-                }, 1500);
-            } else {
-                ocultarCarga();
-                this.resetPin();
-                mostrarModalPinIncorrecto();
-            }
+            // Si es primer ingreso o el nombre coincide (ya verificado en el backend)
+            localStorage.setItem('innopro_user_name', data.nombre);
+            localStorage.setItem('innopro_user_pin', pin);
+            this.showSuccess(data.nombre);
+            setTimeout(() => {
+                window.location.replace(this.getRedirectUrl(data.rol));
+            }, 1500);
         } else {
             ocultarCarga();
             this.resetPin();
-            this.showError('PIN incorrecto. Intente nuevamente.');
+            if (data.mensaje === 'PIN no corresponde al usuario actual') {
+                localStorage.removeItem('innopro_user_pin'); // Clear saved PIN
+                mostrarModalPinIncorrecto();
+            } else {
+                this.showError('PIN incorrecto. Intente nuevamente.');
+            }
+        }
+    }
+
+    autoLogin() {
+        const savedPin = localStorage.getItem('innopro_user_pin');
+        const savedName = localStorage.getItem('innopro_user_name');
+
+        console.log('Estado actual de credenciales:', {
+            nombreGuardado: savedName,
+            pinGuardado: savedPin,
+            cookies: document.cookie,
+            todosLosDatos: {
+                localStorage: { ...localStorage },
+                sessionStorage: { ...sessionStorage }
+            }
+        });
+
+
+        if (savedPin && savedName) {
+            fetch('/verificar-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: savedPin })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('AutoLogin - Verificación:', {
+                        nombreGuardado: savedName,
+                        nombreDelPin: data.nombre,
+                        pinGuardado: savedPin,
+                        coinciden: data.nombre === savedName
+                    });
+
+                    // Solo proceder si el PIN es válido y el nombre coincide exactamente
+                    if (data.valido && data.nombre === savedName) {
+                        this.currentPin = savedPin;
+                        this.updatePinDots();
+                        this.validatePin();
+                    } else {
+                        // Si no coincide, limpiar el PIN guardado y mostrar mensaje
+                        localStorage.removeItem('innopro_user_pin');
+                        console.log('AutoLogin fallido - Nombres no coinciden');
+                        if (data.valido) {
+                            mostrarModalPinIncorrecto();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en autoLogin:', error);
+                    localStorage.removeItem('innopro_user_pin'); // También limpiar en caso de error
+                });
         }
     }
 
@@ -252,6 +297,7 @@ class Modal {
 
 /* =============== FUNCIONES DE LLAMADO =============== */
 document.addEventListener('DOMContentLoaded', async () => {
+    mostrarCarga();
     const UPDATE_KEY = 'innopro_update_status';
     const currentVersion = localStorage.getItem(UPDATE_KEY);
     const versionElement = document.querySelector('.version');
@@ -374,6 +420,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
 
+
     };
     cleanupModal.init();
 
@@ -390,7 +437,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnConsulta) {
         btnConsulta.addEventListener('click', () => mostrar('.cuentas'));
     }
-
+    ocultarCarga();
 
 });
 /* =============== FUNCIONES DE CARGA LOANDERS =============== */

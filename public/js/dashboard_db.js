@@ -16,7 +16,7 @@ import { inicializarConfiguraciones } from './modules/configuraciones.js';
 import { inicializarGestionPro } from './modules/gestionPro.js';
 import { inicializarCalcularMP } from './modules/calcularMP.js';
 import { ocultarAnuncio, mostrarAnuncio } from './modules/components.js';
-
+import { inicializarTareas } from './modules/tareasAcopio.js';
 export function scrollToTop(ventana) {
     const container = document.querySelector(ventana);
     if (container) {
@@ -98,8 +98,13 @@ window.inicializarGestionPro = inicializarGestionPro;
 // Funciones de calcular materia prima
 window.inicializarCalcularMP = inicializarCalcularMP;
 
+// Funciones de tareas acopio
+window.inicializarTareas = inicializarTareas;
+
 window.ocultarCarga = ocultarCarga;
 window.mostrarCarga = mostrarCarga;
+
+
 
 function initializeLoadingScreenEarly() {
     const screenCarga = document.querySelector('.screen-carga');
@@ -184,7 +189,7 @@ async function iniciarApp() {
             return;
         }
 
-        const vistas = document.querySelectorAll('biometrico-view, imgUpload-view, .calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
+        const vistas = document.querySelectorAll('tareasAcopio-view, imgUpload-view, .calcularMP-view, .gestionPro-view, .configuraciones-view, .regAlmacen-view, .almacen-view, .regAcopio-view, .comprobante-view, .preciosPro-view, .home-view, .almPrima-view, .almAcopio-view, .compras-view, .newTarea-view, .usuarios-view, .verificarRegistros-view, .consultarRegistros-view, .formProduccion-view, .cuentasProduccion-view, .newPedido-view');
 
         // Ocultar todas las vistas inicialmente
         vistas.forEach(vista => {

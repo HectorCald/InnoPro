@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navigator.userAgent.match(/Android/i)) {
         window.scrollTo(0, 1);
     }
+
 });
 window.addEventListener('orientationchange', () => {
     setTimeout(() => {

@@ -1,9 +1,9 @@
 /* =============== FUNCIONES DE INCIO DE MENU=============== */
-import{ocultarAnuncio } from './components.js';
+import { ocultarAnuncio } from './components.js';
 // Añadir esta función al inicio del archivo
 const funcionesPorRol = {
     'Producción': ['inicializarHome', 'cargarRegistrosCuentas', 'inicializarGestionPro', 'inicializarConfiguraciones'],
-    'Acopio': ['inicializarHome', 'inicializarAlmacen', 'cargarRegistrosAcopio', 'inicializarConfiguraciones'],
+    'Acopio': ['inicializarHome', 'inicializarAlmacen', 'cargarRegistrosAcopio', 'inicializarTareas', 'inicializarConfiguraciones'],
     'Almacen': ['inicializarHome', 'cargarRegistros', 'inicializarAlmacenGral', 'cargarRegistrosAlmacenGral', 'inicializarConfiguraciones'],
     'Administración': [
         'inicializarHome', 'inicializarAlmacen', 'cargarRegistrosAcopio', 'inicializarCompras',
@@ -18,6 +18,7 @@ const funcionToText = {
     'inicializarConfiguraciones': 'Ajustes',
     'inicializarAlmacen': 'Gestionar Acopio',
     'cargarRegistrosAcopio': 'Registros de Acopio',
+    'inicializarTareas': 'Tareas',
     'cargarRegistros': 'Verificar Registros',
     'inicializarAlmacenGral': 'Gestionar Almacén',
     'cargarRegistrosAlmacenGral': 'Registros de Almacén',
@@ -78,50 +79,50 @@ function initializeLoadingScreen(roles) {
 
     // Función para actualizar progreso
     function actualizarProgreso(vista) {
-    if (!checkConnection()) return;
-    checkLoadSpeed();
+        if (!checkConnection()) return;
+        checkLoadSpeed();
 
-    // Calcular porcentaje actual
-    const porcentaje = (vistasCompletadas / totalVistas) * 100;
-    
-    // Animación suave del progreso
-    let currentProgress = parseFloat(progressBar.style.width) || 0;
-    const targetProgress = porcentaje;
-    const animationDuration = 500; // Duración de la animación en ms
-    const startTime = Date.now();
+        // Calcular porcentaje actual
+        const porcentaje = (vistasCompletadas / totalVistas) * 100;
 
-    const animateProgress = () => {
-        const elapsedTime = Date.now() - startTime;
-        const progress = Math.min(elapsedTime / animationDuration, 1);
-        currentProgress = currentProgress + (targetProgress - currentProgress) * progress;
-        
-        // Actualizar barra de progreso
-        progressBar.style.width = `${currentProgress}%`;
-        
-        // Actualizar texto con animación numérica
-        const vistaText = funcionToText[vista] || vista;
-        loadingText.textContent = `Cargando ${vistaText}... ${Math.round(currentProgress)}%${intentos > 1 ? ` [Intentos: ${intentos}]` : ''}`;
+        // Animación suave del progreso
+        let currentProgress = parseFloat(progressBar.style.width) || 0;
+        const targetProgress = porcentaje;
+        const animationDuration = 500; // Duración de la animación en ms
+        const startTime = Date.now();
 
-        if (progress < 1) {
-            requestAnimationFrame(animateProgress);
-        }
-    };
+        const animateProgress = () => {
+            const elapsedTime = Date.now() - startTime;
+            const progress = Math.min(elapsedTime / animationDuration, 1);
+            currentProgress = currentProgress + (targetProgress - currentProgress) * progress;
 
-    animateProgress();
+            // Actualizar barra de progreso
+            progressBar.style.width = `${currentProgress}%`;
 
-    if (vistasCompletadas >= totalVistas) {
-        loadingStatus.className = 'loading-status success';
-        loadingStatus.textContent = 'Carga completada';
-        setTimeout(() => {
-            screenCarga.classList.add('hidden');
+            // Actualizar texto con animación numérica
+            const vistaText = funcionToText[vista] || vista;
+            loadingText.textContent = `Cargando ${vistaText}... ${Math.round(currentProgress)}%${intentos > 1 ? ` [Intentos: ${intentos}]` : ''}`;
+
+            if (progress < 1) {
+                requestAnimationFrame(animateProgress);
+            }
+        };
+
+        animateProgress();
+
+        if (vistasCompletadas >= totalVistas) {
+            loadingStatus.className = 'loading-status success';
+            loadingStatus.textContent = 'Carga completada';
             setTimeout(() => {
-                screenCarga.style.display = 'none';
+                screenCarga.classList.add('hidden');
+                setTimeout(() => {
+                    screenCarga.style.display = 'none';
+                }, 500);
             }, 500);
-        }, 500);
+        }
     }
-}
     let intentos = 0;
-    
+
     async function ejecutarFuncionConReintentos(funcion) {
         let exitoso = false;
         while (!exitoso) {
@@ -153,14 +154,14 @@ function initializeLoadingScreen(roles) {
 
 
     // No ocultar carga aquí
-    return { 
-        actualizarProgreso, 
+    return {
+        actualizarProgreso,
         ejecutarFuncionConReintentos // Añadir esta línea
     };
 }
 export async function initializeMenu(roles, opcionesDiv, vistas, funcionesExtras = []) {
     try {
-        const { actualizarProgreso, ejecutarFuncionConReintentos } = initializeLoadingScreen(roles); 
+        const { actualizarProgreso, ejecutarFuncionConReintentos } = initializeLoadingScreen(roles);
         await new Promise(resolve => setTimeout(resolve, 10));
 
         const { menuPrincipal, menuSecundario, overlay } = initializeMenuStructure(opcionesDiv);
@@ -310,6 +311,7 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
             { clase: 'opcion-btn', vista: 'home-view', icono: 'fa-home', texto: 'Inicio' },
             { clase: 'opcion-btn', vista: 'almAcopio-view', icono: 'fa-dolly', texto: 'Gestionar' },
             { clase: 'opcion-btn', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros' },
+            { clase: 'opcion-btn', vista: 'tareasAcopio-view', icono: 'fa-tasks', texto: 'Tareas' },
             { clase: 'opcion-btn', vista: 'configuraciones-view', icono: 'fa-cog', texto: 'Ajustes' }
         ],
         'Almacen': [
@@ -608,8 +610,9 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                         'compras-view': 'inicializarCompras',
                         'cuentasProduccion-view': 'cargarRegistrosCuentas',
                         'gestionPro-view': 'inicializarGestionPro',
-                        'configuraciones-view': 'inicializarConfiguraciones'
-                        // Agregar todas las demás vistas necesarias
+                        'configuraciones-view': 'inicializarConfiguraciones',
+                        'home-view': 'inicializarHome',
+                        'tareasAcopio-view': 'inicializarTareas'
                     };
 
                     const functionName = funcionesEspeciales[vistaId];
@@ -665,7 +668,6 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
     }
 
     // Handle regular button clicks
-    // Handle regular button clicks
     menuSecundario.querySelectorAll('.opcion-btn:not([data-has-submenu])').forEach(boton => {
         handleLongPress(boton, async (e) => {
             e.preventDefault();
@@ -684,7 +686,8 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                 'cuentasProduccion-view': 'cargarRegistrosCuentas',
                 'gestionPro-view': 'inicializarGestionPro',
                 'configuraciones-view': 'inicializarConfiguraciones',
-                'home-view': 'inicializarHome'
+                'home-view': 'inicializarHome',
+                'tareasAcopio-view': 'inicializarTareas'  // Corregido aquí
             };
 
             const functionName = funcionesEspeciales[vistaId];
@@ -847,11 +850,11 @@ export function regresarAInicio() {
 
     // Actualizar el historial del navegador
     window.history.replaceState({ vista: 'home' }, '', window.location.href);
-    
+
     // Limpiar el historial interno y agregar inicio
     historialNavegacion.length = 0;
     agregarAlHistorial('home-view');
-    
+
     // Forzar actualización del estado de navegación
     window.dispatchEvent(new Event('popstate'));
 }
@@ -865,7 +868,7 @@ function cambiarVista(vistaId) {
     if (historialNavegacion[historialNavegacion.length - 1] !== vistaId) {
         agregarAlHistorial(vistaId);
     }
-    
+
     // Ocultar todas las vistas
     document.querySelectorAll('.view').forEach(v => {
         v.style.display = 'none';
@@ -882,7 +885,7 @@ function cambiarVista(vistaId) {
     }
 
     // Actualizar historial del navegador
-    window.history.pushState({ 
+    window.history.pushState({
         vista: vistaId,
         menuHistory: window.history.state?.menuHistory || []
     }, '', window.location.href);
@@ -891,13 +894,13 @@ function cambiarVista(vistaId) {
 window.addEventListener('popstate', (event) => {
     const vistaActual = event.state?.vista || 'home-view';
     const homeView = document.querySelector('.home-view');
-    
+
     // Si estamos en la vista de inicio, prevenir navegación hacia atrás
     if (homeView && homeView.style.display === 'flex') {
         window.history.pushState({ vista: 'home-view' }, '', window.location.href);
         return;
     }
-    
+
     // Ocultar todas las vistas
     document.querySelectorAll('.view').forEach(v => {
         v.style.display = 'none';

@@ -45,6 +45,8 @@
 
 @import 'styles/screen-carga.css';
 
+@import 'styles/tareasAcopio.css';
+
 /* ===== ESTILOS GLOBALES ===== */
 body, .container {
     background-color: var(--primary-color) !important;

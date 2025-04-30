@@ -464,7 +464,7 @@
     gap:5px;
     width: 100%;
 }
-.sugerencias-container .sugerencias-list li{
+.sugerencias-list li{
     background: var(--primary-color);
     padding-block: 10px;
     list-style: none;
@@ -660,6 +660,10 @@
     border-radius: 10px;
     width: 90%;
     max-width: 400px;
+    padding-right: 20px;
+}
+.anuncio-down .anuncio-contenido .anuncio-botones{
+    padding-right: 0;
 }
 .anuncio-down.slide-out {
     transform: translateY(100%);

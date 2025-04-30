@@ -262,6 +262,7 @@ function manejarAtajo(vista) {
                 vistaSeleccionada.style.opacity = '1';
                 scrollToTop(`.${vista}`);
             });
+            ocultarAnuncio();
         }
 
         // Actualizar estados activos
