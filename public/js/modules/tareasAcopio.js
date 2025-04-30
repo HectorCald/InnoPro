@@ -51,7 +51,7 @@ export function inicializarTareas() {
 
     container.innerHTML = `
         <div class="title">
-            <h3><i class="fas fa-calculator"></i> Tareas Acopio</h3>
+            <h3><i class="fas fa-tasks"></i> Tareas Acopio</h3>
         </div>
         <div class="ta-container">
             <div class="ta-botones">
