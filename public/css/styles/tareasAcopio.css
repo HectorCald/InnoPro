@@ -48,7 +48,7 @@
 
     .ta-botones {
         display: flex;
-        gap: 10px;
+        gap: 3vw;
         justify-content: center;
         margin-bottom: 10px;
     }
@@ -62,7 +62,7 @@
         gap: 5px;
     }
 
-    .btn-registrar-ta {
+    .btn-ta {
         background: var(--cero-color);
         color: var(--primary-text);
         border: none;

@@ -1,3 +1,5 @@
+
+
 /* =============== FUNCIONES PARA OBTENER OTDA LA INFORMACION=============== */
 async function cargarTareas() {
     try {
@@ -54,10 +56,16 @@ export function inicializarTareas() {
         <div class="ta-container">
             <div class="ta-botones">
                 <div class="cuadro-btn">
-                    <button class="btn-registrar-ta">
+                    <button class="btn-ta btn-registrar-ta">
                         <i class="fas fa-play"></i>
                     </button>
                     <p>Iniciar</p>
+                </div>
+                <div class="cuadro-btn">
+                    <button class="btn-ta btn-agregar-ta">
+                        <i class="fas fa-tasks"></i>
+                    </button>
+                    <p>Tarea</p>
                 </div>
             </div>    
             <div class="lista-registros">
@@ -84,6 +92,8 @@ export function inicializarTareas() {
     // Fix: Change selector to match the button class in the template
     const btnRegistrar = container.querySelector('.btn-registrar-ta');
     btnRegistrar.onclick = mostrarFormularioRegistroTareas;
+    const btnTarea = container.querySelector('.btn-agregar-ta');
+    btnTarea.onclick = mostrarFormularioAgregarTarea;
 }
 function configurarBusquedaTarea() {
     const searchInput = document.getElementById('search-ta');
@@ -873,4 +883,163 @@ function mostrarFormularioRegistroTareas() {
             }
         };
     }
+}
+
+/* =============== FUNCIONES DE AGREGAR UNA TAREA A LA LISTA, CARGAR, MOSTRAR Y ELIMINAR =============== */
+function mostrarFormularioAgregarTarea() {
+    const anuncio = document.querySelector('.anuncio');
+    const contenido = anuncio.querySelector('.anuncio-contenido');
+
+
+    contenido.innerHTML = `
+        <div class="encabezado">
+            <h2>Agregar tarea a la lista</h2>
+            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
+                <i class="fas fa-arrow-right"></i></button>
+        </div>
+        <div class="relleno">
+                <p>Nueva Tarea:</p>
+                <div class="detalle-item">
+                    <input type="text" id="nombreTarea" class="edit-input" placeholder="Nombre de la tarea">
+                    <small id="tareaDisponible" style="display: none;"></small>
+                </div>
+            <div id="listaTareas" class="sugerencias-list" style="display: none; flex-direction:column; height:100%; gap:5px">
+                <!-- Aquí se cargarán las tareas existentes -->
+            </div>
+        </div>
+        <div class="anuncio-botones">
+            <button class="anuncio-btn blue ver-tareas"><i class="fas fa-eye"></i> Ver Tareas</button>
+            <button class="anuncio-btn green agregar"><i class="fas fa-plus"></i> Agregar</button>
+        </div>
+    `;
+
+    mostrarAnuncio();
+
+    const inputTarea = document.getElementById('nombreTarea');
+    const mensajeDisponible = document.getElementById('tareaDisponible');
+    const btnVerTareas = contenido.querySelector('.ver-tareas');
+    const btnAgregar = contenido.querySelector('.agregar');
+    const listaTareas = document.getElementById('listaTareas');
+    let tareasVisible = false;
+    let timeoutId = null;
+
+    inputTarea.addEventListener('input', async () => {
+        const nombre = inputTarea.value.trim();
+        mensajeDisponible.style.display = nombre ? 'block' : 'none';
+
+        // Limpiar el timeout anterior si existe
+        if (timeoutId) clearTimeout(timeoutId);
+
+        if (nombre) {
+            // Mostrar indicador de carga mientras se verifica
+            mensajeDisponible.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: #666; font-size: 1.2em; border:none;"></i>';
+
+            // Esperar 300ms después de que el usuario deje de escribir
+            timeoutId = setTimeout(async () => {
+                const nombreNormalizado = nombre.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .trim();
+
+                const response = await fetch('/verificar-tarea', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombre: nombre,
+                        nombreNormalizado: nombreNormalizado
+                    })
+                });
+                const data = await response.json();
+
+                if (data.disponible) {
+                    mensajeDisponible.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745; font-size: 1.2em; border:none;"></i>';
+                } else {
+                    mensajeDisponible.innerHTML = '<i class="fas fa-times-circle" style="color: #dc3545; font-size: 1.2em; border:none;"></i>';
+                }
+            }, 300);
+        }
+    });
+    btnVerTareas.onclick = async () => {
+        if (!tareasVisible) {
+            await cargarTareas();
+            listaTareas.style.display = 'flex';
+            btnVerTareas.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar Tareas';
+        } else {
+            listaTareas.style.display = 'none';
+            btnVerTareas.innerHTML = '<i class="fas fa-eye"></i> Ver Tareas';
+        }
+        tareasVisible = !tareasVisible;
+    };
+    btnAgregar.onclick = agregarNuevaTarea;
+
+    async function cargarTareas() {
+        const container = document.getElementById('listaTareas');
+        try {
+            mostrarCarga();
+            const response = await fetch('/obtener-tareas');
+            const data = await response.json();
+    
+            container.innerHTML = data.tareas.map(tarea => `
+                <div class="detalle-item" style="padding-bottom:10px; background-color:#242424; padding:10px; border-radius:10px">
+                    <span style="text-align:left">${tarea.nombre}</span>
+                    <i class="fas fa-trash delete" onclick="eliminarTarea('${tarea.id}')"></i>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al cargar las tareas', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    }
+    async function agregarNuevaTarea() {
+        const nombre = document.getElementById('nombreTarea').value.trim();
+        if (!nombre) {
+            mostrarNotificacion('Ingrese un nombre para la tarea', 'error');
+            return;
+        }
+    
+        try {
+            mostrarCarga();
+            const response = await fetch('/agregar-tarea', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre })
+            });
+    
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Tarea agregada correctamente', 'success');
+                document.getElementById('nombreTarea').value = '';
+                cargarTareas();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al agregar la tarea', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    }
+    window.eliminarTarea = async (id) => {
+        try {
+            mostrarCarga();
+            const response = await fetch('/eliminar-tarea', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+    
+            const data = await response.json();
+            if (data.success) {
+                mostrarNotificacion('Tarea eliminada correctamente', 'success');
+                cargarTareas();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al eliminar la tarea', 'error');
+        } finally {
+            ocultarCarga();
+        }
+    };
+    
 }
