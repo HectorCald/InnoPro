@@ -738,7 +738,7 @@ function mostrarFormularioRegistroTareas() {
                 <i class="fas fa-arrow-right"></i></button>
         </div>
         <div class="relleno">
-            <p>Fecha</p>
+            <p>Fecha(Hoy)</p>
             <input type="date" id="fechaMP" class="edit-input" value="${new Date().toISOString().split('T')[0]}" 
                 readonly tabindex="-1" style="pointer-events: none;">
 
