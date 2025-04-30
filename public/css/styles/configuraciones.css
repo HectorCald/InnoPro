@@ -66,7 +66,7 @@
     .ajustes-lista {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 5px;
         margin-bottom: 10px;
     }
     .ajustes-lista p{
@@ -134,8 +134,8 @@
         gap: 8px;
         color: gray;
     }
-    .configuraciones-view p{
-        font-size: 13px;
+    p{
+        font-size: 13px !important;
         color: gray !important;
     }
 }

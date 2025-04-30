@@ -120,7 +120,7 @@
         visibility: hidden;
         transition: all 0.3s ease;
         overflow: hidden;
-        font-size: 15px;
+        font-size: 14px;
 
         &.active {
             max-height: none;
@@ -152,6 +152,7 @@
         width: 100%;
         max-width: 100%;
         margin-bottom: 10px;
+        font-size: 13px !important;
 
         &:hover {
             transform: translateY(-2px);
@@ -168,7 +169,6 @@
         align-items: center;
         position: relative;
         gap: 10px;
-
     }
 
     .registro-fecha {
