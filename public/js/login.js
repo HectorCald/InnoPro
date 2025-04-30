@@ -467,7 +467,9 @@ function cargarNombreBienvenida() {
     const nombreGuardado = localStorage.getItem('innopro_user_name');
     const bienvenidoElement = document.querySelector('.bienvenido-user');
     if (bienvenidoElement && nombreGuardado) {
-        bienvenidoElement.textContent = `Hola, ${nombreGuardado}`;
+        // Obtener solo el primer nombre
+        const primerNombre = nombreGuardado.split(' ')[0];
+        bienvenidoElement.textContent = `¡Hola, ${primerNombre}!`;
     }
     window.nombreGuardado = nombreGuardado;
 }
