@@ -126,10 +126,10 @@ function crearPedidoCard(pedido, isAdmin) {
 
     const botonesAdmin = isAdmin ? `
     <div class="acciones">
-        <button class="btn-eliminar-registro">
+        <button class="btn-eliminar-registro anuncio-btn red">
             <i class="fas fa-trash"></i> Eliminar
         </button>
-        <button class="btn-editar-registro">
+        <button class="btn-editar-registro anuncio-btn blue">
             <i class="fas fa-edit"></i> Editar
         </button>
         ${estado.toLowerCase() === 'pendiente' ? `
