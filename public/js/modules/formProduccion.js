@@ -524,6 +524,7 @@ export async function cargarProductos() {
         console.error('Error al cargar productos:', error);
     }
 }
+cargarProductos();
 
 /* =============== FUNCIONES DE HORARIO DE REGISTRO =============== */
 function verificarHorario() {
