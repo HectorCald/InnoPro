@@ -1,4 +1,5 @@
 import { registrarNotificacion } from './advertencia.js';
+import { cargarRegistrosAcopio } from './regAcopio.js';
 /* =============== FUNCIONES DE INCIO DE COMPRAS =============== */
 export function inicializarCompras() {
     mostrarCarga();
@@ -340,6 +341,7 @@ export async function entregarPedido(button) {
             // Mostrar resumen
             await mostrarResumenEntrega(confirmed, nombre);
             mostrarNotificacion('Pedido entregado correctamente', 'success');
+            await cargarRegistrosAcopio();
         } else {
             throw new Error(data.error || 'Error al entregar el pedido');
         }
@@ -353,7 +355,7 @@ export async function entregarPedido(button) {
 }
 
 let entregasRealizadas = [];
-
+let botonFlotante = null;
 export function compartirEntregas() {
     if (entregasRealizadas.length === 0) {
         mostrarNotificacion('No hay entregas para compartir', 'warning');
@@ -373,10 +375,13 @@ export function compartirEntregas() {
 }
 export async function mostrarResumenEntrega(datosEntrega, nombre) {
     try {
-        // Agregar la nueva entrega al array
-        entregasRealizadas.push({ ...datosEntrega, nombre });
+        if (datosEntrega && nombre) {
+            entregasRealizadas.push({ ...datosEntrega, nombre });
+            actualizarBotonFlotante();
+            ocultarAnuncio();
+            return;
+        }
 
-        // Limpiar y preparar el anuncio
         const anuncio = document.querySelector('.anuncio');
         anuncio.innerHTML = `
             <div class="anuncio-contenido">
@@ -429,15 +434,20 @@ export async function mostrarResumenEntrega(datosEntrega, nombre) {
             </div>
         `;
 
-        // Configurar los botones después de crear el contenido
-        const anuncioContenido = anuncio.querySelector('.anuncio-contenido');
-        const btnLimpiar = anuncioContenido.querySelector('.btn-limpiar');
-        const btnSeguir = anuncioContenido.querySelector('.btn-seguir');
-        const btnWhatsapp = anuncioContenido.querySelector('.btn-whatsapp');
+        mostrarAnuncio();
+
+        // Configurar los botones
+        const btnLimpiar = anuncio.querySelector('.btn-limpiar');
+        const btnSeguir = anuncio.querySelector('.btn-seguir');
+        const btnWhatsapp = anuncio.querySelector('.btn-whatsapp');
 
         btnLimpiar.addEventListener('click', () => {
             entregasRealizadas = [];
             ocultarAnuncio();
+            if (botonFlotante) {
+                botonFlotante.remove();
+                botonFlotante = null;
+            }
             cargarPedidos();
         });
 
@@ -445,12 +455,28 @@ export async function mostrarResumenEntrega(datosEntrega, nombre) {
             ocultarAnuncio();
         });
 
-        btnWhatsapp.addEventListener('click', compartirEntregas);
+        btnWhatsapp.addEventListener('click', () => {
+            compartirEntregas();
+        });
 
-        mostrarAnuncio();
     } catch (error) {
         console.error('Error en mostrarResumenEntrega:', error);
         mostrarNotificacion('Error al mostrar el resumen de entregas', 'error');
+    }
+}
+function actualizarBotonFlotante() {
+    if (!botonFlotante) {
+        botonFlotante = document.createElement('button');
+        botonFlotante.className = 'boton-flotante-entregas';
+        botonFlotante.innerHTML = `
+            <i class="fas fa-list"></i>
+            <span class="contador-entregas">${entregasRealizadas.length}</span>
+        `;
+        botonFlotante.addEventListener('click', () => mostrarResumenEntrega());
+        document.body.appendChild(botonFlotante);
+    } else {
+        const contador = botonFlotante.querySelector('.contador-entregas');
+        contador.textContent = entregasRealizadas.length;
     }
 }
 

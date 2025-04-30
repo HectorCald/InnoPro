@@ -374,9 +374,52 @@
             margin-bottom: 10px;
         }
     }
+
 }
 .producto-carrito {
     transform: translateX(0);
     opacity: 1;
     transition: all 0.3s ease-in-out;
+}
+.boton-flotante-ingresos {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.boton-flotante-ingresos i {
+    font-size: 24px;
+}
+
+.boton-flotante-ingresos .contador-ingresos {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff4444;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.boton-flotante-ingresos:hover {
+    background-color: #1976D2;
+    transform: scale(1.05);
+    transition: all 0.2s;
 }

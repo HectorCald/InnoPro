@@ -330,7 +330,6 @@ function initializeMenuButtons(roles, menuSecundario, vistas, menuPrincipal, ove
                 submenu: [
                     { clase: 'opcion-btn submenu-item', vista: 'almAcopio-view', icono: 'fa-dolly', texto: 'Gestionar' },
                     { clase: 'opcion-btn submenu-item', vista: 'regAcopio-view', icono: 'fa-history', texto: 'Registros' },
-                    { clase: 'opcion-btn submenu-item', vista: 'compras-view', icono: 'fa-shopping-cart', texto: 'Compras' }
                 ]
             },
             {

@@ -19,6 +19,7 @@
     &::-webkit-scrollbar {
         display: none;
     }
+
     -ms-overflow-style: none;
     scrollbar-width: none;
 
@@ -59,6 +60,7 @@
         &::-webkit-scrollbar {
             display: none;
         }
+
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
@@ -284,7 +286,8 @@
         margin-top: 10px;
     }
 
-    .btn-editar, .btn-editar-registro {
+    .btn-editar,
+    .btn-editar-registro {
         padding: 15px;
         border: none;
         border-radius: 10px;
@@ -370,4 +373,6 @@
         background-color: #e74c3c;
         color: white;
     }
+
+    
 }

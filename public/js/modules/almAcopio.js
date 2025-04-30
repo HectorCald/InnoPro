@@ -1,7 +1,7 @@
 import { cargarRegistrosAcopio } from "./regAcopio.js";
 
 /* =============== FUNCIONES DE INICIO DE ALMACEN ACOPIO =============== */
-async function obtnerMiRol(){
+async function obtnerMiRol() {
     const userResponse = await fetch('/obtener-mi-rol');
     const userData = await userResponse.json();
     window.rol = userData.rol;
@@ -647,7 +647,7 @@ window.mostrarDetalleProductoAcopio = function (producto) {
         mostrarConfirmacionEliminar(id, nombre);
     };
 
-    
+
 };
 window.editarProductoAcopio = function (producto) {
     const [id, nombre, pesoBrutoLote, pesoPrimaLote] = producto;
@@ -987,6 +987,7 @@ function mostrarFormularioAgregarAcopio() {
 
 
 let listaIngresos = [];
+let botonFlotanteIngresos = null;
 /* =============== FUNCIONES DE INGRESO Y SALDIAS DEL ALMACEN ACOPIO =============== */
 export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
     if (!window.productosAlmacen) {
@@ -1148,7 +1149,25 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
 
             const ingresoData = await ingresoResponse.json();
 
-            if (!ingresoData.success) {
+            if (ingresoData.success) {
+                // Add to ingresos list
+                listaIngresos.push({
+                    nombre: producto,
+                    tipo: tipo,
+                    peso: peso,
+                    lote: lote,
+                    observaciones: razon
+                });
+    
+                // Update floating button and hide modal
+                actualizarBotonFlotanteIngresos();
+                ocultarAnuncio();
+                
+                // Update UI with single notification
+                mostrarNotificacion('Ingreso procesado correctamente', 'success');
+                cargarAlmacenBruto();
+                await cargarRegistrosAcopio();
+            } else {
                 throw new Error(ingresoData.error || 'Error al procesar el ingreso');
             }
 
@@ -1170,19 +1189,6 @@ export function mostrarFormularioIngresoAcopio(productoSeleccionado = '') {
             if (!movimientoData.success) {
                 throw new Error('Error al registrar el movimiento');
             }
-
-            mostrarNotificacion('Ingreso procesado correctamente', 'success');
-
-            // Show ingress summary instead of closing the modal
-            mostrarResumenIngreso({
-                nombre: producto,
-                tipo: tipo,
-                peso: peso,  // Cambiamos el nombre de la propiedad
-                lote: lote,
-                observaciones: razon
-            });
-
-            cargarAlmacenBruto();
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion(error.message, 'error');
@@ -1391,10 +1397,29 @@ export async function mostrarFormularioSalidaAcopio() {
     };
 
 }
-function mostrarResumenIngreso(productoIngresado) {
-    // Agregar el nuevo ingreso a la lista
-    listaIngresos.push(productoIngresado);
 
+window.limpiarListaIngresos = () => {
+    listaIngresos = [];
+    mostrarNotificacion('Lista de ingresos limpiada', 'success');
+    ocultarAnuncio();
+};
+function actualizarBotonFlotanteIngresos() {
+    if (!botonFlotanteIngresos) {
+        botonFlotanteIngresos = document.createElement('button');
+        botonFlotanteIngresos.className = 'boton-flotante-ingresos';
+        botonFlotanteIngresos.innerHTML = `
+            <i class="fas fa-box"></i>
+            <span class="contador-ingresos">${listaIngresos.length}</span>
+        `;
+        botonFlotanteIngresos.addEventListener('click', mostrarResumenIngresos);
+        document.body.appendChild(botonFlotanteIngresos);
+    } else {
+        const contador = botonFlotanteIngresos.querySelector('.contador-ingresos');
+        contador.textContent = listaIngresos.length;
+    }
+}
+
+function mostrarResumenIngresos() {
     const anuncio = document.querySelector('.anuncio');
     const contenido = anuncio.querySelector('.anuncio-contenido');
 
@@ -1434,44 +1459,57 @@ function mostrarResumenIngreso(productoIngresado) {
             </div>
         </div>
         <div class="anuncio-botones">
-            <button class="anuncio-btn red" onclick="limpiarListaIngresos()">
+            <button class="anuncio-btn red btn-limpiar">
                 <i class="fas fa-trash"></i> Limpiar
             </button>
-            <button class="anuncio-btn blue" onclick="mostrarFormularioIngresoAcopio()">
+            <button class="anuncio-btn blue btn-seguir">
                 <i class="fas fa-plus"></i> Seguir
             </button>
-            <button class="anuncio-btn green" onclick="compartirListaWhatsApp()">
+            <button class="anuncio-btn green btn-whatsapp">
                 <i class="fab fa-whatsapp"></i> Enviar
             </button>
         </div>
     `;
 
     mostrarAnuncio();
-}
 
-window.limpiarListaIngresos = () => {
-    listaIngresos = [];
-    mostrarNotificacion('Lista de ingresos limpiada', 'success');
-    ocultarAnuncio();
-};
-window.compartirListaWhatsApp = compartirListaWhatsApp;
+    // Configure buttons
+    const btnLimpiar = contenido.querySelector('.btn-limpiar');
+    const btnSeguir = contenido.querySelector('.btn-seguir');
+    const btnWhatsapp = contenido.querySelector('.btn-whatsapp');
 
-function compartirListaWhatsApp() {
-    let mensajeWhatsApp = "INGRESOS DE MATERIA PRIMA\n\n";
-
-    listaIngresos.forEach((producto, index) => {
-        mensajeWhatsApp += `=== Ingreso ${index + 1} ===\n`;
-        mensajeWhatsApp += `Producto: ${producto.nombre}\n`;
-        mensajeWhatsApp += `Peso: ${producto.peso} kg\n`;
-        if (producto.observaciones) {
-            mensajeWhatsApp += `Observaciones: ${producto.observaciones}\n`;
+    btnLimpiar.addEventListener('click', () => {
+        listaIngresos = [];
+        if (botonFlotanteIngresos) {
+            botonFlotanteIngresos.remove();
+            botonFlotanteIngresos = null;
         }
-        mensajeWhatsApp += '\n';
+        ocultarAnuncio();
+        mostrarNotificacion('Lista de ingresos limpiada', 'success');
     });
 
-    mensajeWhatsApp += '\nRegistrado en la aplicación de InnoPro';
+    btnSeguir.addEventListener('click', () => {
+        ocultarAnuncio();
+        mostrarFormularioIngresoAcopio();
+    });
 
-    const mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
-    window.open(`https://wa.me/?text=${mensajeCodificado}`, '_blank');
+    btnWhatsapp.addEventListener('click', compartirListaIngresosWhatsApp);
+}
+
+function compartirListaIngresosWhatsApp() {
+    let mensaje = "INGRESOS DE MATERIA PRIMA\n\n";
+    listaIngresos.forEach((producto, index) => {
+        mensaje += `=== Ingreso ${index + 1} ===\n`;
+        mensaje += `Producto: ${producto.nombre}\n`;
+        mensaje += `Peso: ${producto.peso} kg\n`;
+        mensaje += `Tipo: ${producto.tipo === 'bruto' ? 'Materia Bruta' : 'Materia Prima'}\n`;
+        if (producto.observaciones) {
+            mensaje += `Observaciones: ${producto.observaciones}\n`;
+        }
+        mensaje += '\n';
+    });
+    mensaje += '\nRegistrado en la aplicación de InnoPro';
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 

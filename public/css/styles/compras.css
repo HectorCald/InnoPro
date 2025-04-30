@@ -290,3 +290,45 @@
         }
     }
 }
+.boton-flotante-entregas {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.boton-flotante-entregas i {
+    font-size: 24px;
+}
+
+.boton-flotante-entregas .contador-entregas {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff4444;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.boton-flotante-entregas:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+    transition: all 0.2s;
+}

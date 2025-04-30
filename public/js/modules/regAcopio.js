@@ -1,6 +1,8 @@
 /* =============== FUNCIONES DE INICIO REGISTROS ACOPIO =============== */
 import { mostrarFormularioIngresoAcopio } from './almAcopio.js';
 import { mostrarAnuncioDown, ocultarAnuncioDown } from './components.js';
+import { entregarPedido } from './compras.js';
+
 let filtrosActivos = {
     nombre: '',
     fechaDesde: '',
@@ -130,6 +132,11 @@ function crearPedidoCard(pedido, isAdmin) {
         <button class="btn-editar-registro">
             <i class="fas fa-edit"></i> Editar
         </button>
+        ${estado.toLowerCase() === 'pendiente' ? `
+            <button class="btn-entregar-pedido anuncio-btn green">
+                <i class="fas fa-play"></i> Entregar
+            </button>
+        ` : ''}
     </div>
 ` : (estado.toLowerCase() === 'recibido' ? `
     <div class="acciones">
@@ -213,19 +220,44 @@ function configurarEventosRegistro(registroCard, isAdmin, pedido) {
 
     if (isAdmin) {
 
-        // Configurar botón de editar
         const btnEditar = registroCard.querySelector('.btn-editar-registro');
         btnEditar.addEventListener('click', (e) => {
             e.stopPropagation(); // Evitar que se active el evento del header
             mostrarFormularioEdicion(pedido);
         });
 
-        // Configurar botón de eliminar
         const btnEliminar = registroCard.querySelector('.btn-eliminar-registro');
         btnEliminar.addEventListener('click', async (e) => {
             e.stopPropagation();
             mostrarConfirmacionEliminar(pedido, registroCard);
         });
+
+        const btnEntregar = registroCard.querySelector('.btn-entregar-pedido');
+        if (btnEntregar) {
+            btnEntregar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Crear el elemento con la estructura completa necesaria
+                const pedidoCard = document.createElement('div');
+                pedidoCard.className = 'pedido-card';
+                pedidoCard.dataset.id = pedido[0];
+                pedidoCard.dataset.nombre = pedido[2];
+
+                // Crear el contenedor de la lista
+                const listContainer = document.createElement('div');
+                listContainer.className = 'pedidos-list pendientes';
+                listContainer.appendChild(pedidoCard);
+
+                // Crear el botón dentro del pedidoCard
+                const button = document.createElement('button');
+                button.className = 'btn-entregar';
+                pedidoCard.appendChild(button);
+
+                // Llamar a entregarPedido con el botón
+                entregarPedido(button);
+            });
+        }
+
+
 
     } else {
         // Add state change functionality for non-admin users
