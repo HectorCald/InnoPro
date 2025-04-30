@@ -32,28 +32,31 @@ export async function cargarRegistrosAcopio() {
             // ... código existente ...
 
             container.innerHTML = `
-    <div class="filtros-header">
-            <h2 class="section-title">
-                <i class="fas fa-clipboard-list"></i> Registros Acopio
-            </h2>
-            <button class="btn-filtro-acopio">
-                <i class="fas fa-filter"></i> Filtros
-            </button>
-        </div>
-        <div class="filter-options-acopio">
-            <button class="filter-btn-acopio" data-estado="todos">
-                <i class="fas fa-list"></i> <p>Todos</p>
-            </button>
-            <button class="filter-btn-acopio" data-estado="Pendiente">
-                <i class="fas fa-clock"></i> <p>Pendiente</p>
-            </button>
-            <button class="filter-btn-acopio" data-estado="Recibido">
-                <i class="fas fa-check"></i> <p>Recibido</p>
-            </button>
-            <button class="filter-btn-acopio" data-estado="En proceso">
-                <i class="fas fa-spinner"></i> <p>En proceso</p>
-            </button>
-        </div>
+            <div class="filtros-header">
+                <h2 class="section-title">
+                    <i class="fas fa-clipboard-list"></i> Registros Acopio
+                </h2>
+                <button class="btn-filtro-acopio">
+                    <i class="fas fa-filter"></i> Filtros
+                </button>
+            </div>
+            <div class="filter-options-acopio">
+                <button class="filter-btn-acopio active" data-estado="todos">
+                    <i class="fas fa-list"></i> <p>Todos</p>
+                </button>
+                <button class="filter-btn-acopio" data-estado="Pendiente">
+                    <i class="fas fa-clock"></i> <p>Pendiente</p>
+                </button>
+                <button class="filter-btn-acopio" data-estado="Recibido">
+                    <i class="fas fa-check"></i> <p>Recibido</p>
+                </button>
+                <button class="filter-btn-acopio" data-estado="En proceso">
+                    <i class="fas fa-spinner"></i> <p>En proceso</p>
+                </button>
+                <button class="filter-btn-acopio" data-estado="Rechazado">
+                    <i class="fas fa-times"></i> <p>Rechazado</p>
+                </button>
+            </div>
     <div class="pedidos-container">
         <div class="fecha-card">
             <div class="fecha-header">
@@ -127,27 +130,27 @@ function crearPedidoCard(pedido, isAdmin) {
     const botonesAdmin = isAdmin ? `
     <div class="acciones">
         <button class="btn-eliminar-registro anuncio-btn red">
-            <i class="fas fa-trash"></i> Eliminar
+            Eliminar
         </button>
         <button class="btn-editar-registro anuncio-btn blue">
-            <i class="fas fa-edit"></i> Editar
+            Editar
         </button>
         ${estado.toLowerCase() === 'pendiente' ? `
             <button class="btn-entregar-pedido anuncio-btn green">
-                <i class="fas fa-play"></i> Entregar
+            Entregar
             </button>
         ` : ''}
     </div>
 ` : (estado.toLowerCase() === 'recibido' ? `
     <div class="acciones">
         <button class="btn-cambiar-estado anuncio-btn blue">
-            <i class="fas fa-exchange-alt"></i> Ingresado
+           Ingresado
         </button>
         <button class="btn-ingresar-acopio anuncio-btn green">
-            <i class="fas fa-plus-circle"></i> Ingresar
+            Ingresar
         </button>
         <button class="btn-rechazar anuncio-btn red" data-id="${pedido[0]}" data-nombre="${pedido[2]}">
-            <i class="fas fa-times-circle"></i> Rechazar
+            Rechazar
         </button>
     </div>
 ` : estado.toLowerCase() === 'pendiente' ? `
@@ -481,23 +484,45 @@ function aplicarFiltros2() {
 }
 function configurarFiltrosBotones() {
     const filterButtons = document.querySelectorAll('.filter-btn-acopio');
+    const filterOptionsContainer = document.querySelector('.filter-options-acopio');
+
+    // Set initial active state
+    if (!filtrosActivos.estado || filtrosActivos.estado === 'todos') {
+        filterButtons[0].classList.add('active');
+    } else {
+        const activeButton = Array.from(filterButtons)
+            .find(btn => btn.dataset.estado === filtrosActivos.estado);
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+    }
 
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // Remover active de todos los botones
+            // Remove active from all buttons
             filterButtons.forEach(btn => btn.classList.remove('active'));
-            // Añadir active al botón clickeado
+            // Add active to clicked button
             button.classList.add('active');
 
-            // Actualizar filtro activo
+            // Update active filter
             filtrosActivos.estado = button.dataset.estado;
 
-            // Aplicar filtros
+            // Apply filters
             aplicarFiltros2();
+
+            // Smooth scroll to center
+            const buttonRect = button.getBoundingClientRect();
+            const containerRect = filterOptionsContainer.getBoundingClientRect();
+            const scrollOffset = buttonRect.left - containerRect.left - 
+                               (containerRect.width / 2) + (buttonRect.width / 2);
+            
+            filterOptionsContainer.scrollTo({
+                left: filterOptionsContainer.scrollLeft + scrollOffset,
+                behavior: 'smooth'
+            });
         });
     });
 }
-
 /* =============== FUNCIONES DE EDICION, ELIMINACION, RECHAZO PEDIDOS=============== */
 function mostrarFormularioEdicion(pedido) {
     const anuncio = document.querySelector('.anuncio');
