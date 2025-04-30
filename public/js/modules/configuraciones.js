@@ -20,7 +20,7 @@ export async function inicializarConfiguraciones() {
                     <div class="perfil-info">
                         <p><strong>Nombre:</strong> ${userData.nombre}</p>
                         <p><strong>Rol en la empresa:</strong> ${userData.rol}</p>
-                        <button class="btn-cambiar-pin">
+                        <button class="btn-cambiar-pin anuncio-btn blue">
                             <i class="fas fa-key"></i> Cambiar PIN
                         </button>
                     </div>
@@ -33,7 +33,11 @@ export async function inicializarConfiguraciones() {
                         <p><strong>Última actualización:</strong> ${new Date().toLocaleDateString()}</p>
                         <p><strong>Desarrollado por:</strong> Damabrava</p>
                         <p>-----------------</strong></p>
-                        <p><strong>Detalles de la ultima actualización:</strong> Ahora todo carga al ingresar tu <strong>PIN</strong> y si quieres recargar alguna pagina manten presionado el boton de dicha pagina.</p>
+                        <p><strong>Detalles de la ultima actualización:</strong></p>
+                        <p>- Carga mas rapida en pestañas</p>
+                        <p>- La sesión se guarda</p>
+                        <p>- Rediseño de botones</p>
+                        <p>- Suguridad al inciar sesión</p>
                     </div>
                 </div>
 
@@ -57,7 +61,7 @@ export async function inicializarConfiguraciones() {
                     
                 </div>
   
-                <button class="logout-btn" onclick="manejarCierreSesion()">
+                <button class="logout-btn anuncio-btn red" onclick="manejarCierreSesion()">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Cerrar Sesión</span>
                 </button>

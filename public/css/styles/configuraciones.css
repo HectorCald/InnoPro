@@ -59,26 +59,7 @@
         p {
             margin: 5px 0;
             color: gray;
-            font-size: 13px;
         }
-    }
-
-    /* ===== BOTÓN CAMBIAR PIN ===== */
-    .btn-cambiar-pin {
-        background: var(--cuarto-color);
-        color: white;
-        border: none;
-        padding: 10px;
-        border-radius: 10px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 10px;
-        width: 100%;
-        max-width: 400px;
-        font-size: 13px;
     }
 
     /* ===== LISTA DE AJUSTES ===== */
@@ -152,33 +133,6 @@
         flex-direction: column;
         gap: 8px;
         color: gray;
-    }
-
-    .btn-desinstalar {
-        background: var(--tercer-color);
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius:10px;
-        cursor: pointer;
-        width: 100%;
-        max-width: 400px;
-    }
-    .logout-btn {
-        background: rgb(255, 60, 60);
-        color: white;
-        border: none;
-        padding: 10px;
-        border-radius: 10px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 10px;
-        width: 100%;
-        max-width: 400px;
-        font-size: 13px;
     }
     .configuraciones-view p{
         font-size: 13px;

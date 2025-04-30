@@ -286,36 +286,6 @@
         margin-top: 10px;
     }
 
-    .btn-editar,
-    .btn-editar-registro {
-        padding: 15px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        background: #2196F3;
-        color: white;
-        width: 100%;
-    }
-
-    .btn-eliminar-registro {
-        padding: 15px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        background: var(--error);
-        color: white;
-        width: 100%;
-    }
 
     /* ===== ICONOS Y ESTADOS ===== */
     .fa-chevron-down {
