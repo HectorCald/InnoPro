@@ -155,7 +155,7 @@ function crearPedidoCard(pedido, isAdmin) {
     </div>
 ` : estado.toLowerCase() === 'pendiente' ? `
     <div class="acciones">
-        <button class="btn-eliminar-registro">
+        <button class="btn-eliminar-registro anuncio-btn red">
             <i class="fas fa-trash"></i> Eliminar
         </button>
     </div>

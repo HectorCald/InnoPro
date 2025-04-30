@@ -19,7 +19,7 @@ export async function inicializarConfiguraciones() {
                     <h2><i class="fas fa-user-circle"></i> Perfil de Usuario</h2>
                     <div class="perfil-info">
                         <p><strong>Nombre:</strong> ${userData.nombre}</p>
-                        <p><strong>Rol:</strong> ${userData.rol}</p>
+                        <p><strong>Rol en la empresa:</strong> ${userData.rol}</p>
                         <button class="btn-cambiar-pin">
                             <i class="fas fa-key"></i> Cambiar PIN
                         </button>
