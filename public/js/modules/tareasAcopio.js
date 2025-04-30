@@ -223,7 +223,6 @@ function mostrarMensajeNoResultados(encontrados, busqueda) {
     }
 }
 async function cargarRegistrosTarea() {
-
     try {
         await cargarRegistrosTareasDB();
         const container = document.getElementById('registrosContainer');
@@ -231,14 +230,21 @@ async function cargarRegistrosTarea() {
 
         const registros = window.registrosTareas;
 
-        // Verificar si hay datos y acceder a la propiedad tareas
+        // Verificar si hay datos
         if (!registros || registros.length === 0) {
             container.innerHTML = '<div class="no-results-message">No hay registros disponibles</div>';
             return;
         }
 
+        // Ordenar registros por ID (formato TA-X) de mayor a menor
+        const registrosOrdenados = [...registros].sort((a, b) => {
+            const idA = parseInt(a.id.split('-')[1]);
+            const idB = parseInt(b.id.split('-')[1]);
+            return idB - idA;  // Orden descendente
+        });
+
         container.innerHTML = '';
-        registros.forEach(registro => {
+        registrosOrdenados.forEach(registro => {
             const card = crearRegistroCardTarea(registro);
             container.appendChild(card);
         });
@@ -358,8 +364,8 @@ function mostrarDetalleRegistroTarea(registro) {
                     <textarea id="observacionesInput" class="edit-input" rows="3"></textarea>
                 </div>
             ` : `
+                <p class="subtitle">Procedimientos</p>
                 <div class="procedimientos-container detalles-grup">
-                    <p><strong>Procedimientos:</strong></p>
                     <div class="procedimientos-lista ">
                         ${registro.procedimiento ? registro.procedimiento.split(',').map(proc =>
         `<p class="procedimiento-tag">-${proc.trim()}</p>`
@@ -367,8 +373,9 @@ function mostrarDetalleRegistroTarea(registro) {
                     </div>
                 </div>
                 ${registro.observaciones ? `
-                    <div class="observaciones-container">
-                        <p><strong>Observaciones:</strong></p>
+                <p class="subtitle">Observaciones</p>
+                    <div class="observaciones-container detalles-grup">
+                        
                         <p>${registro.observaciones}</p>
                     </div>
                 ` : ''}
@@ -562,8 +569,8 @@ function mostrarDetalleRegistroTarea(registro) {
                     <p>Hora Fin:</p><span>${registro.horaFin}</span>
                 </div>
             </div>
+            <p class="subtitle">Procedimientos</p>
             <div class="procedimientos-container">
-                <p><strong>Procedimientos:</strong></p>
                 <div class="procedimiento-input-container">
                     <input type="text" id="procedimientoInput" class="edit-input" placeholder="Buscar procedimiento...">
                     <div class="sugerencias-container">
@@ -579,8 +586,8 @@ function mostrarDetalleRegistroTarea(registro) {
                     `).join('') : ''}
                 </div>
             </div>
+            <p class="subtitle">Observaciones</p>
             <div class="observaciones-container">
-                <p><strong>Observaciones:</strong></p>
                 <textarea id="observacionesInput" class="edit-input" rows="3">${registro.observaciones || ''}</textarea>
             </div>
         </div>
@@ -732,7 +739,7 @@ function mostrarFormularioRegistroTareas() {
         </div>
         <div class="relleno">
             <p>Fecha</p>
-            <input type="date" id="fechaMP" class="edit-input" value="${new Date().toISOString().split('T')[0]}">
+            <input type="date" id="fechaMP" class="edit-input" value="${new Date().toISOString().split('T')[0]}" readonly>
 
             <p>Busca y selecciona el producto</p>
             <input class="buscarTarea" type="text" id="tarea">
