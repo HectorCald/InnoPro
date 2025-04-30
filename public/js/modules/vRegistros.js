@@ -529,9 +529,9 @@ export function verificarRegistro(id, fecha, producto, operario, envases) {
         </div>
         <form id="form-verificacion">
                 <p for="cantidad-real">Cantidad*</label>
-                <input type="number" id="cantidad-real" required min="0" step="1" placeholder="Ingresa la cantidad real. Ej: 300" readonly tabindex="-1" style="pointer-events: none;">
+                <input type="number" id="cantidad-real" required min="0" step="1" placeholder="Ingresa la cantidad real. Ej: 300">
                 <p for="fecha-verificacion">Fecha*</label>
-                <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly>
+                <input type="date" id="fecha-verificacion" value="${new Date().toISOString().split('T')[0]}" required readonly tabindex="-1" style="pointer-events: none;">
                 <p for="observaciones">Observacione (Opcional)</label>
                 <textarea id="observaciones" rows="3" placeholder="Observaciones (se enviará como notificación al operario)"></textarea>
             </div>
