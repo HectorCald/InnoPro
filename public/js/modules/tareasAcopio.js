@@ -739,7 +739,8 @@ function mostrarFormularioRegistroTareas() {
         </div>
         <div class="relleno">
             <p>Fecha</p>
-            <input type="date" id="fechaMP" class="edit-input" value="${new Date().toISOString().split('T')[0]}" readonly>
+            <input type="date" id="fechaMP" class="edit-input" value="${new Date().toISOString().split('T')[0]}" 
+                readonly tabindex="-1" style="pointer-events: none;">
 
             <p>Busca y selecciona el producto</p>
             <input class="buscarTarea" type="text" id="tarea">
