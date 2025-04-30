@@ -204,7 +204,7 @@ async function obtenerAtajos() {
         ocultarCarga();
     }
 }
-// Modificar la función generarAtajos para quitar el onclick
+
 function generarAtajos(atajos) {
     if (!atajos || atajos.length === 0) return '';
 
@@ -227,7 +227,6 @@ function manejarAtajo(vista) {
     try {
         mostrarCarga();
         
-        // Si es el formulario, solo ejecutar la función sin cambiar vistas
         const clickedCard = event.currentTarget;
         const funcionName = clickedCard.dataset.funcion;
         
@@ -246,7 +245,7 @@ function manejarAtajo(vista) {
             v.style.opacity = '0';
         });
 
-        // Mostrar nueva vista inmediatamente
+        // Mostrar nueva vista
         const vistaSeleccionada = document.querySelector(`.${vista}`);
         if (vistaSeleccionada) {
             vistaSeleccionada.style.display = 'flex';
@@ -255,14 +254,36 @@ function manejarAtajo(vista) {
                 scrollToTop(`.${vista}`);
             });
             ocultarAnuncio();
+
+            // Activar botones del menú
+            const submenuItem = document.querySelector(`.submenu-item[data-vista="${vista}"]`);
+            if (submenuItem) {
+                // Desactivar todos los botones primero
+                document.querySelectorAll('.opcion-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // Activar el botón del submenú
+                submenuItem.classList.add('active');
+
+                // Activar el botón principal y mostrar el submenú
+                const submenuContainer = submenuItem.closest('.submenu-container');
+                if (submenuContainer) {
+                    const mainButton = submenuContainer.querySelector('[data-has-submenu]');
+                    const submenu = submenuContainer.querySelector('.submenu');
+                    
+                    if (mainButton) mainButton.classList.add('active');
+                    if (submenu) submenu.classList.remove('collapsed');
+                }
+            } else {
+                // Si no es un submenú, activar el botón normal
+                document.querySelectorAll('.opcion-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-vista') === vista);
+                });
+            }
         }
 
-        // Actualizar estados activos
-        document.querySelectorAll('.opcion-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.getAttribute('data-vista') === vista);
-        });
-
-        // Agregar al historial del navegador
+        // Actualizar historial
         window.history.pushState({ 
             vista: vista,
             menuHistory: [...(window.history.state?.menuHistory || []), vista]
