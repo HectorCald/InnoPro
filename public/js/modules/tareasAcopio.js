@@ -74,6 +74,7 @@ export function inicializarTareas() {
                         <input type="text" id="search-ta" placeholder="Buscar registro...">
                         <i class="fas fa-search search-icon-ta"></i>
                     </div>
+                    <p class="nota-input"><i class="fas fa-info-circle"></i> Si quieres filtrar por fecha escribe en el buscador (dia-mes-año)</p>
                 </div>
                 <div class="registros-grid" id="registrosContainer">
                 </div>
@@ -103,13 +104,32 @@ function configurarBusquedaTarea() {
         const registros = document.querySelectorAll('.registro-card');
         registros.forEach(registro => {
             registro.style.display = 'block';
-            // Volver a agregar el event listener
             const id = registro.querySelector('.registro-id').textContent;
             const registroData = window.registrosTareas.find(r => r.id.toString() === id);
             if (registroData) {
                 registro.onclick = () => mostrarDetalleRegistroTarea(registroData);
             }
         });
+    }
+    function buscarPorFecha(searchTerm, fechaRegistro) {
+        // Convertir fecha del registro a formato comparable
+        const [año, mes, dia] = fechaRegistro.split('-');
+        
+        // Patrones de búsqueda de fecha
+        const patronCompleto = /^(\d{2})-(\d{2})-(\d{4})$/;  // 24-03-2025
+        const patronCorto = /^(\d{2})-(\d{2})$/;             // 24-03
+        const patronSoloMes = /^(\d{2})$/;                   // 03
+
+        if (patronCompleto.test(searchTerm)) {
+            const [, dBusqueda, mBusqueda, aBusqueda] = searchTerm.match(patronCompleto);
+            return dia === dBusqueda && mes === mBusqueda && año === aBusqueda;
+        } else if (patronCorto.test(searchTerm)) {
+            const [, dBusqueda, mBusqueda] = searchTerm.match(patronCorto);
+            return dia === dBusqueda && mes === mBusqueda;
+        } else if (patronSoloMes.test(searchTerm)) {
+            return mes === searchTerm;
+        }
+        return false;
     }
 
     searchInput.addEventListener('input', (e) => {
@@ -132,14 +152,13 @@ function configurarBusquedaTarea() {
         registros.forEach(registro => {
             const nombre = normalizarTexto(registro.querySelector('.registro-nombre span').textContent);
             const id = normalizarTexto(registro.querySelector('.registro-id').textContent);
-            const fecha = normalizarTexto(registro.querySelector('.registro-fecha').textContent);
+            const fecha = registro.querySelector('.registro-fecha').textContent;
 
             if (nombre.includes(searchTerm) ||
                 id.includes(searchTerm) ||
-                fecha.includes(searchTerm)) {
+                buscarPorFecha(searchTerm, fecha)) {
                 registro.style.display = 'block';
                 registrosEncontrados = true;
-                // Asegurar que el event listener esté presente
                 const registroData = window.registrosTareas.find(r => r.id.toString() === id);
                 if (registroData) {
                     registro.onclick = () => mostrarDetalleRegistroTarea(registroData);
