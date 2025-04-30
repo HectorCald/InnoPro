@@ -160,11 +160,11 @@ async function obtenerAtajos() {
             'Administración': [
                 {
                     clase: 'opcion-btn',
-                    vista: 'compras-view',
-                    icono: 'fa-shopping-cart',
-                    texto: 'Compras Materia Prima',
-                    detalle: 'Aqui puedes gestionar las compras de materia prima y entregarlas hacia acopio.',
-                    onclick: 'onclick="inicializarCompras()"'
+                    vista: 'regAcopio-view',
+                    icono: 'fa-search',
+                    texto: 'Registros Acopio',
+                    detalle: 'Aqui puedes gestionar todos los registros de Acopio. (Eliminar, Editar, Movimientos)',
+                    onclick: 'onclick="cargarRegistrosAcopio()"'
                 },
                 {
                     clase: 'opcion-btn',
@@ -181,15 +181,7 @@ async function obtenerAtajos() {
                     texto: 'Registros Producción',
                     detalle: 'Aqui puedes gestionar todos los registros de producción. (Eliminar, Editar, Pagar, Calcular pagos)',
                     onclick: 'onclick="cargarRegistros()"'
-                },
-                {
-                    clase: 'opcion-btn',
-                    vista: 'regAcopio-view',
-                    icono: 'fa-search',
-                    texto: 'Registros Acopio',
-                    detalle: 'Aqui puedes gestionar todos los registros de Acopio. (Eliminar, Editar, Movimientos)',
-                    onclick: 'onclick="cargarRegistrosAcopio()"'
-                },
+                }
             ]
         };
 
