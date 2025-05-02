@@ -114,7 +114,7 @@ function configurarBusquedaTarea() {
     function buscarPorFecha(searchTerm, fechaRegistro) {
         // Convertir fecha del registro a formato comparable
         const [año, mes, dia] = fechaRegistro.split('-');
-        
+
         // Patrones de búsqueda de fecha
         const patronCompleto = /^(\d{2})-(\d{2})-(\d{4})$/;  // 24-03-2025
         const patronCorto = /^(\d{2})-(\d{2})$/;             // 24-03
@@ -1005,7 +1005,7 @@ function mostrarFormularioAgregarTarea() {
             mostrarCarga();
             const response = await fetch('/obtener-tareas');
             const data = await response.json();
-    
+
             container.innerHTML = data.tareas.map(tarea => `
                 <div class="detalle-item" style="padding-bottom:10px; background-color:#242424; padding:10px; border-radius:10px">
                     <span style="text-align:left">${tarea.nombre}</span>
@@ -1025,7 +1025,7 @@ function mostrarFormularioAgregarTarea() {
             mostrarNotificacion('Ingrese un nombre para la tarea', 'error');
             return;
         }
-    
+
         try {
             mostrarCarga();
             const response = await fetch('/agregar-tarea', {
@@ -1033,7 +1033,7 @@ function mostrarFormularioAgregarTarea() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ nombre })
             });
-    
+
             const data = await response.json();
             if (data.success) {
                 mostrarNotificacion('Tarea agregada correctamente', 'success');
@@ -1055,7 +1055,7 @@ function mostrarFormularioAgregarTarea() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
             });
-    
+
             const data = await response.json();
             if (data.success) {
                 mostrarNotificacion('Tarea eliminada correctamente', 'success');
@@ -1068,5 +1068,5 @@ function mostrarFormularioAgregarTarea() {
             ocultarCarga();
         }
     };
-    
+
 }

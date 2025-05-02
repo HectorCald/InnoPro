@@ -2,22 +2,24 @@
 <script type="module" src="./js/dashboard_db.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- ... código existente ... -->
-        <script>
-        if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
-            // Solo prevenimos el zoom, no el scroll
-            document.addEventListener('touchmove', (e) => {
-                if (e.scale !== 1) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            
-            // Prevenir solo el gesto de pellizco para zoom
-            document.addEventListener('gesturestart', (e) => {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script>
+    if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+        // Solo prevenimos el zoom, no el scroll
+        document.addEventListener('touchmove', (e) => {
+            if (e.scale !== 1) {
                 e.preventDefault();
-            });
-        }
-    </script>
+            }
+        }, { passive: false });
+
+        // Prevenir solo el gesto de pellizco para zoom
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
+    }
+</script>
 </body>
 </body>
+
 </html>

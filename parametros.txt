@@ -37,5 +37,6 @@
     Inicio: <i class="fas fa-home"></i>
     funcion extra: <i class="fas fa-puzzle-piece"></i>
     Iniciar: <i class="fas fa-play"></i>
+    Conteo: <i class="fas fa-clipboard-check"></i>
     
     

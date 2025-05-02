@@ -1980,6 +1980,26 @@ app.delete('/eliminar-registro-pedido', requireAuth, async (req, res) => {
 });
 
 /* ==================== RUTAS DE API ALMACEN GENERAL ==================== */
+app.get('/obtener-clientes', requireAuth, async (req, res) => {
+    try {
+        const sheets = google.sheets({ version: 'v4', auth });
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: 'Clientes!A:B'
+        });
+
+        const rows = response.data.values || [];
+        const clientes = rows.slice(1).map(row => ({
+            id: row[0],
+            nombre: row[1]
+        }));
+
+        res.json({ success: true, clientes });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, error: 'Error al obtener las tareas' });
+    }
+});
 app.get('/obtener-almacen-general', requireAuth, async (req, res) => {
     try {
         const sheets = google.sheets({ version: 'v4', auth });
@@ -2824,36 +2844,40 @@ app.put('/retirar-stock-almacen', requireAuth, async (req, res) => {
         res.json({ success: false, error: 'Error al actualizar el stock' });
     }
 });
-app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
+app.post('/registrar-movimiento-almacen', requireAuth, async (req, res) => {
     try {
-        const { tipo, producto, cantidad, operario,razon } = req.body;
+        const { tipo, producto, cantidad, operario, razon, clienteId, movimientoId } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
         
-        // Obtener el último ID
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Movimientos alm-gral!A:A'
-        });
-        
-        const rows = response.data.values || [];
-        let lastId = 0;
-        
-        rows.forEach(row => {
-            if (row[0] && row[0].startsWith('MAG-')) {
-                const num = parseInt(row[0].split('-')[1]);
-                if (!isNaN(num) && num > lastId) {
-                    lastId = num;
+        // Use provided movimientoId or generate new one
+        let newId;
+        if (movimientoId) {
+            newId = `MAG-${movimientoId}`;
+        } else {
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.SPREADSHEET_ID,
+                range: 'Movimientos alm-gral!A:A'
+            });
+            
+            const rows = response.data.values || [];
+            let lastId = 0;
+            
+            rows.forEach(row => {
+                if (row[0] && row[0].startsWith('MAG-')) {
+                    const num = parseInt(row[0].split('-')[1]);
+                    if (!isNaN(num) && num > lastId) {
+                        lastId = num;
+                    }
                 }
-            }
-        });
+            });
+            newId = `MAG-${lastId + 1}`;
+        }
 
-        const newId = `MAG-${lastId + 1}`;
         const fecha = new Date().toLocaleString('es-ES');
 
-        // Insertar nuevo registro incluyendo el operario
         await sheets.spreadsheets.values.append({
             spreadsheetId: process.env.SPREADSHEET_ID,
-            range: 'Movimientos alm-gral!A:H',
+            range: 'Movimientos alm-gral!A:I',
             valueInputOption: 'USER_ENTERED',
             resource: {
                 values: [[
@@ -2864,7 +2888,8 @@ app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
                     cantidad,
                     operario,
                     'Almacén General',
-                    razon
+                    razon,
+                    clienteId || ''
                 ]]
             }
         });
@@ -2872,7 +2897,7 @@ app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
         res.json({ success: true, id: newId });
     } catch (error) {
         console.error('Error al registrar movimiento:', error);
-        res.json({ success: false, error: 'Error al registrar movimiento' });
+        res.status(500).json({ success: false, error: 'Error al registrar movimiento' });
     }
 });
 app.post('/agregar-tag',requireAuth, async (req, res) => {
@@ -3750,6 +3775,8 @@ app.delete('/eliminar-tarea-acopio', requireAuth, async (req, res) => {
         });
     }
 });
+
+
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {

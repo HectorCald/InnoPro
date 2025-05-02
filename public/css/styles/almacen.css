@@ -107,7 +107,7 @@
                 background: var(--primary-color);
                 color: var(--primary-text);
                 font-size: 14px;
-                transition: border-color 0.5s ease-in-out;
+                transition: border-color 0.5s ease-in-out;  
             }
 
             input:focus {
