@@ -28,11 +28,6 @@ export async function inicializarAlmacenGral() {
                     </button>
                     <p>Salidas</p>
                 </div>
-                <div class="cuadro-btn"><button class="btn-agregar-pedido">
-                        <i class="fas fa-clipboard-check"></i>
-                    </button>
-                    <p>Conteo</p>
-                </div>
                 ${isAdmin ? `<div class="cuadro-btn">
                     <button class="btn-agregar-pedido">
                         <i class="fas fa-box"></i>
@@ -61,9 +56,6 @@ export async function inicializarAlmacenGral() {
 
     const btnSalidas = container.querySelector('.btn-agregar-pedido i.fa-arrow-circle-up').parentElement;
     btnSalidas.onclick = mostrarListaSalidas;
-
-    const btnConteo = container.querySelector('.btn-agregar-pedido i.fa-clipboard-check').parentElement;
-    btnConteo.onclick = mostrarFormularioConteo;
 
     if (isAdmin) {
         const btnAgregar = container.querySelector('.btn-agregar-pedido i.fa-box').parentElement;
@@ -103,7 +95,6 @@ export async function cargarAlmacen() {
         if (!data.pedidos || data.pedidos.length === 0) {
             throw new Error(data.error || 'Error al cargar los productos');
         }
-        window.almacen = data.pedidos;
 
         const productsContainer = document.getElementById('productsContainer-general');
         if (!productsContainer) {
@@ -982,6 +973,7 @@ export function mostrarProductos() {
         });
     });
 };
+
 async function obtenerUsuarioActual() {
     try {
         const response = await fetch('/obtener-mi-rol');
@@ -1409,7 +1401,7 @@ function mostrarFormularioAgregarProducto() {
     };
 };
 
-window.mostrarFormularioPrecios = function () {
+window.mostrarFormularioPrecios = function() {
     const btnPrecios = document.querySelector('.btn-agregar-pedido i.fa-dollar-sign').parentElement;
     const accionesRapidas = document.querySelectorAll('.acciones-rapidas');
     const modoPrecios = !btnPrecios.classList.contains('active');
@@ -1445,7 +1437,7 @@ window.mostrarFormularioPrecios = function () {
         }
     });
 };
-window.verPrecios = function (productId) {
+window.verPrecios = function(productId) {
     // Aquí puedes implementar la lógica para mostrar los precios del producto
     console.log(`Ver precios del producto ${productId}`);
 };
@@ -2017,371 +2009,6 @@ function mostrarConfirmacionEliminarPrecio(nombre) {
     };
 };
 
-/* ==================== FUNCIONES DE LOS DETALLES Y ELIMINACION DE TAGS Y PRECIOS ==================== */
-function mostrarFormularioConteo() {
-    const anuncio = document.querySelector('.anuncio');
-    const contenido = anuncio.querySelector('.anuncio-contenido');
-    const conteoPrevio = JSON.parse(localStorage.getItem('conteoAlmacen') || '{}');
-
-    contenido.innerHTML = `
-        <div class="encabezado">
-            <h2>Conteo de Productos</h2>
-            <button class="anuncio-btn close" onclick="ocultarAnuncio()">
-                <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
-        <div class="relleno" style="gap:5px">
-                <input type="text" 
-                    id="searchConteo" 
-                    placeholder="Buscar producto..." 
-                    onkeyup="filtrarProductosConteo(this.value)"
-                    onfocus="this.select()">
-
-                ${window.almacen.slice(1).map(([id, nombre, gramaje, stock]) => `
-                    <div class="item-conteo form-grup" data-id="${id}" data-nombre="${nombre}" style="border-radius:10px; padding:10px;">
-                        <div class="producto-info" style="margin-bottom: 10px">
-                            <p>${nombre} ${gramaje}gr</p>
-                        </div>
-                        <div class="conteo-control" style="display:flex; align-items: center;justify-content:space-between; width:100%;">
-                            <small style="min-width: 100px">Ideal: ${stock}</small>
-                            <input type="number" 
-                                class="cantidad-real" 
-                                value="${conteoPrevio[id] || ''}" 
-                                placeholder="0"
-                                min="0"
-                                onchange="actualizarDiferenciaConteo('${id}', ${stock}, this.value)" style="min-width:100px; text-align:center;background-color:rgb(61, 61, 61)">
-                            <p class="diferencia" style="margin-left: 10px; ${getDiferenciaStyle(stock, conteoPrevio[id])}; width: auto; min-width:100px; text-align:center; height:100%">
-                                ${calcularDiferencia(stock, conteoPrevio[id])}
-                            </p>
-                        </div>
-                    </div>
-                `).join('')}
-        </div>
-        <div class="anuncio-botones">
-            <button class="anuncio-btn red limpiar">
-                <i class="fas fa-eraser"></i> Limpiar
-            </button>
-            <button class="anuncio-btn green registrar">
-                <i class="fas fa-save"></i> Registrar
-            </button>
-        </div>
-    `;
-
-    // Add the filter function to window scope
-    window.filtrarProductosConteo = (searchTerm) => {
-        const normalizeString = (str) => {
-            return str.toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[-\s]/g, "");
-        };
-
-        const items = document.querySelectorAll('.item-conteo');
-        const searchNormalized = normalizeString(searchTerm);
-
-        items.forEach(item => {
-            const nombre = normalizeString(item.getAttribute('data-nombre'));
-            if (nombre.includes(searchNormalized)) {
-                item.style.display = '';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    };
-
-    window.actualizarDiferenciaConteo = (id, stockActual, cantidadReal) => {
-        const diferencia = calcularDiferencia(stockActual, cantidadReal);
-        const diferenciaElement = document.querySelector(`.item-conteo[data-id="${id}"] .diferencia`);
-        if (diferenciaElement) {
-            diferenciaElement.textContent = diferencia;
-            diferenciaElement.style.color = cantidadReal == stockActual ? '#4CAF50' :
-                cantidadReal < stockActual ? '#f44336' : '#4CAF50';
-        }
-
-        // Guardar en localStorage
-        const conteoGuardado = JSON.parse(localStorage.getItem('conteoAlmacen') || '{}');
-        conteoGuardado[id] = cantidadReal;
-        localStorage.setItem('conteoAlmacen', JSON.stringify(conteoGuardado));
-    };
-
-    // Event Listeners
-    contenido.querySelector('.limpiar').addEventListener('click', () => {
-        localStorage.removeItem('conteoAlmacen');
-        document.querySelectorAll('.cantidad-real').forEach(input => {
-            input.value = '';
-        });
-        document.querySelectorAll('.diferencia').forEach(diff => {
-            diff.textContent = '';
-        });
-    });
-    contenido.querySelector('.registrar').addEventListener('click', () => {
-        const productos = [];
-        document.querySelectorAll('.item-conteo').forEach(item => {
-            const id = item.dataset.id;
-            const cantidadReal = item.querySelector('.cantidad-real').value;
-
-            if (cantidadReal) {
-                const nombreCompleto = item.querySelector('.producto-info p').textContent;
-                const ideal = item.querySelector('small').textContent.split(': ')[1];
-                const diferencia = calcularDiferencia(ideal, cantidadReal);
-
-                productos.push({
-                    idProducto: id,
-                    nombre: nombreCompleto,
-                    ideal,
-                    real: cantidadReal,
-                    diferencia: diferencia === 'Coincide' ? '0' : diferencia
-                });
-            }
-        });
-
-        if (productos.length === 0) {
-            mostrarNotificacion('No hay productos para registrar', 'error');
-            return;
-        }
-
-        const anuncio = document.querySelector('.anuncio-down');
-        const contenido = anuncio.querySelector('.anuncio-contenido');
-
-        contenido.innerHTML = `
-            <div class="encabezado">
-                <h2>Detalles del Conteo</h2>
-                <button class="anuncio-btn close" onclick="ocultarAnuncioDown()">
-                    <i class="fas fa-arrow-down"></i>
-                </button>
-            </div>
-            <div class="detalles-grup">
-                <textarea id="detallesConteo" 
-                    placeholder="Ingrese detalles del conteo..."
-                    style="width: 100%; min-height: 100px; padding: 8px;"></textarea>
-            </div>
-            <div class="anuncio-botones">
-                <button class="anuncio-btn blue descargar-pdf">
-                    <i class="fas fa-file-pdf"></i> PDF
-                </button>
-                <button class="anuncio-btn green descargar-excel">
-                    <i class="fas fa-file-excel"></i> Excel
-                </button>
-            </div>
-        `;
-
-        mostrarAnuncioDown();
-
-        // Handle PDF download
-        anuncio.querySelector('.descargar-pdf').onclick = () => {
-            const detalles = document.getElementById('detallesConteo').value || 'Ninguna';
-            const fecha = new Date().toLocaleString();
-            const id = Date.now(); // Generate unique ID
-
-            const rows = productos.map(p => [
-                p.idProducto,
-                p.nombre,
-                p.ideal,
-                p.real,
-                p.diferencia,
-                detalles
-            ]);
-
-            // Create conteo array in the format expected by descargarConteo
-            const conteo = [id, fecha, '', '', '', '', '', detalles];
-            descargarConteo(conteo, rows);
-        };
-
-        // Handle Excel download
-        anuncio.querySelector('.descargar-excel').onclick = () => {
-            const detalles = document.getElementById('detallesConteo').value || 'Ninguna';
-            const fecha = new Date().toLocaleString();
-            const id = Date.now(); // Generate unique ID
-
-            const rows = productos.map(p => [
-                p.idProducto,
-                p.nombre,
-                p.ideal,
-                p.real,
-                p.diferencia,
-                detalles
-            ]);
-
-            // Generate Excel file
-            const wb = XLSX.utils.book_new();
-
-            // Add title rows and data to Excel
-            const excelData = [
-                [`Conteo de Stock ${id}`],
-                [`Fecha: ${fecha}`],
-                [], // Empty row
-                ['ID', 'Producto', 'S. Ideal', 'S. Real', 'Dif.', 'Detalles'],
-                ...rows,
-                [], // Empty row
-                [`Generado el: ${fecha}`]
-            ];
-
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-            // Style the header row
-            const headerRange = XLSX.utils.decode_range(ws['!ref']);
-            for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
-                const headerCell = XLSX.utils.encode_cell({ r: 3, c: C });
-                if (!ws[headerCell]) ws[headerCell] = {};
-                ws[headerCell].s = {
-                    fill: { fgColor: { rgb: "2980B9" } },
-                    font: { color: { rgb: "FFFFFF" }, bold: true },
-                    alignment: { horizontal: "center" },
-                    border: {
-                        top: { style: "thin", color: { rgb: "505050" } },
-                        bottom: { style: "thin", color: { rgb: "505050" } },
-                        left: { style: "thin", color: { rgb: "505050" } },
-                        right: { style: "thin", color: { rgb: "505050" } }
-                    }
-                };
-            }
-
-            XLSX.utils.book_append_sheet(wb, ws, "Conteo");
-            XLSX.writeFile(wb, `conteo-${id}.xlsx`);
-        };
-    });
-
-    mostrarAnuncio();
-
-    function calcularDiferencia(stockActual, cantidadReal) {
-        if (!cantidadReal) return '';
-        const diferencia = cantidadReal - stockActual;
-        if (diferencia === 0) return 'Coincide';
-        return diferencia > 0 ? `+${diferencia}` : diferencia.toString();
-    }
-    function getDiferenciaStyle(stockActual, cantidadReal) {
-        if (!cantidadReal) return '';
-        const diferencia = cantidadReal - stockActual;
-        return diferencia === 0 ? 'color: #4CAF50;' :
-            diferencia < 0 ? 'color: #f44336;' :
-                'color: #4CAF50;';
-    }
-    function descargarConteo(conteo, customRows = null) {
-        const [id, fecha, idProducto, producto, ideal, real, diferencia, detalles] = conteo;
-
-        // Use custom rows if provided, otherwise get from DOM
-        let rows;
-        if (customRows) {
-            rows = customRows;
-        } else {
-            const registrosContainer = document.querySelector('.registros-conteos-grupo');
-            rows = Array.from(registrosContainer.querySelectorAll('.registro-card-acopio'))
-                .filter(card => card.dataset.id === id)
-                .map(card => {
-                    const detalles = card.querySelector('.registro-detalles');
-                    const producto = card.querySelector('.registro-header .registro-producto-acopio').textContent;
-                    return [
-                        detalles.querySelector('p:nth-child(3)').textContent.split(':')[1].trim(),
-                        producto,
-                        detalles.querySelector('p:nth-child(4)').textContent.split(':')[1].trim(),
-                        detalles.querySelector('p:nth-child(5)').textContent.split(':')[1].trim(),
-                        detalles.querySelector('p:nth-child(6)').textContent.split(':')[1].trim(),
-                        detalles.querySelector('p:nth-child(7)').textContent.split(':')[1].trim()
-                    ];
-                });
-
-            if (rows.length === 0) {
-                rows = [[idProducto, producto, ideal, real, diferencia, detalles]];
-            }
-        }
-
-        const headers = ['ID', 'Producto', 'S. Ideal', 'S. Real', 'Dif.', 'Detalles'];
-        const timestamp = new Date().toLocaleString();
-
-        // Generate Excel
-        const wb = XLSX.utils.book_new();
-        const excelData = [
-            [`Conteo de Stock ${id}`],
-            [`Fecha: ${fecha}`],
-            [],
-            headers,
-            ...rows,
-            [],
-            [`Generado el: ${timestamp}`]
-        ];
-
-        const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-
-        // Style Excel headers
-        const headerRange = XLSX.utils.decode_range(ws['!ref']);
-        for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
-            const headerCell = XLSX.utils.encode_cell({ r: 3, c: C });
-            if (!ws[headerCell]) ws[headerCell] = {};
-            ws[headerCell].s = {
-                fill: { fgColor: { rgb: "2980B9" } },
-                font: { color: { rgb: "FFFFFF" }, bold: true },
-                alignment: { horizontal: "center" },
-                border: {
-                    top: { style: "thin", color: { rgb: "505050" } },
-                    bottom: { style: "thin", color: { rgb: "505050" } },
-                    left: { style: "thin", color: { rgb: "505050" } },
-                    right: { style: "thin", color: { rgb: "505050" } }
-                }
-            };
-        }
-
-        XLSX.utils.book_append_sheet(wb, ws, "Conteo");
-        XLSX.writeFile(wb, `conteo-${id}.xlsx`);
-        
-
-        // Generate PDF
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.text(`Conteo de Stock ${id}`, 105, 20, { align: 'center' });
-        doc.text(`Fecha: ${fecha}`, 105, 30, { align: 'center' });
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(12);
-
-        doc.autoTable({
-            head: [headers],
-            body: rows,
-            startY: 40,
-            styles: {
-                fontSize: 10,
-                cellPadding: 3
-            },
-            headStyles: {
-                fillColor: [41, 128, 185],
-                textColor: 255,
-                lineWidth: 0.1,
-                lineColor: [80, 80, 80]
-            },
-            bodyStyles: {
-                textColor: 0,
-                lineWidth: 0.1,
-                lineColor: [80, 80, 80]
-            },
-            alternateRowStyles: {
-                fillColor: [245, 245, 245]
-            },
-            margin: { top: 40 },
-            columnStyles: {
-                0: { cellWidth: 20 },
-                1: { cellWidth: 50 },
-                2: { cellWidth: 20 },
-                3: { cellWidth: 20 },
-                4: { cellWidth: 20 },
-                5: { cellWidth: 50 }
-            },
-            tableLineColor: [80, 80, 80],
-            tableLineWidth: 0.1,
-            didDrawPage: function (data) {
-                doc.setFontSize(10);
-                doc.text(`Generado el: ${timestamp}`, 105, 285, { align: 'center' });
-            }
-        });
-
-        doc.save(`conteo-${id}.pdf`);
-
-    }
-
-}
-
 
 /* ==================== FUNCIONES DE REGISTRO DEL MOVIMIENTO SALIDA O INGRESO DE ALMACEN ==================== */
 async function registrarMovimiento(tipo, producto, cantidad, razon = '') {
@@ -2410,5 +2037,4 @@ async function registrarMovimiento(tipo, producto, cantidad, razon = '') {
         throw error;
     }
 }
-
 

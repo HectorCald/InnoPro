@@ -21,12 +21,12 @@ export function inicializarAlmacen() {
         <div class="alamcenGral-container">
             <div class="almacen-botones">
 
-                ${isAdmin ? `<div class="cuadro-btn">
+               <div class="cuadro-btn">
                     <button class="btn-agregar-pedido">
                         <i class="fas fa-plus-circle"></i>
                     </button>
                     <p>Agregar</p>
-                </div>` : ''}
+                </div>
 
                 <div class="cuadro-btn"><button class="btn-agregar-pedido">
                        <i class="fas fa-arrow-circle-up"></i>
@@ -76,12 +76,9 @@ export function inicializarAlmacen() {
             mostrarCarrito(); // Actualiza la lista sin cerrar el modal
         }
     };
-    if (isAdmin) {
         const btnAgregarAcopio = container.querySelector('.btn-agregar-pedido i.fa-plus-circle').parentElement;
-        if (btnAgregarAcopio) {
-            btnAgregarAcopio.onclick = () => mostrarFormularioAgregarAcopio('');
-        }
-    }
+        btnAgregarAcopio.onclick = () => mostrarFormularioAgregarAcopio('');
+
 }
 export function mostrarProductosBruto() {
     const container = document.querySelector('.acopio-productos');
