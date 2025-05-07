@@ -177,7 +177,7 @@ function crearPedidoCard(pedido, isAdmin) {
             <p><span>Cantidad Pedida:</span> ${pedido[3] || '-'}</p>
             <p><span>Cantidad Entregado:</span> ${pedido[12] || '-'}</p>
             <p><span>Observaciones:</span> ${pedido[4] || '-'}</p>
-            ${isAdmin ? `<p><span>Cantidad comprada:</span> ${pedido[5] || '-'} Kg.</p>` : ''}
+            ${isAdmin ? `<p><span>Cantidad comprada:</span> ${pedido[5] || '-'}Bls.</p>` : ''}
             <p><span>Proveedor:</span> ${pedido[6] || '-'}</p>
             ${isAdmin ? `<p><span>Costo:</span> ${pedido[7] || '-'}</p>` : ''}
             <p><span>Detalles:</span> ${pedido[9] || '-'}</p>
@@ -559,6 +559,7 @@ function mostrarFormularioEdicion(pedido) {
                     <option value="Pendiente" ${pedido[8] === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                     <option value="En proceso" ${pedido[8] === 'En proceso' ? 'selected' : ''}>En proceso</option>
                     <option value="Recibido" ${pedido[8] === 'Recibido' ? 'selected' : ''}>Recibido</option>
+                    <option value="Recibido" ${pedido[8] === 'Ingresado' ? 'selected' : ''}>Recibido</option>
                 </select>
 
                 <p for="edit-detalles">Detalles</p>
