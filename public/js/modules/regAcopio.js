@@ -559,7 +559,7 @@ function mostrarFormularioEdicion(pedido) {
                     <option value="Pendiente" ${pedido[8] === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                     <option value="En proceso" ${pedido[8] === 'En proceso' ? 'selected' : ''}>En proceso</option>
                     <option value="Recibido" ${pedido[8] === 'Recibido' ? 'selected' : ''}>Recibido</option>
-                    <option value="Recibido" ${pedido[8] === 'Ingresado' ? 'selected' : ''}>Recibido</option>
+                    <option value="Recibido" ${pedido[8] === 'Ingresado' ? 'selected' : ''}>Ingresado</option>
                 </select>
 
                 <p for="edit-detalles">Detalles</p>
