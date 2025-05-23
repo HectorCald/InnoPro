@@ -160,7 +160,7 @@ export function mostrarFormularioProduccion() {
             const data = await response.json();
 
 
-            if (!data.productos.some(p => p.nombre === productoValue)) {
+            if (!data.productos.some(p => p.nombre.trim() === productoValue)) {
                 mostrarNotificacion('El producto ingresado no existe en la lista', 'warning');
                 productoInput.classList.add('invalid');
                 ocultarCarga();

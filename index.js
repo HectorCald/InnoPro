@@ -121,18 +121,19 @@ app.get('/', (req, res) => {
     // Verificar si hay credenciales en localStorage
     const token = req.cookies.token;
     
-    if (token) {
-        try {
-            // Verificar el token
-            jwt.verify(token, JWT_SECRET);
+        if (token) {
+            try {
+                // Verificar el token
+                jwt.verify(token, JWT_SECRET);
 
-            // Si el token es válido, redirigir a dashboard_db
-            return res.redirect('/dashboard_db');
-        } catch (error) {
-            // Si el token no es válido, limpiar la cookie y mostrar login
-            res.clearCookie('token');
+                // Si el token es válido, redirigir a dashboard_db
+                return res.redirect('/dashboard_db');
+            } catch (error) {
+                // Si el token no es válido, limpiar la cookie y mostrar login
+                res.clearCookie('token');
+            }
         }
-    }
+    
     
     // Si no hay token o es inválido, mostrar la página de login
     res.render('login');

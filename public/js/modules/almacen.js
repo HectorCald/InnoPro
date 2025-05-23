@@ -2037,4 +2037,3 @@ async function registrarMovimiento(tipo, producto, cantidad, razon = '') {
         throw error;
     }
 }
-
