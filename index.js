@@ -79,7 +79,7 @@ async function verificarPin(pin) {
         });
         const rows = response.data.values || [];
         const usuario = rows.find(row => row[0] === pin);
-        
+
         if (usuario) {
             const nombre = usuario[1].trim().toUpperCase(); // Normalize name case
             const estado = usuario[3];
@@ -87,18 +87,18 @@ async function verificarPin(pin) {
 
 
             if (estado !== 'Activo') {
-                return { 
+                return {
                     valido: false,
                     mensaje: 'Usuario inactivo'
                 };
             }
 
-            const rol = (nombre === 'Almacen_adm' || nombre === 'Administrador') ? 'admin' : 
-                       nombre === 'Almacen' ? 'almacen' : 'user';
-            
+            const rol = (nombre === 'Almacen_adm' || nombre === 'Administrador') ? 'admin' :
+                nombre === 'Almacen' ? 'almacen' : 'user';
+
             // Return the exact name from the database without any formatting
-            return { 
-                valido: true, 
+            return {
+                valido: true,
                 nombre: nombre,  // Return the exact name as stored in the database
                 rol: rol,
                 funcionesExtra: funcionesExtra
@@ -120,21 +120,21 @@ const APP_CONFIG = {
 app.get('/', (req, res) => {
     // Verificar si hay credenciales en localStorage
     const token = req.cookies.token;
-    
-        if (token) {
-            try {
-                // Verificar el token
-                jwt.verify(token, JWT_SECRET);
 
-                // Si el token es válido, redirigir a dashboard_db
-                return res.redirect('/dashboard_db');
-            } catch (error) {
-                // Si el token no es válido, limpiar la cookie y mostrar login
-                res.clearCookie('token');
-            }
+    if (token) {
+        try {
+            // Verificar el token
+            jwt.verify(token, JWT_SECRET);
+
+            // Si el token es válido, redirigir a dashboard_db
+            return res.redirect('/dashboard_db');
+        } catch (error) {
+            // Si el token no es válido, limpiar la cookie y mostrar login
+            res.clearCookie('token');
         }
-    
-    
+    }
+
+
     // Si no hay token o es inválido, mostrar la página de login
     res.render('login');
 });
@@ -142,33 +142,12 @@ app.get('/dashboard', requireAuth, (req, res) => {
     res.redirect('/mantenimiento')
 });
 app.get('/dashboard_alm', requireAuth, (req, res) => {
-    res.redirect('/mantenimiento')   
+    res.redirect('/mantenimiento')
 });
 app.get('/dashboard_db', requireAuth, (req, res) => {
-    const userVersion = req.cookies[APP_CONFIG.UPDATE_KEY];
 
-    if (!userVersion) {
-        res.render('Actualizacion', { 
-            updateKey: APP_CONFIG.UPDATE_KEY,
-            currentVersion: APP_CONFIG.CURRENT_VERSION,
-            minVersion: APP_CONFIG.MIN_VERSION
-        });
-    } else if (userVersion === APP_CONFIG.MIN_VERSION) {
-        res.render('Actualizacion', { 
-            oldVersion: true,
-            updateKey: APP_CONFIG.UPDATE_KEY,
-            currentVersion: APP_CONFIG.CURRENT_VERSION,
-            minVersion: APP_CONFIG.MIN_VERSION
-        });
-    } else if (userVersion === APP_CONFIG.CURRENT_VERSION) {
-        res.render('dashboard_db');
-    } else {
-        res.render('Actualizacion', {
-            updateKey: APP_CONFIG.UPDATE_KEY,
-            currentVersion: APP_CONFIG.CURRENT_VERSION,
-            minVersion: APP_CONFIG.MIN_VERSION
-        });
-    }
+    res.redirect('/mantenimiento')
+
 });
 app.get('/mantenimiento', requireAuth, (req, res) => {
     res.render('mantenimiento');
@@ -179,8 +158,8 @@ app.post('/confirmar-actualizacion', requireAuth, (req, res) => {
         maxAge: 365 * 24 * 60 * 60 * 1000,
         httpOnly: false
     });
-    
-    res.json({ 
+
+    res.json({
         success: true,
         version: version
     });
@@ -191,19 +170,19 @@ app.post('/verificar-pin', async (req, res) => {
     try {
         const { pin, nombreGuardado } = req.body;
         const resultado = await verificarPin(pin);
-        
+
         if (resultado.valido) {
             // If there's a saved name, verify it matches (case-insensitive)
-            if (nombreGuardado && 
+            if (nombreGuardado &&
                 nombreGuardado.trim().toUpperCase() !== resultado.nombre) {
-                return res.json({ 
+                return res.json({
                     valido: false,
                     mensaje: 'PIN no corresponde al usuario actual'
                 });
             }
 
             const token = jwt.sign(
-                { 
+                {
                     nombre: resultado.nombre,
                     rol: resultado.rol
                 },
@@ -247,12 +226,12 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
         const usuario = rows.find(row => row[1] === req.user.nombre);
 
         if (!usuario) {
-            return res.status(404).json({ 
-                error: 'Usuario no encontrado en la hoja de cálculo' 
+            return res.status(404).json({
+                error: 'Usuario no encontrado en la hoja de cálculo'
             });
         }
 
-        res.json({ 
+        res.json({
             nombre: usuario[1],
             rol: usuario[2],
             Estado: usuario[3],
@@ -260,8 +239,8 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
         });
     } catch (error) {
         console.error('Error al obtener rol:', error);
-        res.status(500).json({ 
-            error: 'Error al obtener información del usuario' 
+        res.status(500).json({
+            error: 'Error al obtener información del usuario'
         });
     }
 });
@@ -277,10 +256,10 @@ app.get('/obtener-estadisticas-usuario', requireAuth, async (req, res) => {
 
         const rows = response.data.values || [];
         const registrosUsuario = rows.filter(row => row[8] === req.user.nombre);
-        
+
         // Calcular estadísticas básicas
         const produccionesTotal = registrosUsuario.length;
-        const produccionesVerificadas = registrosUsuario.filter(row => 
+        const produccionesVerificadas = registrosUsuario.filter(row =>
             row[9] && row[9].toString().trim() !== ''
         ).length;
 
@@ -291,15 +270,15 @@ app.get('/obtener-estadisticas-usuario', requireAuth, async (req, res) => {
             const gramaje = parseFloat(registro[3]) || 0;
             const seleccion = registro[4] || '';
             const nombre = registro[1] || '';
-            
+
             // Calcular total usando la misma lógica de calcularTotal
             const resultados = calcularTotal(nombre, cantidad, gramaje, seleccion);
             totalBs += resultados.total;
         });
 
         // Calcular eficiencia
-        const eficiencia = produccionesTotal > 0 
-            ? Math.round((produccionesVerificadas / produccionesTotal) * 100) 
+        const eficiencia = produccionesTotal > 0
+            ? Math.round((produccionesVerificadas / produccionesTotal) * 100)
             : 0;
 
         res.json({
@@ -346,9 +325,9 @@ app.get('/obtener-notificaciones-usuario', requireAuth, async (req, res) => {
         res.json({ success: true, notificaciones: notificacionesUsuario });
     } catch (error) {
         console.error('Error al obtener notificaciones:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener notificaciones' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener notificaciones'
         });
     }
 });
@@ -356,7 +335,7 @@ app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
     try {
         const { fecha, mensaje } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Get all notifications
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -364,16 +343,16 @@ app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === fecha && 
-            row[1] === req.user.nombre && 
+        const rowIndex = rows.findIndex(row =>
+            row[0] === fecha &&
+            row[1] === req.user.nombre &&
             row[2] === mensaje
         );
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Notificación no encontrada' 
+            return res.status(404).json({
+                success: false,
+                error: 'Notificación no encontrada'
             });
         }
 
@@ -381,8 +360,8 @@ app.delete('/eliminar-notificacion', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const notificacionesSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const notificacionesSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Notificaciones'
         );
 
@@ -419,7 +398,7 @@ app.get('/obtener-productos', requireAuth, async (req, res) => {
             id: row[0] || '',
             nombre: row[1] || '',
             gramaje: row[2] || '',
-            cantidadPorTira: row[4] || '' 
+            cantidadPorTira: row[4] || ''
         }));
 
         res.json({ success: true, productos });
@@ -432,7 +411,7 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
     try {
         const { id, razon } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Get all records from Produccion sheet
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -443,9 +422,9 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Registro no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Registro no encontrado'
             });
         }
 
@@ -458,8 +437,8 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const produccionSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const produccionSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Produccion'
         );
 
@@ -487,8 +466,8 @@ app.delete('/eliminar-registro', requireAuth, async (req, res) => {
         res.json({ success: true, message: 'Registro eliminado correctamente' });
     } catch (error) {
         console.error('Error detallado al eliminar registro:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             error: 'Error al eliminar el registro: ' + (error.message || 'Error desconocido')
         });
     }
@@ -537,7 +516,7 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
         } = req.body;
 
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Get current records to determine the next ID
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -550,10 +529,10 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
         if (existingIds.length > 0) {
             // Extract numeric values from IDs (e.g., "R-75" -> 75)
             const numericIds = existingIds
-            .map(row => {
-                const match = (row[0] || '').match(/RP-(\d+)/);
-                return match ? parseInt(match[1]) : 0;
-            })
+                .map(row => {
+                    const match = (row[0] || '').match(/RP-(\d+)/);
+                    return match ? parseInt(match[1]) : 0;
+                })
                 .filter(id => !isNaN(id));
 
             // Get the next ID number
@@ -595,17 +574,17 @@ app.post('/registrar-produccion', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: 'Producción registrada correctamente',
             nombreOperario: req.user.nombre,
             id: formattedId
         });
     } catch (error) {
         console.error('Error al registrar producción:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al registrar la producción: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al registrar la producción: ' + error.message
         });
     }
 });
@@ -621,9 +600,9 @@ app.get('/obtener-lista-permisos', requireAuth, async (req, res) => {
         const permisos = response.data.values ? response.data.values.map(row => row[0]) : [];
         res.json({ success: true, permisos });
     } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener lista de permisos: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener lista de permisos: ' + error.message
         });
     }
 });
@@ -666,9 +645,9 @@ app.post('/registrar-pago', requireAuth, async (req, res) => {
 });
 app.put('/actualizar-registro', requireAuth, async (req, res) => {
     try {
-        const { 
-            id, fecha, producto, lote, gramaje, seleccion, 
-            microondas, envases, vencimiento, razonEdicion 
+        const {
+            id, fecha, producto, lote, gramaje, seleccion,
+            microondas, envases, vencimiento, razonEdicion
         } = req.body;
 
         const sheets = google.sheets({ version: 'v4', auth });
@@ -683,9 +662,9 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Registro no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Registro no encontrado'
             });
         }
 
@@ -711,15 +690,15 @@ app.put('/actualizar-registro', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
+        res.json({
             success: true,
             mensaje: 'Registro actualizado correctamente'
         });
     } catch (error) {
         console.error('Error al actualizar registro:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar el registro' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el registro'
         });
     }
 });
@@ -741,9 +720,9 @@ app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === pin);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Usuario no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Usuario no encontrado'
             });
         }
 
@@ -751,8 +730,8 @@ app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID || '1UuMQ0zk5-GX3-Mcbp595pevXDi5VeDPMyqz4eqKfILw'
         });
-        
-        const usuariosSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const usuariosSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Usuarios'
         );
 
@@ -780,9 +759,9 @@ app.delete('/eliminar-usuario', requireAuth, async (req, res) => {
         res.json({ success: true, message: 'Usuario eliminado correctamente' });
     } catch (error) {
         console.error('Error al eliminar usuario:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar usuario: ' + (error.message || 'Error desconocido') 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar usuario: ' + (error.message || 'Error desconocido')
         });
     }
 });
@@ -800,7 +779,7 @@ app.get('/obtener-usuarios', requireAuth, async (req, res) => {
             nombre: row[1] || '',
             rol: row[2] || '',
             estado: row[3] === 'Activo',
-            extras: row[4] ||''
+            extras: row[4] || ''
         }));
         res.json({ success: true, usuarios });
     } catch (error) {
@@ -842,7 +821,7 @@ app.post('/agregar-usuario', requireAuth, async (req, res) => {
     try {
         const { nombre, pin, rol } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Verificar si el PIN ya existe
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -874,7 +853,7 @@ app.post('/cambiar-estado-usuario', requireAuth, async (req, res) => {
     try {
         const { pin, estado } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Encontrar la fila del usuario
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -920,9 +899,9 @@ app.post('/actualizar-usuario', requireAuth, async (req, res) => {
         const userIndex = rows.findIndex(row => row[0] === pinActual);
 
         if (userIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Usuario no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Usuario no encontrado'
             });
         }
 
@@ -945,9 +924,9 @@ app.post('/actualizar-usuario', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar usuario' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar usuario'
         });
     }
 });
@@ -955,9 +934,9 @@ app.post('/actualizar-usuario', requireAuth, async (req, res) => {
 /* ==================== API DE VERIFICACION ==================== */
 app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
     try {
-        const { 
-            id, verificacion, fechaVerificacion, 
-            observaciones, cantidadDeclarada 
+        const {
+            id, verificacion, fechaVerificacion,
+            observaciones, cantidadDeclarada
         } = req.body;
 
         const sheets = google.sheets({ version: 'v4', auth });
@@ -972,9 +951,9 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Registro no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Registro no encontrado'
             });
         }
 
@@ -997,15 +976,15 @@ app.put('/actualizar-verificacion', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
+        res.json({
             success: true,
             mensaje: 'Verificación actualizada correctamente'
         });
     } catch (error) {
         console.error('Error al actualizar verificación:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar la verificación' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar la verificación'
         });
     }
 });
@@ -1095,19 +1074,19 @@ app.get('/obtener-mi-rol', requireAuth, async (req, res) => {
         const usuario = rows.find(row => row[1] === req.user.nombre); // Buscar por nombre en columna B
 
         if (!usuario) {
-            return res.status(404).json({ 
-                error: 'Usuario no encontrado en la hoja de cálculo' 
+            return res.status(404).json({
+                error: 'Usuario no encontrado en la hoja de cálculo'
             });
         }
 
-        res.json({ 
+        res.json({
             nombre: usuario[1], // Columna B (nombre)
             rol: usuario[2]     // Columna C (rol)
         });
     } catch (error) {
         console.error('Error al obtener rol:', error);
-        res.status(500).json({ 
-            error: 'Error al obtener información del usuario' 
+        res.status(500).json({
+            error: 'Error al obtener información del usuario'
         });
     }
 });
@@ -1126,8 +1105,8 @@ app.get('/buscar-producto-pendiente/:nombre', requireAuth, async (req, res) => {
         const rows = response.data.values || [];
         const productos = rows
             .slice(1)
-            .filter(row => 
-                row[2]?.toLowerCase() === nombre.toLowerCase() && 
+            .filter(row =>
+                row[2]?.toLowerCase() === nombre.toLowerCase() &&
                 row[8] === 'Pendiente'
             )
             .map(row => ({
@@ -1138,15 +1117,15 @@ app.get('/buscar-producto-pendiente/:nombre', requireAuth, async (req, res) => {
                 observaciones: row[4] || ''
             }));
 
-        res.json({ 
-            success: true, 
-            productos 
+        res.json({
+            success: true,
+            productos
         });
     } catch (error) {
         console.error('Error al buscar producto:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al buscar producto' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al buscar producto'
         });
     }
 });
@@ -1202,15 +1181,15 @@ app.post('/finalizar-pedidos', requireAuth, async (req, res) => {
             resource: { values }
         });
 
-        res.json({ 
+        res.json({
             success: true,
             message: 'Pedidos finalizados correctamente'
         });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al finalizar pedidos: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al finalizar pedidos: ' + error.message
         });
     }
 });
@@ -1233,7 +1212,7 @@ app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
     try {
         const { nombre, fecha } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Get all records from Pedidos sheet
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -1241,16 +1220,16 @@ app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
+        const rowIndex = rows.findIndex(row =>
             row[2] === nombre && // nombre en columna C
             row[1] === fecha && // fecha en columna B
             row[8] === 'Pendiente' // estado en columna I
         );
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Pedido no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Pedido no encontrado'
             });
         }
 
@@ -1258,8 +1237,8 @@ app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const pedidosSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const pedidosSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Pedidos'
         );
 
@@ -1287,15 +1266,15 @@ app.delete('/eliminar-pedido-compras', requireAuth, async (req, res) => {
             }
         });
 
-        return res.json({ 
-            success: true, 
+        return res.json({
+            success: true,
             message: 'Pedido eliminado correctamente',
             deletedRow: rows[rowIndex]
         });
     } catch (error) {
         console.error('Error al eliminar pedido:', error);
-        return res.status(500).json({ 
-            success: false, 
+        return res.status(500).json({
+            success: false,
             error: 'Error al eliminar el pedido'
         });
     }
@@ -1315,9 +1294,9 @@ app.put('/rechazar-pedido', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Pedido no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Pedido no encontrado'
             });
         }
 
@@ -1334,9 +1313,9 @@ app.put('/rechazar-pedido', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error al rechazar pedido:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al rechazar el pedido' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al rechazar el pedido'
         });
     }
 });
@@ -1356,7 +1335,7 @@ app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
             .slice(1) // Skip headers
             .filter(row => row[8] === estado)
             .map(row => ({
-                id:row[0],
+                id: row[0],
                 fecha: row[1],
                 nombre: row[2],
                 cantidad: row[3],
@@ -1376,7 +1355,7 @@ app.get('/obtener-pedidos-estado/:estado', requireAuth, async (req, res) => {
 });
 app.post('/entregar-pedido', requireAuth, async (req, res) => {
     try {
-        const { id, cantidad, proveedor, precio, transporte, observaciones, estado} = req.body;
+        const { id, cantidad, proveedor, precio, transporte, observaciones, estado } = req.body;
         const transporteValidado = transporte === '' || transporte === undefined || transporte === null ? '0' : transporte;
 
         const sheets = google.sheets({ version: 'v4', auth });
@@ -1389,7 +1368,7 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
 
         const rows = response.data.values || [];
 
-        
+
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
@@ -1419,9 +1398,9 @@ app.post('/entregar-pedido', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al entregar el pedido: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al entregar el pedido: ' + error.message
         });
     }
 });
@@ -1429,7 +1408,7 @@ app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
     try {
         const { id } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Obtener todos los pedidos
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -1440,9 +1419,9 @@ app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Pedido no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Pedido no encontrado'
             });
         }
 
@@ -1450,8 +1429,8 @@ app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const pedidosSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const pedidosSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Pedidos'
         );
 
@@ -1479,9 +1458,9 @@ app.delete('/eliminar-pedido', requireAuth, async (req, res) => {
         res.json({ success: true, message: 'Pedido eliminado correctamente' });
     } catch (error) {
         console.error('Error al eliminar pedido:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el pedido: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar el pedido: ' + error.message
         });
     }
 });
@@ -1510,11 +1489,11 @@ app.get('/obtener-precios-base', requireAuth, async (req, res) => {
         res.json({ success: true, preciosBase });
     } catch (error) {
         console.error('Error al obtener precios base:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener precios base: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener precios base: ' + error.message
         });
-        
+
     }
 });
 app.post('/actualizar-precios-base', requireAuth, async (req, res) => {
@@ -1534,9 +1513,9 @@ app.post('/actualizar-precios-base', requireAuth, async (req, res) => {
         res.json({ success: true, message: 'Precios actualizados correctamente' });
     } catch (error) {
         console.error('Error al actualizar precios:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar los precios base: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar los precios base: ' + error.message
         });
     }
 });
@@ -1617,8 +1596,8 @@ app.delete('/eliminar-regla-especial', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const produccionSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const produccionSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Precios produccion'
         );
 
@@ -1671,9 +1650,9 @@ app.get('/obtener-notificaciones', requireAuth, async (req, res) => {
         res.json({ success: true, notificaciones });
     } catch (error) {
         console.error('Error al obtener notificaciones:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener notificaciones' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener notificaciones'
         });
     }
 });
@@ -1681,7 +1660,7 @@ app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) =
     try {
         const { id } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Get all notifications
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -1692,9 +1671,9 @@ app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) =
         const rowIndex = rows.findIndex(row => row[0] === id);  // ID is in first column
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Notificación no encontrada' 
+            return res.status(404).json({
+                success: false,
+                error: 'Notificación no encontrada'
             });
         }
 
@@ -1702,8 +1681,8 @@ app.delete('/eliminar-notificacion-advertencia', requireAuth, async (req, res) =
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const notificacionesSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const notificacionesSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Notificaciones'
         );
 
@@ -1741,7 +1720,7 @@ app.delete('/eliminar-todas-notificaciones', requireAuth, async (req, res) => {
     try {
         const { nombre, rol, notificaciones } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Obtener todas las notificaciones incluyendo el header
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
@@ -1750,7 +1729,7 @@ app.delete('/eliminar-todas-notificaciones', requireAuth, async (req, res) => {
 
         const rows = response.data.values || [];
         const header = rows[0];  // Guardar el header
-        
+
         // Filtrar las filas que NO son del usuario actual
         const filasAMantener = rows.slice(1).filter(row => {
             const destino = row[3]; // Columna D (índice 3)
@@ -1761,8 +1740,8 @@ app.delete('/eliminar-todas-notificaciones', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const notificacionesSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const notificacionesSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Notificaciones'
         );
 
@@ -1780,7 +1759,7 @@ app.delete('/eliminar-todas-notificaciones', requireAuth, async (req, res) => {
         if (filasAMantener.length > 0) {
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.SPREADSHEET_ID,
-                range: 'Notificaciones!A1:E',   
+                range: 'Notificaciones!A1:E',
                 valueInputOption: 'RAW',
                 resource: {
                     values: [header, ...filasAMantener]  // Incluir el header
@@ -1788,16 +1767,16 @@ app.delete('/eliminar-todas-notificaciones', requireAuth, async (req, res) => {
             });
         }
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: 'Notificaciones eliminadas correctamente',
             notificacionesEliminadas: notificaciones
         });
     } catch (error) {
         console.error('Error al eliminar notificaciones:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar notificaciones: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar notificaciones: ' + error.message
         });
     }
 });
@@ -1849,16 +1828,16 @@ app.post('/registrar-notificacion', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: 'Notificación registrada correctamente',
             id: formattedId
         });
     } catch (error) {
         console.error('Error al registrar notificación:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al registrar la notificación: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al registrar la notificación: ' + error.message
         });
     }
 });
@@ -1947,9 +1926,9 @@ app.delete('/eliminar-registro-pedido', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Registro no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Registro no encontrado'
             });
         }
 
@@ -1973,9 +1952,9 @@ app.delete('/eliminar-registro-pedido', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error al eliminar registro:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el registro' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar el registro'
         });
     }
 });
@@ -2010,15 +1989,15 @@ app.delete('/eliminar-producto-almacen', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const almacenSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const almacenSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Almacen general'
         );
 
         if (!almacenSheet) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Hoja de Almacen general no encontrada' 
+            return res.status(404).json({
+                success: false,
+                error: 'Hoja de Almacen general no encontrada'
             });
         }
 
@@ -2032,9 +2011,9 @@ app.delete('/eliminar-producto-almacen', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Producto no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Producto no encontrado'
             });
         }
 
@@ -2058,9 +2037,9 @@ app.delete('/eliminar-producto-almacen', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error al eliminar producto:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el producto' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar el producto'
         });
     }
 });
@@ -2079,9 +2058,9 @@ app.put('/actualizar-producto-almacen', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Producto no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Producto no encontrado'
             });
         }
 
@@ -2091,22 +2070,22 @@ app.put('/actualizar-producto-almacen', requireAuth, async (req, res) => {
             range: `Almacen general!A${rowIndex + 2}:K${rowIndex + 2}`,
             valueInputOption: 'RAW',
             resource: {
-                values: [[id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios,tags, indexId, indexNombre]]
+                values: [[id, nombre, gramaje, stock, cantidadTira, lista, codigob, precios, tags, indexId, indexNombre]]
             }
         });
 
         res.json({ success: true });
     } catch (error) {
         console.error('Error al actualizar producto:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar el producto' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el producto'
         });
     }
-}); 
+});
 app.post('/agregar-producto-almacen', requireAuth, async (req, res) => {
     try {
-        const { nombre, gramaje, stock, cantidadTira, lista, codigob, precios, tags,indexId, indexNombre } = req.body;
+        const { nombre, gramaje, stock, cantidadTira, lista, codigob, precios, tags, indexId, indexNombre } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
 
         // Get current products to determine the next ID
@@ -2138,20 +2117,20 @@ app.post('/agregar-producto-almacen', requireAuth, async (req, res) => {
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
             resource: {
-                values: [[formattedId, nombre, gramaje, stock, cantidadTira, lista,codigob, precios, tags, indexId, indexNombre]]
+                values: [[formattedId, nombre, gramaje, stock, cantidadTira, lista, codigob, precios, tags, indexId, indexNombre]]
             }
         });
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: 'Producto agregado correctamente',
             id: formattedId
         });
     } catch (error) {
         console.error('Error al agregar producto:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al agregar el producto: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al agregar el producto: ' + error.message
         });
     }
 });
@@ -2192,9 +2171,9 @@ app.put('/actualizar-producto-acopio', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Producto no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Producto no encontrado'
             });
         }
 
@@ -2211,9 +2190,9 @@ app.put('/actualizar-producto-acopio', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error al actualizar producto:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar el producto' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el producto'
         });
     }
 });
@@ -2221,16 +2200,16 @@ app.post('/agregar-producto-acopio', requireAuth, async (req, res) => {
 
     try {
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Obtener el último ID
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Almacen acopio!A2:A'
         });
-        
+
         const rows = response.data.values || [];
         let lastId = 0;
-        
+
         if (rows.length > 0) {
             const lastRow = rows[rows.length - 1][0];
             const match = lastRow.match(/PB-(\d+)/);
@@ -2238,7 +2217,7 @@ app.post('/agregar-producto-acopio', requireAuth, async (req, res) => {
                 lastId = parseInt(match[1]);
             }
         }
-        
+
         const newId = `PB-${lastId + 1}`;
         const { nombre, pesoBrutoLote, pesoPrimaLote } = req.body;
 
@@ -2267,15 +2246,15 @@ app.delete('/eliminar-producto-acopio', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const acopioSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const acopioSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Almacen acopio'
         );
 
         if (!acopioSheet) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Hoja de Almacen acopio no encontrada' 
+            return res.status(404).json({
+                success: false,
+                error: 'Hoja de Almacen acopio no encontrada'
             });
         }
 
@@ -2289,9 +2268,9 @@ app.delete('/eliminar-producto-acopio', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Producto no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Producto no encontrado'
             });
         }
 
@@ -2315,9 +2294,9 @@ app.delete('/eliminar-producto-acopio', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error al eliminar producto:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el producto' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar el producto'
         });
     }
 });
@@ -2347,7 +2326,7 @@ app.post('/procesar-ingreso-acopio', requireAuth, async (req, res) => {
         // Determinar qué columna actualizar (BRUTO o PRIMA)
         const columnaIndex = tipo === 'bruto' ? 2 : 3;
         const pesosLotes = (productoExistente[columnaIndex] || '').split(';');
-        
+
         // Calcular siguiente número de lote
         let siguienteLote = 1;
         if (pesosLotes.length > 0) {
@@ -2358,8 +2337,8 @@ app.post('/procesar-ingreso-acopio', requireAuth, async (req, res) => {
 
         // Agregar nuevo peso-lote
         const nuevoPesoLote = `${peso}-${siguienteLote}`;
-        const nuevosValores = pesosLotes.length > 0 ? 
-            `${productoExistente[columnaIndex]};${nuevoPesoLote}` : 
+        const nuevosValores = pesosLotes.length > 0 ?
+            `${productoExistente[columnaIndex]};${nuevoPesoLote}` :
             nuevoPesoLote;
 
         // Actualizar la hoja
@@ -2408,7 +2387,7 @@ app.post('/procesar-salida-acopio', requireAuth, async (req, res) => {
         // Determinar columna a actualizar
         const columnaIndex = tipo === 'bruto' ? 2 : 3;
         const pesosLotes = productoExistente[columnaIndex].split(';');
-        
+
         // Encontrar y actualizar el lote específico
         const loteIndex = pesosLotes.findIndex(item => {
             const [, numLote] = item.split('-');
@@ -2455,16 +2434,16 @@ app.post('/registrar-movimiento-acopio', requireAuth, async (req, res) => {
     try {
         const { tipo, producto, cantidad, operario, razon } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Obtener el último ID
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Movimientos alm-acopio!A:A'
         });
-        
+
         const rows = response.data.values || [];
         let lastId = 0;
-        
+
         rows.forEach(row => {
             if (row[0] && row[0].startsWith('MAA-')) {
                 const num = parseInt(row[0].split('-')[1]);
@@ -2513,15 +2492,15 @@ app.get('/obtener-movimientos-acopio', requireAuth, async (req, res) => {
         const rows = response.data.values || [];
         const movimientos = rows.slice(1); // Omitir encabezados
 
-        res.json({ 
-            success: true, 
-            movimientos: movimientos 
+        res.json({
+            success: true,
+            movimientos: movimientos
         });
     } catch (error) {
         console.error('Error:', error);
-        res.json({ 
-            success: false, 
-            error: 'Error al obtener movimientos de acopio' 
+        res.json({
+            success: false,
+            error: 'Error al obtener movimientos de acopio'
         });
     }
 });
@@ -2534,15 +2513,15 @@ app.delete('/eliminar-movimiento-acopio', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const movimientosSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const movimientosSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Movimientos alm-acopio'
         );
 
         if (!movimientosSheet) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Hoja de movimientos no encontrada' 
+            return res.status(404).json({
+                success: false,
+                error: 'Hoja de movimientos no encontrada'
             });
         }
 
@@ -2556,9 +2535,9 @@ app.delete('/eliminar-movimiento-acopio', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Movimiento no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Movimiento no encontrado'
             });
         }
 
@@ -2582,9 +2561,9 @@ app.delete('/eliminar-movimiento-acopio', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error al eliminar movimiento:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el movimiento' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar el movimiento'
         });
     }
 });
@@ -2669,9 +2648,9 @@ app.put('/ingresar-stock-almacen', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Producto no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Producto no encontrado'
             });
         }
 
@@ -2689,15 +2668,15 @@ app.put('/ingresar-stock-almacen', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: 'Stock actualizado correctamente'
         });
     } catch (error) {
         console.error('Error al actualizar stock:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar el stock: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el stock: ' + error.message
         });
     }
 });
@@ -2734,9 +2713,9 @@ app.delete('/eliminar-formato-precio', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el formato de precio' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar el formato de precio'
         });
     }
 });
@@ -2775,40 +2754,40 @@ app.post('/agregar-formato-precio', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al agregar el formato de precio' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al agregar el formato de precio'
         });
     }
 });
 app.put('/retirar-stock-almacen', requireAuth, async (req, res) => {
     try {
         const { id, cantidad } = req.body;
-        
+
         // Obtener la hoja de cálculo
         const sheets = google.sheets({ version: 'v4', auth });
         const spreadsheetId = process.env.SPREADSHEET_ID;
-        
+
         // Obtener el stock actual
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
             range: 'Almacen general!A2:D',
         });
-        
+
         const rows = response.data.values || [];
         const rowIndex = rows.findIndex(row => row[0] === id);
-        
+
         if (rowIndex === -1) {
             return res.json({ success: false, error: 'Producto no encontrado' });
         }
-        
+
         const stockActual = parseInt(rows[rowIndex][3]);
         const nuevoStock = stockActual - cantidad;
-        
+
         if (nuevoStock < 0) {
             return res.json({ success: false, error: 'Stock insuficiente' });
         }
-        
+
         // Actualizar el stock
         await sheets.spreadsheets.values.update({
             spreadsheetId,
@@ -2818,27 +2797,27 @@ app.put('/retirar-stock-almacen', requireAuth, async (req, res) => {
                 values: [[nuevoStock]]
             }
         });
-        
+
         res.json({ success: true });
     } catch (error) {
         console.error('Error:', error);
         res.json({ success: false, error: 'Error al actualizar el stock' });
     }
 });
-app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
+app.post('/registrar-movimiento-almacen', requireAuth, async (req, res) => {
     try {
-        const { tipo, producto, cantidad, operario,razon } = req.body;
+        const { tipo, producto, cantidad, operario, razon } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Obtener el último ID
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Movimientos alm-gral!A:A'
         });
-        
+
         const rows = response.data.values || [];
         let lastId = 0;
-        
+
         rows.forEach(row => {
             if (row[0] && row[0].startsWith('MAG-')) {
                 const num = parseInt(row[0].split('-')[1]);
@@ -2876,17 +2855,17 @@ app.post('/registrar-movimiento-almacen',requireAuth, async (req, res) => {
         res.json({ success: false, error: 'Error al registrar movimiento' });
     }
 });
-app.post('/agregar-tag',requireAuth, async (req, res) => {
+app.post('/agregar-tag', requireAuth, async (req, res) => {
     try {
         const { nombreTag } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Get first row only
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Almacen general!A2:I2'
         });
-        
+
         const rows = response.data.values || [];
         if (rows.length > 0) {
             const currentTags = rows[0][8] || '';
@@ -2907,17 +2886,17 @@ app.post('/agregar-tag',requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-app.delete('/eliminar-tag',requireAuth, async (req, res) => {
+app.delete('/eliminar-tag', requireAuth, async (req, res) => {
     try {
         const { tag } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Get all products
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Almacen general!A2:I'
         });
-        
+
         const rows = response.data.values || [];
         const updatedRows = rows.map(row => {
             const currentTags = (row[8] || '').split(';').filter(t => t !== tag).join(';');
@@ -2944,7 +2923,7 @@ app.post('/verificar-tarea', requireAuth, async (req, res) => {
     try {
         const { nombre, nombreNormalizado } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Lista tareas!A:B'
@@ -2990,15 +2969,15 @@ app.post('/agregar-tarea', requireAuth, async (req, res) => {
     try {
         const { nombre } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Lista tareas!A:A'
         });
-        
+
         const rows = response.data.values || [];
         let lastId = 0;
-        
+
         if (rows.length > 0) {
             const lastRow = rows[rows.length - 1][0];
             const match = lastRow.match(/TA-(\d+)/);
@@ -3006,7 +2985,7 @@ app.post('/agregar-tarea', requireAuth, async (req, res) => {
                 lastId = parseInt(match[1]);
             }
         }
-        
+
         const newId = `TA-${lastId + 1}`;
 
         await sheets.spreadsheets.values.append({
@@ -3032,8 +3011,8 @@ app.delete('/eliminar-tarea', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const tareasSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const tareasSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Lista tareas'
         );
 
@@ -3088,15 +3067,15 @@ app.get('/obtener-movimientos-almacen', requireAuth, async (req, res) => {
         const rows = response.data.values || [];
         const movimientos = rows.slice(1); // Excluir encabezados
 
-        res.json({ 
-            success: true, 
-            movimientos: movimientos 
+        res.json({
+            success: true,
+            movimientos: movimientos
         });
     } catch (error) {
         console.error('Error:', error);
-        res.json({ 
-            success: false, 
-            error: 'Error al obtener movimientos' 
+        res.json({
+            success: false,
+            error: 'Error al obtener movimientos'
         });
     }
 });
@@ -3172,15 +3151,15 @@ app.delete('/eliminar-movimiento-almacen', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const movimientosSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const movimientosSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Movimientos alm-gral'
         );
 
         if (!movimientosSheet) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Hoja de movimientos no encontrada' 
+            return res.status(404).json({
+                success: false,
+                error: 'Hoja de movimientos no encontrada'
             });
         }
 
@@ -3194,9 +3173,9 @@ app.delete('/eliminar-movimiento-almacen', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Movimiento no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Movimiento no encontrado'
             });
         }
 
@@ -3217,15 +3196,15 @@ app.delete('/eliminar-movimiento-almacen', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
+        res.json({
             success: true,
             message: 'Movimiento eliminado correctamente'
         });
     } catch (error) {
         console.error('Error al eliminar movimiento:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el movimiento' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar el movimiento'
         });
     }
 });
@@ -3292,7 +3271,7 @@ app.post('/registrar-calculo-mp', requireAuth, async (req, res) => {
 
         const rows = response.data.values || [];
         let lastId = 0;
-        
+
         rows.forEach(row => {
             if (row[0] && row[0].startsWith('RMP-')) {
                 const num = parseInt(row[0].split('-')[1]);
@@ -3326,10 +3305,10 @@ app.post('/registrar-calculo-mp', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: 'Registro guardado correctamente',
-            id: newId 
+            id: newId
         });
 
     } catch (error) {
@@ -3349,15 +3328,15 @@ app.delete('/eliminar-registro-mp/:id', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const mpSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const mpSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Materia prima'
         );
 
         if (!mpSheet) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Hoja de Materia Prima no encontrada' 
+            return res.status(404).json({
+                success: false,
+                error: 'Hoja de Materia Prima no encontrada'
             });
         }
 
@@ -3368,15 +3347,15 @@ app.delete('/eliminar-registro-mp/:id', requireAuth, async (req, res) => {
         });
 
         const rows = response.data.values || [];
-        const rowIndex = rows.findIndex(row => 
-            row[0] === id || 
+        const rowIndex = rows.findIndex(row =>
+            row[0] === id ||
             `RMP-${rows.indexOf(row) + 1}` === id
         );
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Registro no encontrado' 
+            return res.status(404).json({
+                success: false,
+                error: 'Registro no encontrado'
             });
         }
 
@@ -3397,15 +3376,15 @@ app.delete('/eliminar-registro-mp/:id', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
+        res.json({
             success: true,
             message: 'Registro eliminado correctamente'
         });
     } catch (error) {
         console.error('Error al eliminar registro:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar el registro' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar el registro'
         });
     }
 });
@@ -3513,16 +3492,16 @@ app.post('/registrar-tarea-acopio', requireAuth, async (req, res) => {
     try {
         const { fecha, nombre, horaInicio, horaFin, procedimiento, observaciones } = req.body;
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         // Obtener el último ID
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Tareas!A:G'
         });
-        
+
         const rows = response.data.values || [];
         let lastId = 0;
-        
+
         rows.forEach(row => {
             if (row[0] && row[0].startsWith('TA-')) {
                 const num = parseInt(row[0].split('-')[1]);
@@ -3552,16 +3531,16 @@ app.post('/registrar-tarea-acopio', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             id: newId,
             message: 'Tarea registrada correctamente'
         });
     } catch (error) {
         console.error('Error al registrar tarea:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al registrar la tarea' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al registrar la tarea'
         });
     }
 });
@@ -3627,9 +3606,9 @@ app.put('/finalizar-tarea-acopio', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al finalizar la tarea' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al finalizar la tarea'
         });
     }
 });
@@ -3673,15 +3652,15 @@ app.put('/editar-tarea-acopio', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
+        res.json({
             success: true,
             message: 'Tarea actualizada correctamente'
         });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al actualizar la tarea' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar la tarea'
         });
     }
 });
@@ -3694,15 +3673,15 @@ app.delete('/eliminar-tarea-acopio', requireAuth, async (req, res) => {
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: process.env.SPREADSHEET_ID
         });
-        
-        const tareasSheet = spreadsheet.data.sheets.find(sheet => 
+
+        const tareasSheet = spreadsheet.data.sheets.find(sheet =>
             sheet.properties.title === 'Tareas'
         );
 
         if (!tareasSheet) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Hoja de Tareas no encontrada' 
+            return res.status(404).json({
+                success: false,
+                error: 'Hoja de Tareas no encontrada'
             });
         }
 
@@ -3716,9 +3695,9 @@ app.delete('/eliminar-tarea-acopio', requireAuth, async (req, res) => {
         const rowIndex = rows.findIndex(row => row[0] === id);
 
         if (rowIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Tarea no encontrada' 
+            return res.status(404).json({
+                success: false,
+                error: 'Tarea no encontrada'
             });
         }
 
@@ -3739,24 +3718,24 @@ app.delete('/eliminar-tarea-acopio', requireAuth, async (req, res) => {
             }
         });
 
-        res.json({ 
+        res.json({
             success: true,
             message: 'Tarea eliminada correctamente'
         });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al eliminar la tarea' 
+        res.status(500).json({
+            success: false,
+            error: 'Error al eliminar la tarea'
         });
     }
 });
 
 /* ==================== INICIALIZACIÓN DEL SERVIDOR ==================== */
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => {
-    console.log(`Servidor corriendo en el puerto ${port}`);
-  });
+    app.listen(port, () => {
+        console.log(`Servidor corriendo en el puerto ${port}`);
+    });
 }
 
 export default app;
