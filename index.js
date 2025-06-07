@@ -139,10 +139,10 @@ app.get('/', (req, res) => {
     res.render('login');
 });
 app.get('/dashboard', requireAuth, (req, res) => {
-    res.redirect('/dashboard_db')
+    res.redirect('/mantenimiento')
 });
 app.get('/dashboard_alm', requireAuth, (req, res) => {
-    res.redirect('/dashboard_db')   
+    res.redirect('/mantenimiento')   
 });
 app.get('/dashboard_db', requireAuth, (req, res) => {
     const userVersion = req.cookies[APP_CONFIG.UPDATE_KEY];
